@@ -61,68 +61,40 @@ def _free_port() -> int:
 
 def _start_demo_tunnel(bid: int, html: str) -> str:
     """
-    Spin up a tiny single-file HTTP server + cloudflared quick tunnel for one demo.
-    Returns the tunnel URL (e.g. https://xyz.trycloudflare.com) or "" on failure.
-    Kills any previous tunnel for this bid first.
+    Push the generated demo HTML to GitHub Pages (leadflow-demos repo).
+    Returns the GitHub Pages URL.
     """
-    # Tear down existing tunnel for this bid
-    old = DEMO_TUNNELS.pop(bid, None)
-    if old:
-        try: old["proc"].terminate()
-        except Exception: pass
-        try: old["server"].shutdown()
-        except Exception: pass
-
-    html_bytes = html.encode("utf-8")
-
-    class _Handler(_http_server.BaseHTTPRequestHandler):
-        def do_GET(self):
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(html_bytes)))
-            self.end_headers()
-            self.wfile.write(html_bytes)
-        def log_message(self, *a): pass
-
-    port = _free_port()
-    server = _socketserver.TCPServer(("127.0.0.1", port), _Handler)
-    _threading.Thread(target=server.serve_forever, daemon=True).start()
-
-    proc = _subprocess.Popen(
-        ["/opt/homebrew/bin/cloudflared", "tunnel", "--url", f"http://127.0.0.1:{port}"],
-        stderr=_subprocess.PIPE, stdout=_subprocess.DEVNULL, text=True,
-    )
-
-    url = ""
-    import time
-    deadline = time.time() + 35
-    while time.time() < deadline:
-        line = proc.stderr.readline()
-        if not line:
-            break
-        m = _re.search(r"https://[a-z0-9-]+\.trycloudflare\.com", line)
-        if m:
-            url = m.group(0)
-            break
-
-    if url:
-        DEMO_TUNNELS[bid] = {"port": port, "server": server, "proc": proc, "url": url}
+    import os
+    import subprocess
+    from pathlib import Path
+    
+    repo_dir = Path("/Users/chandan/leadflow/leadflow-demos")
+    demo_dir = repo_dir / str(bid)
+    demo_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Write the html
+    index_file = demo_dir / "index.html"
+    index_file.write_text(html, encoding="utf-8")
+    
+    try:
+        # Commit and push
+        subprocess.run(["git", "add", "."], cwd=repo_dir, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "commit", "-m", f"Deploy demo {bid}"], cwd=repo_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "push"], cwd=repo_dir, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+        url = f"https://power7t.github.io/leadflow-demos/{bid}/"
+        
         # Persist URL to DB
-        try:
-            from database import get_conn
-            conn = get_conn()
-            conn.execute("UPDATE businesses SET demo_tunnel_url=? WHERE id=?", (url, bid))
-            conn.commit()
-            conn.close()
-        except Exception:
-            pass
-    else:
-        try: proc.terminate()
-        except Exception: pass
-        try: server.shutdown()
-        except Exception: pass
-
-    return url
+        from database import get_conn
+        conn = get_conn()
+        conn.execute("UPDATE businesses SET demo_tunnel_url=? WHERE id=?", (url, bid))
+        conn.commit()
+        conn.close()
+        
+        return url
+    except Exception as e:
+        print(f"Failed to deploy to GitHub Pages: {e}")
+        return ""
 
 
 def _start_leadflow_tunnel() -> str:
@@ -437,6 +409,15 @@ async def generate_messages(bid: int, request: Request):
     from demo_generator import _scrape_site, _is_gym, generate_gym_demo_html
     loop = asyncio.get_event_loop()
     website = lead.get("website", "")
+    def slugify(text: str) -> str:
+        import re
+        t = " ".join(text.split()[:3]).lower()
+        t = re.sub(r'[^a-z0-9]+', '-', t)
+        return t.strip('-')
+        
+    slug = slugify(lead.get("name", "")) + f"-{bid}"
+    demo_filename = f"{slug}.html"
+
     scraped = {}
     if website:
         try:
@@ -444,21 +425,33 @@ async def generate_messages(bid: int, request: Request):
         except Exception:
             pass
 
-    # Build demo site (only when generating email or all)
+    # Build demo site always so the URL is available for all DMs
     demo_url = ""
-    if not channels or "email" in channels:
-        try:
-            if _is_gym(lead.get("category", ""), lead.get("name", "")):
-                html = await loop.run_in_executor(
-                    None, functools.partial(generate_gym_demo_html, lead, scraped)
-                )
-            else:
-                html = await loop.run_in_executor(None, generate_demo_html, lead)
-            DEMO_CACHE[bid] = html
-            (DEMOS_DIR / f"{bid}.html").write_text(html, encoding="utf-8")
-            demo_url = f"{_get_base_url()}/demo/{bid}"
-        except Exception:
-            pass
+    try:
+        if _is_gym(lead.get("category", ""), lead.get("name", "")):
+            html = await loop.run_in_executor(
+                None, functools.partial(generate_gym_demo_html, lead, scraped)
+            )
+        else:
+            html = await loop.run_in_executor(None, generate_demo_html, lead)
+        tunnel_url = ""
+        try: tunnel_url = open("/tmp/leadflow-tunnel-url.txt").read().strip()
+        except: pass
+        html = html.replace("{{TUNNEL_URL}}", tunnel_url).replace("{{BID}}", str(bid))
+        DEMO_CACHE[bid] = html
+        (DEMOS_DIR / demo_filename).write_text(html, encoding="utf-8")
+        import subprocess
+        subprocess.Popen(f"cd {DEMOS_DIR} && git add {demo_filename} && git commit -m 'Auto-deploy {demo_filename}' && git push", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        demo_url = f"https://Power7T.github.io/leadflow-demos/{demo_filename}"
+        
+        # Persist URL to DB so UI shows the github pages link instead of cloudflare fallback
+        from database import get_conn
+        conn = get_conn()
+        conn.execute("UPDATE businesses SET demo_tunnel_url=? WHERE id=?", (demo_url, bid))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
 
     try:
         drafts = await loop.run_in_executor(
@@ -554,9 +547,17 @@ async def rewrite_draft(bid: int, request: Request):
         except Exception:
             pass
 
+    def slugify(text: str) -> str:
+        import re
+        t = " ".join(text.split()[:3]).lower()
+        return re.sub(r'[^a-z0-9]+', '-', t).strip('-')
+        
+    slug = slugify(lead.get("name", "")) + f"-{bid}"
+    demo_url = f"https://Power7T.github.io/leadflow-demos/{slug}.html"
+
     try:
         result = await loop.run_in_executor(
-            None, functools.partial(rewrite_message, lead, channel, current_text, instruction, scraped)
+            None, functools.partial(rewrite_message, lead, channel, current_text, instruction, demo_url, scraped)
         )
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
@@ -764,7 +765,7 @@ async def build_demo(bid: int, use_stock: int = 0):
     from demo_generator import generate_gym_demo_html, _is_gym, _scrape_site
     conn = get_conn()
     row = conn.execute("""
-        SELECT b.*, c.email, c.instagram FROM businesses b
+        SELECT b.*, c.email, c.hunter_email, c.apollo_email, c.apollo_person_name, c.instagram, c.demo_viewed, c.replied_at FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
         WHERE b.id=?
     """, (bid,)).fetchone()
@@ -985,14 +986,137 @@ def tunnel_url():
         return JSONResponse({"url": ""})
 
 
-@app.get("/api/demo-tunnel-url")
-def demo_tunnel_url():
+@app.get("/api/demo-url/{bid}")
+def demo_url_endpoint(bid: int):
+    conn = get_conn()
+    row = conn.execute("SELECT name FROM businesses WHERE id=?", (bid,)).fetchone()
+    conn.close()
+    if row:
+        import re
+        t = " ".join(row["name"].split()[:3]).lower()
+        slug = re.sub(r'[^a-z0-9]+', '-', t).strip('-') + f"-{bid}"
+        return JSONResponse({"url": f"https://Power7T.github.io/leadflow-demos/{slug}.html"})
+    return JSONResponse({"url": "https://Power7T.github.io/leadflow-demos"})
+@app.post("/api/generate-audit/{bid}")
+async def generate_audit_report(bid: int):
+    conn = get_conn()
+    lead = conn.execute("SELECT * FROM businesses WHERE id = ?", (bid,)).fetchone()
+    conn.close()
+    if not lead or not lead.get("website"):
+        return JSONResponse({"error": "No website found"}, status_code=400)
+    
+    url = lead["website"]
     try:
-        url = Path("/tmp/leadflow-demo-tunnel-url.txt").read_text().strip()
-        return JSONResponse({"url": url if url.startswith("https://") else ""})
-    except Exception:
-        return JSONResponse({"url": ""})
+        from extractor import _run_lighthouse, _check_seo
+        import asyncio
+        loop = asyncio.get_event_loop()
+        lh = await loop.run_in_executor(None, _run_lighthouse, url)
+        seo = await loop.run_in_executor(None, _check_seo, url)
+        
+        import re
+        def slugify(text: str) -> str:
+            t = " ".join(text.split()[:3]).lower()
+            return re.sub(r'[^a-z0-9]+', '-', t).strip('-')
+        slug = slugify(lead["name"]) + f"-{bid}"
+        filename = f"{slug}-audit.html"
+        
+        score_color = "#4d9fff" if lh['score'] > 80 else ("#ffb84d" if lh['score'] > 50 else "#ff4d4d")
+        
+        html = f"""<!DOCTYPE html>
+<html>
+<head>
+<title>Performance & SEO Audit - {lead['name']}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {{ background:#080808; color:#fff; font-family:sans-serif; padding:40px; line-height:1.6; }}
+.container {{ max-width:800px; margin:0 auto; }}
+h1 {{ border-bottom:1px solid #333; padding-bottom:20px; }}
+.score-box {{ background:#111; padding:30px; border-radius:12px; text-align:center; border:1px solid #222; margin-bottom:30px; }}
+.score-circle {{ display:inline-block; width:120px; height:120px; border-radius:50%; border:8px solid {score_color}; line-height:120px; font-size:40px; font-weight:bold; }}
+.card {{ background:#111; padding:20px; border-radius:12px; margin-bottom:20px; border:1px solid #222; }}
+.card h2 {{ margin-top:0; color:#4d9fff; }}
+.metric {{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #222; }}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Website Audit Report: {lead['name']}</h1>
+  <div class="score-box">
+    <div class="score-circle">{lh['score']}</div>
+    <h3>Performance Score</h3>
+    <p>Your website loads in {lh['fcp']}s. A slow website loses up to 40% of potential clients before they even see your services.</p>
+  </div>
+  <div class="card">
+    <h2>Performance Details</h2>
+    <div class="metric"><span>Speed Index:</span> <span>{lh['speed_index']}s</span></div>
+    <div class="metric"><span>Time to Interactive:</span> <span>{lh['interactive']}s</span></div>
+  </div>
+  <div class="card">
+    <h2>SEO & Critical Errors</h2>
+    <div class="metric"><span>Title Tag:</span> <span>{'Found' if seo['title'] else 'MISSING'}</span></div>
+    <div class="metric"><span>Meta Description:</span> <span>{'Found' if seo['description'] else 'MISSING'}</span></div>
+    <div class="metric"><span>H1 Tags:</span> <span>{seo['h1_count']}</span></div>
+    <p style="color:#ffb84d; margin-top:15px; font-weight:bold;">We can fix all of these issues and build you a lightning-fast, highly-converting website.</p>
+  </div>
+  <p style="text-align:center; margin-top:40px; color:#888;">Report generated by Chandan Gosavi</p>
+</div>
+</body>
+</html>"""
+        
+        (DEMOS_DIR / filename).write_text(html, encoding="utf-8")
+        import subprocess
+        subprocess.Popen(f"cd {DEMOS_DIR} && git add {filename} && git commit -m 'Auto-deploy audit {filename}' && git push", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        audit_url = f"https://Power7T.github.io/leadflow-demos/{filename}"
+        
+        return JSONResponse({"status": "ok", "url": audit_url})
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
 
+
+
+@app.post("/api/live-followup/{bid}")
+async def generate_live_followup(bid: int):
+    conn = get_conn()
+    lead = conn.execute("SELECT * FROM businesses WHERE id = ?", (bid,)).fetchone()
+    conn.close()
+    if not lead:
+        return JSONResponse({"error": "Not found"}, status_code=404)
+        
+    try:
+        import asyncio
+        from ai_writer import write_live_followup
+        loop = asyncio.get_event_loop()
+        draft = await loop.run_in_executor(None, write_live_followup, dict(lead))
+        return JSONResponse({"draft": draft})
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+
+@app.get("/api/track.png")
+def track_demo_view(bid: int = 0):
+    if bid:
+        try:
+            conn = get_conn()
+            row = conn.execute("SELECT name, demo_viewed FROM businesses WHERE id=?", (bid,)).fetchone()
+            if row:
+                # Update DB and notify if it's their first time viewing
+                if not row["demo_viewed"]:
+                    conn.execute("UPDATE businesses SET demo_viewed=1 WHERE id=?", (bid,))
+                    conn.commit()
+                    import requests
+                    requests.post(
+                        "https://ntfy.sh/leadflow-chandan-secret", 
+                        data=f"🔥 {row['name']} just opened your demo!".encode("utf-8")
+                    )
+            conn.close()
+        except Exception:
+            pass
+    # Return 1x1 transparent PNG
+    import base64
+    from fastapi.responses import Response
+    pixel = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
+    return Response(content=pixel, media_type="image/png")
 
 @app.get("/api/tunnel-status")
 def tunnel_status():

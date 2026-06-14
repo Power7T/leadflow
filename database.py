@@ -40,13 +40,17 @@ def init_db():
         );
 
         CREATE TABLE IF NOT EXISTS contacts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            business_id INTEGER REFERENCES businesses(id),
+            business_id INTEGER PRIMARY KEY,
             email TEXT,
             instagram TEXT,
-            linkedin_name TEXT,
+            facebook TEXT,
             linkedin_url TEXT,
-            whatsapp TEXT
+            linkedin_name TEXT,
+            whatsapp TEXT,
+            hunter_email TEXT,
+            apollo_email TEXT,
+            apollo_person_name TEXT,
+            FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
         );
 
         CREATE TABLE IF NOT EXISTS outreach (
@@ -159,16 +163,21 @@ def insert_business(data: dict) -> int:
 
 def insert_contacts(business_id: int, contacts: dict):
     conn = get_conn()
-    conn.execute("""
-        INSERT INTO contacts (business_id, email, instagram, linkedin_name, linkedin_url, whatsapp)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (
+    conn.execute('''
+        INSERT OR REPLACE INTO contacts 
+        (business_id, email, instagram, facebook, linkedin_url, linkedin_name, whatsapp, hunter_email, apollo_email, apollo_person_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
         business_id,
         contacts.get("email"),
         contacts.get("instagram"),
-        contacts.get("linkedin_name"),
+        contacts.get("facebook"),
         contacts.get("linkedin_url"),
+        contacts.get("linkedin_name"),
         contacts.get("whatsapp"),
+        contacts.get("hunter_email"),
+        contacts.get("apollo_email"),
+        contacts.get("apollo_person_name")
     ))
     conn.commit()
     conn.close()

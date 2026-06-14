@@ -22,3 +22,4 @@ demos/
 # Temporary patch scripts
 patch_*.py
 fix_*.py
+leadflow-demos/

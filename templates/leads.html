@@ -33,6 +33,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
         <div class="lead-row-name">{{ lead.name }}</div>
         {% if lead.status != 'new' %}
+        {% if lead.demo_viewed %}<span style="font-size:9px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:4px;white-space:nowrap;background:rgba(255,0,0,.15);color:var(--red);margin-right:4px">🔥 VIEWED DEMO</span>{% endif %}
         <span style="font-size:9px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:4px;white-space:nowrap;
           {% if lead.status == 'sent' %}background:rgba(0,242,254,.12);color:var(--accent)
           {% elif lead.status == 'replied' %}background:rgba(40,200,80,.15);color:#4caf50
@@ -217,11 +218,13 @@ function selectLead(id) {
         <div class="detail-section">
           <div class="section-label">Contact Details</div>
           <div class="info-row">
-            <span>Email</span>
-            <b>${lead.email
-              ? `<a href="mailto:${lead.email}" style="color:var(--accent)">${lead.email}</a>
-                 <button class="copy-btn" onclick="copyText('${lead.email}', this)">copy</button>`
-              : '<span style="color:var(--text-dim)">Not found</span>'}</b>
+            <span style="align-self:flex-start;margin-top:2px">Emails</span>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              ${lead.email ? `<div><span style="font-size:10px;color:var(--text-dim);margin-right:4px">WEB</span> <a href="mailto:${lead.email}" style="color:var(--accent)">${lead.email}</a> <button class="copy-btn" onclick="copyText('${lead.email}', this)">copy</button></div>` : ''}
+              ${lead.hunter_email ? `<div><span style="font-size:10px;color:var(--orange);margin-right:4px">HUNTER</span> <a href="mailto:${lead.hunter_email}" style="color:var(--accent)">${lead.hunter_email}</a> <button class="copy-btn" onclick="copyText('${lead.hunter_email}', this)">copy</button></div>` : ''}
+              ${lead.apollo_email ? `<div><span style="font-size:10px;color:var(--blue);margin-right:4px">APOLLO</span> <a href="mailto:${lead.apollo_email}" style="color:var(--accent)">${lead.apollo_email}</a> <button class="copy-btn" onclick="copyText('${lead.apollo_email}', this)">copy</button></div>` : ''}
+              ${(!lead.email && !lead.hunter_email && !lead.apollo_email) ? '<span style="color:var(--text-dim)">Not found</span>' : ''}
+            </div>
           </div>
           <div class="info-row">
             <span>Instagram</span>
@@ -267,16 +270,30 @@ function selectLead(id) {
       <div class="draft-section">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
           <div class="section-label" style="margin:0">Outreach Messages</div>
-          <div style="display:flex;gap:6px">
-            <a id="demoBtn-${id}" href="/demo/${id}" target="_blank" class="btn btn-ghost" style="font-size:12px">🌐 Preview Demo</a>
-            <button class="btn btn-ghost" style="font-size:12px" onclick="copyDemoLink(${id}, this)">🔗 Copy Demo Link</button>
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <a id="demoBtn-${id}" href="/demo/${id}" target="_blank" class="btn btn-outline" style="background:var(--bg-card);color:var(--text);border-color:#333;font-size:12px;">🌐 Preview Demo</a>
+            <button class="btn btn-outline" style="background:var(--bg-card);color:var(--text);border-color:#333;font-size:12px;" onclick="copyDemoLink(${id}, this)">🔗 Copy Demo Link</button>
+            <button class="btn btn-outline" style="background:var(--bg-card);color:var(--accent);border-color:var(--accent);font-size:12px;" onclick="generateAuditReport(${id}, this)">📊 Generate Audit Report</button>
+            <button class="btn" style="font-size:12px" onclick="generateAll(${id}, this)">✨ Generate</button>
           </div>
         </div>
+
+        ${lead.demo_viewed ? `
+          <div style="background:rgba(255,77,77,0.05); border:1px solid rgba(255,77,77,0.2); border-radius:8px; padding:12px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="color:#ff4d4d; font-weight:bold; font-size:12px;">🔥 LIVE VIEW FOLLOW-UP</span>
+              <button class="btn btn-outline" style="border-color:#ff4d4d; color:#ff4d4d; font-size:11px; padding:4px 8px;" onclick="generateLiveFollowup(${id}, this)">Generate Message</button>
+            </div>
+            <div id="liveFollowup-${id}" style="font-size:13px; color:var(--text); white-space:pre-wrap;">
+              <em>Customer has viewed the demo. Generate a live follow-up message to convert them right now.</em>
+            </div>
+          </div>
+        ` : ''}
         
         <div style="display:flex;gap:8px;margin-bottom:12px" id="chanPills-${id}">
           <label class="chan-pill ${lead.email ? 'active' : ''}"><input type="checkbox" value="email" ${lead.email ? 'checked' : ''} onchange="toggleChan(this)">Email</label>
           <label class="chan-pill ${lead.instagram ? 'active' : ''}"><input type="checkbox" value="instagram" ${lead.instagram ? 'checked' : ''} onchange="toggleChan(this)">Instagram</label>
-          <label class="chan-pill ${lead.whatsapp || lead.phone ? 'active' : ''}"><input type="checkbox" value="whatsapp" ${lead.whatsapp || lead.phone ? 'checked' : ''} onchange="toggleChan(this)">WhatsApp</label>
+          <label class="chan-pill ${lead.whatsapp ? 'active' : ''}"><input type="checkbox" value="whatsapp" ${lead.whatsapp ? 'checked' : ''} onchange="toggleChan(this)">WhatsApp</label>
           <label class="chan-pill ${lead.linkedin_url ? 'active' : ''}"><input type="checkbox" value="linkedin" ${lead.linkedin_url ? 'checked' : ''} onchange="toggleChan(this)">LinkedIn</label>
         </div>
 
@@ -379,7 +396,7 @@ function renderDrafts(id, data) {
     html += msgBlock(id, 'instagram', 'INSTAGRAM DM', igHandle, data.instagram);
   }
   if (data.whatsapp_msg || data.whatsapp) {
-    const wp = lead?.whatsapp || lead?.phone || '(send via WhatsApp)';
+    const wp = lead?.whatsapp || '(send via WhatsApp)';
     html += msgBlock(id, 'whatsapp', 'WHATSAPP', wp, data.whatsapp_msg || data.whatsapp);
   }
   if (data.linkedin) {
@@ -652,10 +669,10 @@ async function copyDemoLink(id, btn) {
   const orig = btn.textContent;
   btn.textContent = '...';
   try {
-    const res = await fetch('/api/demo-tunnel-url');
+    const res = await fetch(`/api/demo-url/${id}`);
     const data = await res.json();
     if (data.url) {
-      const fullUrl = `${data.url}/demo/${id}`;
+      const fullUrl = data.url;
       await navigator.clipboard.writeText(fullUrl);
       btn.textContent = 'Copied!';
       btn.style.color = 'var(--accent)';
@@ -666,6 +683,47 @@ async function copyDemoLink(id, btn) {
     btn.textContent = 'Error';
   }
   setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+}
+
+async function generateAuditReport(id, btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Generating... (10s)';
+  try {
+    const res = await fetch(`/api/generate-audit/${id}`, {method: 'POST'});
+    const data = await res.json();
+    if (data.url) {
+      await navigator.clipboard.writeText(data.url);
+      btn.textContent = 'Copied Link!';
+      btn.style.color = 'var(--accent)';
+    } else {
+      btn.textContent = 'Failed';
+    }
+  } catch (e) {
+    btn.textContent = 'Error';
+  }
+  setTimeout(() => { btn.textContent = orig; btn.style.color = 'var(--accent)'; }, 2000);
+}
+
+async function generateLiveFollowup(id, btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Generating...';
+  const display = document.getElementById(`liveFollowup-${id}`);
+  display.innerHTML = '<span style="color:var(--text-dim)">Writing message...</span>';
+  try {
+    const res = await fetch(`/api/live-followup/${id}`, {method: 'POST'});
+    const data = await res.json();
+    if (data.draft) {
+      display.innerHTML = `
+        <div style="margin-bottom:8px;">${data.draft}</div>
+        <button class="btn btn-ghost" style="padding:2px 6px; font-size:11px;" onclick="copyText('${data.draft.replace(/'/g, "\\'")}', this)">📋 Copy to Clipboard</button>
+      `;
+    } else {
+      display.textContent = 'Error generating draft.';
+    }
+  } catch (e) {
+    display.textContent = 'Network error.';
+  }
+  btn.textContent = orig;
 }
 
 async function loadAudit(id, url) {

@@ -13,15 +13,15 @@ def score_lead(business: dict, contacts: dict) -> int:
 
     # ── Website gap (biggest signal) ──────────────────────────────
     if not website:
-        score += 40        # No website = biggest opportunity
+        score += 60        # No website = biggest opportunity
+    elif site_score >= 70:
+        return 0           # Good site — completely ignore, they don't need a website
     elif site_score < 35:
-        score += 35        # Terrible site
+        score += 40        # Terrible site
     elif site_score < 60:
         score += 25        # Bad site
-    elif site_score < 80:
-        score += 10        # Mediocre site
     else:
-        score += 2         # Good site — lower priority
+        score += 5         # Mediocre site (60-69)
 
     # ── Reachability ─────────────────────────────────────────────
     if contacts.get("email"):

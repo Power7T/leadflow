@@ -77,6 +77,85 @@ def job_queue_follow_ups():
             log.error(f"[Scheduler] Follow-up gen error for {lead['name']}: {e}")
 
 
+def job_auto_send_leads():
+    """Find untouched leads with score > 80, auto-generate demo/draft, and send email."""
+    from database import get_conn, mark_sent
+    from ai_writer import parse_subject_body
+    from gmail import send_email
+    import uuid, requests, time
+
+    conn = get_conn()
+    # Find leads > 80 score that have email but no demo built yet, OR demo built but not sent
+    rows = conn.execute("""
+        SELECT b.*, c.email FROM businesses b
+        LEFT JOIN contacts c ON c.business_id = b.id
+        WHERE b.status = 'new' AND b.lead_score >= 80 AND c.email IS NOT NULL
+        LIMIT 3
+    """).fetchall()
+
+    for row in rows:
+        lead = dict(row)
+        log.info(f"[Scheduler] Auto-sending initial outreach to {lead['name']}")
+        try:
+            # 1. Generate demo and draft if not exists
+            if not lead.get("demo_tunnel_url"):
+                log.info(f"  -> Building demo and draft for {lead['name']}...")
+                res = requests.post(f"http://127.0.0.1:8765/leads/{lead['id']}/generate", json={"channels": ["email"]}, timeout=180)
+                if res.status_code != 200:
+                    log.error(f"  -> Failed to generate: {res.text}")
+                    continue
+                time.sleep(2)
+                # Refresh lead data to get the new demo_tunnel_url
+                lead = dict(conn.execute("SELECT * FROM businesses WHERE id=?", (lead["id"],)).fetchone())
+
+            # 2. Get the draft
+            draft_row = conn.execute("SELECT draft FROM outreach WHERE business_id=? AND channel='email'", (lead["id"],)).fetchone()
+            if not draft_row or not draft_row["draft"]:
+                continue
+            
+            subject, body = parse_subject_body(draft_row["draft"])
+            if subject and body:
+                tracking_id = str(uuid.uuid4())
+                demo_url = lead.get("demo_tunnel_url", "")
+                send_email(lead["email"], subject, body, tracking_id, demo_url)
+                mark_sent(lead["id"], "email")
+                log.info(f"[Scheduler] Successfully sent to {lead['email']}")
+        except Exception as e:
+            log.error(f"[Scheduler] Failed to auto-send to {lead['name']}: {e}")
+    conn.close()
+
+
+def job_auto_send_followups():
+    """Send follow-ups that are scheduled and pending."""
+    from database import get_conn
+    from ai_writer import parse_subject_body
+    from gmail import send_email
+    import uuid
+
+    conn = get_conn()
+    rows = conn.execute("""
+        SELECT f.*, c.email, b.demo_tunnel_url FROM follow_ups f
+        JOIN businesses b ON b.id = f.business_id
+        LEFT JOIN contacts c ON c.business_id = b.id
+        WHERE f.status = 'pending' AND f.scheduled_for <= datetime('now')
+    """).fetchall()
+
+    for row in rows:
+        if not row["email"] or not row["draft"]:
+            continue
+        try:
+            subject, body = parse_subject_body(row["draft"])
+            if not subject: subject = "Quick follow-up"
+            tracking_id = str(uuid.uuid4())
+            send_email(row["email"], subject, body, tracking_id, row.get("demo_tunnel_url", ""))
+            conn.execute("UPDATE follow_ups SET status='sent', sent_at=datetime('now') WHERE id=?", (row["id"],))
+            conn.commit()
+            log.info(f"[Scheduler] Auto-sent follow-up {row['sequence_num']} to {row['email']}")
+        except Exception as e:
+            log.error(f"[Scheduler] Failed to send followup {row['id']}: {e}")
+    conn.close()
+
+
 def start_scheduler():
     """Start background scheduler. Called once on server startup."""
     cfg = _get_config()
@@ -84,6 +163,8 @@ def start_scheduler():
 
     scheduler.add_job(job_daily_find,      "cron", hour=hour, minute=0,  id="daily_find",    replace_existing=True)
     scheduler.add_job(job_queue_follow_ups, "cron", hour=hour, minute=30, id="queue_followups", replace_existing=True)
+    scheduler.add_job(job_auto_send_leads, "interval", minutes=60, id="auto_send_leads", replace_existing=True)
+    scheduler.add_job(job_auto_send_followups, "interval", minutes=15, id="auto_send_followups", replace_existing=True)
 
     if not scheduler.running:
         scheduler.start()

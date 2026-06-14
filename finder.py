@@ -116,13 +116,13 @@ async def search_places_async(query: str, location: str, max_results: int = 20) 
     results = []
     next_token = None
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         while len(results) < max_results:
             if next_token:
                 params["pagetoken"] = next_token
                 await asyncio.sleep(2)
 
-            async with session.get(PLACES_URL, params=params, timeout=10) as resp:
+            async with session.get(PLACES_URL, params=params, timeout=10, ssl=False) as resp:
                 data = await resp.json()
 
                 if data.get("status") not in ("OK", "ZERO_RESULTS"):
@@ -154,8 +154,8 @@ async def get_place_details_async(place_id: str) -> dict:
         "fields": "name,formatted_address,formatted_phone_number,international_phone_number,website,rating,user_ratings_total",
         "key": MAPS_KEY,
     }
-    async with aiohttp.ClientSession() as session:
-        async with session.get(DETAILS_URL, params=params, timeout=10) as resp:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
+        async with session.get(DETAILS_URL, params=params, timeout=10, ssl=False) as resp:
             data = await resp.json()
             return data.get("result", {})
 
@@ -219,9 +219,21 @@ def run_finder(niche: str, location: str, max_results: int = 20) -> int:
 
         contacts = extract_contacts(website, name, location)
 
+        # ── Promote mobile numbers to WhatsApp ────────────────────────
+        if phone and not contacts.get("whatsapp"):
+            try:
+                import phonenumbers
+                from phonenumbers.phonenumberutil import number_type, PhoneNumberType
+                parsed = phonenumbers.parse(phone, "US")  # Fallback to US if no country code
+                t = number_type(parsed)
+                if t in (PhoneNumberType.MOBILE, PhoneNumberType.FIXED_LINE_OR_MOBILE):
+                    contacts["whatsapp"] = phone
+            except Exception:
+                pass
+
         # Skip if zero contact channels found — nothing to outreach with
         if not any([contacts.get("email"), contacts.get("instagram"),
-                    contacts.get("linkedin_url"), contacts.get("whatsapp"), phone]):
+                    contacts.get("linkedin_url"), contacts.get("whatsapp")]):
             console.print(f"[dim]skipped (no contacts)[/]")
             skipped += 1
             continue

@@ -137,11 +137,55 @@ def google_search_contacts(business_name: str, location: str) -> dict:
     return contacts
 
 
+def hunter_enrich(domain: str) -> str:
+    import os, requests
+    api_key = os.getenv("HUNTER_API_KEY")
+    if not api_key or not domain: return ""
+    try:
+        url = f"https://api.hunter.io/v2/domain-search?domain={domain}&api_key={api_key}"
+        res = requests.get(url, timeout=10).json()
+        if "data" in res and res["data"].get("emails"):
+            return res["data"]["emails"][0].get("value", "")
+    except Exception:
+        pass
+    return ""
+
+def apollo_enrich(domain: str) -> dict:
+    import os, requests
+    api_key = os.getenv("APOLLO_API_KEY")
+    if not api_key or not domain: return {}
+    try:
+        url = "https://api.apollo.io/v1/organizations/enrich"
+        headers = {"Cache-Control": "no-cache", "Content-Type": "application/json"}
+        data = {"api_key": api_key, "domain": domain}
+        res = requests.post(url, headers=headers, json=data, timeout=10).json()
+        org = res.get("organization", {})
+        
+        # Also try to find a person
+        p_url = "https://api.apollo.io/v1/people/search"
+        p_data = {"api_key": api_key, "q_organization_domains": domain, "page": 1}
+        p_res = requests.post(p_url, headers=headers, json=p_data, timeout=10).json()
+        person_name = ""
+        person_email = ""
+        if p_res.get("people"):
+            person = p_res["people"][0]
+            person_name = person.get("name", "")
+            person_email = person.get("email", "")
+            
+        return {
+            "apollo_email": person_email or org.get("primary_email", ""),
+            "apollo_person_name": person_name
+        }
+    except Exception:
+        pass
+    return {}
+
 def extract_contacts(website: str, business_name: str, location: str) -> dict:
     """
     Full contact extraction pipeline:
     1. Scrape website
     2. Fallback to Google search for missing fields
+    3. Deep enrichment via Hunter/Apollo APIs
     """
     contacts = extract_from_website(website)
 
@@ -150,5 +194,18 @@ def extract_contacts(website: str, business_name: str, location: str) -> dict:
         fallback = google_search_contacts(business_name, location)
         for key, val in fallback.items():
             contacts.setdefault(key, val)
+            
+    # Deep Enrichment
+    if website:
+        import urllib.parse
+        domain = urllib.parse.urlparse(website).netloc.replace("www.", "")
+        
+        hunter_email = hunter_enrich(domain)
+        if hunter_email:
+            contacts["hunter_email"] = hunter_email
+            
+        apollo_data = apollo_enrich(domain)
+        if apollo_data:
+            contacts.update(apollo_data)
 
     return contacts

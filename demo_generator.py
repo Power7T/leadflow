@@ -36,7 +36,8 @@ def _fetch_gmaps_photos(place_id: str, n: int = 4) -> list[str]:
         r = requests.get(
             "https://maps.googleapis.com/maps/api/place/details/json",
             params={"place_id": place_id, "fields": "photos", "key": key},
-            timeout=8,
+            timeout=10,
+            verify=False
         )
         photos = r.json().get("result", {}).get("photos", [])[:n]
         result = []
@@ -48,6 +49,7 @@ def _fetch_gmaps_photos(place_id: str, n: int = 4) -> list[str]:
                 "https://maps.googleapis.com/maps/api/place/photo",
                 params={"maxwidth": 1200, "photo_reference": ref, "key": key},
                 timeout=10, allow_redirects=True,
+                verify=False
             )
             if img_r.status_code == 200 and len(img_r.content) < 800_000:
                 mime = img_r.headers.get("content-type", "image/jpeg").split(";")[0]
@@ -264,7 +266,9 @@ GYM_KEYWORDS = re.compile(
 )
 
 def _is_gym(category: str, name: str) -> bool:
-    return bool(GYM_KEYWORDS.search(category or "") or GYM_KEYWORDS.search(name or ""))
+    # Only search the business name to prevent false positives if the user
+    # entered a comma-separated list of multiple niches (e.g. "gym,airbnb")
+    return bool(GYM_KEYWORDS.search(name or ""))
 
 
 def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = False) -> str:
@@ -882,6 +886,15 @@ document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
   window.addEventListener('resize',()=>goto(0));
 }})();
 </script>
+
+
+<!-- TRACKING SCRIPT -->
+<script>
+    try {{
+        fetch("{{TUNNEL_URL}}/api/track.png?bid={{BID}}", {{mode: 'no-cors'}});
+    }} catch(e) {{}}
+</script>
+
 </body>
 </html>"""
 
@@ -1111,6 +1124,25 @@ footer a:hover{{text-decoration:underline}}
 </head>
 <body>
 
+<!-- SCARCITY BANNER -->
+<div id="countdown-banner" style="background:#ff4d4d; color:white; text-align:center; padding:10px; font-weight:bold; font-family:sans-serif; font-size:14px; position:sticky; top:0; z-index:9999;">
+  ⏳ This free custom prototype expires and will be permanently deleted in: <span id="timer">47:59:59</span>
+</div>
+<script>
+  let expires = localStorage.getItem("demo_expires_{{BID}}");
+  if (!expires) {{
+    expires = Date.now() + 48 * 60 * 60 * 1000;
+    localStorage.setItem("demo_expires_{{BID}}", expires);
+  }}
+  setInterval(() => {{
+    let diff = Math.max(0, expires - Date.now());
+    let h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+    let m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+    let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+    document.getElementById("timer").textContent = h + ":" + m + ":" + s;
+  }}, 1000);
+</script>
+
 <div class="demo-banner">
   ✨ FREE demo website built by Chandan Gosavi —
   <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live →</a>
@@ -1176,6 +1208,15 @@ footer a:hover{{text-decoration:underline}}
   Website demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a>
   &nbsp;·&nbsp; Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here →</a>
 </footer>
+
+
+
+<!-- TRACKING SCRIPT -->
+<script>
+    try {{
+        fetch("{{TUNNEL_URL}}/api/track.png?bid={{BID}}", {{mode: 'no-cors'}});
+    }} catch(e) {{}}
+</script>
 
 </body>
 </html>"""
