@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %} — Analytics{% endblock %}
+
+{% block content %}
+<h1>Analytics</h1>
+<p class="subtitle">How your outreach is performing.</p>
+
+<div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+  <div class="card accent">
+    <div class="label">Total Leads</div>
+    <div class="value">{{ a.total }}</div>
+  </div>
+  <div class="card blue">
+    <div class="label">Contacted</div>
+    <div class="value">{{ a.sent }}</div>
+  </div>
+  <div class="card yellow">
+    <div class="label">Replied</div>
+    <div class="value">{{ a.replied }}</div>
+  </div>
+  <div class="card accent">
+    <div class="label">Closed</div>
+    <div class="value">{{ a.closed }}</div>
+  </div>
+  <div class="card" style="border-color:rgba(0,200,150,0.3)">
+    <div class="label">Revenue</div>
+    <div class="value" style="color:var(--accent);font-size:22px">${{ "{:,.0f}".format(a.revenue) }}</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:28px">
+  <div class="form-card" style="text-align:center;padding:24px">
+    <div style="font-size:36px;font-weight:800;color:var(--accent)">{{ a.reply_rate }}%</div>
+    <div style="color:var(--text-dim);font-size:13px;margin-top:4px">Reply Rate</div>
+    <div class="stat-bar"><div class="stat-bar-fill" style="width:{{ [a.reply_rate,100]|min }}%;background:var(--accent)"></div></div>
+  </div>
+  <div class="form-card" style="text-align:center;padding:24px">
+    <div style="font-size:36px;font-weight:800;color:var(--yellow)">{{ a.close_rate }}%</div>
+    <div style="color:var(--text-dim);font-size:13px;margin-top:4px">Close Rate</div>
+    <div class="stat-bar"><div class="stat-bar-fill" style="width:{{ [a.close_rate,100]|min }}%;background:var(--yellow)"></div></div>
+  </div>
+  <div class="form-card" style="text-align:center;padding:24px">
+    <div style="font-size:36px;font-weight:800;color:var(--blue)">{{ a.open_rate }}%</div>
+    <div style="color:var(--text-dim);font-size:13px;margin-top:4px">Email Open Rate</div>
+    <div class="stat-bar"><div class="stat-bar-fill" style="width:{{ [a.open_rate,100]|min }}%;background:var(--blue)"></div></div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+  <div class="form-card">
+    <h2 style="font-size:14px;margin-bottom:16px">Best Performing Niches</h2>
+    {% if a.niches %}
+      {% for n in a.niches %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px">{{ n.category or 'Unknown' }}</span>
+        <div style="display:flex;gap:12px;font-size:12px">
+          <span style="color:var(--text-dim)">{{ n.total }} leads</span>
+          <span style="color:var(--accent);font-weight:600">{{ n.replied }} replied</span>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="color:var(--text-dim);font-size:13px">No data yet — start sending outreach.</div>
+    {% endif %}
+  </div>
+
+  <div class="form-card">
+    <h2 style="font-size:14px;margin-bottom:16px">Recent Deals</h2>
+    {% if a.deals %}
+      {% for d in a.deals %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:13px;font-weight:500">{{ d.name }}</div>
+          <div style="font-size:11px;color:var(--text-dim)">{{ d.service }}</div>
+        </div>
+        <span style="color:var(--accent);font-weight:700">${{ "{:,.0f}".format(d.value_usd) }}</span>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="color:var(--text-dim);font-size:13px">No deals logged yet. Close your first client!</div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

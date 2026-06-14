@@ -1,0 +1,24 @@
+# Environments
+.env
+
+# Database
+*.db
+*.sqlite3
+leadflow.db
+
+# Caches & Logs
+__pycache__/
+*.log
+.DS_Store
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Output directories
+demos/
+
+# Temporary patch scripts
+patch_*.py
+fix_*.py

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %} — Follow-ups{% endblock %}
+
+{% block content %}
+<h1>Follow-ups</h1>
+<p class="subtitle">Scheduled follow-up messages. Due ones are highlighted — send them now.</p>
+
+{% if not followups %}
+<div class="empty">
+  <div class="icon">📅</div>
+  <p>No follow-ups scheduled yet.</p>
+  <p style="font-size:12px;color:var(--text-dim);margin-top:8px">Follow-ups are auto-generated when you approve a lead.</p>
+</div>
+{% else %}
+
+<div class="leads-grid">
+  {% for f in followups %}
+  <div class="lead-card {% if f.is_due %}due{% endif %}" id="fu-{{ f.id }}">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div class="lead-name">{{ f.name }}</div>
+        <span class="badge {% if f.status == 'sent' %}badge-sent{% elif f.is_due %}badge-new{% else %}badge-skipped{% endif %}">
+          {% if f.status == 'sent' %}Sent{% elif f.is_due %}Due Now{% else %}Scheduled{% endif %}
+        </span>
+        <span style="font-size:11px;color:var(--text-dim)">Follow-up #{{ f.sequence_num }} · {{ f.channel }}</span>
+      </div>
+      <div class="lead-meta">📅 {{ f.scheduled_for[:10] if f.scheduled_for else '—' }}</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:12px;color:#ccc;line-height:1.6;margin-top:8px;white-space:pre-wrap">{{ f.draft[:300] }}{% if f.draft|length > 300 %}...{% endif %}</div>
+    </div>
+    <div class="lead-actions" style="flex-direction:column">
+      {% if f.status != 'sent' %}
+        {% if f.channel == 'email' and f.email %}
+        <button class="btn btn-primary" onclick="sendFollowUp({{ f.id }}, '{{ f.email }}', this)" style="font-size:12px">
+          📨 Send Email
+        </button>
+        {% elif f.channel == 'instagram' and f.instagram %}
+        <button class="btn btn-ghost" onclick="copyFU({{ f.id }}, this)" style="font-size:12px">
+          📋 Copy DM
+        </button>
+        {% endif %}
+        <button class="btn btn-danger" onclick="skipFU({{ f.id }}, this)" style="font-size:12px;margin-top:6px">Skip</button>
+      {% else %}
+        <span class="badge badge-sent">Sent ✓</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function sendFollowUp(id, email, btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  const res = await fetch(`/followups/${id}/send`, {method:'POST'});
+  const data = await res.json();
+  if (data.ok) {
+    document.getElementById(`fu-${id}`).querySelector('.lead-actions').innerHTML = '<span class="badge badge-sent">Sent ✓</span>';
+  } else {
+    alert('Error: ' + data.error);
+    btn.disabled = false;
+    btn.innerHTML = '📨 Send Email';
+  }
+}
+
+async function skipFU(id, btn) {
+  await fetch(`/followups/${id}/skip`, {method:'POST'});
+  const card = document.getElementById(`fu-${id}`);
+  card.style.opacity = '0.4';
+  card.style.pointerEvents = 'none';
+}
+
+function copyFU(id, btn) {
+  const draft = document.getElementById(`fu-${id}`).querySelector('div[style*="pre-wrap"]').textContent;
+  navigator.clipboard.writeText(draft).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy DM', 2000);
+  });
+}
+</script>
+{% endblock %}

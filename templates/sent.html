@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %} — Sent{% endblock %}
+
+{% block content %}
+<h1>Sent</h1>
+<p class="subtitle">Track opens, clicks, and replies from your outreach.</p>
+
+{% if not leads %}
+<div class="empty">
+  <div class="icon">📨</div>
+  <p>Nothing sent yet.</p>
+  <a href="/leads" class="btn btn-primary">📋 Review Leads</a>
+</div>
+{% else %}
+
+<div class="sent-table-wrap">
+<table class="sent-table">
+  <thead>
+    <tr>
+      <th>Business</th>
+      <th>Location</th>
+      <th>Email</th>
+      <th>Opened</th>
+      <th>Clicked</th>
+      <th>Sent</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for lead in leads %}
+  <tr id="row-{{ lead.id }}">
+    <td>
+      <div class="lead-name" style="font-size:14px">{{ lead.name }}</div>
+      <div style="font-size:11px;color:var(--text-dim)">{{ lead.category }}</div>
+    </td>
+    <td style="font-size:12px;color:var(--text-dim)">
+      {{ lead.city }}{% if lead.country %}, {{ lead.country }}{% endif %}
+    </td>
+    <td style="font-size:12px">
+      {% if lead.email %}
+        <span class="tag tag-green" style="font-size:11px">✉ {{ lead.email }}</span>
+      {% else %}
+        <span style="color:var(--text-dim)">—</span>
+      {% endif %}
+    </td>
+    <td style="text-align:center">
+      {% if lead.opened %}
+        <span class="tracking-pill opened" title="{{ lead.open_count }} open(s)">
+          👁 {{ lead.open_count or 1 }}×
+        </span>
+      {% else %}
+        <span class="tracking-pill unseen">unseen</span>
+      {% endif %}
+    </td>
+    <td style="text-align:center">
+      {% if lead.clicked %}
+        <span class="tracking-pill clicked">🔗 clicked</span>
+      {% else %}
+        <span class="tracking-pill unseen">—</span>
+      {% endif %}
+    </td>
+    <td style="font-size:11px;color:var(--text-dim);white-space:nowrap">
+      {% if lead.sent_at %}
+        {{ lead.sent_at[:16].replace('T',' ') }}
+      {% else %}—{% endif %}
+    </td>
+    <td>
+      <span class="badge badge-{{ lead.status }}">{{ lead.status }}</span>
+    </td>
+    <td style="white-space:nowrap">
+      {% if lead.status == 'replied' %}
+        <span style="color:var(--accent);font-size:12px">Replied ✓</span>
+      {% else %}
+        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px"
+                onclick="markReplied({{ lead.id }}, this)">
+          ✓ Replied
+        </button>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function markReplied(id, btn) {
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  await fetch(`/sent/${id}/replied`, { method: 'POST' });
+  const row = document.getElementById('row-' + id);
+  row.querySelector('td:nth-last-child(2) span').textContent = 'replied';
+  row.querySelector('td:last-child').innerHTML = '<span style="color:var(--accent);font-size:12px">Replied ✓</span>';
+}
+</script>
+{% endblock %}

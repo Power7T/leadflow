@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeadFlow{% block title %}{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">LeadFlow<span>by Chandan</span></div>
+  <nav class="nav">
+    <a href="/" class="{% if page=='home' %}active{% endif %}">
+      <span class="icon">⚡</span> Dashboard
+    </a>
+    <a href="/find" class="{% if page=='find' %}active{% endif %}">
+      <span class="icon">🔍</span> Find Businesses
+    </a>
+    <a href="/leads" class="{% if page=='leads' %}active{% endif %}">
+      <span class="icon">📋</span> Review Leads
+      {% if stats.new > 0 %}<span class="badge badge-new" style="margin-left:auto">{{ stats.new }}</span>{% endif %}
+    </a>
+    <a href="/kanban" class="{% if page=='kanban' %}active{% endif %}">
+      <span class="icon">🗂</span> Pipeline
+    </a>
+    <a href="/followups" class="{% if page=='followups' %}active{% endif %}">
+      <span class="icon">🔁</span> Follow-ups
+    </a>
+    <a href="/demos" class="{% if page=='demos' %}active{% endif %}">
+      <span class="icon">🌐</span> Demo Sites
+    </a>
+    <a href="/sent" class="{% if page=='sent' %}active{% endif %}">
+      <span class="icon">📨</span> Sent
+    </a>
+    <a href="/analytics" class="{% if page=='analytics' %}active{% endif %}">
+      <span class="icon">📊</span> Analytics
+    </a>
+  </nav>
+  <div class="sidebar-stats">
+    <div class="stat"><span>New</span><b>{{ stats.new }}</b></div>
+    <div class="stat"><span>Sent</span><b>{{ stats.sent }}</b></div>
+    <div class="stat"><span>Replied</span><b>{{ stats.replied }}</b></div>
+    <div class="stat"><span>Closed</span><b style="color:var(--accent)">{{ stats.closed }}</b></div>
+  </div>
+</aside>
+
+<main class="main">
+  {% block content %}{% endblock %}
+</main>
+
+{% block scripts %}{% endblock %}
+
+<!-- Cloudflare Tunnel URL widget -->
+<div id="tunnelWidget" style="display:none;position:fixed;bottom:20px;right:20px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:12px 16px;z-index:999;box-shadow:0 4px 24px rgba(0,0,0,0.5);max-width:340px;">
+  <div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">🌐 Public URL (Cloudflare)</div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <a id="tunnelLink" href="#" target="_blank" style="font-size:12px;color:#00c896;text-decoration:none;font-family:'SF Mono',Monaco,monospace;word-break:break-all;flex:1"></a>
+    <button onclick="copyTunnelUrl()" id="copyBtn" style="background:#2a2a2a;border:1px solid #3a3a3a;border-radius:6px;color:#aaa;font-size:11px;padding:5px 10px;cursor:pointer;flex-shrink:0;transition:all 0.15s">Copy</button>
+  </div>
+</div>
+
+<script>
+let tunnelUrl = '';
+function copyTunnelUrl() {
+  if (!tunnelUrl) return;
+  navigator.clipboard.writeText(tunnelUrl).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!'; btn.style.color = '#00c896';
+    setTimeout(() => { btn.textContent = 'Copy'; btn.style.color = '#aaa'; }, 2000);
+  });
+}
+async function pollTunnelUrl() {
+  try {
+    const res = await fetch('/api/tunnel-url');
+    const data = await res.json();
+    if (data.url) {
+      tunnelUrl = data.url;
+      document.getElementById('tunnelLink').textContent = data.url;
+      document.getElementById('tunnelLink').href = data.url;
+      document.getElementById('tunnelWidget').style.display = 'block';
+    }
+  } catch(e) {}
+}
+pollTunnelUrl();
+const fastPoll = setInterval(async () => {
+  await pollTunnelUrl();
+  if (tunnelUrl) { clearInterval(fastPoll); setInterval(pollTunnelUrl, 30000); }
+}, 3000);
+</script>
+</body>
+</html>

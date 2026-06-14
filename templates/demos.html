@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{% block title %} — Demo Sites{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+  <h1>Demo Sites</h1>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-ghost" style="font-size:12px" onclick="refreshAllLinks(this)" title="Regenerate Cloudflare URLs for all tunnels">↻ Refresh Links</button>
+    <button class="btn btn-primary" onclick="buildAll()">⚡ Build All</button>
+  </div>
+</div>
+<p class="subtitle">Click Build on any lead — LeadFlow scrapes their real site and creates a redesign demo to send them.</p>
+
+<!-- LeadFlow tunnel status bar -->
+<div id="lfTunnelBar" class="form-card" style="padding:10px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <span style="font-size:11px;color:var(--text-dim);white-space:nowrap">LeadFlow URL:</span>
+  <span id="lfTunnelUrl" style="font-size:12px;font-family:'SF Mono',Monaco,monospace;color:var(--accent);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">checking...</span>
+  <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="copyLfUrl(this)">copy</button>
+</div>
+
+<div id="buildProgress" style="display:none;margin-bottom:16px"></div>
+
+<div class="demos-grid" id="demosGrid">
+{% for b in businesses %}
+<div class="demo-card" id="dcard-{{ b.id }}">
+  <div class="demo-card-top">
+    <div>
+      <div class="demo-card-name">{{ b.name }}</div>
+      <div class="demo-card-meta">{{ b.city }}{% if b.country %}, {{ b.country }}{% endif %} · {{ b.category }}</div>
+    </div>
+    {% if b.has_demo %}
+      <span class="demo-pill ready" id="pill-{{ b.id }}">✓ Ready</span>
+    {% else %}
+      <span class="demo-pill missing" id="pill-{{ b.id }}">Not built</span>
+    {% endif %}
+  </div>
+
+  {% if b.website %}
+    <div style="font-size:11px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+      Existing: <a href="{{ b.website }}" target="_blank" style="color:var(--text-dim)">{{ b.website }}</a>
+    </div>
+  {% else %}
+    <div style="font-size:11px;color:var(--red)">No website — perfect candidate</div>
+  {% endif %}
+
+  <!-- Demo link — always visible -->
+  {% set card_url = b.demo_tunnel_url if b.demo_tunnel_url else demo_base + '/demo/' + b.id|string %}
+  <div id="demolink-{{ b.id }}" class="demo-url-box" style="display:flex;{% if not b.has_demo %}opacity:0.4;{% endif %}">
+    <span id="demourl-{{ b.id }}" class="demo-url-text">{% if b.has_demo %}{{ card_url }}{% else %}build demo to get link{% endif %}</span>
+    <button class="copy-btn" onclick="copyDemo({{ b.id }}, this)" {% if not b.has_demo %}disabled{% endif %}>copy</button>
+    <a id="demoopen-{{ b.id }}" href="{{ card_url if b.has_demo else '#' }}" target="_blank" class="copy-btn" style="text-decoration:none;{% if not b.has_demo %}pointer-events:none;{% endif %}">open ↗</a>
+    <button class="copy-btn" onclick="refreshLink({{ b.id }}, this)" title="Get a fresh tunnel URL" {% if not b.has_demo %}disabled{% endif %}>↻</button>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+    <span style="font-size:11px;color:var(--text-muted);white-space:nowrap">Photos:</span>
+    <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer">
+      <input type="radio" name="imgsrc-{{ b.id }}" value="site" checked style="accent-color:var(--accent)"> Their site
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer">
+      <input type="radio" name="imgsrc-{{ b.id }}" value="stock" style="accent-color:var(--accent)"> Stock (Iron Peak)
+    </label>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-primary" style="font-size:12px;flex:1"
+            id="buildbtn-{{ b.id }}" onclick="buildDemo({{ b.id }}, this)">
+      {% if b.has_demo %}↺ Rebuild{% else %}⚡ Build Demo{% endif %}
+    </button>
+  </div>
+</div>
+{% endfor %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let demoBase = '{{ demo_base }}';
+
+// Load tunnel status on page load
+(async () => {
+  try {
+    const res = await fetch('/api/tunnel-status');
+    const data = await res.json();
+    if (data.leadflow) {
+      document.getElementById('lfTunnelUrl').textContent = data.leadflow;
+    } else {
+      document.getElementById('lfTunnelUrl').textContent = 'starting tunnel…';
+    }
+    // Update any cards that have a live tunnel URL
+    for (const [bid, url] of Object.entries(data.demos || {})) {
+      const span = document.getElementById('demourl-' + bid);
+      const link = document.getElementById('demoopen-' + bid);
+      if (span && url) { span.textContent = url; }
+      if (link && url) { link.href = url; }
+    }
+  } catch(e) {}
+})();
+
+function copyLfUrl(btn) {
+  const url = document.getElementById('lfTunnelUrl').textContent.trim();
+  if (!url || url === 'checking...' || url === 'starting tunnel…') return;
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'copied!'; btn.style.color = 'var(--accent)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1800);
+  });
+}
+
+async function refreshLink(id, btn) {
+  const orig = btn.textContent;
+  btn.textContent = '…'; btn.disabled = true;
+  try {
+    const res = await fetch('/api/refresh-tunnels', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({bid: id}),
+    });
+    const data = await res.json();
+    if (data.url) {
+      const span = document.getElementById('demourl-' + id);
+      const link = document.getElementById('demoopen-' + id);
+      if (span) span.textContent = data.url;
+      if (link) link.href = data.url;
+      btn.textContent = '✓'; btn.style.color = 'var(--accent)';
+      setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.disabled = false; }, 2000);
+    } else {
+      btn.textContent = '✗'; btn.disabled = false;
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }
+  } catch(e) {
+    btn.textContent = '✗'; btn.disabled = false;
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }
+}
+
+async function refreshAllLinks(btn) {
+  const orig = btn.textContent;
+  btn.textContent = '↻ Refreshing…'; btn.disabled = true;
+  try {
+    const res = await fetch('/api/refresh-tunnels', {method: 'POST'});
+    const data = await res.json();
+    if (data.leadflow) {
+      document.getElementById('lfTunnelUrl').textContent = data.leadflow;
+    }
+    for (const [bid, url] of Object.entries(data.demos || {})) {
+      const span = document.getElementById('demourl-' + bid);
+      const link = document.getElementById('demoopen-' + bid);
+      if (span && url) span.textContent = url;
+      if (link && url) link.href = url;
+    }
+    btn.textContent = '✓ Done'; btn.style.color = 'var(--accent)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.disabled = false; }, 3000);
+  } catch(e) {
+    btn.textContent = orig; btn.disabled = false;
+  }
+}
+
+function buildDemo(id, btn) {
+  return new Promise((resolve) => {
+    const origText = btn.textContent;
+    btn.disabled = true;
+
+    // Show progress bar inside the card
+    const card = btn.closest('.demo-card');
+    let progWrap = card.querySelector('.build-progress');
+    if (!progWrap) {
+      progWrap = document.createElement('div');
+      progWrap.className = 'build-progress';
+      progWrap.innerHTML = `
+        <div class="bp-label" id="bplabel-${id}">Starting…</div>
+        <div class="bp-track"><div class="bp-fill" id="bpfill-${id}" style="width:0%"></div></div>
+        <div class="bp-pct" id="bppct-${id}">0%</div>`;
+      btn.parentElement.insertBefore(progWrap, btn);
+    }
+    progWrap.style.display = 'block';
+
+    const setProgress = (pct, label) => {
+      const fill  = document.getElementById('bpfill-'  + id);
+      const pctEl = document.getElementById('bppct-'   + id);
+      const lblEl = document.getElementById('bplabel-' + id);
+      if (fill)  fill.style.width = pct + '%';
+      if (pctEl) pctEl.textContent = pct + '%';
+      if (lblEl) lblEl.textContent = label;
+    };
+
+    const imgSrc = document.querySelector(`input[name="imgsrc-${id}"]:checked`)?.value || 'site';
+    const es = new EventSource(`/demos/${id}/build/stream?use_stock=${imgSrc === 'stock' ? 1 : 0}`);
+
+    es.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      setProgress(data.pct, data.step);
+
+      if (data.error) {
+        es.close();
+        btn.disabled = false;
+        btn.textContent = '✗ Error — retry';
+        setTimeout(() => { btn.textContent = origText; progWrap.style.display = 'none'; }, 3000);
+        resolve(false);
+        return;
+      }
+
+      if (data.done) {
+        es.close();
+        btn.disabled = false;
+        btn.textContent = '↺ Rebuild';
+
+        setTimeout(() => { progWrap.style.display = 'none'; }, 1500);
+
+        // Update pill
+        const pill = document.getElementById('pill-' + id);
+        if (pill) { pill.textContent = '✓ Ready'; pill.className = 'demo-pill ready'; }
+
+        // Update demo link row with tunnel URL and make it fully active
+        const linkBox = document.getElementById('demolink-' + id);
+        const urlSpan = document.getElementById('demourl-'  + id);
+        const openLink = document.getElementById('demoopen-' + id);
+        const finalUrl = data.url || `${demoBase}/demo/${id}`;
+        if (urlSpan) urlSpan.textContent = finalUrl;
+        if (openLink) { openLink.href = finalUrl; openLink.style.pointerEvents = ''; }
+        if (linkBox) {
+          linkBox.style.display = 'flex';
+          linkBox.style.opacity = '1';
+          linkBox.querySelectorAll('button,a').forEach(el => el.removeAttribute('disabled'));
+        }
+        resolve(true);
+      }
+    };
+
+    es.onerror = () => {
+      es.close();
+      btn.disabled = false;
+      btn.textContent = origText;
+      progWrap.style.display = 'none';
+      resolve(false);
+    };
+  });
+}
+
+async function buildAll() {
+  const btns = document.querySelectorAll('[id^="buildbtn-"]');
+  const progress = document.getElementById('buildProgress');
+  progress.style.display = 'block';
+  let done = 0;
+  for (const btn of btns) {
+    const id = btn.id.replace('buildbtn-', '');
+    progress.innerHTML = `<div class="form-card" style="padding:10px 16px;font-size:13px">Building... ${done}/${btns.length} — ${btn.closest('.demo-card').querySelector('.demo-card-name').textContent}</div>`;
+    await buildDemo(parseInt(id), btn);
+    done++;
+    await new Promise(r => setTimeout(r, 400));
+  }
+  progress.innerHTML = `<div class="form-card" style="padding:10px 16px;font-size:13px;color:var(--accent)">✓ All ${done} demos built!</div>`;
+}
+
+function copyDemo(id, btn) {
+  const url = document.getElementById('demourl-' + id)?.textContent || `${demoBase}/demo/${id}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'copied!';
+    btn.style.color = 'var(--accent)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1800);
+  });
+}
+</script>
+{% endblock %}

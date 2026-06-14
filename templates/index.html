@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %} — Dashboard{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<p class="subtitle">Your outreach pipeline at a glance.</p>
+
+<div class="cards">
+  <div class="card accent">
+    <div class="label">New Leads</div>
+    <div class="value">{{ stats.new }}</div>
+  </div>
+  <div class="card yellow">
+    <div class="label">Approved</div>
+    <div class="value">{{ stats.approved }}</div>
+  </div>
+  <div class="card blue">
+    <div class="label">Sent</div>
+    <div class="value">{{ stats.sent }}</div>
+  </div>
+  <div class="card accent">
+    <div class="label">Replied</div>
+    <div class="value">{{ stats.replied }}</div>
+  </div>
+  <div class="card">
+    <div class="label">Skipped</div>
+    <div class="value" style="color:var(--text-dim)">{{ stats.skipped }}</div>
+  </div>
+</div>
+
+<div class="form-card" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center">
+  <div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:6px">Ready to find clients?</div>
+    <div style="color:var(--text-dim);font-size:13px">Search any niche, anywhere in the world. LeadFlow finds businesses, scores their websites, and pulls their contact details automatically.</div>
+  </div>
+  <div style="display:flex;gap:10px;justify-content:flex-end">
+    <a href="/find" class="btn btn-primary">🔍 Find Businesses</a>
+    <a href="/leads" class="btn btn-ghost">📋 Review Leads</a>
+  </div>
+</div>
+
+{% if recent %}
+<div style="margin-top:4px">
+  <div style="font-size:13px;color:var(--text-dim);margin-bottom:14px;font-weight:500">RECENT LEADS</div>
+  <div class="leads-grid">
+    {% for lead in recent %}
+    <div class="lead-card">
+      <div>
+        <div class="lead-name">{{ lead.name }}</div>
+        <div class="lead-meta">{{ lead.city }}{% if lead.country %}, {{ lead.country }}{% endif %} · {{ lead.category }}</div>
+        <div class="tags">
+          {% if lead.email %}<span class="tag tag-green">✉ Email</span>{% endif %}
+          {% if lead.instagram %}<span class="tag tag-blue">📸 @{{ lead.instagram }}</span>{% endif %}
+          {% if lead.google_rating %}<span class="tag tag-dim">★ {{ lead.google_rating }}</span>{% endif %}
+          <span class="tag {% if lead.website_score >= 70 %}tag-green{% elif lead.website_score >= 40 %}tag-yellow{% else %}tag-red{% endif %}">
+            Site {{ lead.website_score }}/100
+          </span>
+          <span class="badge badge-{{ lead.status }}">{{ lead.status }}</span>
+        </div>
+      </div>
+      <div class="lead-actions">
+        {% if lead.status == 'new' %}
+        <a href="/leads" class="btn btn-ghost" style="font-size:12px">Review</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

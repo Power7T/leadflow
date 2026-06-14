@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %} — Find Businesses{% endblock %}
+
+{% block content %}
+<h1>Find Businesses</h1>
+<p class="subtitle">Search any niche, any location. LeadFlow scores websites and extracts contacts automatically.</p>
+
+<div class="form-card">
+  <h2>Manual Search</h2>
+  <form id="searchForm">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr 100px 120px">
+      <div>
+        <label>Business Niche</label>
+        <input type="text" name="niche" placeholder="e.g. coffee shops, dentists, gyms" required>
+      </div>
+      <div>
+        <label>Location</label>
+        <input type="text" name="location" placeholder="e.g. London UK, New York USA" required>
+      </div>
+      <div>
+        <label>Max Results</label>
+        <input type="number" name="max_results" value="20" min="5" max="60">
+      </div>
+      <div>
+        <label>Source</label>
+        <select name="source">
+          <option value="google">Google Maps</option>
+          <option value="yelp">Yelp</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <button type="submit" class="btn btn-primary" id="searchBtn">
+        <span class="icon-search">🔍</span> Start Search
+      </button>
+    </div>
+  </form>
+</div>
+
+<div id="logBox" class="log-box"></div>
+<div id="results" style="margin-top:20px"></div>
+
+<!-- Daily auto-scheduler -->
+<div class="form-card" style="margin-top:24px">
+  <h2>Daily Auto-Find (runs every morning)</h2>
+  <p style="color:var(--text-dim);font-size:13px;margin-bottom:18px">
+    LeadFlow will automatically find new businesses each morning from your saved niches.
+  </p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    <div>
+      <label>Niches (comma separated)</label>
+      <input type="text" id="schedNiches" placeholder="restaurants, gyms, cafes" value="{{ sched.niches | default('') | replace('[\"','') | replace('\"]','') | replace('\",\"',', ') }}">
+    </div>
+    <div>
+      <label>Locations (comma separated)</label>
+      <input type="text" id="schedLocations" placeholder="London UK, Dubai UAE" value="{{ sched.locations | default('') | replace('[\"','') | replace('\"]','') | replace('\",\"',', ') }}">
+    </div>
+  </div>
+  <div style="display:flex;gap:14px;align-items:center">
+    <div style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="schedEnabled" {% if sched.enabled %}checked{% endif %} style="width:auto">
+      <label style="margin:0;text-transform:none;font-size:13px">Enable daily auto-find</label>
+    </div>
+    <div>
+      <label style="margin-right:6px">Run at hour (UTC)</label>
+      <input type="number" id="schedHour" value="{{ sched.run_hour | default(6) }}" min="0" max="23" style="width:70px">
+    </div>
+    <div>
+      <label style="margin-right:6px">Max per run</label>
+      <input type="number" id="schedMax" value="{{ sched.max_per_run | default(20) }}" min="5" max="60" style="width:70px">
+    </div>
+    <button class="btn btn-ghost" onclick="saveScheduler()">💾 Save Schedule</button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const form = document.getElementById('searchForm');
+const logBox = document.getElementById('logBox');
+const results = document.getElementById('results');
+const searchBtn = document.getElementById('searchBtn');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const niche   = form.niche.value.trim();
+  const location= form.location.value.trim();
+  const max     = form.max_results.value;
+  const source  = form.source.value;
+
+  logBox.innerHTML = '';
+  logBox.classList.add('active');
+  results.innerHTML = '';
+  searchBtn.disabled = true;
+  searchBtn.innerHTML = '<span class="spinner"></span> Searching...';
+
+  const params = new URLSearchParams({ niche, location, max_results: max, source });
+  const es = new EventSource(`/find/stream?${params}`);
+
+  es.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === 'log') {
+      const line = document.createElement('div');
+      line.className = data.cls || '';
+      line.textContent = data.msg;
+      logBox.appendChild(line);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+    if (data.type === 'done') {
+      es.close();
+      searchBtn.disabled = false;
+      searchBtn.innerHTML = '🔍 Start Search';
+      results.innerHTML = `
+        <div class="form-card" style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:15px;font-weight:600">✓ Found ${data.count} businesses</div>
+            <div style="color:var(--text-dim);font-size:13px;margin-top:4px">Sorted by lead score — best prospects first.</div>
+          </div>
+          <a href="/leads" class="btn btn-primary">📋 Review Leads →</a>
+        </div>`;
+    }
+    if (data.type === 'error') {
+      es.close();
+      searchBtn.disabled = false;
+      searchBtn.innerHTML = '🔍 Start Search';
+      const line = document.createElement('div');
+      line.className = 'err';
+      line.textContent = '✗ ' + data.msg;
+      logBox.appendChild(line);
+    }
+  };
+  es.onerror = () => { es.close(); searchBtn.disabled = false; searchBtn.innerHTML = '🔍 Start Search'; };
+});
+
+async function saveScheduler() {
+  const res = await fetch('/scheduler/save', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      niches:    document.getElementById('schedNiches').value,
+      locations: document.getElementById('schedLocations').value,
+      enabled:   document.getElementById('schedEnabled').checked,
+      hour:      parseInt(document.getElementById('schedHour').value),
+      max_per:   parseInt(document.getElementById('schedMax').value),
+    }),
+  });
+  const data = await res.json();
+  if (data.ok) {
+    const btn = event.target;
+    btn.textContent = '✓ Saved!';
+    setTimeout(() => btn.textContent = '💾 Save Schedule', 2000);
+  }
+}
+</script>
+{% endblock %}
