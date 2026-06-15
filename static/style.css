@@ -493,3 +493,47 @@ textarea { resize: vertical; min-height: 100px; }
 .bp-track { height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
 .bp-fill  { height:100%; background:var(--accent); border-radius:3px; transition:width 0.3s ease; }
 .bp-pct   { font-size:11px; color:var(--accent); margin-top:4px; font-weight:600; font-family:'SF Mono',Monaco,monospace; }
+
+/* AUTOPILOT STATUS INDICATOR */
+.autopilot-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  margin: 15px 12px;
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.pulse-dot.green {
+  background-color: #00c896;
+  box-shadow: 0 0 0 0 rgba(0, 200, 150, 0.7);
+  animation: pulse-green 1.8s infinite;
+}
+
+.pulse-dot.gray {
+  background-color: #777;
+}
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 200, 150, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(0, 200, 150, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 200, 150, 0);
+  }
+}

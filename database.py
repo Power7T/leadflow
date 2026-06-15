@@ -458,6 +458,11 @@ def get_stats() -> dict:
     for status in ("new", "approved", "sent", "replied", "skipped", "closed", "opted_out"):
         row = conn.execute("SELECT COUNT(*) as c FROM businesses WHERE status=?", (status,)).fetchone()
         stats[status] = row["c"]
+    
+    # Check if autopilot scheduler is enabled
+    cfg_row = conn.execute("SELECT enabled FROM scheduler_config LIMIT 1").fetchone()
+    stats["autopilot_active"] = bool(cfg_row["enabled"]) if cfg_row else False
+    
     conn.close()
     return stats
 

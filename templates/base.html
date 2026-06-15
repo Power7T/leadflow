@@ -10,6 +10,17 @@
 
 <aside class="sidebar">
   <div class="logo">LeadFlow<span>by Chandan</span></div>
+  
+  <div class="autopilot-status">
+    {% if stats.autopilot_active %}
+      <span class="pulse-dot green"></span>
+      <span style="color:#00c896; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Autopilot Active</span>
+    {% else %}
+      <span class="pulse-dot gray"></span>
+      <span style="color:var(--text-dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Autopilot Stopped</span>
+    {% endif %}
+  </div>
+
   <nav class="nav">
     <a href="/" class="{% if page=='home' %}active{% endif %}">
       <span class="icon">⚡</span> Dashboard
