@@ -17,6 +17,7 @@ This document records the comprehensive audit, bug fixes, performance optimizati
   * Added a prominent red warning banner inside the selected lead view indicating they are blacklisted.
   * Disabled all interactive controls (preview, copy link, draft generation) for blacklisted contacts to prevent accidental communication.
   * Added a sidebar statistics counter specifically for blacklisted opt-outs.
+* **Autopilot Status Badge (`templates/base.html` & `static/style.css` & `database.py`):** Added a pulsing green/gray real-time status indicator badge in the sidebar under the logo, letting you know at a glance if Autopilot is running or stopped.
 
 ### 3. Database Integrity & Leak Prevention
 * **Deduplication (`database.py`):** Implemented validation in `insert_business` to prevent duplicate business rows from being created on repeated scans by checking matches on website URLs, names, phone numbers, and cities.
