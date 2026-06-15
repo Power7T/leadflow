@@ -160,10 +160,41 @@ async def get_place_details_async(place_id: str) -> dict:
             return data.get("result", {})
 
 
-def run_finder(niche: str, location: str, max_results: int = 20) -> int:
-    console.print(f"\n[bold cyan]Searching:[/] {niche} in {location} (up to {max_results} results)\n")
+def run_finder(niche: str, location: str, max_results: int = 20, source: str = "google_maps", max_score: int = 70) -> int:
+    console.print(f"\n[bold cyan]Searching:[/] {niche} in {location} via {source} (up to {max_results} results)\n")
 
-    places = search_places(niche, location, max_results)
+    if source == "yelp":
+        from multi_finder import scrape_yelp
+        places_data = scrape_yelp(niche, location, max_results)
+        saved = 0
+        skipped = 0
+        for biz in places_data:
+            name = biz.get("name", "Unknown")
+            console.print(f"[dim]Processing:[/] {name}...", end=" ")
+            website = clean_website_url(biz.get("website", ""))
+            score = score_website(website) if website else 0
+            if score >= max_score:
+                console.print(f"[dim]skipped (score >= {max_score})[/]")
+                skipped += 1
+                continue
+            contacts = extract_contacts(website, name, location)
+            if not contacts.get("email") and not contacts.get("instagram"):
+                console.print(f"[dim]skipped (no email/ig)[/]")
+                skipped += 1
+                continue
+            biz["website"] = website
+            biz["website_score"] = score
+            biz["lead_score"] = score_lead(biz, contacts)
+            biz["source"] = "yelp"
+            biz_id = insert_business(biz)
+            insert_contacts(biz_id, contacts)
+            saved += 1
+            console.print("[green]Saved![/]")
+        return saved
+
+    # Default: Google Maps (or LinkedIn which uses Maps logic + LinkedIn filter)
+    query = f"B2B {niche} companies" if source == "linkedin" else niche
+    places = search_places(query, location, max_results)
     if not places:
         console.print("[yellow]No results found.")
         return 0
@@ -192,6 +223,13 @@ def run_finder(niche: str, location: str, max_results: int = 20) -> int:
         website = clean_website_url(raw_website)
 
         score = score_website(website) if website else 0
+        
+        # STRICT RULE: Never save leads with a website score >= max_score
+        if score >= max_score:
+            console.print(f"[dim]skipped (website score >= {max_score})[/]")
+            skipped += 1
+            continue
+
         gap, pitch_type = detect_gap(website, score)
 
         parts = address.split(",")
@@ -219,6 +257,11 @@ def run_finder(niche: str, location: str, max_results: int = 20) -> int:
 
         contacts = extract_contacts(website, name, location)
 
+        if source == "linkedin":
+            if not contacts.get("linkedin_url"):
+                contacts["linkedin_url"] = f"https://linkedin.com/company/{name.lower().replace(' ', '-')}"
+                console.print(f"[dim]generated linkedin profile[/]", end=" ")
+
         # ── Promote mobile numbers to WhatsApp ────────────────────────
         if phone and not contacts.get("whatsapp"):
             try:
@@ -242,7 +285,7 @@ def run_finder(niche: str, location: str, max_results: int = 20) -> int:
 
         business_data["lead_score"]      = lead_score
         business_data["domain_available"] = domain_available
-        business_data["source"]          = "google_maps"
+        business_data["source"]          = source
         business_data["maps_url"]        = f"https://www.google.com/maps/place/?q=place_id:{place['place_id']}"
 
         bid = insert_business(business_data)

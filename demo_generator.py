@@ -9,6 +9,41 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 
+from conversion import cta_block
+from deploy import public_base
+
+# Stock imagery shipped with the templates. We NEVER put the prospect's own
+# images on a demo — always these, so nothing can hotlink-break or look "theirs".
+_STOCK_HERO  = "https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&q=80"
+_STOCK_ABOUT = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80"
+
+
+def _track_pixel(business: dict) -> str:
+    """Demo-open tracking pixel with the public URL baked in at build time.
+
+    (The old template used {{TUNNEL_URL}} placeholders that were never actually
+    substituted — single vs double braces — so open-tracking silently never
+    fired. Baking the value here fixes that.)"""
+    base = public_base()
+    bid = business.get("id", "")
+    if not base or not bid:
+        return ""
+    return (
+        '<!-- TRACKING SCRIPT -->\n<script>\n'
+        f'  try {{ fetch("{base}/api/track.png?bid={bid}", {{mode:"no-cors"}}); }} catch(e) {{}}\n'
+        '</script>'
+    )
+
+
+def _inject_conversion(html: str, business: dict) -> str:
+    """Add the conversion CTA layer + working open-tracking to rendered HTML
+    (used for external Jinja templates, which don't include them)."""
+    extra = cta_block(business) + "\n" + _track_pixel(business)
+    if "</body>" in html:
+        return html.replace("</body>", extra + "\n</body>", 1)
+    return html + extra
+
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                   "Chrome/120.0 Safari/537.36",
@@ -223,26 +258,9 @@ def _scrape_site(url: str) -> dict:
 
     out["services"] = services
 
-    # Images — collect up to 4 real content images (not icons/logos/sprites)
-    imgs = []
-    for img in soup.find_all("img"):
-        src = img.get("src") or img.get("data-src") or img.get("data-lazy-src") or ""
-        if not src or "logo" in src.lower() or "icon" in src.lower():
-            continue
-        if not src.startswith("http"):
-            src = urljoin(base, src)
-        w = img.get("width") or ""
-        h = img.get("height") or ""
-        try:
-            if w and int(w) < 150:
-                continue
-        except ValueError:
-            pass
-        if src not in imgs:
-            imgs.append(src)
-        if len(imgs) >= 4:
-            break
-    out["images"] = imgs
+    # We never use the prospect's own images on demos — only built-in stock —
+    # so don't bother scraping them.
+    out["images"] = []
 
     return out
 
@@ -293,43 +311,15 @@ def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = Fals
         "Whether you're a beginner or an elite athlete, our coaches and equipment are here to support your journey.")
 
     # ── Image allocation ─────────────────────────────────────────────────────────
+    # Always use the template's built-in stock photos — never the prospect's images.
     _IPG = "https://pms5566.github.io/Iron-Peak-Gym/images/"
+    hero_img     = _IPG + "hero-bg.png"
+    about_img    = _IPG + "about.png"
+    gallery_imgs = []
 
-    if use_stock:
-        # Always use Iron Peak stock photos, ignore scraped images
-        hero_img     = _IPG + "hero-bg.png"
-        about_img    = _IPG + "about.png"
-        gallery_imgs = []
-    else:
-        # Use scraped website images, embed as base64 to beat hotlink protection
-        all_imgs     = [img for img in (scraped.get("images") or []) if img]
-        og_image     = scraped.get("og_image", "")
-        hero_img     = og_image or (all_imgs[0] if all_imgs else "")
-        remaining    = [i for i in all_imgs if i != hero_img]
-        about_img    = remaining[0] if remaining else ""
-        gallery_imgs = remaining[1:5]
-
-        # Embed as base64 so images show regardless of server hotlink blocks
-        if hero_img and not hero_img.startswith("data:"):
-            hero_img = _img_to_datauri(hero_img, website or hero_img)
-        if about_img and not about_img.startswith("data:"):
-            about_img = _img_to_datauri(about_img, website or about_img)
-        gallery_imgs = [
-            (_img_to_datauri(u, website or u) if not u.startswith("data:") else u)
-            for u in gallery_imgs
-        ]
-
-        # If still no images after scraping, fall back to Iron Peak stock
-        if not hero_img:
-            hero_img  = _IPG + "hero-bg.png"
-        if not about_img:
-            about_img = _IPG + "about.png"
-
-    # Build hero CSS background now that final hero_img is known
+    # Build hero CSS background (no background-attachment:fixed — janky on mobile).
     hero_bg = (
-        f"linear-gradient(rgba(8,9,12,0.55),rgba(8,9,12,0.85)),url('{hero_img}') center/cover no-repeat fixed"
-        if hero_img else
-        "linear-gradient(135deg,#1a0a05 0%,#08090C 60%,#0d1a0d 100%)"
+        f"linear-gradient(rgba(8,9,12,0.55),rgba(8,9,12,0.85)),url('{hero_img}') center/cover no-repeat"
     )
 
     # hero_bg computed below after fallback images are resolved
@@ -888,12 +878,9 @@ document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
 </script>
 
 
-<!-- TRACKING SCRIPT -->
-<script>
-    try {{
-        fetch("{{TUNNEL_URL}}/api/track.png?bid={{BID}}", {{mode: 'no-cors'}});
-    }} catch(e) {{}}
-</script>
+{cta_block(business)}
+
+{_track_pixel(business)}
 
 </body>
 </html>"""
@@ -974,7 +961,59 @@ def generate_demo_html_stream(business: dict):
     yield ("Done", 100, html)
 
 
-def generate_demo_html(business: dict) -> str:
+def generate_demo_html(business: dict, website_data: dict = None, use_stock: bool = True) -> str:
+    # Check for custom Jinja2 templates first
+    import os
+    demo_templates_dir = os.path.join(os.path.dirname(__file__), "demo_templates")
+    custom_html = None
+    
+    if os.path.exists(demo_templates_dir):
+        category = business.get("category", "")
+        assigned_template = business.get("template_id")
+        
+        target_template = None
+        
+        # Priority 1: Use explicitly assigned template
+        if assigned_template and assigned_template.endswith(".html"):
+            if os.path.exists(os.path.join(demo_templates_dir, assigned_template)):
+                target_template = assigned_template
+                
+        # Priority 2: Use keyword matching
+        if not target_template:
+            for tpl_file in os.listdir(demo_templates_dir):
+                if not tpl_file.endswith(".html"):
+                    continue
+                base_name = tpl_file.replace(".html", "").lower()
+                if base_name in category.lower() or base_name in business.get("name", "").lower():
+                    target_template = tpl_file
+                    break
+                    
+        if target_template:
+            from jinja2 import Template
+            with open(os.path.join(demo_templates_dir, target_template), "r", encoding="utf-8") as f:
+                template_str = f.read()
+            
+            # Always use built-in stock imagery — never the prospect's own images.
+            # Gyms get the gym-specific Iron Peak stock; everyone else generic stock.
+            if _is_gym(category, business.get("name", "")):
+                _IPG = "https://pms5566.github.io/Iron-Peak-Gym/images/"
+                hero_img, about_img = _IPG + "hero-bg.png", _IPG + "about.png"
+            else:
+                hero_img, about_img = _STOCK_HERO, _STOCK_ABOUT
+
+            t = Template(template_str)
+            custom_html = t.render(
+                lead=business, 
+                scraped=website_data, 
+                hero_img=hero_img, 
+                about_img=about_img
+            )
+                
+    if custom_html:
+        # Custom Jinja templates don't carry the conversion layer or working
+        # tracking — inject both so every demo converts and reports opens.
+        return _inject_conversion(custom_html, business)
+
     name     = business.get("name", "Your Business")
     category = business.get("category", "Business")
     address  = business.get("address", "")
@@ -985,8 +1024,14 @@ def generate_demo_html(business: dict) -> str:
     email    = business.get("email", "")
     instagram= business.get("instagram", "")
 
-    # Scrape their real site
-    data = _scrape_site(website)
+    # Use the already-scraped data if the caller passed it; only scrape if not.
+    # Normalize so a partial dict can't KeyError downstream.
+    if website_data is not None:
+        data = {"title": "", "description": "", "og_image": "", "about_text": "",
+                "services": [], "images": [], "accent_color": "", "hero_text": "",
+                "tagline": "", **website_data}
+    else:
+        data = _scrape_site(website)
 
     # Route gym/fitness businesses to Iron Peak–style template
     if _is_gym(category, name):
@@ -1004,14 +1049,13 @@ def generate_demo_html(business: dict) -> str:
         + "We are committed to delivering the best experience to every customer."
     )
 
-    hero_img     = data["og_image"] or (data["images"][0] if data["images"] else "")
+    # Always built-in stock hero; never the prospect's images. No prospect gallery.
+    hero_img      = _STOCK_HERO
     services_html = _services_html(data["services"], accent)
-    gallery_html  = _gallery_html(data["images"][1:] if hero_img else data["images"], data["og_image"])
+    gallery_html  = ""
 
     hero_style = (
-        f'background:linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.65)),url("{hero_img}")center/cover no-repeat fixed;'
-        if hero_img else
-        f'background:linear-gradient(135deg,{bg_dark} 0%,#111 60%,{bg_dark} 100%);'
+        f'background:linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.65)),url("{hero_img}")center/cover no-repeat;'
     )
 
     stars = "★" * int(rating or 0) + "☆" * (5 - int(rating or 0)) if rating else ""
@@ -1129,10 +1173,10 @@ footer a:hover{{text-decoration:underline}}
   ⏳ This free custom prototype expires and will be permanently deleted in: <span id="timer">47:59:59</span>
 </div>
 <script>
-  let expires = localStorage.getItem("demo_expires_{{BID}}");
+  let expires = localStorage.getItem("demo_expires_{business.get('id','')}");
   if (!expires) {{
     expires = Date.now() + 48 * 60 * 60 * 1000;
-    localStorage.setItem("demo_expires_{{BID}}", expires);
+    localStorage.setItem("demo_expires_{business.get('id','')}", expires);
   }}
   setInterval(() => {{
     let diff = Math.max(0, expires - Date.now());
@@ -1154,7 +1198,7 @@ footer a:hover{{text-decoration:underline}}
   <div class="nav-links">
     <a href="#about">About</a>
     {'<a href="#services">Services</a>' if data["services"] else ''}
-    {'<a href="#gallery">Gallery</a>' if (data["images"] or hero_img) else ''}
+    {'<a href="#gallery">Gallery</a>' if gallery_html else ''}
     <a href="#contact">Contact</a>
   </div>
   <a href="#contact" class="nav-cta">Get in Touch</a>
@@ -1211,12 +1255,9 @@ footer a:hover{{text-decoration:underline}}
 
 
 
-<!-- TRACKING SCRIPT -->
-<script>
-    try {{
-        fetch("{{TUNNEL_URL}}/api/track.png?bid={{BID}}", {{mode: 'no-cors'}});
-    }} catch(e) {{}}
-</script>
+{cta_block(business)}
+
+{_track_pixel(business)}
 
 </body>
 </html>"""

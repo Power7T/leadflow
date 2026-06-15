@@ -8,24 +8,51 @@
 <div class="form-card">
   <h2>Manual Search</h2>
   <form id="searchForm">
-    <div class="form-grid" style="grid-template-columns:1fr 1fr 100px 120px">
+    <datalist id="nicheSuggestions">
+      <option value="Restaurants">
+      <option value="Gyms">
+      <option value="Dentists">
+      <option value="Real Estate">
+      <option value="Plumbers">
+      <option value="Roofers">
+      <option value="Law Firms">
+      <option value="Barbershops">
+    </datalist>
+    <datalist id="locationSuggestions">
+      <option value="New York, USA">
+      <option value="Austin, Texas, USA">
+      <option value="London, UK">
+      <option value="Manchester, UK">
+      <option value="Toronto, Canada">
+      <option value="Sydney, Australia">
+      <option value="Melbourne, Australia">
+      <option value="Dubai, UAE">
+      <option value="Singapore">
+    </datalist>
+
+    <div class="form-grid" style="grid-template-columns:1fr 1fr 100px 100px 120px">
       <div>
         <label>Business Niche</label>
-        <input type="text" name="niche" placeholder="e.g. coffee shops, dentists, gyms" required>
+        <input type="text" name="niche" placeholder="e.g. gyms" list="nicheSuggestions" required>
       </div>
       <div>
         <label>Location</label>
-        <input type="text" name="location" placeholder="e.g. London UK, New York USA" required>
+        <input type="text" name="location" placeholder="e.g. London UK" list="locationSuggestions" required>
       </div>
       <div>
         <label>Max Results</label>
         <input type="number" name="max_results" value="20" min="5" max="60">
       </div>
       <div>
+        <label>Max Site Score</label>
+        <input type="number" name="max_score" value="70" min="10" max="100" title="Skip leads if their site score is >= this">
+      </div>
+      <div>
         <label>Source</label>
         <select name="source">
           <option value="google">Google Maps</option>
           <option value="yelp">Yelp</option>
+          <option value="linkedin">LinkedIn</option>
         </select>
       </div>
     </div>
@@ -56,7 +83,7 @@
       <input type="text" id="schedLocations" placeholder="London UK, Dubai UAE" value="{{ sched.locations | default('') | replace('[\"','') | replace('\"]','') | replace('\",\"',', ') }}">
     </div>
   </div>
-  <div style="display:flex;gap:14px;align-items:center">
+  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
     <div style="display:flex;align-items:center;gap:8px">
       <input type="checkbox" id="schedEnabled" {% if sched.enabled %}checked{% endif %} style="width:auto">
       <label style="margin:0;text-transform:none;font-size:13px">Enable daily auto-find</label>
@@ -69,7 +96,19 @@
       <label style="margin-right:6px">Max per run</label>
       <input type="number" id="schedMax" value="{{ sched.max_per_run | default(20) }}" min="5" max="60" style="width:70px">
     </div>
-    <button class="btn btn-ghost" onclick="saveScheduler()">💾 Save Schedule</button>
+    <div>
+      <label style="margin-right:6px">Max Site Score</label>
+      <input type="number" id="schedMaxScore" value="{{ sched.max_score | default(70) }}" min="10" max="100" style="width:70px">
+    </div>
+    <div>
+      <label style="margin-right:6px">Source</label>
+      <select id="schedSource" style="width:110px">
+        <option value="google_maps" {% if sched.source == 'google_maps' %}selected{% endif %}>Google Maps</option>
+        <option value="yelp" {% if sched.source == 'yelp' %}selected{% endif %}>Yelp</option>
+        <option value="linkedin" {% if sched.source == 'linkedin' %}selected{% endif %}>LinkedIn</option>
+      </select>
+    </div>
+    <button class="btn btn-ghost" onclick="saveScheduler(this)">💾 Save Schedule</button>
   </div>
 </div>
 
@@ -87,6 +126,7 @@ form.addEventListener('submit', async (e) => {
   const niche   = form.niche.value.trim();
   const location= form.location.value.trim();
   const max     = form.max_results.value;
+  const maxScore = form.max_score.value;
   const source  = form.source.value;
 
   logBox.innerHTML = '';
@@ -95,7 +135,7 @@ form.addEventListener('submit', async (e) => {
   searchBtn.disabled = true;
   searchBtn.innerHTML = '<span class="spinner"></span> Searching...';
 
-  const params = new URLSearchParams({ niche, location, max_results: max, source });
+  const params = new URLSearchParams({ niche, location, max_results: max, source, max_score: maxScore });
   const es = new EventSource(`/find/stream?${params}`);
 
   es.onmessage = (e) => {
@@ -133,7 +173,7 @@ form.addEventListener('submit', async (e) => {
   es.onerror = () => { es.close(); searchBtn.disabled = false; searchBtn.innerHTML = '🔍 Start Search'; };
 });
 
-async function saveScheduler() {
+async function saveScheduler(btn) {
   const res = await fetch('/scheduler/save', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -143,11 +183,12 @@ async function saveScheduler() {
       enabled:   document.getElementById('schedEnabled').checked,
       hour:      parseInt(document.getElementById('schedHour').value),
       max_per:   parseInt(document.getElementById('schedMax').value),
+      max_score: parseInt(document.getElementById('schedMaxScore').value),
+      source:    document.getElementById('schedSource').value,
     }),
   });
   const data = await res.json();
   if (data.ok) {
-    const btn = event.target;
     btn.textContent = '✓ Saved!';
     setTimeout(() => btn.textContent = '💾 Save Schedule', 2000);
   }

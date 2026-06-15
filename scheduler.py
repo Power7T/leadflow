@@ -14,11 +14,13 @@ scheduler = BackgroundScheduler(timezone="UTC")
 def _get_config() -> dict:
     from database import get_conn
     conn = get_conn()
-    row = conn.execute("SELECT * FROM scheduler_config LIMIT 1").fetchone()
-    conn.close()
-    if not row:
-        return {"enabled": False}
-    return dict(row)
+    try:
+        row = conn.execute("SELECT * FROM scheduler_config LIMIT 1").fetchone()
+        if not row:
+            return {"enabled": False}
+        return dict(row)
+    finally:
+        conn.close()
 
 
 def job_daily_find():
@@ -30,6 +32,8 @@ def job_daily_find():
     niches    = json.loads(cfg.get("niches") or "[]")
     locations = json.loads(cfg.get("locations") or "[]")
     max_per   = cfg.get("max_per_run", 20)
+    max_score = cfg.get("max_score", 70)
+    source    = cfg.get("source", "google_maps")
 
     if not niches or not locations:
         return
@@ -42,9 +46,9 @@ def job_daily_find():
     niche    = niches[day % len(niches)]
     location = locations[day % len(locations)]
 
-    log.info(f"[Scheduler] Daily find: {niche} in {location}")
+    log.info(f"[Scheduler] Daily find: {niche} in {location} via {source}")
     try:
-        run_finder(niche, location, max_per)
+        run_finder(niche, location, max_per, source, max_score)
     except Exception as e:
         log.error(f"[Scheduler] Daily find error: {e}")
 
@@ -55,23 +59,26 @@ def job_queue_follow_ups():
     from ai_writer import write_follow_up_sequence
 
     conn = get_conn()
-    # Leads sent 4+ days ago, still status='sent'
-    rows = conn.execute("""
-        SELECT b.*, c.email, c.instagram
-        FROM businesses b
-        LEFT JOIN contacts c ON c.business_id = b.id
-        WHERE b.status = 'sent'
-          AND b.found_at <= datetime('now', '-4 days')
-          AND b.id NOT IN (SELECT DISTINCT business_id FROM follow_ups)
-        LIMIT 10
-    """).fetchall()
-    conn.close()
+    try:
+        # Leads sent 4+ days ago, still status='sent'
+        rows = conn.execute("""
+            SELECT b.*, c.email, c.instagram
+            FROM businesses b
+            LEFT JOIN contacts c ON c.business_id = b.id
+            WHERE b.status = 'sent'
+              AND b.found_at <= datetime('now', '-4 days')
+              AND b.id NOT IN (SELECT DISTINCT business_id FROM follow_ups)
+            LIMIT 10
+        """).fetchall()
+        leads = [dict(r) for r in rows]
+    finally:
+        conn.close()
 
-    for row in rows:
-        lead = dict(row)
+    for lead in leads:
         log.info(f"[Scheduler] Queuing follow-up for: {lead['name']}")
         try:
-            sequences = write_follow_up_sequence(lead)
+            demo_url = lead.get("demo_tunnel_url", "")
+            sequences = write_follow_up_sequence(lead, demo_url)
             insert_follow_ups(lead["id"], sequences)
         except Exception as e:
             log.error(f"[Scheduler] Follow-up gen error for {lead['name']}: {e}")
@@ -79,22 +86,30 @@ def job_queue_follow_ups():
 
 def job_auto_send_leads():
     """Find untouched leads with score > 80, auto-generate demo/draft, and send email."""
-    from database import get_conn, mark_sent
-    from ai_writer import parse_subject_body
-    from gmail import send_email
+    from database import get_conn, mark_sent, get_emails_sent_today
+    from sender import parse_subject_body, send_email
     import uuid, requests, time
 
-    conn = get_conn()
-    # Find leads > 80 score that have email but no demo built yet, OR demo built but not sent
-    rows = conn.execute("""
-        SELECT b.*, c.email FROM businesses b
-        LEFT JOIN contacts c ON c.business_id = b.id
-        WHERE b.status = 'new' AND b.lead_score >= 80 AND c.email IS NOT NULL
-        LIMIT 3
-    """).fetchall()
+    # Enforce safe daily cold email limit to prevent spam blocking
+    sent_today = get_emails_sent_today()
+    if sent_today >= 25:
+        log.info(f"[Scheduler] Daily send limit (25) reached. Skipping initial auto-sending today (already sent: {sent_today}).")
+        return
 
-    for row in rows:
-        lead = dict(row)
+    conn = get_conn()
+    try:
+        # Find leads > 80 score that have email but no demo built yet, OR demo built but not sent
+        rows = conn.execute("""
+            SELECT b.*, c.email FROM businesses b
+            LEFT JOIN contacts c ON c.business_id = b.id
+            WHERE b.status = 'new' AND b.lead_score >= 80 AND c.email IS NOT NULL
+            LIMIT 3
+        """).fetchall()
+        leads = [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+    for lead in leads:
         log.info(f"[Scheduler] Auto-sending initial outreach to {lead['name']}")
         try:
             # 1. Generate demo and draft if not exists
@@ -104,12 +119,27 @@ def job_auto_send_leads():
                 if res.status_code != 200:
                     log.error(f"  -> Failed to generate: {res.text}")
                     continue
-                time.sleep(2)
                 # Refresh lead data to get the new demo_tunnel_url
-                lead = dict(conn.execute("SELECT * FROM businesses WHERE id=?", (lead["id"],)).fetchone())
+                conn2 = get_conn()
+                try:
+                    lead = dict(conn2.execute("SELECT * FROM businesses WHERE id=?", (lead["id"],)).fetchone())
+                finally:
+                    conn2.close()
+
+            # Never email a dead link: confirm the demo is actually live on Pages.
+            from deploy import is_live
+            demo_url = lead.get("demo_tunnel_url", "")
+            if demo_url and not is_live(demo_url, wait=150):
+                log.error(f"  -> Demo not live yet for {lead['name']} — skipping send this round")
+                continue
 
             # 2. Get the draft
-            draft_row = conn.execute("SELECT draft FROM outreach WHERE business_id=? AND channel='email'", (lead["id"],)).fetchone()
+            conn2 = get_conn()
+            try:
+                draft_row = conn2.execute("SELECT draft FROM outreach WHERE business_id=? AND channel='email'", (lead["id"],)).fetchone()
+            finally:
+                conn2.close()
+
             if not draft_row or not draft_row["draft"]:
                 continue
             
@@ -120,27 +150,41 @@ def job_auto_send_leads():
                 send_email(lead["email"], subject, body, tracking_id, demo_url)
                 mark_sent(lead["id"], "email")
                 log.info(f"[Scheduler] Successfully sent to {lead['email']}")
+                
+                # Anti-spam: Add randomized human-like delay between sends
+                import random
+                jitter = random.randint(35, 85)
+                log.info(f"  -> Sleeping for {jitter}s to avoid spam filters...")
+                time.sleep(jitter)
         except Exception as e:
             log.error(f"[Scheduler] Failed to auto-send to {lead['name']}: {e}")
-    conn.close()
 
 
 def job_auto_send_followups():
     """Send follow-ups that are scheduled and pending."""
-    from database import get_conn
-    from ai_writer import parse_subject_body
-    from gmail import send_email
+    from database import get_conn, get_emails_sent_today
+    from sender import parse_subject_body, send_email
     import uuid
 
-    conn = get_conn()
-    rows = conn.execute("""
-        SELECT f.*, c.email, b.demo_tunnel_url FROM follow_ups f
-        JOIN businesses b ON b.id = f.business_id
-        LEFT JOIN contacts c ON c.business_id = b.id
-        WHERE f.status = 'pending' AND f.scheduled_for <= datetime('now')
-    """).fetchall()
+    # Enforce safe daily cold email limit to prevent spam blocking
+    sent_today = get_emails_sent_today()
+    if sent_today >= 25:
+        log.info(f"[Scheduler] Daily send limit (25) reached. Skipping auto follow-ups today (already sent: {sent_today}).")
+        return
 
-    for row in rows:
+    conn = get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT f.*, c.email, b.demo_tunnel_url FROM follow_ups f
+            JOIN businesses b ON b.id = f.business_id
+            LEFT JOIN contacts c ON c.business_id = b.id
+            WHERE f.status = 'pending' AND f.scheduled_for <= datetime('now')
+        """).fetchall()
+        follow_ups = [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+    for row in follow_ups:
         if not row["email"] or not row["draft"]:
             continue
         try:
@@ -148,12 +192,23 @@ def job_auto_send_followups():
             if not subject: subject = "Quick follow-up"
             tracking_id = str(uuid.uuid4())
             send_email(row["email"], subject, body, tracking_id, row.get("demo_tunnel_url", ""))
-            conn.execute("UPDATE follow_ups SET status='sent', sent_at=datetime('now') WHERE id=?", (row["id"],))
-            conn.commit()
+            
+            conn2 = get_conn()
+            try:
+                conn2.execute("UPDATE follow_ups SET status='sent', sent_at=datetime('now') WHERE id=?", (row["id"],))
+                conn2.commit()
+            finally:
+                conn2.close()
             log.info(f"[Scheduler] Auto-sent follow-up {row['sequence_num']} to {row['email']}")
+
+            # Anti-spam: Add randomized human-like delay between sends
+            import random
+            jitter = random.randint(20, 60)
+            log.info(f"  -> Sleeping for {jitter}s to avoid spam filters...")
+            import time
+            time.sleep(jitter)
         except Exception as e:
             log.error(f"[Scheduler] Failed to send followup {row['id']}: {e}")
-    conn.close()
 
 
 def start_scheduler():
@@ -176,16 +231,18 @@ def stop_scheduler():
         scheduler.shutdown(wait=False)
 
 
-def save_scheduler_config(niches: list, locations: list, enabled: bool, hour: int, max_per: int):
+def save_scheduler_config(niches: list, locations: list, enabled: bool, hour: int, max_per: int, source: str = "google_maps", max_score: int = 70):
     from database import get_conn
     conn = get_conn()
-    conn.execute("DELETE FROM scheduler_config")
-    conn.execute("""
-        INSERT INTO scheduler_config (niches, locations, enabled, run_hour, max_per_run)
-        VALUES (?, ?, ?, ?, ?)
-    """, (json.dumps(niches), json.dumps(locations), int(enabled), hour, max_per))
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute("DELETE FROM scheduler_config")
+        conn.execute("""
+            INSERT INTO scheduler_config (niches, locations, enabled, run_hour, max_per_run, source, max_score)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (json.dumps(niches), json.dumps(locations), int(enabled), hour, max_per, source, max_score))
+        conn.commit()
+    finally:
+        conn.close()
 
     # Reschedule with new config
     scheduler.reschedule_job("daily_find", trigger="cron", hour=hour, minute=0)

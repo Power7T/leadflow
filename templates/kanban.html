@@ -8,6 +8,7 @@
 <div class="kanban-board">
   {% set columns = [
     ('new',         '🔍 New',         'var(--text-dim)'),
+    ('approved',    '👍 Approved',    'var(--orange)'),
     ('sent',        '📨 Contacted',   'var(--blue)'),
     ('replied',     '💬 Replied',     'var(--yellow)'),
     ('negotiating', '🤝 Negotiating', 'var(--accent)'),
@@ -29,16 +30,16 @@
       <div class="kanban-card" draggable="true"
            id="card-{{ lead.id }}"
            ondragstart="onDragStart(event, {{ lead.id }})">
-        <div class="kcard-name">{{ lead.name }}</div>
-        <div class="kcard-meta">{{ lead.city }}{% if lead.country %}, {{ lead.country }}{% endif %}</div>
-        <div class="kcard-tags">
-          {% if lead.email %}<span class="kdot kdot-green" title="Email">✉</span>{% endif %}
-          {% if lead.instagram %}<span class="kdot kdot-blue" title="Instagram">📸</span>{% endif %}
-          <span class="kcard-score">{{ lead.lead_score }}pt</span>
-        </div>
-        {% if status == 'replied' %}
-        <button class="kcard-deal-btn" onclick="openDeal({{ lead.id }}, '{{ lead.name|e }}')">+ Log Deal</button>
-        {% endif %}
+         <div class="kcard-name">{{ lead.name }}</div>
+         <div class="kcard-meta">{{ lead.city }}{% if lead.country %}, {{ lead.country }}{% endif %}</div>
+         <div class="kcard-tags">
+           {% if lead.email %}<span class="kdot kdot-green" title="Email">✉</span>{% endif %}
+           {% if lead.instagram %}<span class="kdot kdot-blue" title="Instagram">📸</span>{% endif %}
+           <span class="kcard-score">{{ lead.lead_score }}pt</span>
+         </div>
+         {% if status == 'replied' %}
+         <button class="kcard-deal-btn" onclick="openDeal({{ lead.id }}, '{{ lead.name|e }}')">+ Log Deal</button>
+         {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -103,15 +104,18 @@ async function onDrop(e, newStatus) {
     body: JSON.stringify({status: newStatus}),
   });
 
-  // Show deal button when moved to replied
   const existing = card.querySelector('.kcard-deal-btn');
-  if (newStatus === 'replied' && !existing) {
-    const name = card.querySelector('.kcard-name').textContent;
-    const btn = document.createElement('button');
-    btn.className = 'kcard-deal-btn';
-    btn.textContent = '+ Log Deal';
-    btn.onclick = () => openDeal(draggingId, name);
-    card.appendChild(btn);
+  if (newStatus === 'replied') {
+    if (!existing) {
+      const name = card.querySelector('.kcard-name').textContent;
+      const btn = document.createElement('button');
+      btn.className = 'kcard-deal-btn';
+      btn.textContent = '+ Log Deal';
+      btn.onclick = () => openDeal(draggingId, name);
+      card.appendChild(btn);
+    }
+  } else if (existing) {
+    existing.remove();
   }
 
   draggingId = null;

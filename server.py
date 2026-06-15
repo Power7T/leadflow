@@ -21,18 +21,20 @@ from database import (
     update_business_status, insert_outreach, mark_sent,
     record_tracking_event, insert_follow_ups, get_all_follow_ups,
     mark_follow_up_sent, insert_deal, get_analytics, get_pending_follow_ups,
+    get_conn,
 )
 from finder import search_places, get_place_details, clean_website_url, is_chain_or_too_big, search_places_async, get_place_details_async
 from extractor import extract_contacts
 from analyzer import score_website, detect_gap, full_audit
 from database import insert_business, insert_contacts
 from ai_writer import generate_all, write_follow_up_sequence, rewrite_message
-from sender import send_email, parse_subject_body
+from sender import send_email, parse_subject_body, suppress
 from demo_generator import generate_demo_html, generate_demo_html_stream
 from scorer import score_lead
 from multi_finder import check_domain_available, scrape_yelp
 from tracker import PIXEL_GIF
 from scheduler import start_scheduler, stop_scheduler, save_scheduler_config
+from deploy import deploy_demo, deploy_raw, demo_url_for, is_live, slug_for
 
 BASE      = Path(__file__).parent
 DEMOS_DIR = BASE / "demos"
@@ -60,41 +62,21 @@ def _free_port() -> int:
 
 
 def _start_demo_tunnel(bid: int, html: str) -> str:
-    """
-    Push the generated demo HTML to GitHub Pages (leadflow-demos repo).
-    Returns the GitHub Pages URL.
-    """
-    import os
-    import subprocess
-    from pathlib import Path
-    
-    repo_dir = Path("/Users/chandan/leadflow/leadflow-demos")
-    demo_dir = repo_dir / str(bid)
-    demo_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Write the html
-    index_file = demo_dir / "index.html"
-    index_file.write_text(html, encoding="utf-8")
-    
-    try:
-        # Commit and push
-        subprocess.run(["git", "add", "."], cwd=repo_dir, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["git", "commit", "-m", f"Deploy demo {bid}"], cwd=repo_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["git", "push"], cwd=repo_dir, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        
-        url = f"https://power7t.github.io/leadflow-demos/{bid}/"
-        
-        # Persist URL to DB
-        from database import get_conn
-        conn = get_conn()
-        conn.execute("UPDATE businesses SET demo_tunnel_url=? WHERE id=?", (url, bid))
-        conn.commit()
+    """Publish the demo to GitHub Pages via the single deploy pipeline.
+    Returns the public URL, or "" if the push failed."""
+    from database import get_conn
+    conn = get_conn()
+    row = conn.execute("SELECT name FROM businesses WHERE id=?", (bid,)).fetchone()
+    name = row["name"] if row else str(bid)
+    result = deploy_demo(bid, name, html)
+    if not result["ok"]:
+        print(f"[deploy] demo {bid} push failed: {result['error']}")
         conn.close()
-        
-        return url
-    except Exception as e:
-        print(f"Failed to deploy to GitHub Pages: {e}")
         return ""
+    conn.execute("UPDATE businesses SET demo_tunnel_url=? WHERE id=?", (result["url"], bid))
+    conn.commit()
+    conn.close()
+    return result["url"]
 
 
 def _start_leadflow_tunnel() -> str:
@@ -132,28 +114,18 @@ def _start_leadflow_tunnel() -> str:
 
 
 def _restore_demo_tunnels():
-    """On startup, re-create tunnels for all previously-built demos."""
-    import time
-    from database import get_conn
-    conn = get_conn()
-    rows = conn.execute("SELECT id FROM businesses WHERE status NOT IN ('skipped')").fetchall()
-    conn.close()
-    for row in rows:
-        bid = row["id"]
-        html_path = DEMOS_DIR / f"{bid}.html"
-        if not html_path.exists():
-            continue
-        try:
-            html = html_path.read_text(encoding="utf-8")
-            url = _start_demo_tunnel(bid, html)
-            if url:
-                print(f"[tunnel] Demo {bid}: {url}")
-        except Exception as e:
-            print(f"[tunnel] Demo {bid} failed: {e}")
-        time.sleep(0.5)   # stagger to avoid cloudflared rate limits
+    """On startup, flush any demos that were built locally but never pushed
+    (the old silent-push bug stranded several), so no prospect hits a 404."""
+    from deploy import _publish
+    try:
+        result = _publish(".gitkeep", "")   # commits & pushes everything pending
+        if result["ok"]:
+            print("[deploy] startup sync OK — stranded demos flushed to GitHub Pages")
+        else:
+            print(f"[deploy] startup sync failed: {result['error']}")
+    except Exception as e:
+        print(f"[deploy] startup sync error: {e}")
 
-
-@asynccontextmanager
 
 async def update_tunnel_urls():
     import re
@@ -198,6 +170,7 @@ async def lifespan(app: FastAPI):
     global _demo_proc
     init_db()
     start_scheduler()
+    asyncio.create_task(update_tunnel_urls())
 
     # Start demo server on 8766 if not already running
     try:
@@ -248,6 +221,55 @@ def find_page(request: Request):
     return templates.TemplateResponse("find.html", ctx(request, "find", sched=cfg))
 
 
+# ── Settings ───────────────────────────────────────────────────────────────
+
+@app.get("/settings", response_class=HTMLResponse)
+def settings_page(request: Request):
+    from dotenv import dotenv_values
+    env = dotenv_values(".env")
+    return templates.TemplateResponse("settings.html", ctx(request, "settings", env=env))
+
+@app.post("/settings/save")
+async def settings_save(request: Request):
+    data = await request.json()
+    try:
+        from dotenv import set_key
+        env_file = BASE / ".env"
+        for k, v in data.items():
+            if v is not None:
+                set_key(str(env_file), k, v)
+        # Reload environment into python
+        from dotenv import load_dotenv
+        load_dotenv(override=True)
+        return JSONResponse({"ok": True})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+@app.post("/settings/test-gmail")
+def settings_test_gmail():
+    import os, smtplib, imaplib
+    email = os.getenv("SENDER_EMAIL")
+    pwd = os.getenv("SENDER_APP_PASSWORD")
+    if not email or not pwd:
+        return JSONResponse({"ok": False, "error": "Email or Password not set."})
+    try:
+        # Test SMTP
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(email, pwd)
+        
+        # Test IMAP
+        imap_server = os.getenv("IMAP_SERVER", "imap.gmail.com")
+        try:
+            with imaplib.IMAP4_SSL(imap_server) as mail:
+                mail.login(email, pwd)
+        except Exception as imap_err:
+            return JSONResponse({"ok": False, "error": f"SMTP connected, but IMAP failed: {imap_err}"})
+            
+        return JSONResponse({"ok": True})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)})
+
+
 def _get_scheduler_cfg():
     try:
         from database import get_conn
@@ -260,7 +282,7 @@ def _get_scheduler_cfg():
 
 
 @app.get("/find/stream")
-async def find_stream(niche: str, location: str, max_results: int = 20, source: str = "google"):
+async def find_stream(niche: str, location: str, max_results: int = 20, source: str = "google", max_score: int = 70):
     async def generator():
         def send(msg: str, cls: str = ""):
             return f"data: {json.dumps({'type':'log','msg':msg,'cls':cls})}\n\n"
@@ -278,6 +300,9 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                     yield send(f"Processing: {name}...", "dim")
                     website = clean_website_url(biz.get("website", ""))
                     score = score_website(website) if website else 0
+                    if score >= max_score:
+                        yield send(f"  skipped (score >= {max_score})", "dim")
+                        continue
                     gap, pitch_type = detect_gap(website, score)
                     reviews = biz.get("google_reviews")
                     if is_chain_or_too_big(name, reviews):
@@ -302,8 +327,12 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                 yield f"data: {json.dumps({'type':'done','count':saved})}\n\n"
                 return
 
-            # Google Maps path
-            places = await search_places_async(niche, location, max_results)
+            # Google Maps or LinkedIn path
+            search_query = niche
+            if source == "linkedin":
+                search_query = f"B2B {niche} companies"
+                
+            places = await search_places_async(search_query, location, max_results)
             if not places:
                 yield f"data: {json.dumps({'type':'error','msg':'No results. Check niche/location or API key.'})}\n\n"
                 return
@@ -330,6 +359,9 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
 
                 loop = asyncio.get_event_loop()
                 score = await loop.run_in_executor(None, score_website, website) if website else 0
+                if score >= max_score:
+                    yield send(f"  skipped (score >= {max_score})", "dim")
+                    continue
                 gap, pitch_type = detect_gap(website, score)
                 parts   = address.split(",")
                 city    = parts[-3].strip() if len(parts) >= 3 else ""
@@ -337,6 +369,11 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
 
                 domain_info = check_domain_available(name) if not website else {}
                 contacts    = extract_contacts(website, name, location)
+
+                if source == "linkedin":
+                    if not contacts.get("linkedin_url"):
+                        contacts["linkedin_url"] = f"https://linkedin.com/company/{name.lower().replace(' ', '-')}"
+                        yield send(f"  generated linkedin profile: {contacts['linkedin_url']}", "dim")
 
                 if not any([contacts.get("email"), contacts.get("instagram"),
                             contacts.get("linkedin_url"), contacts.get("whatsapp"), phone]):
@@ -352,7 +389,7 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                     "lead_score": score_lead({"website": website, "website_score": score,
                                               "google_rating": rating, "google_reviews": reviews}, contacts),
                     "domain_available": domain_info.get("domain") if domain_info.get("available") else None,
-                    "source": "google_maps",
+                    "source": source,
                     "maps_url": f"https://www.google.com/maps/place/?q=place_id:{place['place_id']}",
                 }
                 bid = insert_business(business_data)
@@ -380,7 +417,8 @@ async def scheduler_save(request: Request):
     niches    = [n.strip() for n in data.get("niches", "").split(",") if n.strip()]
     locations = [l.strip() for l in data.get("locations", "").split(",") if l.strip()]
     save_scheduler_config(niches, locations, data.get("enabled", False),
-                          int(data.get("hour", 6)), int(data.get("max_per", 20)))
+                          int(data.get("hour", 6)), int(data.get("max_per", 20)),
+                          data.get("source", "google_maps"), int(data.get("max_score", 70)))
     return JSONResponse({"ok": True})
 
 
@@ -409,14 +447,6 @@ async def generate_messages(bid: int, request: Request):
     from demo_generator import _scrape_site, _is_gym, generate_gym_demo_html
     loop = asyncio.get_event_loop()
     website = lead.get("website", "")
-    def slugify(text: str) -> str:
-        import re
-        t = " ".join(text.split()[:3]).lower()
-        t = re.sub(r'[^a-z0-9]+', '-', t)
-        return t.strip('-')
-        
-    slug = slugify(lead.get("name", "")) + f"-{bid}"
-    demo_filename = f"{slug}.html"
 
     scraped = {}
     if website:
@@ -433,18 +463,17 @@ async def generate_messages(bid: int, request: Request):
                 None, functools.partial(generate_gym_demo_html, lead, scraped)
             )
         else:
-            html = await loop.run_in_executor(None, generate_demo_html, lead)
-        tunnel_url = ""
-        try: tunnel_url = open("/tmp/leadflow-tunnel-url.txt").read().strip()
-        except: pass
-        html = html.replace("{{TUNNEL_URL}}", tunnel_url).replace("{{BID}}", str(bid))
+            html = await loop.run_in_executor(
+                None, functools.partial(generate_demo_html, lead, scraped)
+            )
         DEMO_CACHE[bid] = html
-        (DEMOS_DIR / demo_filename).write_text(html, encoding="utf-8")
-        import subprocess
-        subprocess.Popen(f"cd {DEMOS_DIR} && git add {demo_filename} && git commit -m 'Auto-deploy {demo_filename}' && git push", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        demo_url = f"https://Power7T.github.io/leadflow-demos/{demo_filename}"
-        
-        # Persist URL to DB so UI shows the github pages link instead of cloudflare fallback
+        result = await loop.run_in_executor(
+            None, functools.partial(deploy_demo, bid, lead.get("name", ""), html)
+        )
+        demo_url = result["url"]
+        if not result["ok"]:
+            print(f"[deploy] demo {bid} push failed: {result['error']}")
+        # Persist URL to DB so the UI + outreach use the GitHub Pages link
         from database import get_conn
         conn = get_conn()
         conn.execute("UPDATE businesses SET demo_tunnel_url=? WHERE id=?", (demo_url, bid))
@@ -547,13 +576,7 @@ async def rewrite_draft(bid: int, request: Request):
         except Exception:
             pass
 
-    def slugify(text: str) -> str:
-        import re
-        t = " ".join(text.split()[:3]).lower()
-        return re.sub(r'[^a-z0-9]+', '-', t).strip('-')
-        
-    slug = slugify(lead.get("name", "")) + f"-{bid}"
-    demo_url = f"https://Power7T.github.io/leadflow-demos/{slug}.html"
+    demo_url = demo_url_for(bid, lead.get("name", ""))
 
     try:
         result = await loop.run_in_executor(
@@ -599,7 +622,7 @@ async def skip_lead(bid: int):
 async def set_lead_status(bid: int, request: Request):
     data = await request.json()
     status = data.get("status", "new")
-    allowed = {"new", "approved", "sent", "replied", "closed", "skipped"}
+    allowed = {"new", "approved", "sent", "replied", "closed", "skipped", "negotiating", "opted_out"}
     if status not in allowed:
         return JSONResponse({"ok": False, "error": "Invalid status"}, status_code=400)
     update_business_status(bid, status)
@@ -633,6 +656,8 @@ def get_drafts(bid: int):
 async def delete_lead(bid: int):
     from database import get_conn
     conn = get_conn()
+    row = conn.execute("SELECT name FROM businesses WHERE id=?", (bid,)).fetchone()
+    name = row["name"] if row else ""
     conn.execute("DELETE FROM outreach    WHERE business_id=?", (bid,))
     conn.execute("DELETE FROM follow_ups  WHERE business_id=?", (bid,))
     conn.execute("DELETE FROM deals       WHERE business_id=?", (bid,))
@@ -640,10 +665,10 @@ async def delete_lead(bid: int):
     conn.execute("DELETE FROM businesses  WHERE id=?",          (bid,))
     conn.commit()
     conn.close()
-    # Remove demo file if present
-    demo_file = DEMOS_DIR / f"{bid}.html"
-    if demo_file.exists():
-        demo_file.unlink()
+    # Remove demo files if present (both legacy {bid}.html and current {slug}.html)
+    for demo_file in (DEMOS_DIR / f"{bid}.html", DEMOS_DIR / f"{slug_for(bid, name)}.html"):
+        if demo_file.exists():
+            demo_file.unlink()
     DEMO_CACHE.pop(bid, None)
     # Stop any running tunnel
     old = DEMO_TUNNELS.pop(bid, None)
@@ -660,24 +685,30 @@ async def delete_lead(bid: int):
 @app.get("/demos", response_class=HTMLResponse)
 def demos_page(request: Request):
     from database import get_conn
+    import os
     conn = get_conn()
     rows = conn.execute("""
-        SELECT b.id, b.name, b.city, b.country, b.category, b.website, b.lead_score, b.demo_tunnel_url
+        SELECT b.id, b.name, b.city, b.country, b.category, b.website, b.lead_score, b.demo_tunnel_url, b.template_id
         FROM businesses b
-        WHERE b.status NOT IN ('skipped')
+        WHERE b.status NOT IN ('skipped', 'opted_out')
         ORDER BY b.lead_score DESC, b.found_at DESC
     """).fetchall()
     conn.close()
+    
+    # Load available templates
+    avail_templates = []
+    tpl_dir = os.path.join(str(BASE), "demo_templates")
+    if os.path.exists(tpl_dir):
+        avail_templates = [f for f in os.listdir(tpl_dir) if f.endswith(".html")]
+        
     businesses = []
     for r in rows:
         b = dict(r)
-        b["has_demo"] = (DEMOS_DIR / f"{b['id']}.html").exists()
-        # Prefer live in-memory tunnel URL over DB value
-        if b["id"] in DEMO_TUNNELS:
-            b["demo_tunnel_url"] = DEMO_TUNNELS[b["id"]]["url"]
+        b["has_demo"] = ((DEMOS_DIR / f"{slug_for(b['id'], b.get('name',''))}.html").exists()
+                         or (DEMOS_DIR / f"{b['id']}.html").exists())
         businesses.append(b)
     demo_base = _get_demo_base_url()
-    return templates.TemplateResponse("demos.html", ctx(request, "demos", businesses=businesses, demo_base=demo_base))
+    return templates.TemplateResponse("demos.html", ctx(request, "demos", businesses=businesses, demo_base=demo_base, avail_templates=avail_templates))
 
 
 @app.get("/demos/{bid}/build/stream")
@@ -740,7 +771,10 @@ async def build_demo_stream(bid: int, use_stock: int = 0):
                 None, functools.partial(generate_gym_demo_html, lead, data, use_stock=bool(use_stock))
             )
         else:
-            html = await loop.run_in_executor(None, generate_demo_html, lead)
+            import functools
+            html = await loop.run_in_executor(
+                None, functools.partial(generate_demo_html, lead, data, use_stock=bool(use_stock))
+            )
 
         yield evt("Saving…", 90)
         DEMO_CACHE[bid] = html
@@ -765,7 +799,7 @@ async def build_demo(bid: int, use_stock: int = 0):
     from demo_generator import generate_gym_demo_html, _is_gym, _scrape_site
     conn = get_conn()
     row = conn.execute("""
-        SELECT b.*, c.email, c.hunter_email, c.apollo_email, c.apollo_person_name, c.instagram, c.demo_viewed, c.replied_at FROM businesses b
+        SELECT b.*, c.email, c.hunter_email, c.apollo_email, c.apollo_person_name, c.instagram FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
         WHERE b.id=?
     """, (bid,)).fetchone()
@@ -805,18 +839,28 @@ def demo_site(bid: int):
         html = disk_file.read_text(encoding="utf-8")
         DEMO_CACHE[bid] = html
         return HTMLResponse(html)
-    # Regenerate from DB
     from database import get_conn
     conn = get_conn()
     row = conn.execute("""
-        SELECT b.*, c.email, c.instagram FROM businesses b
+        SELECT b.*, c.email, c.hunter_email, c.apollo_email, c.apollo_person_name, c.instagram FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
         WHERE b.id=?
     """, (bid,)).fetchone()
     conn.close()
     if not row:
         return HTMLResponse("<h1>Demo not found</h1>", status_code=404)
-    html = generate_demo_html(dict(row))
+    
+    from demo_generator import _is_gym, generate_gym_demo_html, _scrape_site
+    lead = dict(row)
+    if _is_gym(lead.get("category", ""), lead.get("name", "")):
+        try:
+            scraped = _scrape_site(lead.get("website", ""))
+        except Exception:
+            scraped = {}
+        html = generate_gym_demo_html(lead, scraped)
+    else:
+        html = generate_demo_html(lead)
+        
     DEMO_CACHE[bid] = html
     disk_file.write_text(html, encoding="utf-8")
     return HTMLResponse(html)
@@ -834,6 +878,19 @@ def track_open(tracking_id: str, request: Request):
 def track_click(tracking_id: str, url: str = ""):
     record_tracking_event(tracking_id, 0, "click", url)
     return RedirectResponse(url=url or "/")
+
+
+@app.get("/unsubscribe", response_class=HTMLResponse)
+def unsubscribe(e: str = ""):
+    """One-click / link unsubscribe — adds the address to the suppression list."""
+    if e:
+        suppress(e)
+    return HTMLResponse(
+        "<html><body style='font-family:sans-serif;text-align:center;padding:60px'>"
+        "<h2>You're unsubscribed</h2>"
+        "<p>You won't receive any more emails from us. Sorry for the interruption.</p>"
+        "</body></html>"
+    )
 
 
 # ── Sent / tracking ────────────────────────────────────────────────────────
@@ -935,7 +992,73 @@ def analytics_page(request: Request):
     return templates.TemplateResponse("analytics.html", ctx(request, "analytics", a=a))
 
 
-# ── Deals ──────────────────────────────────────────────────────────────────
+# ── Templates Management ───────────────────────────────────────────────────
+
+import os
+
+DEMO_TEMPLATES_DIR = os.path.join(str(BASE), "demo_templates")
+os.makedirs(DEMO_TEMPLATES_DIR, exist_ok=True)
+
+@app.get("/templates")
+async def templates_page(request: Request):
+    return templates.TemplateResponse("templates.html", ctx(request, "templates"))
+
+@app.get("/api/templates")
+async def api_list_templates():
+    files = [f for f in os.listdir(DEMO_TEMPLATES_DIR) if f.endswith(".html")]
+    return JSONResponse(files)
+
+@app.get("/api/templates/preview/{filename}")
+async def api_preview_template(filename: str):
+    path = os.path.join(DEMO_TEMPLATES_DIR, filename)
+    if not os.path.exists(path):
+        return HTMLResponse("<h1>Template not found</h1>", status_code=404)
+        
+    with open(path, "r", encoding="utf-8") as f:
+        template_str = f.read()
+        
+    from jinja2 import Template
+    t = Template(template_str)
+    
+    mock_lead = {
+        "name": "Sample Business",
+        "category": "Gym / Fitness Center",
+        "address": "123 Main St, New York, NY",
+        "city": "New York",
+        "phone": "+1 555-0198",
+        "email": "contact@samplebusiness.com",
+        "instagram": "sample_business",
+        "website": "https://samplebusiness.com",
+        "google_rating": "4.9",
+        "google_reviews": "142",
+        "maps_url": "https://maps.google.com"
+    }
+    
+    hero_img = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80"
+    about_img = "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80"
+    
+    html = t.render(
+        lead=mock_lead,
+        scraped={"about_text": "We are a high-end facility dedicated to excellence.", "services": []},
+        hero_img=hero_img,
+        about_img=about_img
+    )
+    return HTMLResponse(html)
+
+@app.post("/api/leads/{bid}/template")
+async def api_assign_template(bid: int, request: Request):
+    from database import get_conn
+    data = await request.json()
+    template_id = data.get("template_id")
+    
+    conn = get_conn()
+    conn.execute("UPDATE businesses SET template_id = ? WHERE id = ?", (template_id, bid))
+    conn.commit()
+    conn.close()
+    
+    return JSONResponse({"ok": True})
+
+# ── Demos ──────────────────────────────────────────────────────────────────
 
 @app.post("/deals")
 async def log_deal(request: Request):
@@ -989,14 +1112,13 @@ def tunnel_url():
 @app.get("/api/demo-url/{bid}")
 def demo_url_endpoint(bid: int):
     conn = get_conn()
-    row = conn.execute("SELECT name FROM businesses WHERE id=?", (bid,)).fetchone()
+    row = conn.execute("SELECT name, demo_tunnel_url FROM businesses WHERE id=?", (bid,)).fetchone()
     conn.close()
     if row:
-        import re
-        t = " ".join(row["name"].split()[:3]).lower()
-        slug = re.sub(r'[^a-z0-9]+', '-', t).strip('-') + f"-{bid}"
-        return JSONResponse({"url": f"https://Power7T.github.io/leadflow-demos/{slug}.html"})
-    return JSONResponse({"url": "https://Power7T.github.io/leadflow-demos"})
+        if row["demo_tunnel_url"] and row["demo_tunnel_url"].startswith("http"):
+            return JSONResponse({"url": row["demo_tunnel_url"]})
+        return JSONResponse({"url": demo_url_for(bid, row["name"])})
+    return JSONResponse({"url": "https://power7t.github.io/leadflow-demos"})
 @app.post("/api/generate-audit/{bid}")
 async def generate_audit_report(bid: int):
     conn = get_conn()
@@ -1007,11 +1129,32 @@ async def generate_audit_report(bid: int):
     
     url = lead["website"]
     try:
-        from extractor import _run_lighthouse, _check_seo
+        from analyzer import full_audit
         import asyncio
         loop = asyncio.get_event_loop()
-        lh = await loop.run_in_executor(None, _run_lighthouse, url)
-        seo = await loop.run_in_executor(None, _check_seo, url)
+        audit_res = await loop.run_in_executor(None, full_audit, url)
+        direct = audit_res["direct"]
+        ps = audit_res["pagespeed"] or {}
+        
+        import re
+        def clean_unit(v, fallback="1.5"):
+            if not v or v == "—":
+                return fallback
+            match = re.search(r'[\d\.]+', str(v))
+            return match.group(0) if match else fallback
+            
+        lh = {
+            "score": audit_res["score"],
+            "fcp": clean_unit(ps.get("fcp"), str(direct.get("response_time_s") or 1.5)),
+            "speed_index": clean_unit(ps.get("speed_index"), str(direct.get("response_time_s") or 2.0)),
+            "interactive": clean_unit(ps.get("tbt"), str(direct.get("response_time_s") or 1.0)),
+        }
+        
+        seo = {
+            "title": direct.get("title") or "",
+            "description": direct.get("meta_description") or "",
+            "h1_count": 1 if direct.get("title") else 0
+        }
         
         import re
         def slugify(text: str) -> str:
@@ -1063,12 +1206,10 @@ h1 {{ border-bottom:1px solid #333; padding-bottom:20px; }}
 </body>
 </html>"""
         
-        (DEMOS_DIR / filename).write_text(html, encoding="utf-8")
-        import subprocess
-        subprocess.Popen(f"cd {DEMOS_DIR} && git add {filename} && git commit -m 'Auto-deploy audit {filename}' && git push", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        audit_url = f"https://Power7T.github.io/leadflow-demos/{filename}"
-        
-        return JSONResponse({"status": "ok", "url": audit_url})
+        result = await loop.run_in_executor(None, functools.partial(deploy_raw, filename, html))
+        if not result["ok"]:
+            return JSONResponse({"error": f"deploy failed: {result['error']}"}, status_code=500)
+        return JSONResponse({"status": "ok", "url": result["url"]})
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
@@ -1117,6 +1258,42 @@ def track_demo_view(bid: int = 0):
     from fastapi.responses import Response
     pixel = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")
     return Response(content=pixel, media_type="image/png")
+
+
+# High-intent events that warrant an instant operator ping.
+_ENGAGE_ALERTS = {
+    "cta_book_bar":   "💰 {name} clicked “Book a free call” on their demo!",
+    "cta_book_modal": "💰 {name} clicked “Claim this website” — hot lead!",
+    "cta_whatsapp":   "💬 {name} tapped WhatsApp from their demo!",
+    "scroll_90":      "👀 {name} read their whole demo (90% scroll).",
+}
+
+
+@app.get("/api/engage")
+def track_engage(bid: int = 0, ev: str = ""):
+    """Demo-page engagement beacon: scroll depth, dwell, and CTA clicks.
+
+    Records every event for analytics and fires an ntfy alert on buying-intent
+    signals so the operator can follow up while the prospect is still looking.
+    """
+    if bid and ev:
+        try:
+            conn = get_conn()
+            row = conn.execute("SELECT name FROM businesses WHERE id=?", (bid,)).fetchone()
+            record_tracking_event("", bid, f"engage:{ev}")
+            if row and ev in _ENGAGE_ALERTS:
+                import requests
+                requests.post(
+                    "https://ntfy.sh/leadflow-chandan-secret",
+                    data=_ENGAGE_ALERTS[ev].format(name=row["name"]).encode("utf-8"),
+                    headers={"Tags": "fire", "Priority": "high"},
+                    timeout=5,
+                )
+            conn.close()
+        except Exception:
+            pass
+    return JSONResponse({"ok": True})
+
 
 @app.get("/api/tunnel-status")
 def tunnel_status():

@@ -27,15 +27,29 @@ Rules for high-converting but professional copy:
 """
 
 
-def _run(prompt: str) -> str:
+def _run(prompt: str, attempts: int = 3) -> str:
+    """Call the AI CLI with retries — a single transient failure used to
+    silently yield no draft (callers swallow the exception)."""
+    import time
     full = SYSTEM_CONTEXT + "\n\n" + prompt
-    result = subprocess.run(
-        [AGY_PATH, "--model", DEFAULT_MODEL, "-p", full],
-        capture_output=True, text=True, timeout=90,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f"agy error: {result.stderr.strip()}")
-    return result.stdout.strip()
+    last_err = ""
+    for i in range(attempts):
+        try:
+            result = subprocess.run(
+                [AGY_PATH, "--model", DEFAULT_MODEL, "-p", full],
+                capture_output=True, text=True, timeout=120,
+            )
+            out = (result.stdout or "").strip()
+            if result.returncode == 0 and out:
+                return out
+            last_err = (result.stderr or "").strip() or "empty response"
+        except subprocess.TimeoutExpired:
+            last_err = "timed out"
+        except Exception as ex:
+            last_err = str(ex)
+        if i < attempts - 1:
+            time.sleep(1.5 * (i + 1))
+    raise RuntimeError(f"agy failed after {attempts} attempts: {last_err}")
 
 
 def _business_context(b: dict, scraped: dict | None = None) -> str:
@@ -176,6 +190,7 @@ def write_follow_up_sequence(business: dict, demo_url: str = "") -> list[dict]:
     # Follow-up 1 — Day 4: add value, not just "checking in"
     prompt1 = f"""{ctx}
 Offer: {offer}
+{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your email body. Do not ask if they want to see it.' if demo_url else ''}
 
 Write follow-up email #1 (sent 4 days after first email, no reply received).
 Don't say "just checking in" — instead add a specific insight or observation about their business.
@@ -191,6 +206,7 @@ Under 80 words. Subject on first line. Ready to send."""
     # Follow-up 2 — Day 9: social proof + soft close
     prompt2 = f"""{ctx}
 Offer: {offer}
+{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your email body. Do not ask if they want to see it.' if demo_url else ''}
 
 Write follow-up email #2 (sent 9 days after first email, still no reply).
 Mention that you've helped similar businesses. Keep it short — under 60 words.
@@ -207,6 +223,8 @@ Subject on first line. Ready to send."""
     # Instagram DM follow-up — Day 6
     if business.get("instagram"):
         prompt3 = f"""{ctx}
+Offer: {offer}
+{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your message. Do not ask if they want to see it.' if demo_url else ''}
 
 Write a short Instagram DM follow-up (sent 6 days after first contact).
 Very casual. Under 40 words. Don't mention the email. Fresh angle. Ready to send."""

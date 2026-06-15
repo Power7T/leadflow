@@ -27,6 +27,9 @@
     <a href="/followups" class="{% if page=='followups' %}active{% endif %}">
       <span class="icon">🔁</span> Follow-ups
     </a>
+    <a href="/templates" class="{% if page=='templates' %}active{% endif %}">
+      <span class="icon">📝</span> Templates
+    </a>
     <a href="/demos" class="{% if page=='demos' %}active{% endif %}">
       <span class="icon">🌐</span> Demo Sites
     </a>
@@ -36,12 +39,18 @@
     <a href="/analytics" class="{% if page=='analytics' %}active{% endif %}">
       <span class="icon">📊</span> Analytics
     </a>
+    <a href="/settings" class="{% if page=='settings' %}active{% endif %}">
+      <span class="icon">⚙️</span> Settings
+    </a>
   </nav>
   <div class="sidebar-stats">
     <div class="stat"><span>New</span><b>{{ stats.new }}</b></div>
     <div class="stat"><span>Sent</span><b>{{ stats.sent }}</b></div>
     <div class="stat"><span>Replied</span><b>{{ stats.replied }}</b></div>
     <div class="stat"><span>Closed</span><b style="color:var(--accent)">{{ stats.closed }}</b></div>
+    {% if stats.opted_out > 0 %}
+    <div class="stat"><span style="color:var(--red)">Opted Out</span><b style="color:var(--red)">{{ stats.opted_out }}</b></div>
+    {% endif %}
   </div>
 </aside>
 

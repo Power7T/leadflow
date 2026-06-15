@@ -10,6 +10,16 @@
   --red: #ff4d6d;
   --yellow: #f5c542;
   --blue: #4d9fff;
+  
+  /* Aliases for template compatibility */
+  --bg-primary: var(--bg);
+  --bg-secondary: var(--surface);
+  --bg-card: var(--surface);
+  --card: var(--surface);
+  --text-white: #ffffff;
+  --text-muted: var(--text-dim);
+  --border-color: var(--border);
+  --orange: #ff7a00;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

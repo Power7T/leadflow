@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %} - Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">
+    <h1>⚙️ Settings</h1>
+    <p>Configure API keys and connect your Gmail account for autopilot outreach.</p>
+  </div>
+</div>
+
+<div class="form-card" style="max-width: 600px; margin-bottom: 24px;">
+  <h2>API & Environment Variables</h2>
+  <p style="color:var(--text-dim);font-size:13px;margin-bottom:18px">
+    These values are saved directly to your <code>.env</code> file.
+  </p>
+  <form id="envForm">
+    <div style="margin-bottom: 12px">
+      <label>Google Gemini API Key</label>
+      <input type="password" id="GEMINI_API_KEY" value="{{ env.GEMINI_API_KEY }}" placeholder="AI writing & parsing">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>OpenAI API Key (Fallback)</label>
+      <input type="password" id="OPENAI_API_KEY" value="{{ env.OPENAI_API_KEY }}">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>Google Maps API Key</label>
+      <input type="password" id="GOOGLE_MAPS_API_KEY" value="{{ env.GOOGLE_MAPS_API_KEY }}" placeholder="For business search">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>Stripe Payment Link</label>
+      <input type="text" id="STRIPE_PAYMENT_LINK" value="{{ env.STRIPE_PAYMENT_LINK }}" placeholder="https://buy.stripe.com/...">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>Booking URL (Calendly)</label>
+      <input type="text" id="BOOKING_URL" value="{{ env.BOOKING_URL }}">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>Hunter.io API Key (Email enrichment)</label>
+      <input type="password" id="HUNTER_API_KEY" value="{{ env.HUNTER_API_KEY }}">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>Apollo.io API Key (Email enrichment)</label>
+      <input type="password" id="APOLLO_API_KEY" value="{{ env.APOLLO_API_KEY }}">
+    </div>
+    <button type="submit" class="btn btn-primary" id="saveEnvBtn">💾 Save Settings</button>
+  </form>
+</div>
+
+<div class="form-card" style="max-width: 600px">
+  <h2>Gmail SMTP Connection</h2>
+  <p style="color:var(--text-dim);font-size:13px;margin-bottom:18px">
+    Connect your Gmail Workspace account to enable autopilot sending.
+    You must use an <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">App Password</a>.
+  </p>
+  <form id="gmailForm">
+    <div style="margin-bottom: 12px">
+      <label>Sender Email</label>
+      <input type="email" id="SENDER_EMAIL" value="{{ env.SENDER_EMAIL }}" placeholder="you@yourdomain.com">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>App Password</label>
+      <input type="password" id="SENDER_APP_PASSWORD" value="{{ env.SENDER_APP_PASSWORD }}" placeholder="16-letter app password">
+    </div>
+    <div style="display: flex; gap: 12px">
+      <button type="submit" class="btn btn-primary" id="saveGmailBtn">💾 Save</button>
+      <button type="button" class="btn btn-ghost" id="testGmailBtn" onclick="testGmail()">🔌 Test Connection</button>
+    </div>
+    <div id="gmailTestResult" style="margin-top: 12px; font-size: 13px; font-weight: 500;"></div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function saveEnvVars(payload, btnElement) {
+  const originalText = btnElement.textContent;
+  btnElement.textContent = 'Saving...';
+  btnElement.disabled = true;
+  try {
+    const res = await fetch('/settings/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      btnElement.textContent = '✓ Saved!';
+    } else {
+      btnElement.textContent = '✗ Error';
+      alert(data.error);
+    }
+  } catch(e) {
+    btnElement.textContent = '✗ Error';
+  }
+  setTimeout(() => {
+    btnElement.textContent = originalText;
+    btnElement.disabled = false;
+  }, 2000);
+}
+
+document.getElementById('envForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  saveEnvVars({
+    GEMINI_API_KEY: document.getElementById('GEMINI_API_KEY').value,
+    OPENAI_API_KEY: document.getElementById('OPENAI_API_KEY').value,
+    GOOGLE_MAPS_API_KEY: document.getElementById('GOOGLE_MAPS_API_KEY').value,
+    STRIPE_PAYMENT_LINK: document.getElementById('STRIPE_PAYMENT_LINK').value,
+    BOOKING_URL: document.getElementById('BOOKING_URL').value,
+    HUNTER_API_KEY: document.getElementById('HUNTER_API_KEY').value,
+    APOLLO_API_KEY: document.getElementById('APOLLO_API_KEY').value,
+  }, document.getElementById('saveEnvBtn'));
+});
+
+document.getElementById('gmailForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  saveEnvVars({
+    SENDER_EMAIL: document.getElementById('SENDER_EMAIL').value,
+    SENDER_APP_PASSWORD: document.getElementById('SENDER_APP_PASSWORD').value,
+  }, document.getElementById('saveGmailBtn'));
+});
+
+async function testGmail() {
+  const btn = document.getElementById('testGmailBtn');
+  const resBox = document.getElementById('gmailTestResult');
+  btn.textContent = 'Testing...';
+  btn.disabled = true;
+  resBox.textContent = '';
+  resBox.className = '';
+  
+  try {
+    const res = await fetch('/settings/test-gmail', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      resBox.textContent = '✅ Connection successful! Gmail is ready for autopilot.';
+      resBox.style.color = '#00c896';
+    } else {
+      resBox.textContent = '❌ Failed: ' + data.error;
+      resBox.style.color = '#ff4d4d';
+    }
+  } catch(e) {
+    resBox.textContent = '❌ Request failed';
+    resBox.style.color = '#ff4d4d';
+  }
+  btn.textContent = '🔌 Test Connection';
+  btn.disabled = false;
+}
+</script>
+{% endblock %}

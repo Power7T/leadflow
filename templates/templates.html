@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %} — Demo Templates{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+  <h1>Demo Templates</h1>
+</div>
+<p class="subtitle">Your active UI templates for generating custom demos.</p>
+
+<div style="margin-top:20px;">
+  <h3 style="margin-bottom:15px;font-size:14px;color:var(--text-muted)">Available Verticals</h3>
+  <div id="templateList" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:15px;">
+    <!-- Populated via JS -->
+  </div>
+  <div style="font-size:12px;color:var(--text-dim);margin-top:30px;background:var(--bg-secondary);padding:15px;border-radius:8px;border:1px solid var(--border-color)">
+    💡 To add or modify templates, edit the <code>.html</code> files in the <code>leadflow/demo_templates/</code> folder on your computer.
+  </div>
+</div>
+
+<script>
+async function loadTemplates() {
+  const res = await fetch('/api/templates');
+  const files = await res.json();
+  const list = document.getElementById('templateList');
+  list.innerHTML = '';
+  
+  if (files.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-dim)">No templates found. Add HTML files to the demo_templates/ folder.</div>';
+    return;
+  }
+  
+  files.forEach(f => {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-secondary';
+    btn.style.display = 'flex';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+    btn.style.padding = '15px';
+    btn.style.height = '80px';
+    btn.style.fontSize = '16px';
+    btn.style.fontWeight = '600';
+    
+    // Format the display name: remove .html, replace dashes with spaces, capitalize words
+    let displayName = f.replace('.html', '');
+    displayName = displayName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    
+    btn.textContent = displayName;
+    btn.onclick = () => window.open(`/api/templates/preview/${f}`, '_blank');
+    list.appendChild(btn);
+  });
+}
+
+loadTemplates();
+</script>
+{% endblock %}

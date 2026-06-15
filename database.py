@@ -36,6 +36,8 @@ def init_db():
             source TEXT DEFAULT 'google_maps',
             maps_url TEXT,
             demo_tunnel_url TEXT,
+            template_id TEXT,
+            demo_viewed INTEGER DEFAULT 0,
             found_at TEXT DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -50,9 +52,10 @@ def init_db():
             hunter_email TEXT,
             apollo_email TEXT,
             apollo_person_name TEXT,
+            replied_at TEXT,
             FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
         );
-
+        
         CREATE TABLE IF NOT EXISTS outreach (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             business_id INTEGER REFERENCES businesses(id),
@@ -106,7 +109,9 @@ def init_db():
             locations TEXT,
             enabled INTEGER DEFAULT 0,
             run_hour INTEGER DEFAULT 6,
-            max_per_run INTEGER DEFAULT 20
+            max_per_run INTEGER DEFAULT 20,
+            source TEXT DEFAULT 'google_maps',
+            max_score INTEGER DEFAULT 70
         );
     """)
 
@@ -117,9 +122,19 @@ def init_db():
         ("source",           "TEXT DEFAULT 'google_maps'"),
         ("maps_url",         "TEXT"),
         ("demo_tunnel_url",  "TEXT"),
+        ("template_id",      "TEXT"),
+        ("demo_viewed",      "INTEGER DEFAULT 0"),
     ]:
         try:
             conn.execute(f"ALTER TABLE businesses ADD COLUMN {col} {definition}")
+        except Exception:
+            pass
+
+    for col, definition in [
+        ("replied_at", "TEXT"),
+    ]:
+        try:
+            conn.execute(f"ALTER TABLE contacts ADD COLUMN {col} {definition}")
         except Exception:
             pass
 
@@ -135,12 +150,85 @@ def init_db():
         except Exception:
             pass
 
+    for col, definition in [
+        ("source",    "TEXT DEFAULT 'google_maps'"),
+        ("max_score", "INTEGER DEFAULT 70"),
+    ]:
+        try:
+            conn.execute(f"ALTER TABLE scheduler_config ADD COLUMN {col} {definition}")
+        except Exception:
+            pass
+
     conn.commit()
     conn.close()
 
 
 def insert_business(data: dict) -> int:
     conn = get_conn()
+    
+    # Check for duplicate business before inserting
+    website = data.get("website", "")
+    if isinstance(website, str):
+        website = website.strip()
+    else:
+        website = ""
+        
+    name = data.get("name", "")
+    if isinstance(name, str):
+        name = name.strip()
+    else:
+        name = ""
+
+    if website:
+        existing = conn.execute("SELECT id FROM businesses WHERE LOWER(website) = ?", (website.lower(),)).fetchone()
+        if existing:
+            conn.close()
+            return existing["id"]
+            
+    if name:
+        phone = data.get("phone", "")
+        if isinstance(phone, str):
+            phone = phone.strip()
+        else:
+            phone = ""
+            
+        if phone:
+            existing = conn.execute("SELECT id FROM businesses WHERE LOWER(name) = ? AND phone = ?", (name.lower(), phone)).fetchone()
+            if existing:
+                conn.close()
+                return existing["id"]
+                
+        city = data.get("city", "")
+        if isinstance(city, str):
+            city = city.strip()
+        else:
+            city = ""
+            
+        if city:
+            existing = conn.execute("SELECT id FROM businesses WHERE LOWER(name) = ? AND LOWER(city) = ?", (name.lower(), city.lower())).fetchone()
+            if existing:
+                conn.close()
+                return existing["id"]
+
+    bind_data = {
+        "name": name,
+        "category": data.get("category", ""),
+        "address": data.get("address", ""),
+        "city": data.get("city", ""),
+        "country": data.get("country", ""),
+        "phone": data.get("phone", ""),
+        "website": website,
+        "website_score": data.get("website_score", 0),
+        "google_rating": data.get("google_rating"),
+        "google_reviews": data.get("google_reviews"),
+        "gap": data.get("gap", ""),
+        "pitch_type": data.get("pitch_type", ""),
+        "lead_score": data.get("lead_score", 0),
+        "domain_available": data.get("domain_available"),
+        "source": data.get("source", "google_maps"),
+        "maps_url": data.get("maps_url"),
+    }
+
     cur = conn.execute("""
         INSERT INTO businesses (name, category, address, city, country, phone,
             website, website_score, google_rating, google_reviews, gap, pitch_type,
@@ -148,13 +236,7 @@ def insert_business(data: dict) -> int:
         VALUES (:name, :category, :address, :city, :country, :phone,
             :website, :website_score, :google_rating, :google_reviews, :gap, :pitch_type,
             :lead_score, :domain_available, :source, :maps_url)
-    """, {
-        "lead_score": data.get("lead_score", 0),
-        "domain_available": data.get("domain_available"),
-        "source": data.get("source", "google_maps"),
-        "maps_url": data.get("maps_url"),
-        **data,
-    })
+    """, bind_data)
     conn.commit()
     bid = cur.lastrowid
     conn.close()
@@ -216,7 +298,7 @@ def get_all_leads_for_kanban() -> list:
         SELECT b.*, c.email, c.instagram
         FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
-        WHERE b.status NOT IN ('skipped')
+        WHERE b.status NOT IN ('skipped', 'opted_out')
         ORDER BY b.lead_score DESC, b.found_at DESC
     """).fetchall()
     conn.close()
@@ -322,8 +404,8 @@ def mark_follow_up_sent(fid: int):
 def insert_deal(business_id: int, value: float, service: str, notes: str = ""):
     conn = get_conn()
     conn.execute("""
-        INSERT INTO deals (business_id, value_usd, service, notes)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO deals (business_id, value_usd, service, status, notes, closed_at)
+        VALUES (?, ?, ?, 'closed', ?, CURRENT_TIMESTAMP)
     """, (business_id, value, service, notes))
     conn.execute("UPDATE businesses SET status='closed' WHERE id=?", (business_id,))
     conn.commit()
@@ -373,8 +455,22 @@ def get_analytics() -> dict:
 def get_stats() -> dict:
     conn = get_conn()
     stats = {}
-    for status in ("new", "approved", "sent", "replied", "skipped", "closed"):
+    for status in ("new", "approved", "sent", "replied", "skipped", "closed", "opted_out"):
         row = conn.execute("SELECT COUNT(*) as c FROM businesses WHERE status=?", (status,)).fetchone()
         stats[status] = row["c"]
     conn.close()
     return stats
+
+
+def get_emails_sent_today() -> int:
+    conn = get_conn()
+    count1 = conn.execute("""
+        SELECT COUNT(*) as c FROM outreach 
+        WHERE status='sent' AND channel='email' AND date(sent_at) = date('now')
+    """).fetchone()["c"]
+    count2 = conn.execute("""
+        SELECT COUNT(*) as c FROM follow_ups 
+        WHERE status='sent' AND channel='email' AND date(sent_at) = date('now')
+    """).fetchone()["c"]
+    conn.close()
+    return count1 + count2
