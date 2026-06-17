@@ -63,47 +63,42 @@ def _is_quota_error(text: str) -> bool:
 # ── Fallback Tier 2: Gemini REST API (google-generativeai) ─────────────────
 
 def _run_gemini_rest(prompt: str, model: str = "gemini-2.5-flash") -> str | None:
-    """Call Gemini directly via REST with support for a rotated key pool and model fallback."""
+    """Call Gemini via REST. Uses one key at a time — retries same key once before rotating."""
     keys_str = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_API_KEY") or ""
     keys = [k.strip() for k in keys_str.split(",") if k.strip()]
     if not keys:
         return None
-    
-    import urllib.request, json
+
+    import urllib.request, json, time, ssl
     full_prompt = SYSTEM_CONTEXT + "\n\n" + prompt
     payload = json.dumps({
         "contents": [{"parts": [{"text": full_prompt}]}],
         "generationConfig": {"maxOutputTokens": 512, "temperature": 0.9},
     }).encode()
+    ctx = ssl._create_unverified_context()
 
     for idx, api_key in enumerate(keys):
-        try:
-            url = ("https://generativelanguage.googleapis.com/v1beta/models/"
-                   f"{model}:generateContent?key={api_key}")
-            req = urllib.request.Request(url, data=payload,
-                                         headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-            out = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-            if out:
-                return out
-        except Exception as e:
-            print(f"[ai_writer] REST API key #{idx+1} failed for {model}: {str(e)[:80]}")
-            # Try to fall back to stable gemini-1.5-flash for this key if it wasn't already tried
-            if model != "gemini-1.5-flash":
-                try:
-                    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
-                           f"gemini-1.5-flash:generateContent?key={api_key}")
-                    req = urllib.request.Request(url, data=payload,
-                                                 headers={"Content-Type": "application/json"})
-                    with urllib.request.urlopen(req, timeout=60) as resp:
-                        data = json.loads(resp.read().decode('utf-8'))
-                    out = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                    if out:
-                        return out
-                except Exception:
-                    pass
-            continue
+        # Try the same key up to 2 times before moving on
+        for attempt in range(2):
+            try:
+                url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
+                       f"{model}:generateContent?key={api_key}")
+                req = urllib.request.Request(url, data=payload,
+                                             headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(req, timeout=60, context=ctx) as resp:
+                    data = json.loads(resp.read().decode('utf-8'))
+                out = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                if out:
+                    return out
+            except Exception as e:
+                err_str = str(e)
+                if attempt == 0:
+                    # First failure on this key — wait briefly and retry the same key
+                    print(f"[ai_writer] Key #{idx+1} attempt 1 failed ({err_str[:60]}), retrying...")
+                    time.sleep(1.0)
+                else:
+                    # Second failure — give up on this key and try next
+                    print(f"[ai_writer] Key #{idx+1} attempt 2 failed ({err_str[:60]}), rotating to next key")
     return None
 
 

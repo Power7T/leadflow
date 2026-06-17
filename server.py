@@ -400,45 +400,55 @@ async def settings_test_gemini(request: Request):
     keys = [k.strip() for k in keys_str.split(",") if k.strip()]
     if not keys:
         return JSONResponse({"ok": False, "error": "No keys provided"}, status_code=400)
-    
-    import urllib.request, json, time
+
+    import urllib.request, json, time, ssl
     results = []
-    
+    context = ssl._create_unverified_context()
+
     payload = json.dumps({
         "contents": [{"parts": [{"text": "say hello"}]}]
     }).encode()
-    
+
     for idx, key in enumerate(keys):
-        if idx > 0:
-            time.sleep(0.25)  # Pause to avoid rapid burst rate limits
         masked = key[:6] + "..." + key[-4:] if len(key) > 10 else "Invalid format"
-        try:
-            import ssl
-            context = ssl._create_unverified_context()
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
-            req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=10, context=context) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-            
-            if "candidates" in data and len(data["candidates"]) > 0:
-                results.append({"index": idx + 1, "key": masked, "status": "active", "error": None})
-            else:
-                results.append({"index": idx + 1, "key": masked, "status": "invalid", "error": "Unexpected response structure"})
-        except Exception as e:
-            err_str = str(e)
-            status = "invalid"
-            if "503" in err_str or "unavailable" in err_str.lower():
-                status = "exhausted"
-                error_msg = "Service Unavailable (Google transient error)"
-            elif "429" in err_str or "quota" in err_str.lower() or "limit" in err_str.lower():
-                status = "exhausted"
-                error_msg = "Quota exhausted / Rate limit hit"
-            elif "400" in err_str or "403" in err_str or "404" in err_str or "invalid" in err_str.lower():
-                error_msg = "Invalid API Key"
-            else:
-                error_msg = err_str[:80]
-            results.append({"index": idx + 1, "key": masked, "status": status, "error": error_msg})
-            
+        success = False
+
+        # Try this key up to 2 times before marking it failed
+        for attempt in range(2):
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
+                req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(req, timeout=10, context=context) as resp:
+                    data = json.loads(resp.read().decode('utf-8'))
+
+                if "candidates" in data and len(data["candidates"]) > 0:
+                    results.append({"index": idx + 1, "key": masked, "status": "active", "error": None})
+                    success = True
+                    break
+                else:
+                    results.append({"index": idx + 1, "key": masked, "status": "invalid", "error": "Unexpected response"})
+                    success = True
+                    break
+            except Exception as e:
+                err_str = str(e)
+                if attempt == 0:
+                    # First failure — wait 1s and retry the same key
+                    time.sleep(1.0)
+                else:
+                    # Second failure — classify and record
+                    status = "invalid"
+                    if "503" in err_str or "unavailable" in err_str.lower():
+                        status = "exhausted"
+                        error_msg = "Temporarily Unavailable (transient)"
+                    elif "429" in err_str or "quota" in err_str.lower() or "limit" in err_str.lower():
+                        status = "exhausted"
+                        error_msg = "Quota exhausted / Rate limit hit"
+                    elif "400" in err_str or "403" in err_str or "404" in err_str or "invalid" in err_str.lower():
+                        error_msg = "Invalid API Key"
+                    else:
+                        error_msg = err_str[:80]
+                    results.append({"index": idx + 1, "key": masked, "status": status, "error": error_msg})
+
     return {"ok": True, "results": results}
 
 
