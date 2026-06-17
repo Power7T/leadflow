@@ -62,8 +62,8 @@ def _is_quota_error(text: str) -> bool:
 
 # ── Fallback Tier 2: Gemini REST API (google-generativeai) ─────────────────
 
-def _run_gemini_rest(prompt: str) -> str | None:
-    """Call Gemini Flash directly via REST with support for a rotated key pool."""
+def _run_gemini_rest(prompt: str, model: str = "gemini-2.5-flash") -> str | None:
+    """Call Gemini directly via REST with support for a rotated key pool and model fallback."""
     keys_str = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_API_KEY") or ""
     keys = [k.strip() for k in keys_str.split(",") if k.strip()]
     if not keys:
@@ -79,7 +79,7 @@ def _run_gemini_rest(prompt: str) -> str | None:
     for idx, api_key in enumerate(keys):
         try:
             url = ("https://generativelanguage.googleapis.com/v1beta/models/"
-                   f"gemini-1.5-flash:generateContent?key={api_key}")
+                   f"{model}:generateContent?key={api_key}")
             req = urllib.request.Request(url, data=payload,
                                          headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(req, timeout=60) as resp:
@@ -88,7 +88,21 @@ def _run_gemini_rest(prompt: str) -> str | None:
             if out:
                 return out
         except Exception as e:
-            print(f"[ai_writer] REST API key #{idx+1} failed: {str(e)[:80]}")
+            print(f"[ai_writer] REST API key #{idx+1} failed for {model}: {str(e)[:80]}")
+            # Try to fall back to stable gemini-1.5-flash for this key if it wasn't already tried
+            if model != "gemini-1.5-flash":
+                try:
+                    url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+                           f"gemini-1.5-flash:generateContent?key={api_key}")
+                    req = urllib.request.Request(url, data=payload,
+                                                 headers={"Content-Type": "application/json"})
+                    with urllib.request.urlopen(req, timeout=60) as resp:
+                        data = json.loads(resp.read().decode('utf-8'))
+                    out = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    if out:
+                        return out
+                except Exception:
+                    pass
             continue
     return None
 
@@ -397,17 +411,56 @@ def _run_template(prompt: str) -> str:
 
 # ── Main runner with full fallback chain ───────────────────────────────────
 
-def _get_model_for_task(prompt: str) -> str:
-    """Return the best available agy model for the given prompt context."""
+def _get_routing_for_prompt(prompt: str) -> dict:
+    """Return the primary tier, REST model, and agy model for a given prompt."""
     p = prompt.lower()
-    # 1. Audit / Competitor gaps -> Claude Sonnet 4.6 (Thinking) or Gemini 3.1 Pro (High)
+    
+    # 1. Audit / Gap Analysis / Competitor analysis (Logic heavy)
     if "audit" in p or "website score" in p or "gaps found" in p or "competitor" in p:
-        return os.getenv("AGY_AUDIT_MODEL", "Claude Sonnet 4.6 (Thinking)")
-    # 2. Chat / Interactive rewrite -> Gemini 3.5 Flash (Medium)
+        return {
+            "primary": "agy",
+            "rest_model": "gemini-2.5-pro",
+            "agy_model": os.getenv("AGY_AUDIT_MODEL", "Claude Sonnet 4.6 (Thinking)")
+        }
+        
+    # 2. Subject Line Options
+    if "3 different" in p and "subject line" in p:
+        return {
+            "primary": "rest",
+            "rest_model": "gemini-3-flash-preview",
+            "agy_model": os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (High)")
+        }
+        
+    # 3. Live Follow-up (needs speed)
+    if "right now" in p or "live follow" in p or "live_followup" in p:
+        return {
+            "primary": "rest",
+            "rest_model": "gemini-3-flash-preview",
+            "agy_model": os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (High)")
+        }
+        
+    # 4. Follow-up sequences (needs sequence planning)
+    if "follow-up email" in p or "follow-up (sent" in p:
+        return {
+            "primary": "rest",
+            "rest_model": "gemini-2.5-pro",
+            "agy_model": os.getenv("AGY_SEQUENCE_MODEL", "Gemini 3.1 Pro (High)")
+        }
+        
+    # 5. Chat / Rewrite
     if "answer concisely" in p or "original" in p:
-        return os.getenv("AGY_CHAT_MODEL", "Gemini 3.5 Flash (Medium)")
-    # 3. Default outreach -> Gemini 3.5 Flash (High)
-    return os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (High)")
+        return {
+            "primary": "rest",
+            "rest_model": "gemini-2.5-flash",
+            "agy_model": os.getenv("AGY_CHAT_MODEL", "Gemini 3.5 Flash (Medium)")
+        }
+        
+    # 6. Default Cold Email / DM
+    return {
+        "primary": "rest",
+        "rest_model": "gemini-2.5-flash",
+        "agy_model": os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (High)")
+    }
 
 
 # ── Main runner with full fallback chain ───────────────────────────────────
@@ -415,57 +468,71 @@ def _get_model_for_task(prompt: str) -> str:
 def _run(prompt: str, attempts: int = 2) -> str:
     """Call AI with a 5-tier fallback chain so generation NEVER gets stuck.
 
-    Tier 1: agy CLI (AGY account, free, rotating agy models)
-    Tier 2: Gemini REST API (GEMINI_API_KEY pool in .env)
+    Tier 1/2: Smart routing based on task (REST free API keys vs local agy CLI)
     Tier 3: OpenAI gpt-4o-mini (OPENAI_API_KEY in .env)
     Tier 4: Anthropic Claude Haiku (ANTHROPIC_API_KEY in .env)
     Tier 5: Smart template (always works, zero cost, zero dependencies)
     """
     import time
     full = SYSTEM_CONTEXT + "\n\n" + prompt
-    last_err = ""
+    
+    route = _get_routing_for_prompt(prompt)
+    primary = route["primary"]
+    rest_model = route["rest_model"]
+    agy_model = route["agy_model"]
 
-    task_model = _get_model_for_task(prompt)
-    models_to_try = []
-    if task_model:
-        models_to_try.append(task_model)
+    # Build execution chain of primary vs fallback models
+    execution_chain = []
+    
+    if primary == "rest":
+        execution_chain.append(("rest", rest_model))
+        execution_chain.append(("agy", agy_model))
+    else:
+        execution_chain.append(("agy", agy_model))
+        execution_chain.append(("rest", rest_model))
+
+    # Add general fallback models
     for m in [DEFAULT_MODEL, "Gemini 3.5 Flash (High)", "Gemini 3.5 Flash (Medium)"]:
-        if m not in models_to_try:
-            models_to_try.append(m)
+        if ("agy", m) not in execution_chain:
+            execution_chain.append(("agy", m))
+            
+    if ("rest", "gemini-1.5-flash") not in execution_chain:
+        execution_chain.append(("rest", "gemini-1.5-flash"))
 
-    # ── Tier 1: agy ──
-    for model_to_try in models_to_try:
-        for i in range(attempts):
-            try:
-                result = subprocess.run(
-                    [AGY_PATH, "--model", model_to_try, "-p", full],
-                    capture_output=True, text=True, timeout=120,
-                )
-                out = (result.stdout or "").strip()
-                stderr = (result.stderr or "").strip()
+    # Execute the chain
+    for tier, model in execution_chain:
+        if tier == "rest":
+            print(f"[ai_writer] Trying REST API with model: {model}")
+            out = _run_gemini_rest(prompt, model)
+            if out:
+                return out
+        elif tier == "agy":
+            for i in range(attempts):
+                try:
+                    print(f"[ai_writer] Trying agy with model: {model}")
+                    result = subprocess.run(
+                        [AGY_PATH, "--model", model, "-p", full],
+                        capture_output=True, text=True, timeout=120,
+                    )
+                    out = (result.stdout or "").strip()
+                    stderr = (result.stderr or "").strip()
 
-                if result.returncode == 0 and out:
-                    return out
+                    if result.returncode == 0 and out:
+                        return out
 
-                last_err = stderr or "empty response"
+                    last_err = stderr or "empty response"
 
-                if _is_quota_error(last_err) or _is_quota_error(out) or "not found" in last_err.lower():
-                    print(f"[ai_writer] agy model {model_to_try} failed/rate-limited — trying fallback. ({last_err[:80]})")
-                    break
+                    if _is_quota_error(last_err) or _is_quota_error(out) or "not found" in last_err.lower():
+                        print(f"[ai_writer] agy model {model} failed/rate-limited — trying fallback. ({last_err[:80]})")
+                        break
 
-            except subprocess.TimeoutExpired:
-                last_err = "timed out"
-            except Exception as ex:
-                last_err = str(ex)
+                except subprocess.TimeoutExpired:
+                    pass
+                except Exception:
+                    pass
 
-            if i < attempts - 1:
-                time.sleep(1.5 * (i + 1))
-
-    # ── Tier 2: Gemini REST ──
-    print("[ai_writer] Trying Tier 2: Gemini REST API")
-    out = _run_gemini_rest(prompt)
-    if out:
-        return out
+                if i < attempts - 1:
+                    time.sleep(1.5 * (i + 1))
 
     # ── Tier 3: OpenAI ──
     print("[ai_writer] Trying Tier 3: OpenAI gpt-4o-mini")
