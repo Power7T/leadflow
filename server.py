@@ -413,7 +413,7 @@ async def settings_test_gemini(request: Request):
         try:
             import ssl
             context = ssl._create_unverified_context()
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
             req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(req, timeout=10, context=context) as resp:
                 data = json.loads(resp.read().decode('utf-8'))
