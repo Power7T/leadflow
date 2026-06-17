@@ -11,7 +11,12 @@
 </div>
 
 <div class="form-card" style="max-width: 600px; margin-bottom: 24px;">
-  <h2>API & Environment Variables</h2>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <h2 style="margin: 0; font-size: 15px; font-weight: 600;">API & Environment Variables</h2>
+    <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; text-transform: none; font-size: 11px; margin: 0; color: var(--accent);">
+      <input type="checkbox" id="toggleShowKeys" style="width: auto; margin: 0;"> Show Secrets
+    </label>
+  </div>
   <p style="color:var(--text-dim);font-size:13px;margin-bottom:18px">
     These values are saved directly to your <code>.env</code> file.
   </p>
@@ -228,5 +233,14 @@ async function testGmail() {
   btn.textContent = '🔌 Test Connection';
   btn.disabled = false;
 }
+
+document.getElementById('toggleShowKeys').addEventListener('change', (e) => {
+  const type = e.target.checked ? 'text' : 'password';
+  const fields = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_MAPS_API_KEY', 'HUNTER_API_KEY', 'APOLLO_API_KEY', 'SENDER_APP_PASSWORD'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.type = type;
+  });
+});
 </script>
 {% endblock %}
