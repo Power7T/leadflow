@@ -63,17 +63,8 @@ def _is_quota_error(text: str) -> bool:
 # ── Fallback Tier 2: Gemini REST API (google-generativeai) ─────────────────
 
 def _run_gemini_rest(prompt: str, model: str = "gemini-2.5-flash") -> str | None:
-    """Call Gemini directly via REST with support for model-specific key pools and key rotation."""
-    # Resolve which key pool to load based on the targeted model
-    env_var = "GEMINI_API_KEY"
-    if "pro" in model:
-        env_var = "GEMINI_PRO_KEYS"
-    elif "preview" in model:
-        env_var = "GEMINI_PREVIEW_KEYS"
-    elif "flash" in model:
-        env_var = "GEMINI_FLASH_KEYS"
-
-    keys_str = os.getenv(env_var) or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_API_KEY") or ""
+    """Call Gemini directly via REST with support for a rotated key pool and model fallback."""
+    keys_str = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_API_KEY") or ""
     keys = [k.strip() for k in keys_str.split(",") if k.strip()]
     if not keys:
         return None
@@ -420,34 +411,12 @@ def _run_template(prompt: str) -> str:
 
 # ── Main runner with full fallback chain ───────────────────────────────────
 
-def _get_routing_for_prompt(prompt: str) -> dict:
-    """Return the primary tier, REST model, and agy model for a given prompt."""
-    p = prompt.lower()
-    
-    # 1. Audit / Gap Analysis / Competitor analysis (Logic heavy)
-    # Uses powerful agy models first (like Sonnet or 3.1 Pro), then falls back to REST 2.5 Pro
-    if "audit" in p or "website score" in p or "gaps found" in p or "competitor" in p:
-        return {
-            "primary": "agy",
-            "rest_model": os.getenv("REST_AUDIT_MODEL", "gemini-2.5-pro"),
-            "agy_model": os.getenv("AGY_AUDIT_MODEL", "Claude Sonnet 4.6 (Thinking)")
-        }
-        
-    # 2. Writing tasks (Emails, DMs, subject lines, followups, chat)
-    # Uses REST gemini-2.5-pro first, then falls back to agy Gemini 3.5 Flash (Low)
-    return {
-        "primary": "rest",
-        "rest_model": os.getenv("REST_DEFAULT_MODEL", "gemini-2.5-pro"),
-        "agy_model": os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (Low)")
-    }
-
-
 # ── Main runner with full fallback chain ───────────────────────────────────
 
 def _run(prompt: str, attempts: int = 2) -> str:
     """Call AI with a 5-tier fallback chain so generation NEVER gets stuck.
 
-    Tier 1/2: Smart routing based on task (REST gemini-2.5-pro vs local agy Gemini 3.5 Flash Low)
+    Tier 1/2: Configurable REST Model routing order (Primary -> Secondary -> Tertiary) vs local agy CLI
     Tier 3: OpenAI gpt-4o-mini (OPENAI_API_KEY in .env)
     Tier 4: Anthropic Claude Haiku (ANTHROPIC_API_KEY in .env)
     Tier 5: Smart template (always works, zero cost, zero dependencies)
@@ -455,28 +424,42 @@ def _run(prompt: str, attempts: int = 2) -> str:
     import time
     full = SYSTEM_CONTEXT + "\n\n" + prompt
     
-    route = _get_routing_for_prompt(prompt)
-    primary = route["primary"]
-    rest_model = route["rest_model"]
-    agy_model = route["agy_model"]
+    # Load user-preferred order for REST models
+    rest_primary = os.getenv("REST_PRIMARY_MODEL", "gemini-2.5-pro")
+    rest_secondary = os.getenv("REST_SECONDARY_MODEL", "gemini-2.5-flash")
+    rest_tertiary = os.getenv("REST_TERTIARY_MODEL", "gemini-3-flash-preview")
+    
+    # Check if logic-heavy or standard writing task
+    p = prompt.lower()
+    is_audit = "audit" in p or "website score" in p or "gaps found" in p or "competitor" in p
+    
+    agy_audit_model = os.getenv("AGY_AUDIT_MODEL", "Claude Sonnet 4.6 (Thinking)")
+    agy_write_model = os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (Low)")
 
-    # Build execution chain of primary vs fallback models
     execution_chain = []
     
-    if primary == "rest":
-        execution_chain.append(("rest", rest_model))
-        execution_chain.append(("agy", agy_model))
+    if is_audit:
+        # Audit: agy primary model first, then fall back to REST in order, then fallback agy models
+        execution_chain.append(("agy", agy_audit_model))
+        execution_chain.append(("rest", rest_primary))
+        execution_chain.append(("rest", rest_secondary))
+        execution_chain.append(("rest", rest_tertiary))
+        execution_chain.append(("agy", agy_write_model))
     else:
-        execution_chain.append(("agy", agy_model))
-        execution_chain.append(("rest", rest_model))
+        # Outreach/Writing: REST models first, then fall back to agy model
+        execution_chain.append(("rest", rest_primary))
+        execution_chain.append(("rest", rest_secondary))
+        execution_chain.append(("rest", rest_tertiary))
+        execution_chain.append(("agy", agy_write_model))
 
-    # Add general fallback models (prioritizing Gemini 3.5 Flash (Low) for agy fallback)
+    # Add general fallback models (if not already tried)
     for m in ["Gemini 3.5 Flash (Low)", DEFAULT_MODEL, "Gemini 3.5 Flash (Medium)", "Gemini 3.5 Flash (High)"]:
         if ("agy", m) not in execution_chain:
             execution_chain.append(("agy", m))
             
-    if ("rest", "gemini-1.5-flash") not in execution_chain:
-        execution_chain.append(("rest", "gemini-1.5-flash"))
+    for m in ["gemini-1.5-flash", "gemini-2.5-flash", "gemini-2.5-pro"]:
+        if ("rest", m) not in execution_chain:
+            execution_chain.append(("rest", m))
 
     # Execute the chain
     for tier, model in execution_chain:
