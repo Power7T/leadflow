@@ -416,6 +416,7 @@ def _get_routing_for_prompt(prompt: str) -> dict:
     p = prompt.lower()
     
     # 1. Audit / Gap Analysis / Competitor analysis (Logic heavy)
+    # Uses powerful agy models first (like Sonnet or 3.1 Pro), then falls back to REST 2.5 Pro
     if "audit" in p or "website score" in p or "gaps found" in p or "competitor" in p:
         return {
             "primary": "agy",
@@ -423,43 +424,12 @@ def _get_routing_for_prompt(prompt: str) -> dict:
             "agy_model": os.getenv("AGY_AUDIT_MODEL", "Claude Sonnet 4.6 (Thinking)")
         }
         
-    # 2. Subject Line Options
-    if "3 different" in p and "subject line" in p:
-        return {
-            "primary": "rest",
-            "rest_model": "gemini-3-flash-preview",
-            "agy_model": os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (High)")
-        }
-        
-    # 3. Live Follow-up (needs speed)
-    if "right now" in p or "live follow" in p or "live_followup" in p:
-        return {
-            "primary": "rest",
-            "rest_model": "gemini-3-flash-preview",
-            "agy_model": os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (High)")
-        }
-        
-    # 4. Follow-up sequences (needs sequence planning)
-    if "follow-up email" in p or "follow-up (sent" in p:
-        return {
-            "primary": "rest",
-            "rest_model": "gemini-2.5-pro",
-            "agy_model": os.getenv("AGY_SEQUENCE_MODEL", "Gemini 3.1 Pro (High)")
-        }
-        
-    # 5. Chat / Rewrite
-    if "answer concisely" in p or "original" in p:
-        return {
-            "primary": "rest",
-            "rest_model": "gemini-2.5-flash",
-            "agy_model": os.getenv("AGY_CHAT_MODEL", "Gemini 3.5 Flash (Medium)")
-        }
-        
-    # 6. Default Cold Email / DM
+    # 2. Writing tasks (Emails, DMs, subject lines, followups, chat)
+    # Uses REST gemini-2.5-pro first, then falls back to agy Gemini 3.5 Flash (Low)
     return {
         "primary": "rest",
-        "rest_model": "gemini-2.5-flash",
-        "agy_model": os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (High)")
+        "rest_model": "gemini-2.5-pro",
+        "agy_model": os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (Low)")
     }
 
 
@@ -468,7 +438,7 @@ def _get_routing_for_prompt(prompt: str) -> dict:
 def _run(prompt: str, attempts: int = 2) -> str:
     """Call AI with a 5-tier fallback chain so generation NEVER gets stuck.
 
-    Tier 1/2: Smart routing based on task (REST free API keys vs local agy CLI)
+    Tier 1/2: Smart routing based on task (REST gemini-2.5-pro vs local agy Gemini 3.5 Flash Low)
     Tier 3: OpenAI gpt-4o-mini (OPENAI_API_KEY in .env)
     Tier 4: Anthropic Claude Haiku (ANTHROPIC_API_KEY in .env)
     Tier 5: Smart template (always works, zero cost, zero dependencies)
@@ -491,8 +461,8 @@ def _run(prompt: str, attempts: int = 2) -> str:
         execution_chain.append(("agy", agy_model))
         execution_chain.append(("rest", rest_model))
 
-    # Add general fallback models
-    for m in [DEFAULT_MODEL, "Gemini 3.5 Flash (High)", "Gemini 3.5 Flash (Medium)"]:
+    # Add general fallback models (prioritizing Gemini 3.5 Flash (Low) for agy fallback)
+    for m in ["Gemini 3.5 Flash (Low)", DEFAULT_MODEL, "Gemini 3.5 Flash (Medium)", "Gemini 3.5 Flash (High)"]:
         if ("agy", m) not in execution_chain:
             execution_chain.append(("agy", m))
             
