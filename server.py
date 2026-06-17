@@ -393,6 +393,48 @@ def settings_test_gmail():
         return JSONResponse({"ok": False, "error": str(e)})
 
 
+@app.post("/settings/test-gemini")
+async def settings_test_gemini(request: Request):
+    body = await request.json()
+    keys_str = body.get("keys", "")
+    keys = [k.strip() for k in keys_str.split(",") if k.strip()]
+    if not keys:
+        return JSONResponse({"ok": False, "error": "No keys provided"}, status_code=400)
+    
+    import urllib.request, json
+    results = []
+    
+    payload = json.dumps({
+        "contents": [{"parts": [{"text": "say hello"}]}]
+    }).encode()
+    
+    for idx, key in enumerate(keys):
+        masked = key[:6] + "..." + key[-4:] if len(key) > 10 else "Invalid format"
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+            req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+            
+            if "candidates" in data and len(data["candidates"]) > 0:
+                results.append({"index": idx + 1, "key": masked, "status": "active", "error": None})
+            else:
+                results.append({"index": idx + 1, "key": masked, "status": "invalid", "error": "Unexpected response structure"})
+        except Exception as e:
+            err_str = str(e)
+            status = "invalid"
+            if "429" in err_str or "quota" in err_str.lower() or "limit" in err_str.lower():
+                status = "exhausted"
+                error_msg = "Quota exhausted / Rate limit hit"
+            elif "400" in err_str or "403" in err_str or "invalid" in err_str.lower():
+                error_msg = "Invalid API Key"
+            else:
+                error_msg = err_str[:80]
+            results.append({"index": idx + 1, "key": masked, "status": status, "error": error_msg})
+            
+    return {"ok": True, "results": results}
+
+
 def _get_scheduler_cfg():
     try:
         from database import get_conn

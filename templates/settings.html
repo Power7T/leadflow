@@ -23,7 +23,11 @@
   <form id="envForm">
     <div style="margin-bottom: 12px">
       <label>Google Gemini API Key(s) (comma-separated for rotation)</label>
-      <input type="password" id="GEMINI_API_KEY" value="{{ env.GEMINI_API_KEY }}" placeholder="API Key 1, API Key 2, ...">
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input type="password" id="GEMINI_API_KEY" value="{{ env.GEMINI_API_KEY }}" placeholder="API Key 1, API Key 2, ..." style="flex: 1; margin: 0;">
+        <button type="button" class="btn btn-ghost" id="testGeminiBtn" onclick="testGeminiKeys()" style="white-space: nowrap;">🔌 Test Keys</button>
+      </div>
+      <div id="geminiTestResult" style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;"></div>
     </div>
     <div style="margin-bottom: 12px">
       <label>OpenAI API Key (Fallback)</label>
@@ -207,6 +211,70 @@ document.getElementById('gmailForm').addEventListener('submit', (e) => {
     SENDER_APP_PASSWORD: document.getElementById('SENDER_APP_PASSWORD').value,
   }, document.getElementById('saveGmailBtn'));
 });
+
+async function testGeminiKeys() {
+  const btn = document.getElementById('testGeminiBtn');
+  const resBox = document.getElementById('geminiTestResult');
+  const keysInput = document.getElementById('GEMINI_API_KEY').value;
+  
+  if (!keysInput.trim()) {
+    resBox.innerHTML = '<div style="color: #ff4d4d; font-size: 13px; font-weight: 500;">❌ Please enter at least one API key to test.</div>';
+    return;
+  }
+  
+  btn.textContent = 'Testing...';
+  btn.disabled = true;
+  resBox.innerHTML = '';
+  
+  try {
+    const res = await fetch('/settings/test-gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keys: keysInput })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      resBox.innerHTML = `<div style="color: #ff4d4d; font-size: 13px; font-weight: 500;">❌ Error: ${data.error || 'Failed to test keys'}</div>`;
+    } else {
+      let html = '';
+      data.results.forEach(res => {
+        let color = '#ff4d4d';
+        let statusText = 'Invalid';
+        let badgeIcon = '❌';
+        if (res.status === 'active') {
+          color = '#00c896';
+          statusText = 'Active';
+          badgeIcon = '✅';
+        } else if (res.status === 'exhausted') {
+          color = '#ffc107';
+          statusText = 'Quota Exhausted';
+          badgeIcon = '⚠️';
+        }
+        
+        html += `
+          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 13px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 600; color: var(--text-dim);">#${res.index}</span>
+              <span style="font-family: monospace; color: var(--text);">${res.key}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="color: ${color}; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 4px;">
+                ${badgeIcon} ${statusText}
+              </span>
+              ${res.error ? `<span style="color: var(--text-dim); font-size: 11px;">(${res.error})</span>` : ''}
+            </div>
+          </div>
+        `;
+      });
+      resBox.innerHTML = html;
+    }
+  } catch(e) {
+    resBox.innerHTML = '<div style="color: #ff4d4d; font-size: 13px; font-weight: 500;">❌ Request failed. Please check backend connection.</div>';
+  }
+  
+  btn.textContent = '🔌 Test Keys';
+  btn.disabled = false;
+}
 
 async function testGmail() {
   const btn = document.getElementById('testGmailBtn');
