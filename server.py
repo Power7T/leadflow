@@ -401,7 +401,7 @@ async def settings_test_gemini(request: Request):
     if not keys:
         return JSONResponse({"ok": False, "error": "No keys provided"}, status_code=400)
     
-    import urllib.request, json
+    import urllib.request, json, time
     results = []
     
     payload = json.dumps({
@@ -409,6 +409,8 @@ async def settings_test_gemini(request: Request):
     }).encode()
     
     for idx, key in enumerate(keys):
+        if idx > 0:
+            time.sleep(0.25)  # Pause to avoid rapid burst rate limits
         masked = key[:6] + "..." + key[-4:] if len(key) > 10 else "Invalid format"
         try:
             import ssl
@@ -425,7 +427,10 @@ async def settings_test_gemini(request: Request):
         except Exception as e:
             err_str = str(e)
             status = "invalid"
-            if "429" in err_str or "quota" in err_str.lower() or "limit" in err_str.lower():
+            if "503" in err_str or "unavailable" in err_str.lower():
+                status = "exhausted"
+                error_msg = "Service Unavailable (Google transient error)"
+            elif "429" in err_str or "quota" in err_str.lower() or "limit" in err_str.lower():
                 status = "exhausted"
                 error_msg = "Quota exhausted / Rate limit hit"
             elif "400" in err_str or "403" in err_str or "404" in err_str or "invalid" in err_str.lower():
