@@ -1,6 +1,6 @@
 # LeadFlow
 
-LeadFlow is an autonomous, end-to-end outbound sales and lead generation system designed for web development agencies. It silently works in the background to scrape Google Maps, analyze business websites, build fully customized demo websites, draft AI-personalized outreach, and automatically send emails and follow-ups.
+LeadFlow is an autonomous, end-to-end outbound sales and lead generation system designed for freelancers and web development agencies. It works silently in the background to scrape Google Maps, analyze business websites, build fully customized demo websites, draft AI-personalized outreach, and automatically send emails and follow-ups.
 
 ---
 
@@ -10,88 +10,143 @@ LeadFlow is an autonomous, end-to-end outbound sales and lead generation system 
 - **Intelligent Scraping:** Uses the Google Places API to find local businesses based on niche and location.
 - **Smart Deduplication:** Performs domain-based extraction and name-similarity comparisons to avoid reaching out to the same business twice.
 - **Contact Enrichment:** Scrapes emails, social profiles, and verifies if phone numbers are WhatsApp-ready.
-- **Owner Name Extraction:** Scrapes the business "About" or "Team" pages to identify owner names, automatically formatting salutations (e.g. *Hey Mike,* instead of *Hey owner,*).
+- **Owner Name Extraction:** Scrapes the business "About" or "Team" pages to identify owner names, automatically personalizing salutations (e.g. *Hey Mike,* instead of *Hey there,*).
 
 ### 2. Website Performance Auditing & Grading
 - **Automatic Grading:** Evaluates lead websites using the Google PageSpeed Insights API.
-- **Visual CRM Badging:** Automatically marks leads with Hot (🔥), Warm (🌡️), or Cold (🧊) badges based on site performance scores, helping target low-performing sites.
+- **Visual CRM Badging:** Marks leads with Hot (🔥), Warm (🌡️), or Cold (🧊) badges based on site performance scores, helping prioritize outreach to low-performing sites.
 
 ### 3. Premium Demo Generation & Deployment
-- **Niche Templates:** Contains pre-designed premium HTML templates for multiple niches:
-  - **Fitness & Gyms** (Dark neon sports aesthetics)
-  - **Restaurants & Cafes** (Warm amber food-photography aesthetics)
-  - **Dentist & Clinics** (Clean teal medical layout)
-  - **Barbershops & Salons** (Vintage burgundy grooming portfolio)
-  - **Real Estate** (Navy and gold luxury properties)
+- **Niche Templates:** Pre-designed premium HTML templates for multiple niches:
+  - **Fitness & Gyms** — Dark neon sports aesthetics
+  - **Restaurants & Cafes** — Warm amber food-photography aesthetics
+  - **Dentist & Clinics** — Clean teal medical layout
+  - **Barbershops & Salons** — Vintage burgundy grooming portfolio
+  - **Real Estate** — Navy and gold luxury properties
 - **Central Template Manager:** Enable/disable specific templates dynamically from the dashboard.
 - **GitHub Pages Auto-Deployment:** Deploys generated prospect demo sites to GitHub Pages via the GitHub Contents API and logs the live URL.
 
-### 4. Smart Multi-Model Copywriter & Routing Pool
-- **5-Tier Fallback Chain:** Directs prompt requests through a self-healing chain of AI services (`agy` CLI -> REST API -> OpenAI -> Claude -> Offline templates).
-- **REST API Key Rotation:** Distributes API requests across a pool of up to 8 Gemini API keys in `.env` to bypass free-tier rate limits.
-- **Smart Task Routing:**
-  - **Outreach & Sequences:** Runs REST API keys first with optimized models (`gemini-2.5-flash`, `gemini-3-flash-preview`, `gemini-2.5-pro`) to save local system resources.
-  - **Audits & Complex Logic:** Reserves local `agy` CLI models like `Claude Sonnet 4.6 (Thinking)` or `Gemini 3.1 Pro (High)` for logical tasks.
-- **Offline Template Fallback:** Provides preselected copy variants for all outreach contexts (initial, follow-ups, audits, no-website, live follow-ups) if all APIs are offline.
+### 4. Smart Multi-Model Copywriter & Key Rotation Pool
+- **5-Tier Fallback Chain:** Directs prompt requests through a self-healing chain of AI services:
+  `agy CLI → Gemini REST API → OpenAI → Claude → Offline Templates`
+- **Gemini API Key Rotation Pool:**
+  - Supports up to 8+ comma-separated Gemini API keys in `.env` for free-tier rate limit bypass.
+  - Uses **one key at a time** — retries the same key once (with 1s delay) before rotating to the next key. Only moves to key #2 if key #1 fails twice in a row.
+  - Compatible with both legacy `AIzaSy...` keys and new AI Studio `AQ.Ab8...` keys.
+- **Test Keys Button:** Settings page includes a one-click **🔌 Test Keys** button that validates each key in the pool individually against `gemini-2.5-flash` and reports Active / Quota Exhausted / Invalid status per key.
+- **Smart Model Routing:**
+  - **Outreach & Sequences:** Uses REST API keys first with configurable primary/secondary/tertiary models (`gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-3-flash-preview`) to save local system resources.
+  - **Audits & Complex Logic:** Reserves local `agy` CLI models (e.g. `Claude Sonnet 4.6 (Thinking)`, `Gemini 3.1 Pro (High)`) for logical tasks.
+  - All 6 model slots are configurable from the Settings page without touching code.
+- **Offline Template Fallback:** Provides pre-written copy variants for all outreach contexts (initial, follow-ups, audits, no-website, live follow-ups) if all APIs are offline.
 
 ### 5. Interactive Kanban Pipeline & CRM
-- **Pipeline Stages:** Manage leads through a visual drag-and-drop pipeline containing columns for: *New*, *Generated*, *Sent*, *Opened*, *Demo Viewed*, *Replied*, and *Converted*.
-- **Interaction Logging:** Track real-time events like email opens, demo site visits, and replies.
+- **Pipeline Stages:** Manage leads through a visual drag-and-drop pipeline: *New → Generated → Sent → Opened → Demo Viewed → Replied → Approved → Converted*.
+- **Interaction Logging:** Tracks real-time events like email opens, demo site visits, and replies.
+- **Opt-Out Blacklisting:** Automatically detects opt-out replies ("stop", "unsubscribe") via IMAP sync, marks leads as opted-out, cancels all pending follow-ups, and disables all communication controls for that lead.
 
 ### 6. Campaign Analytics & A/B Testing
-- **Conversion Funnel:** Visualizes transition rates from initial discovery down to conversions.
-- **A/B Subject Line Performance:** Logs subjects used and computes open rates to rank top-performing subjects.
+- **Conversion Funnel:** Visualizes transition rates from discovery to conversion.
+- **A/B Subject Line Performance:** Logs which subject line was used per send and computes per-subject open rates to surface top performers.
 - **Performance Matrices:** Breaks down outreach performance by city and business category.
+
+### 7. Settings & Configuration
+- **In-Dashboard `.env` Editor:** All API keys, SMTP credentials, model selections, and URLs are editable directly from the web UI — no terminal required.
+- **Show/Hide Secrets Toggle:** One-click checkbox to reveal or mask all password fields simultaneously.
+- **API Key Validator:** Test each Gemini key individually from the settings page with real-time status badges.
+- **Gmail Connection Tester:** Verifies SMTP + IMAP credentials before enabling Autopilot.
 
 ---
 
 ## Technology Stack
 
-- **Backend:** Python (FastAPI), SQLite (Database)
-- **Frontend:** HTML5, Vanilla CSS, Javascript (ES6)
-- **Automation:** APScheduler (Background task coordinator)
-- **AI / LLM:** Google Antigravity SDK (`agy` CLI) & Google Gemini REST API
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.12, FastAPI, Uvicorn |
+| Database | SQLite (via `database.py`) |
+| Frontend | HTML5, Vanilla CSS, JavaScript (ES6) |
+| Automation | APScheduler |
+| AI / LLM | Google Antigravity SDK (`agy` CLI) & Gemini REST API |
+| Email | Gmail SMTP + IMAP (App Password) |
+| Deployment | Cloudflare Tunnel (local), GitHub Pages (demos) |
+| Process Management | macOS LaunchAgent (`com.leadflow.app.plist`) |
 
 ---
 
 ## Setup & Installation
 
-**Note: Do NOT commit your `.env` file to version control. Keep all API keys secret.**
+> **⚠️ Never commit your `.env` file. All API keys must stay secret.**
 
-1. Clone the repository.
-2. Ensure you have Python 3.10+ installed.
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   pip install phonenumbers --break-system-packages
-   ```
-4. Create a `.env` file in the root directory and add your credentials:
-   ```env
-   # API Keys (Google Studio - comma-separated list of up to 8 keys for rotation)
-   GEMINI_API_KEY=your_key_1,your_key_2,your_key_3
+### 1. Clone & Install Dependencies
+```bash
+git clone https://github.com/Power7T/leadflow.git
+cd leadflow
+pip install -r requirements.txt
+pip install phonenumbers --break-system-packages
+```
 
-   # Places API Key
-   GOOGLE_MAPS_API_KEY=your_maps_api_key
-   GOOGLE_PAGESPEED_API_KEY=your_pagespeed_api_key
+### 2. Create Your `.env` File
+```env
+# Gemini AI Studio keys — comma-separated pool (up to 8+, supports AQ. and AIzaSy. prefixes)
+GEMINI_API_KEY=AQ.key1,AQ.key2,AIzaSykey3
 
-   # GitHub Deployment
-   GITHUB_TOKEN=your_github_token
-   GITHUB_DEMO_REPO=your_github_username/leadflow-demos
+# Google APIs
+GOOGLE_MAPS_API_KEY=your_maps_api_key
+GOOGLE_PAGESPEED_API_KEY=your_pagespeed_api_key
 
-   # SMTP Outreach
-   SENDER_EMAIL=your_email@gmail.com
-   SENDER_APP_PASSWORD=your_app_password
+# OpenAI fallback
+OPENAI_API_KEY=sk-...
 
-   # Schedulers / Booking
-   CALENDLY_URL=https://calendly.com/your-username
-   BOOKING_URL=https://www.fiverr.com/sellers/your-username
-   ```
-5. Start LeadFlow and the Demo Server:
-   ```bash
-   chmod +x LeadFlow.command
-   ./LeadFlow.command
-   ```
-6. Access the dashboard in your browser at `http://127.0.0.1:8765`.
+# GitHub Pages demo deployment
+GITHUB_TOKEN=your_github_pat
+GITHUB_DEMO_REPO=your_username/leadflow-demos
+
+# Gmail SMTP/IMAP outreach
+SENDER_EMAIL=you@gmail.com
+SENDER_APP_PASSWORD=your_16_char_app_password
+
+# Booking & Payment links
+BOOKING_URL=https://calendly.com/your-username
+STRIPE_PAYMENT_LINK=https://buy.stripe.com/...
+
+# AI Model Routing (optional — defaults set automatically)
+REST_PRIMARY_MODEL=gemini-2.5-flash
+REST_SECONDARY_MODEL=gemini-2.5-pro
+REST_TERTIARY_MODEL=gemini-3-flash-preview
+```
+
+### 3. Start LeadFlow
+```bash
+# Option A — macOS LaunchAgent (runs as background daemon, auto-restarts on reboot)
+launchctl load ~/Library/LaunchAgents/com.leadflow.app.plist
+
+# Option B — Direct
+python3.12 -u server.py
+```
+
+### 4. Open Dashboard
+```
+http://127.0.0.1:8765
+```
+
+---
+
+## Key Rotation Logic
+
+LeadFlow's Gemini API key pool uses a **sticky retry-before-rotate** strategy:
+
+```
+Key #1 → Try
+         ❌ Fail → wait 1s → Retry Key #1
+                   ❌ Fail again → rotate to Key #2
+
+Key #2 → Try
+         ❌ Fail → wait 1s → Retry Key #2
+                   ❌ Fail again → rotate to Key #3
+...
+```
+
+This prevents abandoning a key on a single transient 503/quota blip.
 
 ---
 
