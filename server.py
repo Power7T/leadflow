@@ -411,9 +411,11 @@ async def settings_test_gemini(request: Request):
     for idx, key in enumerate(keys):
         masked = key[:6] + "..." + key[-4:] if len(key) > 10 else "Invalid format"
         try:
+            import ssl
+            context = ssl._create_unverified_context()
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
             req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=10, context=context) as resp:
                 data = json.loads(resp.read().decode('utf-8'))
             
             if "candidates" in data and len(data["candidates"]) > 0:
@@ -426,7 +428,7 @@ async def settings_test_gemini(request: Request):
             if "429" in err_str or "quota" in err_str.lower() or "limit" in err_str.lower():
                 status = "exhausted"
                 error_msg = "Quota exhausted / Rate limit hit"
-            elif "400" in err_str or "403" in err_str or "invalid" in err_str.lower():
+            elif "400" in err_str or "403" in err_str or "404" in err_str or "invalid" in err_str.lower():
                 error_msg = "Invalid API Key"
             else:
                 error_msg = err_str[:80]
