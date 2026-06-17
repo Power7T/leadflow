@@ -44,6 +44,63 @@
       <label>Apollo.io API Key (Email enrichment)</label>
       <input type="password" id="APOLLO_API_KEY" value="{{ env.APOLLO_API_KEY }}">
     </div>
+    
+    <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
+      <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">AI Model Routing & Fallbacks</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
+        <div>
+          <label>REST API Default Model</label>
+          <input type="text" id="REST_DEFAULT_MODEL" value="{{ env.REST_DEFAULT_MODEL | default('gemini-2.5-pro') }}" placeholder="e.g. gemini-2.5-pro">
+        </div>
+        <div>
+          <label>REST API Audit Model</label>
+          <input type="text" id="REST_AUDIT_MODEL" value="{{ env.REST_AUDIT_MODEL | default('gemini-2.5-pro') }}" placeholder="e.g. gemini-2.5-pro">
+        </div>
+      </div>
+
+      <div style="margin-bottom: 12px">
+        <label>Local agy Audit Model (Logic-heavy Tasks)</label>
+        <select id="AGY_AUDIT_MODEL">
+          {% set cur = env.AGY_AUDIT_MODEL | default('Claude Sonnet 4.6 (Thinking)') %}
+          <option value="Claude Sonnet 4.6 (Thinking)" {% if cur == 'Claude Sonnet 4.6 (Thinking)' %}selected{% endif %}>Claude Sonnet 4.6 (Thinking)</option>
+          <option value="Claude Opus 4.6 (Thinking)" {% if cur == 'Claude Opus 4.6 (Thinking)' %}selected{% endif %}>Claude Opus 4.6 (Thinking)</option>
+          <option value="Gemini 3.1 Pro (High)" {% if cur == 'Gemini 3.1 Pro (High)' %}selected{% endif %}>Gemini 3.1 Pro (High)</option>
+          <option value="Gemini 3.1 Pro (Low)" {% if cur == 'Gemini 3.1 Pro (Low)' %}selected{% endif %}>Gemini 3.1 Pro (Low)</option>
+          <option value="Gemini 3.5 Flash (High)" {% if cur == 'Gemini 3.5 Flash (High)' %}selected{% endif %}>Gemini 3.5 Flash (High)</option>
+          <option value="Gemini 3.5 Flash (Medium)" {% if cur == 'Gemini 3.5 Flash (Medium)' %}selected{% endif %}>Gemini 3.5 Flash (Medium)</option>
+          <option value="Gemini 3.5 Flash (Low)" {% if cur == 'Gemini 3.5 Flash (Low)' %}selected{% endif %}>Gemini 3.5 Flash (Low)</option>
+          <option value="GPT-OSS 120B (Medium)" {% if cur == 'GPT-OSS 120B (Medium)' %}selected{% endif %}>GPT-OSS 120B (Medium)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 12px">
+        <label>Local agy Default Writing Model (Fallback Outreach)</label>
+        <select id="AGY_DEFAULT_MODEL">
+          {% set cur = env.AGY_DEFAULT_MODEL | default('Gemini 3.5 Flash (Low)') %}
+          <option value="Gemini 3.5 Flash (Low)" {% if cur == 'Gemini 3.5 Flash (Low)' %}selected{% endif %}>Gemini 3.5 Flash (Low)</option>
+          <option value="Gemini 3.5 Flash (Medium)" {% if cur == 'Gemini 3.5 Flash (Medium)' %}selected{% endif %}>Gemini 3.5 Flash (Medium)</option>
+          <option value="Gemini 3.5 Flash (High)" {% if cur == 'Gemini 3.5 Flash (High)' %}selected{% endif %}>Gemini 3.5 Flash (High)</option>
+          <option value="Gemini 3.1 Pro (Low)" {% if cur == 'Gemini 3.1 Pro (Low)' %}selected{% endif %}>Gemini 3.1 Pro (Low)</option>
+          <option value="Gemini 3.1 Pro (High)" {% if cur == 'Gemini 3.1 Pro (High)' %}selected{% endif %}>Gemini 3.1 Pro (High)</option>
+          <option value="Claude Sonnet 4.6 (Thinking)" {% if cur == 'Claude Sonnet 4.6 (Thinking)' %}selected{% endif %}>Claude Sonnet 4.6 (Thinking)</option>
+          <option value="Claude Opus 4.6 (Thinking)" {% if cur == 'Claude Opus 4.6 (Thinking)' %}selected{% endif %}>Claude Opus 4.6 (Thinking)</option>
+          <option value="GPT-OSS 120B (Medium)" {% if cur == 'GPT-OSS 120B (Medium)' %}selected{% endif %}>GPT-OSS 120B (Medium)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 20px">
+        <label>Local agy CRM Chat Model (Interactive Rewrite)</label>
+        <select id="AGY_CHAT_MODEL">
+          {% set cur = env.AGY_CHAT_MODEL | default('Gemini 3.5 Flash (Medium)') %}
+          <option value="Gemini 3.5 Flash (Medium)" {% if cur == 'Gemini 3.5 Flash (Medium)' %}selected{% endif %}>Gemini 3.5 Flash (Medium)</option>
+          <option value="Gemini 3.5 Flash (High)" {% if cur == 'Gemini 3.5 Flash (High)' %}selected{% endif %}>Gemini 3.5 Flash (High)</option>
+          <option value="Gemini 3.5 Flash (Low)" {% if cur == 'Gemini 3.5 Flash (Low)' %}selected{% endif %}>Gemini 3.5 Flash (Low)</option>
+          <option value="Gemini 3.1 Pro (Low)" {% if cur == 'Gemini 3.1 Pro (Low)' %}selected{% endif %}>Gemini 3.1 Pro (Low)</option>
+        </select>
+      </div>
+    </div>
+    
     <button type="submit" class="btn btn-primary" id="saveEnvBtn">💾 Save Settings</button>
   </form>
 </div>
@@ -110,6 +167,11 @@ document.getElementById('envForm').addEventListener('submit', (e) => {
     BOOKING_URL: document.getElementById('BOOKING_URL').value,
     HUNTER_API_KEY: document.getElementById('HUNTER_API_KEY').value,
     APOLLO_API_KEY: document.getElementById('APOLLO_API_KEY').value,
+    REST_DEFAULT_MODEL: document.getElementById('REST_DEFAULT_MODEL').value,
+    REST_AUDIT_MODEL: document.getElementById('REST_AUDIT_MODEL').value,
+    AGY_AUDIT_MODEL: document.getElementById('AGY_AUDIT_MODEL').value,
+    AGY_DEFAULT_MODEL: document.getElementById('AGY_DEFAULT_MODEL').value,
+    AGY_CHAT_MODEL: document.getElementById('AGY_CHAT_MODEL').value,
   }, document.getElementById('saveEnvBtn'));
 });
 

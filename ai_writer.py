@@ -420,7 +420,7 @@ def _get_routing_for_prompt(prompt: str) -> dict:
     if "audit" in p or "website score" in p or "gaps found" in p or "competitor" in p:
         return {
             "primary": "agy",
-            "rest_model": "gemini-2.5-pro",
+            "rest_model": os.getenv("REST_AUDIT_MODEL", "gemini-2.5-pro"),
             "agy_model": os.getenv("AGY_AUDIT_MODEL", "Claude Sonnet 4.6 (Thinking)")
         }
         
@@ -428,7 +428,7 @@ def _get_routing_for_prompt(prompt: str) -> dict:
     # Uses REST gemini-2.5-pro first, then falls back to agy Gemini 3.5 Flash (Low)
     return {
         "primary": "rest",
-        "rest_model": "gemini-2.5-pro",
+        "rest_model": os.getenv("REST_DEFAULT_MODEL", "gemini-2.5-pro"),
         "agy_model": os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (Low)")
     }
 
