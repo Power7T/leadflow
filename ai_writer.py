@@ -63,26 +63,34 @@ def _is_quota_error(text: str) -> bool:
 # ── Fallback Tier 2: Gemini REST API (google-generativeai) ─────────────────
 
 def _run_gemini_rest(prompt: str) -> str | None:
-    """Call Gemini Flash directly via REST — needs GEMINI_API_KEY in .env."""
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_API_KEY")
-    if not api_key:
+    """Call Gemini Flash directly via REST with support for a rotated key pool."""
+    keys_str = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_API_KEY") or ""
+    keys = [k.strip() for k in keys_str.split(",") if k.strip()]
+    if not keys:
         return None
-    try:
-        import urllib.request, json
-        full_prompt = SYSTEM_CONTEXT + "\n\n" + prompt
-        payload = json.dumps({
-            "contents": [{"parts": [{"text": full_prompt}]}],
-            "generationConfig": {"maxOutputTokens": 512, "temperature": 0.9},
-        }).encode()
-        url = ("https://generativelanguage.googleapis.com/v1beta/models/"
-               f"gemini-1.5-flash:generateContent?key={api_key}")
-        req = urllib.request.Request(url, data=payload,
-                                     headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            data = json.loads(resp.read())
-        return data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except Exception:
-        return None
+    
+    import urllib.request, json
+    full_prompt = SYSTEM_CONTEXT + "\n\n" + prompt
+    payload = json.dumps({
+        "contents": [{"parts": [{"text": full_prompt}]}],
+        "generationConfig": {"maxOutputTokens": 512, "temperature": 0.9},
+    }).encode()
+
+    for idx, api_key in enumerate(keys):
+        try:
+            url = ("https://generativelanguage.googleapis.com/v1beta/models/"
+                   f"gemini-1.5-flash:generateContent?key={api_key}")
+            req = urllib.request.Request(url, data=payload,
+                                         headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+            out = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+            if out:
+                return out
+        except Exception as e:
+            print(f"[ai_writer] REST API key #{idx+1} failed: {str(e)[:80]}")
+            continue
+    return None
 
 
 # ── Fallback Tier 3: OpenAI ────────────────────────────────────────────────
@@ -389,11 +397,26 @@ def _run_template(prompt: str) -> str:
 
 # ── Main runner with full fallback chain ───────────────────────────────────
 
+def _get_model_for_task(prompt: str) -> str:
+    """Return the best available agy model for the given prompt context."""
+    p = prompt.lower()
+    # 1. Audit / Competitor gaps -> Claude Sonnet 4.6 (Thinking) or Gemini 3.1 Pro (High)
+    if "audit" in p or "website score" in p or "gaps found" in p or "competitor" in p:
+        return os.getenv("AGY_AUDIT_MODEL", "Claude Sonnet 4.6 (Thinking)")
+    # 2. Chat / Interactive rewrite -> Gemini 3.5 Flash (Medium)
+    if "answer concisely" in p or "original" in p:
+        return os.getenv("AGY_CHAT_MODEL", "Gemini 3.5 Flash (Medium)")
+    # 3. Default outreach -> Gemini 3.5 Flash (High)
+    return os.getenv("AGY_DEFAULT_MODEL", "Gemini 3.5 Flash (High)")
+
+
+# ── Main runner with full fallback chain ───────────────────────────────────
+
 def _run(prompt: str, attempts: int = 2) -> str:
     """Call AI with a 5-tier fallback chain so generation NEVER gets stuck.
 
-    Tier 1: agy CLI (AGY account, free)
-    Tier 2: Gemini REST API (GEMINI_API_KEY in .env)
+    Tier 1: agy CLI (AGY account, free, rotating agy models)
+    Tier 2: Gemini REST API (GEMINI_API_KEY pool in .env)
     Tier 3: OpenAI gpt-4o-mini (OPENAI_API_KEY in .env)
     Tier 4: Anthropic Claude Haiku (ANTHROPIC_API_KEY in .env)
     Tier 5: Smart template (always works, zero cost, zero dependencies)
@@ -402,33 +425,41 @@ def _run(prompt: str, attempts: int = 2) -> str:
     full = SYSTEM_CONTEXT + "\n\n" + prompt
     last_err = ""
 
+    task_model = _get_model_for_task(prompt)
+    models_to_try = []
+    if task_model:
+        models_to_try.append(task_model)
+    for m in [DEFAULT_MODEL, "Gemini 3.5 Flash (High)", "Gemini 3.5 Flash (Medium)"]:
+        if m not in models_to_try:
+            models_to_try.append(m)
+
     # ── Tier 1: agy ──
-    for i in range(attempts):
-        try:
-            result = subprocess.run(
-                [AGY_PATH, "--model", DEFAULT_MODEL, "-p", full],
-                capture_output=True, text=True, timeout=120,
-            )
-            out = (result.stdout or "").strip()
-            stderr = (result.stderr or "").strip()
+    for model_to_try in models_to_try:
+        for i in range(attempts):
+            try:
+                result = subprocess.run(
+                    [AGY_PATH, "--model", model_to_try, "-p", full],
+                    capture_output=True, text=True, timeout=120,
+                )
+                out = (result.stdout or "").strip()
+                stderr = (result.stderr or "").strip()
 
-            if result.returncode == 0 and out:
-                return out
+                if result.returncode == 0 and out:
+                    return out
 
-            last_err = stderr or "empty response"
+                last_err = stderr or "empty response"
 
-            # If it's a quota/rate-limit error, skip retrying agy and go to next tier immediately
-            if _is_quota_error(last_err) or _is_quota_error(out):
-                print(f"[ai_writer] agy quota/rate-limit hit — switching to fallback. ({last_err[:80]})")
-                break
+                if _is_quota_error(last_err) or _is_quota_error(out) or "not found" in last_err.lower():
+                    print(f"[ai_writer] agy model {model_to_try} failed/rate-limited — trying fallback. ({last_err[:80]})")
+                    break
 
-        except subprocess.TimeoutExpired:
-            last_err = "timed out"
-        except Exception as ex:
-            last_err = str(ex)
+            except subprocess.TimeoutExpired:
+                last_err = "timed out"
+            except Exception as ex:
+                last_err = str(ex)
 
-        if i < attempts - 1:
-            time.sleep(1.5 * (i + 1))
+            if i < attempts - 1:
+                time.sleep(1.5 * (i + 1))
 
     # ── Tier 2: Gemini REST ──
     print("[ai_writer] Trying Tier 2: Gemini REST API")
