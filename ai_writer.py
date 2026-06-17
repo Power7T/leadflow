@@ -63,8 +63,17 @@ def _is_quota_error(text: str) -> bool:
 # ── Fallback Tier 2: Gemini REST API (google-generativeai) ─────────────────
 
 def _run_gemini_rest(prompt: str, model: str = "gemini-2.5-flash") -> str | None:
-    """Call Gemini directly via REST with support for a rotated key pool and model fallback."""
-    keys_str = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_API_KEY") or ""
+    """Call Gemini directly via REST with support for model-specific key pools and key rotation."""
+    # Resolve which key pool to load based on the targeted model
+    env_var = "GEMINI_API_KEY"
+    if "pro" in model:
+        env_var = "GEMINI_PRO_KEYS"
+    elif "preview" in model:
+        env_var = "GEMINI_PREVIEW_KEYS"
+    elif "flash" in model:
+        env_var = "GEMINI_FLASH_KEYS"
+
+    keys_str = os.getenv(env_var) or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_API_KEY") or ""
     keys = [k.strip() for k in keys_str.split(",") if k.strip()]
     if not keys:
         return None

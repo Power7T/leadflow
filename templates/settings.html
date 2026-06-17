@@ -17,8 +17,20 @@
   </p>
   <form id="envForm">
     <div style="margin-bottom: 12px">
-      <label>Google Gemini API Key</label>
+      <label>Google Gemini API Key (Generic Fallback / single key)</label>
       <input type="password" id="GEMINI_API_KEY" value="{{ env.GEMINI_API_KEY }}" placeholder="AI writing & parsing">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>Gemini 2.5 Pro Key(s) (comma-separated for rotation)</label>
+      <input type="password" id="GEMINI_PRO_KEYS" value="{{ env.GEMINI_PRO_KEYS }}" placeholder="API keys that support gemini-2.5-pro">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>Gemini 2.5 Flash Key(s) (comma-separated for rotation)</label>
+      <input type="password" id="GEMINI_FLASH_KEYS" value="{{ env.GEMINI_FLASH_KEYS }}" placeholder="API keys that support gemini-2.5-flash">
+    </div>
+    <div style="margin-bottom: 12px">
+      <label>Gemini 3 Preview Key(s) (comma-separated for rotation)</label>
+      <input type="password" id="GEMINI_PREVIEW_KEYS" value="{{ env.GEMINI_PREVIEW_KEYS }}" placeholder="API keys that support gemini-3-flash-preview">
     </div>
     <div style="margin-bottom: 12px">
       <label>OpenAI API Key (Fallback)</label>
@@ -161,6 +173,9 @@ document.getElementById('envForm').addEventListener('submit', (e) => {
   e.preventDefault();
   saveEnvVars({
     GEMINI_API_KEY: document.getElementById('GEMINI_API_KEY').value,
+    GEMINI_PRO_KEYS: document.getElementById('GEMINI_PRO_KEYS').value,
+    GEMINI_FLASH_KEYS: document.getElementById('GEMINI_FLASH_KEYS').value,
+    GEMINI_PREVIEW_KEYS: document.getElementById('GEMINI_PREVIEW_KEYS').value,
     OPENAI_API_KEY: document.getElementById('OPENAI_API_KEY').value,
     GOOGLE_MAPS_API_KEY: document.getElementById('GOOGLE_MAPS_API_KEY').value,
     STRIPE_PAYMENT_LINK: document.getElementById('STRIPE_PAYMENT_LINK').value,
