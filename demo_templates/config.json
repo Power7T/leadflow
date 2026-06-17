@@ -1,0 +1,9 @@
+{
+  "templates": [
+    {"file": "gym.html", "name": "Fitness & Gym", "enabled": true, "niches": ["gym", "fitness", "crossfit", "yoga", "pilates"]},
+    {"file": "restaurant.html", "name": "Restaurant & Cafe", "enabled": true, "niches": ["restaurant", "cafe", "bistro", "food", "bar", "pizza", "burger", "sushi", "dining", "eatery"]},
+    {"file": "dentist.html", "name": "Dental & Healthcare", "enabled": true, "niches": ["dentist", "dental", "clinic", "healthcare", "orthodontist", "teeth", "smile"]},
+    {"file": "barbershop.html", "name": "Barbershop & Salon", "enabled": true, "niches": ["barber", "salon", "hair", "beauty", "spa", "grooming", "barbershop"]},
+    {"file": "realestate.html", "name": "Real Estate", "enabled": true, "niches": ["real estate", "realty", "property", "realtor", "brokerage", "housing"]}
+  ]
+}

@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ lead.name }} | Gourmet Culinary Experience</title>
+<meta name="description" content="Welcome to {{ lead.name }}. Exquisite dining experience in {{ lead.city or 'your city' }}.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #120c06;
+  --bg-secondary: #1a1208;
+  --bg-tertiary: #24190e;
+  --accent: #d4a853;
+  --accent-glow: rgba(212, 168, 83, 0.3);
+  --text-white: #ffffff;
+  --text-gray: #c8c5c0;
+  --text-muted: #8c8882;
+  --glass-bg: rgba(26, 18, 8, 0.85);
+  --glass-border: rgba(212, 168, 83, 0.1);
+  --glass-border-hover: rgba(212, 168, 83, 0.4);
+  --border-radius-sm: 4px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 20px;
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.6);
+  --transition-smooth: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-primary);
+  color: var(--text-white);
+  font-family: 'Lato', sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+p {
+  color: var(--text-gray);
+  font-weight: 300;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* DEMO BANNER */
+.demo-banner {
+  background: var(--accent);
+  color: #000;
+  text-align: center;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.demo-banner a {
+  color: #000;
+  text-decoration: underline;
+  font-weight: 800;
+}
+.demo-banner .orig {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: .75;
+}
+
+/* NAVBAR */
+.navbar {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--glass-border);
+}
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 90px;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled .nav-container {
+  height: 70px;
+}
+.logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logo span {
+  color: var(--accent);
+}
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--text-gray);
+  font-weight: 400;
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
+  position: relative;
+  padding: 0.5rem 0;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: var(--transition-smooth);
+}
+.nav-links a:hover, .nav-links a.active {
+  color: #fff;
+}
+.nav-links a:hover::after, .nav-links a.active::after {
+  width: 100%;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 2rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-primary {
+  background-color: var(--accent);
+  color: #000;
+}
+.btn-primary:hover {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+  transform: translateY(-2px);
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: #fff;
+}
+.btn-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* HERO */
+.hero {
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(rgba(18,12,6,0.65), rgba(18,12,6,0.85)), url('{{ hero_img or "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400" }}') center/cover no-repeat;
+  position: relative;
+  padding-top: 138px;
+}
+.hero-content {
+  max-width: 800px;
+}
+.hero-title {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+.hero-desc {
+  font-size: 1.2rem;
+  margin-bottom: 2.5rem;
+  max-width: 600px;
+}
+.hero-btns {
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* SECTION SPECIFICS */
+section {
+  padding: 8rem 0;
+  position: relative;
+}
+.section-tag {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  color: var(--accent);
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.section-title {
+  font-size: 2.8rem;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+/* MENU SECTION */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3rem 4rem;
+}
+.menu-item {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+.menu-img {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--border-radius-sm);
+  object-fit: cover;
+  border: 1px solid var(--glass-border);
+  transition: var(--transition-smooth);
+}
+.menu-item:hover .menu-img {
+  transform: scale(1.05);
+  border-color: var(--accent);
+}
+.menu-details {
+  flex-grow: 1;
+}
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+.menu-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.menu-dots {
+  flex-grow: 1;
+  border-bottom: 1px dotted var(--text-muted);
+  margin: 0 1rem;
+}
+.menu-price {
+  font-family: 'Playfair Display', serif;
+  color: var(--accent);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.menu-desc {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+}
+
+/* ABOUT SECTION */
+.about {
+  background: var(--bg-secondary);
+}
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 5rem;
+  align-items: center;
+}
+.about-img {
+  width: 100%;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--glass-border);
+}
+
+/* TESTIMONIALS */
+.testimonials {
+  background: var(--bg-tertiary);
+}
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+.testimonial-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 2.5rem;
+  border-radius: var(--border-radius-md);
+  position: relative;
+}
+.testimonial-card::after {
+  content: '“';
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  font-family: 'Playfair Display', serif;
+  font-size: 5rem;
+  color: var(--accent);
+  opacity: 0.15;
+}
+.stars {
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.t-text {
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+.t-author {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* CONTACT */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.contact-item h4 {
+  font-size: 1.2rem;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+/* FOOTER */
+.footer {
+  background: #0a0603;
+  padding: 4rem 0 2rem;
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+}
+.footer-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 1.5rem;
+}
+
+/* RESPONSIVE */
+@media(max-width: 991px) {
+  .menu-grid, .about-grid, .testimonials-grid, .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .navbar {
+    top: 0;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
+  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <span class="orig">Built using gourmet template</span>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">
+      {{ lead.name }}<span>.</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.85rem">Reserve Table</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="home" class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <h1 class="hero-title">A Symphony of Flavors and Elegance</h1>
+      <p class="hero-desc">Indulge in a premium dining experience at {{ lead.name }}. Every plate tells a story of passion, freshness, and culinary perfection.</p>
+      <div class="hero-btns">
+        <a href="#menu" class="btn btn-primary">Explore Menu</a>
+        <a href="#contact" class="btn btn-outline">Book Table</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Menu -->
+<section id="menu">
+  <div class="container">
+    <span class="section-tag">Chef's Selection</span>
+    <h2 class="section-title">Our Signature Dishes</h2>
+    <div class="menu-grid">
+      <div class="menu-item">
+        <img class="menu-img" src="https://images.unsplash.com/photo-1544025162-d76694265947?w=300" alt="Dish">
+        <div class="menu-details">
+          <div class="menu-header">
+            <span class="menu-name">Oak-Grilled Ribeye Steak</span>
+            <span class="menu-dots"></span>
+            <span class="menu-price">$45</span>
+          </div>
+          <p class="menu-desc">Aged prime beef, truffle butter, roasted garlic, micro-greens.</p>
+        </div>
+      </div>
+      <div class="menu-item">
+        <img class="menu-img" src="https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300" alt="Dish">
+        <div class="menu-details">
+          <div class="menu-header">
+            <span class="menu-name">Seared Atlantic Scallops</span>
+            <span class="menu-dots"></span>
+            <span class="menu-price">$38</span>
+          </div>
+          <p class="menu-desc">Parsnip puree, crispy prosciutto, lemon herb reduction.</p>
+        </div>
+      </div>
+      <div class="menu-item">
+        <img class="menu-img" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300" alt="Dish">
+        <div class="menu-details">
+          <div class="menu-header">
+            <span class="menu-name">Wild Mushroom Risotto</span>
+            <span class="menu-dots"></span>
+            <span class="menu-price">$29</span>
+          </div>
+          <p class="menu-desc">Arborio rice, porcini mushrooms, parmigiano-reggiano.</p>
+        </div>
+      </div>
+      <div class="menu-item">
+        <img class="menu-img" src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=300" alt="Dish">
+        <div class="menu-details">
+          <div class="menu-header">
+            <span class="menu-name">Decadent Chocolate Soufflé</span>
+            <span class="menu-dots"></span>
+            <span class="menu-price">$14</span>
+          </div>
+          <p class="menu-desc">Grand Marnier infusion, vanilla bean gelato, fresh berries.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section id="about" class="about">
+  <div class="container">
+    <div class="about-grid">
+      <div>
+        <span class="section-tag">Our Culinary Journey</span>
+        <h2 class="section-title">Passion for Freshness</h2>
+        <p style="margin-bottom: 1.5rem">At {{ lead.name }}, we believe that exceptional dining begins with absolute quality. Our ingredients are sourced daily from local organic farms and sustainable fisheries, ensuring that every bite bursts with life and flavor.</p>
+        <p>Our kitchen is led by award-winning chefs dedicated to pushing the boundaries of taste while paying homage to timeless traditions. We invite you to sit back, savor, and enjoy an unforgettable evening with us.</p>
+      </div>
+      <div>
+        <img class="about-img" src="{{ about_img or 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=600' }}" alt="About our dining">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+  <div class="container">
+    <span class="section-tag">Guest Experiences</span>
+    <h2 class="section-title">What Our Patrons Say</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"One of the best dining experiences I've ever had. The attention to detail in every dish and the level of service was world-class."</p>
+        <p class="t-author">Sarah Jenkins</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"The seared scallops were cooked to absolute perfection. The atmosphere is warm, intimate, and feels very exclusive."</p>
+        <p class="t-author">Marcus Vance</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"Outstanding wine list, gorgeous presentation, and exceptional flavors. {{ lead.name }} is our new go-to for special occasions."</p>
+        <p class="t-author">Elena Rostova</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <span class="section-tag">Reservations</span>
+        <h2 class="section-title">Join Us Tonight</h2>
+        <div class="contact-info">
+          <div class="contact-item">
+            <h4>Address</h4>
+            <p>{{ lead.address or 'City Center' }}</p>
+          </div>
+          {% if lead.phone %}
+          <div class="contact-item">
+            <h4>Call Us</h4>
+            <p>{{ lead.phone }}</p>
+          </div>
+          {% endif %}
+          <div class="contact-item">
+            <h4>Hours</h4>
+            <p>Mon - Sun: 5:00 PM - 11:00 PM</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <!-- Map Placeholder -->
+        <div style="width:100%;height:300px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">
+          <div style="text-align:center">
+            <span style="font-size:2rem;display:block;margin-bottom:0.5rem">📍</span>
+            Map location for {{ lead.name }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 {{ lead.name }}. All rights reserved.</p>
+    <p class="footer-text">Gourmet website concept designed by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
+  </div>
+</footer>
+
+<!-- Tracking Pixel -->
+<img src="/api/track.png?bid={{ lead.id }}" style="display:none;width:0;height:0" />
+
+<script>
+window.addEventListener('scroll', function() {
+  const navbar = document.getElementById('navbar');
+  if (window.scrollY > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+});
+</script>
+</body>
+</html>

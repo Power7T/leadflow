@@ -31,7 +31,17 @@
     <div class="lead-row" id="row-{{ lead.id }}" onclick="selectLead({{ lead.id }})"
       data-lead="{{ lead | tojson | e }}" data-status="{{ lead.status }}">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
-        <div class="lead-row-name">{{ lead.name }}</div>
+        <div class="lead-row-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          {{ lead.name }}
+          {% set score = lead.website_score | default(0) %}
+          {% if not lead.website or score < 30 %}
+            <span class="badge-hot">HOT 🔥</span>
+          {% elif score < 55 %}
+            <span class="badge-warm">WARM 🌡️</span>
+          {% else %}
+            <span class="badge-cold">COLD 🧊</span>
+          {% endif %}
+        </div>
         {% if lead.status != 'new' %}
         {% if lead.demo_viewed %}<span style="font-size:9px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:4px;white-space:nowrap;background:rgba(255,0,0,.15);color:var(--red);margin-right:4px">🔥 VIEWED DEMO</span>{% endif %}
         <span style="font-size:9px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:4px;white-space:nowrap;
@@ -107,6 +117,10 @@
   cursor: pointer; transition: all .12s;
 }
 .sugg-chip:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,242,254,.06); }
+
+.badge-hot { background: rgba(255,77,77,0.15); color: #ff4d4d; border: 1px solid rgba(255,77,77,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.badge-warm { background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.badge-cold { background: rgba(77,153,255,0.15); color: #4d99ff; border: 1px solid rgba(77,153,255,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
 </style>
 <script>
 const allLeads = JSON.parse(document.getElementById('leadsData')?.textContent || '[]');
@@ -196,7 +210,19 @@ function selectLead(id) {
       <!-- Header -->
       <div class="detail-header">
         <div>
-          <div class="detail-name">${lead.name}</div>
+          <div class="detail-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${lead.name}
+            ${(function() {
+              const score = lead.website_score || 0;
+              if (!lead.website || score < 30) {
+                return '<span class="badge-hot">HOT 🔥</span>';
+              } else if (score < 55) {
+                return '<span class="badge-warm">WARM 🌡️</span>';
+              } else {
+                return '<span class="badge-cold">COLD 🧊</span>';
+              }
+            })()}
+          </div>
           <div class="detail-location">${[lead.address].filter(Boolean).join(' · ')}</div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
@@ -296,32 +322,57 @@ function selectLead(id) {
             ${lead.status === 'opted_out' ? `
               <span style="color:var(--red);font-size:12px;font-style:italic;display:flex;align-items:center;font-weight:600;">⚠️ Outreach disabled for opted-out leads.</span>
             ` : `
-              <a id="demoBtn-${id}" href="/demo/${id}" target="_blank" class="btn btn-outline" style="background:var(--bg-card);color:var(--text);border-color:#333;font-size:12px;">🌐 Preview Demo</a>
-              <button class="btn btn-outline" style="background:var(--bg-card);color:var(--text);border-color:#333;font-size:12px;" onclick="copyDemoLink(${id}, this)">🔗 Copy Demo Link</button>
+              ${(function() {
+                const gymKw = ['gym','fit','fitness','crossfit','yoga','pilates','studio','boxing','martial art','mma','workout','athletic','ymca'];
+                const cat = (lead.category || '').toLowerCase();
+                const nm  = (lead.name || '').toLowerCase();
+                const isGym = gymKw.some(k => cat.includes(k) || nm.includes(k));
+                if (isGym) {
+                  return `
+                    <a id="demoBtn-${id}" href="/demo/${id}" target="_blank" class="btn btn-outline" style="background:var(--bg-card);color:var(--text);border-color:#333;font-size:12px;">🌐 Preview Demo</a>
+                    <button class="btn btn-outline" style="background:var(--bg-card);color:var(--text);border-color:#333;font-size:12px;" onclick="copyDemoLink(${id}, this)">🔗 Copy Demo Link</button>
+                  `;
+                } else {
+                  return `<a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank" class="btn btn-outline" style="background:var(--bg-card);color:#1dbf73;border-color:#1dbf73;font-size:12px;">💬 Message on Fiverr for Demo</a>`;
+                }
+              })()}
               <button class="btn btn-outline" style="background:var(--bg-card);color:var(--accent);border-color:var(--accent);font-size:12px;" onclick="generateAuditReport(${id}, this)">📊 Generate Audit Report</button>
               <button class="btn" style="font-size:12px" onclick="generateDraft(${id})">✨ Generate</button>
             `}
+
           </div>
         </div>
 
         ${lead.status === 'opted_out' ? '' : `
           ${lead.demo_viewed ? `
-            <div style="background:rgba(255,77,77,0.05); border:1px solid rgba(255,77,77,0.2); border-radius:8px; padding:12px; margin-bottom:12px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="color:#ff4d4d; font-weight:bold; font-size:12px;">🔥 LIVE VIEW FOLLOW-UP</span>
-                <button class="btn btn-outline" style="border-color:#ff4d4d; color:#ff4d4d; font-size:11px; padding:4px 8px;" onclick="generateLiveFollowup(${id}, this)">Generate Message</button>
-              </div>
-              <div id="liveFollowup-${id}" style="font-size:13px; color:var(--text); white-space:pre-wrap;">
-                <em>Customer has viewed the demo. Generate a live follow-up message to convert them right now.</em>
-              </div>
+            <div style="background:rgba(255,77,77,0.08); border:1px solid rgba(255,77,77,0.25); border-radius:8px; padding:12px; margin-bottom:14px; display:flex; flex-direction:column; gap:4px;">
+              <span style="color:#ff4d4d; font-weight:bold; font-size:12px; display:flex; align-items:center; gap:6px;">🔥 PROSPECT HAS VIEWED THE DEMO</span>
+              <span style="font-size:12px; color:var(--text-dim);">
+                They are actively checking out the prototype right now! You should send a live follow-up message to convert them immediately.
+              </span>
             </div>
           ` : ''}
           
-          <div style="display:flex;gap:8px;margin-bottom:12px" id="chanPills-${id}">
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;" id="chanPills-${id}">
+            ${lead.demo_viewed ? `
+              <label class="chan-pill" style="border-color:#ff4d4d;" id="pill-live-${id}">
+                <input type="checkbox" value="live" onchange="toggleLivePill(this, ${id})">
+                ⚡ Live Follow-up
+              </label>
+            ` : ''}
             <label class="chan-pill ${lead.email ? 'active' : ''}"><input type="checkbox" value="email" ${lead.email ? 'checked' : ''} onchange="toggleChan(this)">Email</label>
             <label class="chan-pill ${lead.instagram ? 'active' : ''}"><input type="checkbox" value="instagram" ${lead.instagram ? 'checked' : ''} onchange="toggleChan(this)">Instagram</label>
             <label class="chan-pill ${lead.whatsapp ? 'active' : ''}"><input type="checkbox" value="whatsapp" ${lead.whatsapp ? 'checked' : ''} onchange="toggleChan(this)">WhatsApp</label>
             <label class="chan-pill ${lead.linkedin_url ? 'active' : ''}"><input type="checkbox" value="linkedin" ${lead.linkedin_url ? 'checked' : ''} onchange="toggleChan(this)">LinkedIn</label>
+          </div>
+
+          <div id="liveSubChannelRow-${id}" style="display:none; margin-bottom:12px; align-items:center; gap:8px;">
+            <span style="font-size:12px; color:var(--text-dim);">Live Follow-up Channel:</span>
+            <select id="liveChannel-${id}" style="background:var(--bg-card); color:var(--text); border:1px solid rgba(255,77,77,0.4); font-size:11px; padding:4px 8px; border-radius:4px; outline:none; cursor:pointer;">
+              <option value="email">Email</option>
+              <option value="instagram" ${lead.instagram ? 'selected' : ''}>Instagram DM</option>
+              <option value="whatsapp" ${lead.whatsapp ? 'selected' : ''}>WhatsApp</option>
+            </select>
           </div>
 
           <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:14px" id="genBtn-${id}" onclick="generateDraft(${id})">✨ Generate</button>
@@ -364,11 +415,17 @@ function selectLead(id) {
         const d = {
           email:           saved.email?.draft       || '',
           instagram:       saved.instagram?.draft   || '',
-          whatsapp:        saved.whatsapp?.draft    || '',
+          whatsapp_msg:    saved.whatsapp?.draft    || '',  // fix: use whatsapp_msg not whatsapp
           linkedin:        saved.linkedin?.draft    || '',
           subject_options: saved.email?.subject_options || [],
           to_email:        lead.email || '',
+          demo_url:        lead.demo_tunnel_url || '',
         };
+        drafts[id] = d;
+        renderDrafts(id, d);
+      } else if (lead.whatsapp) {
+        // No saved drafts yet — auto-show WhatsApp template rotator so it's ready to copy
+        const d = { whatsapp_msg: '', demo_url: lead.demo_tunnel_url || '', to_email: lead.email || '' };
         drafts[id] = d;
         renderDrafts(id, d);
       }
@@ -378,8 +435,40 @@ function selectLead(id) {
 
 function toggleChan(cb) {
   const pill = cb.closest('.chan-pill');
-  if (cb.checked) pill.classList.add('active');
-  else pill.classList.remove('active');
+  if (cb.checked) {
+    pill.classList.add('active');
+    // Deselect live follow-up pill if checked
+    const liveCheckbox = pill.parentElement.querySelector('input[value=live]');
+    if (liveCheckbox && liveCheckbox.checked) {
+      liveCheckbox.checked = false;
+      liveCheckbox.closest('.chan-pill').classList.remove('active');
+      const subRow = document.getElementById(`liveSubChannelRow-${liveCheckbox.closest('.chan-pill').id.split('-').pop()}`);
+      if (subRow) subRow.style.display = 'none';
+    }
+  } else {
+    pill.classList.remove('active');
+  }
+}
+
+function toggleLivePill(cb, id) {
+  const pill = cb.closest('.chan-pill');
+  const subRow = document.getElementById(`liveSubChannelRow-${id}`);
+  const pillsDiv = document.getElementById(`chanPills-${id}`);
+  
+  if (cb.checked) {
+    pill.classList.add('active');
+    if (subRow) subRow.style.display = 'flex';
+    // Deselect all other pills
+    pillsDiv.querySelectorAll('input[type=checkbox]').forEach(input => {
+      if (input.value !== 'live') {
+        input.checked = false;
+        input.closest('.chan-pill').classList.remove('active');
+      }
+    });
+  } else {
+    pill.classList.remove('active');
+    if (subRow) subRow.style.display = 'none';
+  }
 }
 
 function getSelectedChannels(id) {
@@ -396,6 +485,42 @@ async function generateDraft(id) {
   btn.innerHTML = '<span class="spinner"></span> Writing…';
 
   const channels = getSelectedChannels(id);
+  
+  if (channels && channels.includes('live')) {
+    const channelSelect = document.getElementById(`liveChannel-${id}`);
+    const channel = channelSelect ? channelSelect.value : 'email';
+    
+    try {
+      const res = await fetch(`/api/live-followup/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel })
+      });
+      const data = await res.json();
+      btn.disabled = false;
+      btn.innerHTML = '✨ Generate';
+      
+      if (data.draft) {
+        const key = channel === 'whatsapp' ? 'whatsapp_msg' : channel;
+        const draftData = {
+          to_email: allLeads.find(l => l.id === id)?.email || '',
+          [key]: data.draft,
+          is_live_followup: true,
+          live_followup_channel: channel
+        };
+        drafts[id] = draftData;
+        renderDrafts(id, draftData);
+      } else {
+        alert('Error generating live follow-up.');
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerHTML = '✨ Generate';
+      alert('Network error.');
+    }
+    return;
+  }
+
   const res = await fetch(`/leads/${id}/generate`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -417,19 +542,33 @@ function renderDrafts(id, data) {
   const lead = allLeads.find(l => l.id === id);
   let html = '';
 
-  if (data.email) {
-    html += msgBlock(id, 'email', 'EMAIL', `To: ${data.to_email || '(no email found)'}`, data.email);
-  }
-  if (data.instagram) {
-    const igHandle = lead?.instagram ? `@${lead.instagram}` : '(find on Instagram)';
-    html += msgBlock(id, 'instagram', 'INSTAGRAM DM', igHandle, data.instagram);
-  }
-  if (data.whatsapp_msg || data.whatsapp) {
-    const wp = lead?.whatsapp || '(send via WhatsApp)';
-    html += msgBlock(id, 'whatsapp', 'WHATSAPP', wp, data.whatsapp_msg || data.whatsapp);
-  }
-  if (data.linkedin) {
-    html += msgBlock(id, 'linkedin', 'LINKEDIN DM', lead?.linkedin_url || '', data.linkedin);
+  if (data.is_live_followup) {
+    const channel = data.live_followup_channel;
+    const label = channel === 'email' ? '⚡ EMAIL LIVE FOLLOW-UP' : channel === 'instagram' ? '⚡ INSTAGRAM DM LIVE FOLLOW-UP' : '⚡ WHATSAPP LIVE FOLLOW-UP';
+    const key = channel === 'whatsapp' ? 'whatsapp_msg' : channel;
+    const sublabel = channel === 'email' ? `To: ${data.to_email || '(no email found)'}` : channel === 'instagram' ? `@${lead?.instagram || ''}` : lead?.whatsapp || '';
+    const draftText = data[key];
+    
+    html += msgBlock(id, key, label, sublabel, draftText, true);
+  } else {
+    if (data.email) {
+      html += msgBlock(id, 'email', 'EMAIL', `To: ${data.to_email || '(no email found)'}`, data.email);
+    }
+    if (data.instagram) {
+      const igHandle = lead?.instagram ? `@${lead.instagram}` : '(find on Instagram)';
+      html += msgBlock(id, 'instagram', 'INSTAGRAM DM', igHandle, data.instagram);
+    }
+    if (data.whatsapp_msg) {
+      const wp = lead?.whatsapp || '(send via WhatsApp)';
+      html += wpBlock(id, wp, data.whatsapp_msg, data);
+    } else if (lead?.whatsapp) {
+      // No AI message yet — show template rotator immediately with blank content
+      html += wpBlock(id, lead.whatsapp, '', data);
+    }
+
+    if (data.linkedin) {
+      html += msgBlock(id, 'linkedin', 'LINKEDIN DM', lead?.linkedin_url || '', data.linkedin);
+    }
   }
 
   if (!html) {
@@ -447,14 +586,97 @@ const QUICK_SUGGESTIONS = [
   'Add urgency',
   'Mention their rating',
   'More specific to their business',
-  'Professional tone',
-  'End with a better question',
+  'Ask for a quick call',
+  'Offer a free audit',
+  'Suggest a time to chat'
 ];
 
-function msgBlock(leadId, key, label, sublabel, content) {
+// ── WhatsApp rotating templates ───────────────────────────────────────────
+
+const WP_TEMPLATES = [
+  (n, r, d) => `Hey ${n}! Got a notification you're checking out the demo — love it 🔥 Happy to push it live today if you want. ${d}`,
+  (n, r, d) => `${n} — built a custom site demo for you. Looks great on mobile. Can get it live this week if you want. Check it: ${d}`,
+  (n, r, d) => `Hey! Quick one — I built a free demo for ${n}${r ? ` (${r}★ btw 💪)` : ''}. No strings, just take a look: ${d}`,
+  (n, r, d) => `Hi! Chandan here — I build websites for gyms. Made a custom demo for ${n}${r ? ` — your ${r}★ rating deserves a site that matches` : ''}. ${d}`,
+  (n, r, d) => `${n} — most gyms your size are getting 30-50 new leads/month from their website. Built you a demo: ${d} — what do you think?`,
+  (n, r, d) => `Hey! Built a fast, mobile-first demo for ${n} — free to look at. Can go live on Fiverr (safe & simple) if you like it. ${d}`,
+  (n, r, d) => `Quick thought — ${n} has ${r ? r + '★ reviews' : 'great reviews'} but the website might be costing you new members. Here's a demo: ${d}`,
+  (n, r, d) => `Hi ${n}! Saw your gym online and built you a custom site demo for free — honest feedback welcome. ${d}`,
+];
+
+const wpTemplateIndex = {};
+
+function buildWpMessage(leadId, data) {
+  const lead = allLeads.find(l => l.id === leadId);
+  const name = lead?.name || 'there';
+  const shortName = name.split(' ').slice(0, 2).join(' ');
+  const rating = lead?.google_rating || '';
+  const demo = data?.demo_url || '';
+  const idx = (wpTemplateIndex[leadId] || 0) % WP_TEMPLATES.length;
+  return WP_TEMPLATES[idx](shortName, rating, demo);
+}
+
+function spinWpTemplate(leadId) {
+  wpTemplateIndex[leadId] = ((wpTemplateIndex[leadId] || 0) + 1) % WP_TEMPLATES.length;
+  const data = drafts[leadId] || {};
+  const msg = buildWpMessage(leadId, data);
+  const ta = document.getElementById(`draft-whatsapp-${leadId}`);
+  if (ta) {
+    ta.style.transition = 'opacity 0.12s';
+    ta.style.opacity = '0';
+    setTimeout(() => { ta.value = msg; ta.style.opacity = '1'; }, 120);
+  }
+  if (drafts[leadId]) drafts[leadId].whatsapp_msg = msg;
+  const badge = document.getElementById(`wpIdx-${leadId}`);
+  if (badge) badge.textContent = `${wpTemplateIndex[leadId] + 1}/${WP_TEMPLATES.length}`;
+}
+
+function wpBlock(leadId, phone, content, data) {
+  if (!content) {
+    wpTemplateIndex[leadId] = wpTemplateIndex[leadId] || 0;
+    content = buildWpMessage(leadId, data);
+    if (drafts[leadId]) drafts[leadId].whatsapp_msg = content;
+  }
+  const idx = wpTemplateIndex[leadId] || 0;
+  const suggestions = QUICK_SUGGESTIONS.map(s =>
+    `<button class="sugg-chip" onclick="applyQuick(${leadId},'whatsapp','${s.replace(/'/g, "\\'")}',false,this)">${s}</button>`
+  ).join('');
+
+  return `
+    <div class="msg-block" id="block-${leadId}-whatsapp">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div>
+          <div class="section-label" style="margin:0">WHATSAPP</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:2px">${phone}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span id="wpIdx-${leadId}" style="font-size:10px;color:var(--text-dim);white-space:nowrap">${idx + 1}/${WP_TEMPLATES.length}</span>
+          <button class="copy-btn" style="padding:4px 10px;background:rgba(37,211,102,.12);color:#25D366;border-color:rgba(37,211,102,.3);font-weight:600"
+            onclick="spinWpTemplate(${leadId})">&#8635; Spin</button>
+          <button class="copy-btn" style="padding:4px 10px" onclick="copyText(document.getElementById('draft-whatsapp-${leadId}').value, this)">copy</button>
+        </div>
+      </div>
+      <textarea id="draft-whatsapp-${leadId}" rows="4" style="font-size:13px;line-height:1.65">${content}</textarea>
+
+      <div style="margin-top:8px">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em">Quick edits</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${suggestions}</div>
+        <div style="display:flex;gap:6px">
+          <input id="instr-whatsapp-${leadId}" type="text" placeholder="Custom instruction — e.g. add emoji, mention their rating, make it 1 line…"
+            style="flex:1;font-size:12px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)"
+            onkeydown="if(event.key==='Enter')rewriteMsg(${leadId},'whatsapp',false)">
+          <button class="btn btn-ghost" style="font-size:12px;white-space:nowrap" id="rewriteBtn-whatsapp-${leadId}"
+            onclick="rewriteMsg(${leadId},'whatsapp',false)">✨ AI Rewrite</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+
+function msgBlock(leadId, key, label, sublabel, content, isLiveFollowup = false) {
   const rows = key === 'email' ? 9 : 4;
   const suggestions = QUICK_SUGGESTIONS.map(s =>
-    `<button class="sugg-chip" onclick="applyQuick(${leadId},'${key}','${s.replace(/'/g,"\\'")}',this)">${s}</button>`
+    `<button class="sugg-chip" onclick="applyQuick(${leadId},'${key}','${s.replace(/'/g,"\\'")}',${isLiveFollowup ? 'true' : 'false'},this)">${s}</button>`
   ).join('');
 
   return `
@@ -466,7 +688,7 @@ function msgBlock(leadId, key, label, sublabel, content) {
         </div>
         <div style="display:flex;gap:6px">
           <button class="copy-btn" style="padding:4px 10px" onclick="copyText(document.getElementById('draft-${key}-${leadId}').value, this)">copy</button>
-          <button class="copy-btn" style="padding:4px 10px" onclick="regenSingle(${leadId},'${key}',this)">↺ Regen</button>
+          <button class="copy-btn" style="padding:4px 10px" onclick="regenSingle(${leadId},'${key}',this,${isLiveFollowup})">↺ Regen</button>
         </div>
       </div>
       <textarea id="draft-${key}-${leadId}" rows="${rows}" style="font-size:13px;line-height:1.65">${content}</textarea>
@@ -478,17 +700,42 @@ function msgBlock(leadId, key, label, sublabel, content) {
         <div style="display:flex;gap:6px">
           <input id="instr-${key}-${leadId}" type="text" placeholder="Custom instruction — e.g. mention their Google rating, make it under 3 lines…"
             style="flex:1;font-size:12px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)"
-            onkeydown="if(event.key==='Enter')rewriteMsg(${leadId},'${key}')">
+            onkeydown="if(event.key==='Enter')rewriteMsg(${leadId},'${key}',${isLiveFollowup})">
           <button class="btn btn-ghost" style="font-size:12px;white-space:nowrap" id="rewriteBtn-${key}-${leadId}"
-            onclick="rewriteMsg(${leadId},'${key}')">✨ Rewrite</button>
+            onclick="rewriteMsg(${leadId},'${key}',${isLiveFollowup})">✨ Rewrite</button>
         </div>
       </div>
     </div>`;
 }
 
-async function regenSingle(leadId, channel, btn) {
+async function regenSingle(leadId, channel, btn, isLiveFollowup = false) {
   const orig = btn.textContent;
   btn.textContent = '…'; btn.disabled = true;
+
+  if (isLiveFollowup) {
+    // For live follow-ups, call the live-followup endpoint (no feedback = pure regen)
+    const liveChannel = drafts[leadId]?.live_followup_channel || 'email';
+    try {
+      const res = await fetch(`/api/live-followup/${leadId}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ channel: liveChannel })
+      });
+      const data = await res.json();
+      btn.textContent = orig; btn.disabled = false;
+      if (data.draft) {
+        document.getElementById(`draft-${channel}-${leadId}`).value = data.draft;
+        if (drafts[leadId]) drafts[leadId][channel] = data.draft;
+      } else {
+        alert('Regen failed.');
+      }
+    } catch(e) {
+      btn.textContent = orig; btn.disabled = false;
+      alert('Network error.');
+    }
+    return;
+  }
+
   const res = await fetch(`/leads/${leadId}/generate`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -505,12 +752,12 @@ async function regenSingle(leadId, channel, btn) {
   }
 }
 
-async function applyQuick(leadId, channel, instruction, btn) {
+async function applyQuick(leadId, channel, instruction, isLiveFollowup = false, btn) {
   document.getElementById(`instr-${channel}-${leadId}`).value = instruction;
-  await rewriteMsg(leadId, channel);
+  await rewriteMsg(leadId, channel, isLiveFollowup);
 }
 
-async function rewriteMsg(leadId, channel) {
+async function rewriteMsg(leadId, channel, isLiveFollowup = false) {
   const textarea = document.getElementById(`draft-${channel}-${leadId}`);
   const instrEl  = document.getElementById(`instr-${channel}-${leadId}`);
   const btn      = document.getElementById(`rewriteBtn-${channel}-${leadId}`);
@@ -522,12 +769,32 @@ async function rewriteMsg(leadId, channel) {
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
   textarea.style.opacity = '0.4';
 
-  const res = await fetch(`/leads/${leadId}/rewrite`, {
+  let res, data;
+
+  if (isLiveFollowup) {
+    // For live follow-up, pass instruction as feedback to the live-followup endpoint
+    const liveChannel = drafts[leadId]?.live_followup_channel || 'email';
+    res = await fetch(`/api/live-followup/${leadId}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ channel: liveChannel, feedback: instruction }),
+    });
+    data = await res.json();
+    textarea.style.opacity = '1';
+    if (btn) { btn.disabled = false; btn.textContent = origBtn; }
+    if (!data.draft) { alert(data.error || 'Rewrite failed'); return; }
+    textarea.value = data.draft;
+    if (instrEl) instrEl.value = '';
+    if (drafts[leadId]) drafts[leadId][channel] = data.draft;
+    return;
+  }
+
+  res = await fetch(`/leads/${leadId}/rewrite`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ channel, current_text: textarea.value, instruction }),
   });
-  const data = await res.json();
+  data = await res.json();
 
   textarea.style.opacity = '1';
   if (btn) { btn.disabled = false; btn.textContent = origBtn; }
@@ -735,43 +1002,7 @@ async function generateAuditReport(id, btn) {
   setTimeout(() => { btn.textContent = orig; btn.style.color = 'var(--accent)'; }, 2000);
 }
 
-async function generateLiveFollowup(id, btn) {
-  const orig = btn.textContent;
-  btn.textContent = 'Generating...';
-  const display = document.getElementById(`liveFollowup-${id}`);
-  display.innerHTML = '<span style="color:var(--text-dim)">Writing message...</span>';
-  try {
-    const res = await fetch(`/api/live-followup/${id}`, {method: 'POST'});
-    const data = await res.json();
-    if (data.draft) {
-      const msgDiv = document.createElement('div');
-      msgDiv.style.marginBottom = '8px';
-      msgDiv.textContent = data.draft;
-      
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'btn btn-ghost';
-      copyBtn.style.padding = '2px 6px';
-      copyBtn.style.fontSize = '11px';
-      copyBtn.textContent = '📋 Copy to Clipboard';
-      copyBtn.onclick = () => {
-        navigator.clipboard.writeText(data.draft).then(() => {
-          const old = copyBtn.textContent;
-          copyBtn.textContent = 'Copied!';
-          setTimeout(() => copyBtn.textContent = old, 2000);
-        });
-      };
-      
-      display.innerHTML = '';
-      display.appendChild(msgDiv);
-      display.appendChild(copyBtn);
-    } else {
-      display.textContent = 'Error generating draft.';
-    }
-  } catch (e) {
-    display.textContent = 'Network error.';
-  }
-  btn.textContent = orig;
-}
+
 
 async function loadAudit(id, url) {
   const panel = document.getElementById(`auditPanel-${id}`);

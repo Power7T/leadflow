@@ -30,14 +30,17 @@
       <option value="Singapore">
     </datalist>
 
-    <div class="form-grid" style="grid-template-columns:1fr 1fr 100px 100px 120px">
+    <div class="form-grid" style="grid-template-columns:1.5fr 1.5fr 100px 100px 120px; gap: 14px;">
       <div>
         <label>Business Niche</label>
         <input type="text" name="niche" placeholder="e.g. gyms" list="nicheSuggestions" required>
       </div>
       <div>
         <label>Location</label>
-        <input type="text" name="location" placeholder="e.g. London UK" list="locationSuggestions" required>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" name="location" id="locationInput" placeholder="e.g. London UK" list="locationSuggestions" required style="flex:1">
+          <button type="button" class="btn btn-ghost" style="padding:7px 10px;font-size:13px;white-space:nowrap" onclick="pickRandomLocation()" title="Pick a random city from worldwide pool">🎲 Random</button>
+        </div>
       </div>
       <div>
         <label>Max Results</label>
@@ -56,6 +59,28 @@
         </select>
       </div>
     </div>
+
+    <!-- Advanced Filter Options -->
+    <div style="display: flex; gap: 24px; margin-top: 14px; flex-wrap: wrap; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" name="require_contact" id="require_contact" checked style="width: auto; margin: 0;">
+        <label for="require_contact" style="margin: 0; text-transform: none; font-size: 13px;">Require email/social/phone</label>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" name="no_website_only" id="no_website_only" style="width: auto; margin: 0;">
+        <label for="no_website_only" style="margin: 0; text-transform: none; font-size: 13px; color: var(--accent);">Only businesses without websites</label>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <label for="max_rating" style="margin: 0; text-transform: none; font-size: 13px;">Max Google Rating:</label>
+        <select name="max_rating" id="max_rating" style="width: 80px; padding: 4px 8px;">
+          <option value="5.0" selected>5.0 ★</option>
+          <option value="4.5">4.5 ★</option>
+          <option value="4.0">4.0 ★</option>
+          <option value="3.5">3.5 ★</option>
+        </select>
+      </div>
+    </div>
+
     <div style="margin-top:16px">
       <button type="submit" class="btn btn-primary" id="searchBtn">
         <span class="icon-search">🔍</span> Start Search
@@ -79,14 +104,19 @@
       <input type="text" id="schedNiches" placeholder="restaurants, gyms, cafes" value="{{ sched.niches | default('') | replace('[\"','') | replace('\"]','') | replace('\",\"',', ') }}">
     </div>
     <div>
-      <label>Locations (comma separated)</label>
-      <input type="text" id="schedLocations" placeholder="London UK, Dubai UAE" value="{{ sched.locations | default('') | replace('[\"','') | replace('\"]','') | replace('\",\"',', ') }}">
+      <label>Locations (picked randomly each run)</label>
+      <input type="text" id="schedLocations" placeholder="London UK, Dubai UAE, New York USA, Sydney Australia" value="{{ sched.locations | default('') | replace('[\"','') | replace('\"]','') | replace('\",\"',', ') }}">
     </div>
+
   </div>
   <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
     <div style="display:flex;align-items:center;gap:8px">
       <input type="checkbox" id="schedEnabled" {% if sched.enabled %}checked{% endif %} style="width:auto">
       <label style="margin:0;text-transform:none;font-size:13px">Enable daily auto-find</label>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="schedAutoSend" {% if sched.auto_send_enabled %}checked{% endif %} style="width:auto">
+      <label style="margin:0;text-transform:none;font-size:13px;color:var(--accent)">⚡ Auto-send approved drafts (up to <input type="number" id="schedMaxAutoSend" value="{{ sched.max_auto_send | default(10) }}" min="1" max="50" style="width:55px;display:inline;padding:2px 4px;margin:0 2px;background:var(--bg-tertiary);color:var(--text-white);border:1px solid var(--glass-border)"> emails/day)</label>
     </div>
     <div>
       <label style="margin-right:6px">Run at hour (UTC)</label>
@@ -109,6 +139,7 @@
       </select>
     </div>
     <button class="btn btn-ghost" onclick="saveScheduler(this)">💾 Save Schedule</button>
+    <button class="btn btn-primary" onclick="triggerAutopilotFind(this)">⚡ Trigger Autopilot Scraper Now</button>
   </div>
 </div>
 
@@ -128,6 +159,9 @@ form.addEventListener('submit', async (e) => {
   const max     = form.max_results.value;
   const maxScore = form.max_score.value;
   const source  = form.source.value;
+  const reqContact = form.require_contact.checked ? 'true' : 'false';
+  const noWeb      = form.no_website_only.checked ? 'true' : 'false';
+  const maxRating  = form.max_rating.value;
 
   logBox.innerHTML = '';
   logBox.classList.add('active');
@@ -135,7 +169,16 @@ form.addEventListener('submit', async (e) => {
   searchBtn.disabled = true;
   searchBtn.innerHTML = '<span class="spinner"></span> Searching...';
 
-  const params = new URLSearchParams({ niche, location, max_results: max, source, max_score: maxScore });
+  const params = new URLSearchParams({ 
+    niche, 
+    location, 
+    max_results: max, 
+    source, 
+    max_score: maxScore,
+    require_contact: reqContact,
+    no_website_only: noWeb,
+    max_rating: maxRating
+  });
   const es = new EventSource(`/find/stream?${params}`);
 
   es.onmessage = (e) => {
@@ -185,12 +228,55 @@ async function saveScheduler(btn) {
       max_per:   parseInt(document.getElementById('schedMax').value),
       max_score: parseInt(document.getElementById('schedMaxScore').value),
       source:    document.getElementById('schedSource').value,
+      auto_send_enabled: document.getElementById('schedAutoSend').checked,
+      max_auto_send:     parseInt(document.getElementById('schedMaxAutoSend').value),
     }),
   });
   const data = await res.json();
   if (data.ok) {
     btn.textContent = '✓ Saved!';
     setTimeout(() => btn.textContent = '💾 Save Schedule', 2000);
+  }
+}
+
+async function triggerAutopilotFind(btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Triggering...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/autopilot/trigger/find', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      btn.textContent = '✓ Triggered!';
+      btn.style.color = 'var(--accent)';
+    } else {
+      btn.textContent = '✗ Failed';
+      alert(data.error);
+    }
+  } catch(e) {
+    btn.textContent = '✗ Error';
+  }
+  setTimeout(() => {
+    btn.textContent = orig;
+    btn.style.color = '';
+    btn.disabled = false;
+  }, 3000);
+}
+
+async function pickRandomLocation() {
+  try {
+    const res = await fetch('/api/random-location');
+    const data = await res.json();
+    if (data.location) {
+      const inp = document.getElementById('locationInput');
+      inp.value = data.location;
+      inp.style.transition = 'background 0.3s';
+      inp.style.background = 'rgba(0,242,254,0.08)';
+      setTimeout(() => inp.style.background = '', 600);
+    }
+  } catch(e) {
+    // fallback: just pick a visible suggestion
+    document.getElementById('locationInput').value = 'Sydney, NSW, Australia';
   }
 }
 </script>

@@ -10,7 +10,7 @@ import functools
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -221,6 +221,129 @@ def find_page(request: Request):
     return templates.TemplateResponse("find.html", ctx(request, "find", sched=cfg))
 
 
+# ── Autopilot Page ─────────────────────────────────────────────────────────
+
+@app.get("/autopilot", response_class=HTMLResponse)
+def autopilot_page(request: Request):
+    from database import get_conn, get_emails_sent_today
+    conn = get_conn()
+    try:
+        cfg = conn.execute("SELECT * FROM scheduler_config LIMIT 1").fetchone()
+        cfg = dict(cfg) if cfg else {}
+        
+        # 1. Recent cold outreach emails sent by autopilot
+        sent_rows = conn.execute("""
+            SELECT b.id, b.name, b.category, b.website, b.demo_tunnel_url,
+                   c.email, o.channel, o.sent_at, o.opened, o.clicked, o.replied
+            FROM outreach o
+            JOIN businesses b ON b.id = o.business_id
+            LEFT JOIN contacts c ON c.business_id = b.id
+            WHERE o.status = 'sent' AND o.channel = 'email' AND o.is_autopilot = 1
+            ORDER BY o.sent_at DESC LIMIT 15
+        """).fetchall()
+        recent_sent = [dict(r) for r in sent_rows]
+        
+        # 2. Recent leads found by autopilot (status is new or approved)
+        found_rows = conn.execute("""
+            SELECT b.id, b.name, b.category, b.website, b.lead_score, b.found_at, b.status,
+                   c.email, c.instagram
+            FROM businesses b
+            LEFT JOIN contacts c ON c.business_id = b.id
+            WHERE b.status IN ('new', 'approved')
+            ORDER BY b.found_at DESC LIMIT 15
+        """).fetchall()
+        recent_found = [dict(r) for r in found_rows]
+        
+        # 3. Autopilot statistics
+        stats_data = {
+            "total_scraped": conn.execute("SELECT COUNT(*) FROM businesses").fetchone()[0],
+            "total_sent": conn.execute("SELECT COUNT(*) FROM outreach WHERE status='sent' AND is_autopilot=1").fetchone()[0],
+            "total_replied": conn.execute("SELECT COUNT(*) FROM outreach WHERE replied=1 AND is_autopilot=1").fetchone()[0],
+            "total_opened": conn.execute("SELECT COUNT(*) FROM outreach WHERE opened=1 AND is_autopilot=1").fetchone()[0],
+            "total_clicked": conn.execute("SELECT COUNT(*) FROM outreach WHERE clicked=1 AND is_autopilot=1").fetchone()[0],
+        }
+    finally:
+        conn.close()
+    
+    sent_today = get_emails_sent_today()
+    return templates.TemplateResponse(
+        "autopilot.html",
+        ctx(
+            request,
+            "autopilot",
+            cfg=cfg,
+            sent_today=sent_today,
+            recent_sent=recent_sent,
+            recent_found=recent_found,
+            stats_data=stats_data
+        )
+    )
+
+@app.get("/autopilot/logs")
+def get_autopilot_logs():
+    try:
+        from pathlib import Path
+        import re
+        log_path = Path("/tmp/leadflow_server.log")
+        if log_path.exists():
+            lines = log_path.read_text(encoding="utf-8").splitlines()
+            clean_lines = []
+            for line in lines[-150:]:
+                line = re.sub(r'\s{10,}', ' ', line)
+                if line.strip():
+                    clean_lines.append(line)
+            return {"logs": "\n".join(clean_lines[-60:])}
+    except Exception as e:
+        return {"logs": f"Error reading logs: {e}"}
+    return {"logs": "No logs available."}
+
+@app.post("/autopilot/toggle")
+async def autopilot_toggle(request: Request, background_tasks: BackgroundTasks):
+    data = await request.json()
+    enabled = bool(data.get("enabled", False))
+    from database import get_conn
+    conn = get_conn()
+    try:
+        conn.execute("UPDATE scheduler_config SET enabled = ?", (int(enabled),))
+        conn.commit()
+    finally:
+        conn.close()
+    
+    # Reload/start scheduler if enabled
+    try:
+        import scheduler
+        if enabled:
+            if not scheduler.scheduler.running:
+                scheduler.start_scheduler()
+            # Trigger immediate background execution when enabled
+            background_tasks.add_task(scheduler.job_auto_send_leads)
+            background_tasks.add_task(scheduler.job_auto_send_followups)
+        else:
+            # Note: We keep scheduler running for reply check intervals,
+            # but setting enabled=0 in database stops daily_find from executing.
+            pass
+    except Exception:
+        pass
+        
+    return JSONResponse({"ok": True, "enabled": enabled})
+
+@app.post("/autopilot/trigger/{job_id}")
+async def autopilot_trigger(job_id: str, background_tasks: BackgroundTasks):
+    import scheduler
+    jobs = {
+        "find": (scheduler.job_daily_find, "Daily Lead Finder"),
+        "send_leads": (scheduler.job_auto_send_leads, "Auto-Send Outreach"),
+        "send_followups": (scheduler.job_auto_send_followups, "Auto-Send Followups"),
+        "check_replies": (scheduler.job_check_replies, "Check Replies/Opt-Outs")
+    }
+    if job_id not in jobs:
+        return JSONResponse({"ok": False, "error": "Invalid job ID"}, status_code=400)
+    
+    func, label = jobs[job_id]
+    background_tasks.add_task(func)
+    return JSONResponse({"ok": True, "message": f"{label} triggered successfully in the background."})
+
+
 # ── Settings ───────────────────────────────────────────────────────────────
 
 @app.get("/settings", response_class=HTMLResponse)
@@ -282,7 +405,8 @@ def _get_scheduler_cfg():
 
 
 @app.get("/find/stream")
-async def find_stream(niche: str, location: str, max_results: int = 20, source: str = "google", max_score: int = 70):
+async def find_stream(niche: str, location: str, max_results: int = 20, source: str = "google", max_score: int = 70,
+                      require_contact: bool = True, no_website_only: bool = False, max_rating: float = 5.0):
     async def generator():
         def send(msg: str, cls: str = ""):
             return f"data: {json.dumps({'type':'log','msg':msg,'cls':cls})}\n\n"
@@ -299,6 +423,13 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                     name = biz.get("name", "Unknown")
                     yield send(f"Processing: {name}...", "dim")
                     website = clean_website_url(biz.get("website", ""))
+                    if no_website_only and website:
+                        yield send(f"  skipped (has website)", "dim")
+                        continue
+                    rating = biz.get("google_rating")
+                    if rating and rating > max_rating:
+                        yield send(f"  skipped (rating {rating} > {max_rating})", "dim")
+                        continue
                     score = score_website(website) if website else 0
                     if score >= max_score:
                         yield send(f"  skipped (score >= {max_score})", "dim")
@@ -310,7 +441,7 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                         continue
                     domain_info = check_domain_available(name) if not website else {}
                     contacts = extract_contacts(website, name, location)
-                    if not any([contacts.get("email"), contacts.get("instagram"),
+                    if require_contact and not any([contacts.get("email"), contacts.get("instagram"),
                                 contacts.get("linkedin_url"), contacts.get("whatsapp")]):
                         yield send(f"  skipped (no contacts)", "dim")
                         continue
@@ -353,6 +484,14 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                 rating    = details.get("rating")
                 reviews   = details.get("user_ratings_total")
 
+                if no_website_only and website:
+                    yield send(f"  skipped (has website)", "dim")
+                    continue
+
+                if rating and rating > max_rating:
+                    yield send(f"  skipped (rating {rating} > {max_rating})", "dim")
+                    continue
+
                 if is_chain_or_too_big(name, reviews):
                     yield send(f"  skipped ({reviews} reviews — chain)", "dim")
                     continue
@@ -375,7 +514,7 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                         contacts["linkedin_url"] = f"https://linkedin.com/company/{name.lower().replace(' ', '-')}"
                         yield send(f"  generated linkedin profile: {contacts['linkedin_url']}", "dim")
 
-                if not any([contacts.get("email"), contacts.get("instagram"),
+                if require_contact and not any([contacts.get("email"), contacts.get("instagram"),
                             contacts.get("linkedin_url"), contacts.get("whatsapp"), phone]):
                     yield send(f"  skipped (no contacts)", "dim")
                     continue
@@ -418,7 +557,8 @@ async def scheduler_save(request: Request):
     locations = [l.strip() for l in data.get("locations", "").split(",") if l.strip()]
     save_scheduler_config(niches, locations, data.get("enabled", False),
                           int(data.get("hour", 6)), int(data.get("max_per", 20)),
-                          data.get("source", "google_maps"), int(data.get("max_score", 70)))
+                          data.get("source", "google_maps"), int(data.get("max_score", 70)),
+                          bool(data.get("auto_send_enabled", False)), int(data.get("max_auto_send", 10)))
     return JSONResponse({"ok": True})
 
 
@@ -604,7 +744,7 @@ async def send_lead(bid: int, request: Request):
                 subject, email_msg = parse_subject_body(email_msg)
             tracking_id = str(uuid.uuid4())
             send_email(to_email, subject, email_msg, tracking_id, demo_url)
-            mark_sent(bid, "email")
+            mark_sent(bid, "email", is_autopilot=False, subject_used=subject, tracking_id=tracking_id)
         except Exception as e:
             return JSONResponse({"ok": False, "error": str(e)})
 
@@ -973,6 +1113,13 @@ def kanban_page(request: Request):
     by_status: dict[str, list] = {}
     for lead in all_leads:
         s = lead["status"]
+        if s == "sent":
+            if lead.get("demo_viewed") or lead.get("email_clicked"):
+                s = "demo_viewed"
+            elif lead.get("email_opened"):
+                s = "opened"
+        elif s == "closed":
+            s = "converted"
         by_status.setdefault(s, []).append(lead)
     return templates.TemplateResponse("kanban.html", ctx(request, "kanban", leads_by_status=by_status))
 
@@ -980,7 +1127,12 @@ def kanban_page(request: Request):
 @app.post("/kanban/{bid}/move")
 async def kanban_move(bid: int, request: Request):
     data = await request.json()
-    update_business_status(bid, data["status"])
+    status = data["status"]
+    if status == "converted":
+        status = "closed"
+    elif status in ("opened", "demo_viewed"):
+        status = "sent"
+    update_business_status(bid, status)
     return JSONResponse({"ok": True})
 
 
@@ -990,6 +1142,124 @@ async def kanban_move(bid: int, request: Request):
 def analytics_page(request: Request):
     a = get_analytics()
     return templates.TemplateResponse("analytics.html", ctx(request, "analytics", a=a))
+
+
+@app.get("/demos/templates")
+def get_demo_templates():
+    import json
+    config_path = os.path.join(str(BASE), "demo_templates", "config.json")
+    if os.path.exists(config_path):
+        with open(config_path, "r", encoding="utf-8") as f:
+            return JSONResponse(json.load(f))
+    return JSONResponse({"templates": []})
+
+
+@app.post("/demos/templates/toggle")
+async def toggle_demo_template(request: Request):
+    import json
+    try:
+        body = await request.json()
+        filename = body.get("file")
+        enabled = body.get("enabled", True)
+        
+        config_path = os.path.join(str(BASE), "demo_templates", "config.json")
+        if os.path.exists(config_path):
+            with open(config_path, "r+", encoding="utf-8") as f:
+                data = json.load(f)
+                templates_list = data.get("templates", [])
+                for tpl in templates_list:
+                    if tpl.get("file") == filename:
+                        tpl["enabled"] = enabled
+                        break
+                f.seek(0)
+                json.dump(data, f, indent=2)
+                f.truncate()
+            return JSONResponse({"ok": True})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
+    return JSONResponse({"ok": False, "error": "Template not found"}, status_code=400)
+
+
+@app.get("/analytics/funnel")
+def analytics_funnel():
+    from database import get_conn
+    conn = get_conn()
+    funnel = {
+        'found':      conn.execute('SELECT COUNT(*) FROM businesses').fetchone()[0],
+        'generated':  conn.execute("SELECT COUNT(DISTINCT business_id) FROM outreach WHERE status='draft' OR status='sent'").fetchone()[0],
+        'sent':       conn.execute("SELECT COUNT(DISTINCT business_id) FROM outreach WHERE status='sent'").fetchone()[0],
+        'opened':     conn.execute('SELECT COUNT(DISTINCT business_id) FROM outreach WHERE opened=1').fetchone()[0],
+        'demo_viewed':conn.execute("SELECT COUNT(*) FROM businesses WHERE demo_viewed=1").fetchone()[0],
+        'replied':    conn.execute("SELECT COUNT(DISTINCT business_id) FROM outreach WHERE replied=1").fetchone()[0],
+        'converted':  conn.execute("SELECT COUNT(*) FROM businesses WHERE status='converted'").fetchone()[0],
+    }
+    conn.close()
+    return JSONResponse(funnel)
+
+
+@app.get("/analytics/by-niche")
+def analytics_by_niche():
+    from database import get_conn
+    conn = get_conn()
+    rows = conn.execute("""
+        SELECT category, COUNT(*) as found,
+               SUM(CASE WHEN b.status IN ('sent','replied','converted') THEN 1 ELSE 0 END) as sent,
+               SUM(CASE WHEN o.opened = 1 THEN 1 ELSE 0 END) as opened,
+               SUM(CASE WHEN o.replied = 1 THEN 1 ELSE 0 END) as replied,
+               SUM(CASE WHEN b.status = 'converted' THEN 1 ELSE 0 END) as converted
+        FROM businesses b
+        LEFT JOIN outreach o ON o.business_id = b.id AND o.channel = 'email'
+        GROUP BY category ORDER BY found DESC LIMIT 15
+    """).fetchall()
+    conn.close()
+    return JSONResponse([dict(r) for r in rows])
+
+
+@app.get("/analytics/by-city")
+def analytics_by_city():
+    from database import get_conn
+    conn = get_conn()
+    rows = conn.execute("""
+        SELECT city, COUNT(*) as found,
+               SUM(CASE WHEN b.status IN ('sent','replied','converted') THEN 1 ELSE 0 END) as sent,
+               SUM(CASE WHEN o.opened = 1 THEN 1 ELSE 0 END) as opened,
+               SUM(CASE WHEN o.replied = 1 THEN 1 ELSE 0 END) as replied
+        FROM businesses b
+        LEFT JOIN outreach o ON o.business_id = b.id AND o.channel = 'email'
+        GROUP BY city ORDER BY found DESC LIMIT 15
+    """).fetchall()
+    conn.close()
+    return JSONResponse([dict(r) for r in rows])
+
+
+@app.get("/analytics/daily")
+def analytics_daily():
+    from database import get_conn
+    conn = get_conn()
+    rows = conn.execute("""
+        SELECT DATE(found_at) as date, COUNT(*) as count 
+        FROM businesses 
+        GROUP BY DATE(found_at) 
+        ORDER BY DATE(found_at) DESC 
+        LIMIT 30
+    """).fetchall()
+    conn.close()
+    return JSONResponse([dict(r) for r in rows])
+
+
+@app.get("/analytics/ab-subjects")
+def analytics_ab_subjects():
+    from database import get_conn
+    conn = get_conn()
+    rows = conn.execute("""
+        SELECT subject_used, COUNT(*) as sends, SUM(opened) as opens 
+        FROM outreach 
+        WHERE subject_used IS NOT NULL AND subject_used != '' 
+        GROUP BY subject_used 
+        ORDER BY opens DESC
+    """).fetchall()
+    conn.close()
+    return JSONResponse([dict(r) for r in rows])
 
 
 # ── Templates Management ───────────────────────────────────────────────────
@@ -1216,7 +1486,7 @@ h1 {{ border-bottom:1px solid #333; padding-bottom:20px; }}
 
 
 @app.post("/api/live-followup/{bid}")
-async def generate_live_followup(bid: int):
+async def generate_live_followup(bid: int, request: Request):
     conn = get_conn()
     lead = conn.execute("SELECT * FROM businesses WHERE id = ?", (bid,)).fetchone()
     conn.close()
@@ -1224,17 +1494,81 @@ async def generate_live_followup(bid: int):
         return JSONResponse({"error": "Not found"}, status_code=404)
         
     try:
+        # Parse JSON request body safely
+        body = {}
+        try:
+            body = await request.json()
+        except Exception:
+            pass
+        channel = body.get("channel", "email")
+        feedback = body.get("feedback")
+        
+        from demo_generator import _scrape_site
         import asyncio
-        from ai_writer import write_live_followup
         loop = asyncio.get_event_loop()
-        draft = await loop.run_in_executor(None, write_live_followup, dict(lead))
+        scraped = {}
+        if lead["website"]:
+            try:
+                scraped = await loop.run_in_executor(None, _scrape_site, lead["website"])
+            except Exception:
+                pass
+                
+        from ai_writer import write_live_followup
+        draft = await loop.run_in_executor(
+            None, functools.partial(write_live_followup, dict(lead), scraped, channel, feedback)
+        )
         return JSONResponse({"draft": draft})
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
 
+@app.get("/api/random-location")
+def api_random_location():
+    """Return a random location from the saved autopilot locations config."""
+    import random as _random
+    try:
+        from database import get_conn
+        import json as _json
+        conn = get_conn()
+        row = conn.execute("SELECT locations FROM scheduler_config LIMIT 1").fetchone()
+        conn.close()
+        if row and row["locations"]:
+            locs = _json.loads(row["locations"])
+            if locs:
+                return JSONResponse({"location": _random.choice(locs)})
+    except Exception:
+        pass
+    # Fallback if nothing configured yet
+    fallback = [
+        "New York, NY, USA", "London, UK", "Sydney, NSW, Australia",
+        "Toronto, Canada", "Dubai, UAE", "Los Angeles, CA, USA",
+        "Chicago, IL, USA", "Manchester, UK", "Melbourne, VIC, Australia",
+    ]
+    return JSONResponse({"location": _random.choice(fallback)})
+
+
+@app.get("/api/random-locations")
+def api_random_locations(n: int = 5):
+    """Return n unique random locations from the saved autopilot config."""
+    import random as _random
+    try:
+        from database import get_conn
+        import json as _json
+        conn = get_conn()
+        row = conn.execute("SELECT locations FROM scheduler_config LIMIT 1").fetchone()
+        conn.close()
+        if row and row["locations"]:
+            locs = _json.loads(row["locations"])
+            if locs:
+                return JSONResponse({"locations": _random.sample(locs, min(n, len(locs)))})
+    except Exception:
+        pass
+    return JSONResponse({"locations": []})
+
+
 @app.get("/api/track.png")
+
 def track_demo_view(bid: int = 0):
     if bid:
         try:

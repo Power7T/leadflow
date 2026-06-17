@@ -132,6 +132,7 @@ def init_db():
 
     for col, definition in [
         ("replied_at", "TEXT"),
+        ("owner_name", "TEXT"),
     ]:
         try:
             conn.execute(f"ALTER TABLE contacts ADD COLUMN {col} {definition}")
@@ -144,6 +145,8 @@ def init_db():
         ("clicked",         "INTEGER DEFAULT 0"),
         ("open_count",      "INTEGER DEFAULT 0"),
         ("tracking_id",     "TEXT"),
+        ("is_autopilot",    "INTEGER DEFAULT 0"),
+        ("subject_used",    "TEXT"),
     ]:
         try:
             conn.execute(f"ALTER TABLE outreach ADD COLUMN {col} {definition}")
@@ -153,6 +156,10 @@ def init_db():
     for col, definition in [
         ("source",    "TEXT DEFAULT 'google_maps'"),
         ("max_score", "INTEGER DEFAULT 70"),
+        ("last_niche_idx", "INTEGER DEFAULT 0"),
+        ("last_loc_idx",   "INTEGER DEFAULT 0"),
+        ("auto_send_enabled", "INTEGER DEFAULT 0"),
+        ("max_auto_send", "INTEGER DEFAULT 10"),
     ]:
         try:
             conn.execute(f"ALTER TABLE scheduler_config ADD COLUMN {col} {definition}")
@@ -180,10 +187,23 @@ def insert_business(data: dict) -> int:
         name = ""
 
     if website:
+        # Simple exact check first
         existing = conn.execute("SELECT id FROM businesses WHERE LOWER(website) = ?", (website.lower(),)).fetchone()
         if existing:
             conn.close()
             return existing["id"]
+            
+        # Domain similarity check
+        from urllib.parse import urlparse
+        parsed = urlparse(website)
+        domain = parsed.netloc.lower()
+        if domain.startswith("www."):
+            domain = domain[4:]
+        if domain:
+            existing_by_domain = conn.execute("SELECT id FROM businesses WHERE website LIKE ?", (f"%{domain}%",)).fetchone()
+            if existing_by_domain:
+                conn.close()
+                return existing_by_domain["id"]
             
     if name:
         phone = data.get("phone", "")
@@ -205,10 +225,20 @@ def insert_business(data: dict) -> int:
             city = ""
             
         if city:
+            # Direct name/city duplicate check
             existing = conn.execute("SELECT id FROM businesses WHERE LOWER(name) = ? AND LOWER(city) = ?", (name.lower(), city.lower())).fetchone()
             if existing:
                 conn.close()
                 return existing["id"]
+                
+            # Fuzzy name match check in the same city
+            from difflib import SequenceMatcher
+            candidates = conn.execute("SELECT id, name FROM businesses WHERE LOWER(city) = ?", (city.lower(),)).fetchall()
+            for cand in candidates:
+                ratio = SequenceMatcher(None, name.lower(), cand["name"].lower()).ratio()
+                if ratio > 0.85:
+                    conn.close()
+                    return cand["id"]
 
     bind_data = {
         "name": name,
@@ -247,8 +277,8 @@ def insert_contacts(business_id: int, contacts: dict):
     conn = get_conn()
     conn.execute('''
         INSERT OR REPLACE INTO contacts 
-        (business_id, email, instagram, facebook, linkedin_url, linkedin_name, whatsapp, hunter_email, apollo_email, apollo_person_name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (business_id, email, instagram, facebook, linkedin_url, linkedin_name, whatsapp, hunter_email, apollo_email, apollo_person_name, owner_name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         business_id,
         contacts.get("email"),
@@ -259,7 +289,8 @@ def insert_contacts(business_id: int, contacts: dict):
         contacts.get("whatsapp"),
         contacts.get("hunter_email"),
         contacts.get("apollo_email"),
-        contacts.get("apollo_person_name")
+        contacts.get("apollo_person_name"),
+        contacts.get("owner_name")
     ))
     conn.commit()
     conn.close()
@@ -268,7 +299,7 @@ def insert_contacts(business_id: int, contacts: dict):
 def get_leads(status: str = "new") -> list:
     conn = get_conn()
     rows = conn.execute("""
-        SELECT b.*, c.email, c.instagram, c.linkedin_name, c.linkedin_url, c.whatsapp
+        SELECT b.*, c.email, c.instagram, c.linkedin_name, c.linkedin_url, c.whatsapp, c.owner_name
         FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
         WHERE b.status = ?
@@ -282,7 +313,7 @@ def get_all_active_leads() -> list:
     """All leads except skipped — used for review page (show everything always)."""
     conn = get_conn()
     rows = conn.execute("""
-        SELECT b.*, c.email, c.instagram, c.linkedin_name, c.linkedin_url, c.whatsapp
+        SELECT b.*, c.email, c.instagram, c.linkedin_name, c.linkedin_url, c.whatsapp, c.owner_name
         FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
         WHERE b.status NOT IN ('skipped')
@@ -295,10 +326,13 @@ def get_all_active_leads() -> list:
 def get_all_leads_for_kanban() -> list:
     conn = get_conn()
     rows = conn.execute("""
-        SELECT b.*, c.email, c.instagram
+        SELECT b.*, c.email, c.instagram, c.whatsapp, c.linkedin_name, c.linkedin_url, c.owner_name,
+               MAX(o.opened) as email_opened, MAX(o.clicked) as email_clicked
         FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
+        LEFT JOIN outreach o ON o.business_id = b.id
         WHERE b.status NOT IN ('skipped', 'opted_out')
+        GROUP BY b.id
         ORDER BY b.lead_score DESC, b.found_at DESC
     """).fetchall()
     conn.close()
@@ -325,12 +359,18 @@ def insert_outreach(business_id: int, channel: str, draft: str, subject_options:
     return tracking_id
 
 
-def mark_sent(business_id: int, channel: str):
+def mark_sent(business_id: int, channel: str, is_autopilot: bool = False, subject_used: str = None, tracking_id: str = None):
     conn = get_conn()
-    conn.execute("""
-        UPDATE outreach SET status='sent', sent_at=?
-        WHERE business_id=? AND channel=?
-    """, (datetime.now().isoformat(), business_id, channel))
+    if tracking_id:
+        conn.execute("""
+            UPDATE outreach SET status='sent', sent_at=?, is_autopilot=?, subject_used=?, tracking_id=?
+            WHERE business_id=? AND channel=?
+        """, (datetime.now().isoformat(), int(is_autopilot), subject_used, tracking_id, business_id, channel))
+    else:
+        conn.execute("""
+            UPDATE outreach SET status='sent', sent_at=?, is_autopilot=?, subject_used=?
+            WHERE business_id=? AND channel=?
+        """, (datetime.now().isoformat(), int(is_autopilot), subject_used, business_id, channel))
     conn.commit()
     conn.close()
 

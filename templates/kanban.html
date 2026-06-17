@@ -5,14 +5,21 @@
 <h1>Pipeline</h1>
 <p class="subtitle">Drag leads across columns to track your deals.</p>
 
+<style>
+.badge-hot { background: rgba(255,77,77,0.15); color: #ff4d4d; border: 1px solid rgba(255,77,77,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.badge-warm { background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.badge-cold { background: rgba(77,153,255,0.15); color: #4d99ff; border: 1px solid rgba(77,153,255,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+</style>
+
 <div class="kanban-board">
   {% set columns = [
     ('new',         '🔍 New',         'var(--text-dim)'),
-    ('approved',    '👍 Approved',    'var(--orange)'),
-    ('sent',        '📨 Contacted',   'var(--blue)'),
-    ('replied',     '💬 Replied',     'var(--yellow)'),
-    ('negotiating', '🤝 Negotiating', 'var(--accent)'),
-    ('closed',      '✅ Closed',      '#00ff88'),
+    ('approved',    '👍 Generated',   'var(--orange)'),
+    ('sent',        '📨 Sent',        'var(--blue)'),
+    ('opened',      '👁️ Opened',      'var(--yellow)'),
+    ('demo_viewed', '🔥 Demo Viewed', '#ff8800'),
+    ('replied',     '💬 Replied',     '#00ff88'),
+    ('converted',   '💰 Converted',    'var(--accent)'),
   ] %}
 
   {% for status, label, color in columns %}
@@ -32,9 +39,20 @@
            ondragstart="onDragStart(event, {{ lead.id }})">
          <div class="kcard-name">{{ lead.name }}</div>
          <div class="kcard-meta">{{ lead.city }}{% if lead.country %}, {{ lead.country }}{% endif %}</div>
-         <div class="kcard-tags">
-           {% if lead.email %}<span class="kdot kdot-green" title="Email">✉</span>{% endif %}
-           {% if lead.instagram %}<span class="kdot kdot-blue" title="Instagram">📸</span>{% endif %}
+         <div class="kcard-tags" style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:8px;flex-wrap:wrap;gap:6px">
+           <div style="display:flex;gap:4px">
+             {% if lead.email %}<span title="Email" style="color:#4caf50;font-size:12px">✉</span>{% endif %}
+             {% if lead.instagram %}<span title="Instagram" style="color:#00f2fe;font-size:12px">📸</span>{% endif %}
+             {% if lead.whatsapp %}<span title="WhatsApp" style="color:#25d366;font-size:12px">💬</span>{% endif %}
+           </div>
+           {% set score = lead.website_score | default(0) %}
+           {% if not lead.website or score < 30 %}
+             <span class="badge-hot" style="font-size:8px;padding:1px 4px">HOT 🔥</span>
+           {% elif score < 55 %}
+             <span class="badge-warm" style="font-size:8px;padding:1px 4px">WARM 🌡️</span>
+           {% else %}
+             <span class="badge-cold" style="font-size:8px;padding:1px 4px">COLD 🧊</span>
+           {% endif %}
            <span class="kcard-score">{{ lead.lead_score }}pt</span>
          </div>
          {% if status == 'replied' %}
@@ -152,9 +170,9 @@ async function saveDeal() {
   const data = await res.json();
   if (data.ok) {
     closeDeal();
-    // Move card to closed
+    // Move card to converted
     const card = document.getElementById(`card-${bid}`);
-    document.getElementById('col-closed').appendChild(card);
+    document.getElementById('col-converted').appendChild(card);
     updateCounts();
   }
 }

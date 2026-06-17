@@ -90,12 +90,31 @@ def deploy_demo(bid: int, name: str, html: str) -> dict:
     to confirm Pages has actually published it (e.g. before emailing the link).
     """
     url = demo_url_for(bid, name)
+    import os
+    if os.getenv("GITHUB_TOKEN"):
+        try:
+            from github_deploy import push_demo_to_github
+            filename = f"{slug_for(bid, name)}.html"
+            gh_url = push_demo_to_github(filename, html)
+            if gh_url:
+                return {"ok": True, "url": gh_url, "error": ""}
+        except Exception as e:
+            print(f"[deploy] GitHub API deployment failed, falling back to git CLI: {e}")
     res = _publish(f"{slug_for(bid, name)}.html", html)
     return {"ok": res["ok"], "url": url, "error": res["error"]}
 
 
 def deploy_raw(filename: str, html: str) -> dict:
     """Publish an arbitrary file (e.g. an audit report). Returns {ok, url, error}."""
+    import os
+    if os.getenv("GITHUB_TOKEN"):
+        try:
+            from github_deploy import push_demo_to_github
+            gh_url = push_demo_to_github(filename, html)
+            if gh_url:
+                return {"ok": True, "url": gh_url, "error": ""}
+        except Exception as e:
+            print(f"[deploy] GitHub API deployment raw failed, falling back to git CLI: {e}")
     res = _publish(filename, html)
     return {"ok": res["ok"],
             "url": f"https://{PAGES_USER}.github.io/{PAGES_REPO}/{filename}",

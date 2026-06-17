@@ -278,15 +278,15 @@ def _accent_for_category(category: str, scraped_color: str) -> tuple[str, str]:
 
 
 GYM_KEYWORDS = re.compile(
-    r"gym|fitness|crossfit|boxing|mma|martial art|yoga|pilates|"
-    r"health club|workout|training center|athletic|sport",
+    r"gym|fit|fitness|crossfit|boxing|mma|martial art|yoga|pilates|"
+    r"health club|workout|training center|athletic|sport|ymca|studio",
     re.I,
 )
 
 def _is_gym(category: str, name: str) -> bool:
-    # Only search the business name to prevent false positives if the user
-    # entered a comma-separated list of multiple niches (e.g. "gym,airbnb")
-    return bool(GYM_KEYWORDS.search(name or ""))
+    cat = (category or "").lower()
+    nm = (name or "").lower()
+    return bool(GYM_KEYWORDS.search(nm) or GYM_KEYWORDS.search(cat))
 
 
 def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = False) -> str:
@@ -978,10 +978,37 @@ def generate_demo_html(business: dict, website_data: dict = None, use_stock: boo
             if os.path.exists(os.path.join(demo_templates_dir, assigned_template)):
                 target_template = assigned_template
                 
-        # Priority 2: Use keyword matching
+        # Priority 2: Use keyword matching based on config.json
+        if not target_template:
+            import json
+            config_path = os.path.join(demo_templates_dir, "config.json")
+            if os.path.exists(config_path):
+                try:
+                    with open(config_path, "r", encoding="utf-8") as cfg_f:
+                        config_data = json.load(cfg_f)
+                    templates_list = config_data.get("templates", [])
+                    
+                    category_lower = (category or "").lower()
+                    name_lower = (business.get("name", "") or "").lower()
+                    
+                    for tpl in templates_list:
+                        if not tpl.get("enabled", True):
+                            continue
+                        tpl_file = tpl.get("file")
+                        if not tpl_file:
+                            continue
+                        niches = tpl.get("niches", [])
+                        if any(n in category_lower or n in name_lower for n in niches):
+                            if os.path.exists(os.path.join(demo_templates_dir, tpl_file)):
+                                target_template = tpl_file
+                                break
+                except Exception as e:
+                    print(f"[demo_generator] Error reading config.json: {e}")
+
+        # Fallback to old matching if still no target template
         if not target_template:
             for tpl_file in os.listdir(demo_templates_dir):
-                if not tpl_file.endswith(".html"):
+                if not tpl_file.endswith(".html") or tpl_file == "config.json":
                     continue
                 base_name = tpl_file.replace(".html", "").lower()
                 if base_name in category.lower() or base_name in business.get("name", "").lower():
@@ -993,11 +1020,22 @@ def generate_demo_html(business: dict, website_data: dict = None, use_stock: boo
             with open(os.path.join(demo_templates_dir, target_template), "r", encoding="utf-8") as f:
                 template_str = f.read()
             
-            # Always use built-in stock imagery — never the prospect's own images.
-            # Gyms get the gym-specific Iron Peak stock; everyone else generic stock.
-            if _is_gym(category, business.get("name", "")):
+            # Select premium niche stock images based on target template
+            if target_template == "gym.html":
                 _IPG = "https://pms5566.github.io/Iron-Peak-Gym/images/"
                 hero_img, about_img = _IPG + "hero-bg.png", _IPG + "about.png"
+            elif target_template == "restaurant.html":
+                hero_img = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400"
+                about_img = "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=600"
+            elif target_template == "dentist.html":
+                hero_img = "https://images.unsplash.com/photo-1588776814546-daab30f310ce?w=1400"
+                about_img = "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=600"
+            elif target_template == "barbershop.html":
+                hero_img = "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1400"
+                about_img = "https://images.unsplash.com/photo-1593702295094-aec22597af65?w=600"
+            elif target_template == "realestate.html":
+                hero_img = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1400"
+                about_img = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600"
             else:
                 hero_img, about_img = _STOCK_HERO, _STOCK_ABOUT
 

@@ -20,10 +20,15 @@ IG_RE = re.compile(r"instagram\.com/([a-zA-Z0-9_.]+)", re.IGNORECASE)
 WHATSAPP_RE = re.compile(r"wa\.me/(\d+)", re.IGNORECASE)
 LINKEDIN_RE = re.compile(r"linkedin\.com/in/([a-zA-Z0-9\-]+)", re.IGNORECASE)
 
-# Emails to ignore (generic/support)
+# Emails to ignore (generic/support/placeholders)
 EMAIL_BLACKLIST = {
     "support", "noreply", "no-reply", "admin", "webmaster",
     "privacy", "legal", "abuse", "sales@example", "test@",
+    "example.com", "domain.com", "yourdomain.com", "yoursite.com",
+    "contoso.com", "placeholder", "wixpress.com", "sentry.io",
+    "wordpress.org", "wordpress.com", "wix.com",
+    "email@email.com", "test@test.com", "name@email.com",
+    "user@domain.com", "info@domain.com", "email.com"
 }
 
 
@@ -45,7 +50,49 @@ def _clean_email(email: str) -> str | None:
     # Skip image files mistaken for emails
     if any(email.endswith(ext) for ext in (".png", ".jpg", ".gif", ".svg")):
         return None
+
+    # Validate domain name has a valid DNS record
+    parts = email.split("@")
+    if len(parts) != 2:
+        return None
+    domain = parts[1].strip()
+
+    # Fast-pass common public email providers to save DNS lookup time
+    if domain in ("gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "aol.com", "zoho.com", "protonmail.com"):
+        return email
+
+    import socket
+    try:
+        # Check if domain resolves to A/AAAA or MX
+        socket.getaddrinfo(domain, None)
+    except Exception:
+        return None  # Domain does not resolve (dead or placeholder)
+
     return email
+
+
+def _extract_name_from_html(html: str) -> str:
+    if not html:
+        return ""
+    soup = BeautifulSoup(html, "lxml")
+    for s in soup(["script", "style"]):
+        s.decompose()
+    text = soup.get_text(" ")
+    patterns = [
+        r"(?:owner|founder|director|creator)(?:\s+(?:is|of|& [^:]+))?:\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
+        r"(?:founded|created)\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
+        r"hi,\s+i'm\s+([A-Z][a-z]+)",
+        r"meet\s+the\s+(?:owner|founder):\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)",
+        r"meet\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:the\s+)?(?:owner|founder)",
+    ]
+    for pat in patterns:
+        match = re.search(pat, text)
+        if match:
+            fullname = match.group(1).strip()
+            parts = fullname.split()
+            if parts:
+                return parts[0].capitalize()
+    return ""
 
 
 def extract_from_website(url: str) -> dict:
@@ -104,6 +151,18 @@ def extract_from_website(url: str) -> dict:
         handle = li.group(1)
         contacts["linkedin_name"] = handle
         contacts["linkedin_url"] = f"https://linkedin.com/in/{handle}"
+
+    # Owner name extraction from website
+    owner = _extract_name_from_html(html)
+    if owner:
+        contacts["owner_name"] = owner
+    else:
+        for slug in ("/about", "/about-us", "/our-story"):
+            about_html = _fetch(url.rstrip("/") + slug)
+            owner = _extract_name_from_html(about_html)
+            if owner:
+                contacts["owner_name"] = owner
+                break
 
     return contacts
 
@@ -202,10 +261,31 @@ def extract_contacts(website: str, business_name: str, location: str) -> dict:
         
         hunter_email = hunter_enrich(domain)
         if hunter_email:
-            contacts["hunter_email"] = hunter_email
+            cleaned_hunter = _clean_email(hunter_email)
+            if cleaned_hunter:
+                contacts["hunter_email"] = cleaned_hunter
+                contacts.setdefault("email", cleaned_hunter)
             
         apollo_data = apollo_enrich(domain)
         if apollo_data:
             contacts.update(apollo_data)
+            ap_email = apollo_data.get("apollo_email")
+            if ap_email:
+                cleaned_ap = _clean_email(ap_email)
+                if cleaned_ap:
+                    contacts["apollo_email"] = cleaned_ap
+                    contacts.setdefault("email", cleaned_ap)
+            # If Apollo person name is returned, use it for owner_name
+            p_name = apollo_data.get("apollo_person_name")
+            if p_name:
+                parts = p_name.split()
+                if parts:
+                    contacts["owner_name"] = parts[0].capitalize()
+
+    # Final sanity check: ensure main email is fully clean/validated
+    if contacts.get("email"):
+        cleaned_main = _clean_email(contacts["email"])
+        if not cleaned_main:
+            contacts["email"] = None
 
     return contacts

@@ -6,9 +6,9 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 echo "" > /tmp/leadflow-tunnel-url.txt
 echo "" > /tmp/leadflow-demo-tunnel-url.txt
 
-python3.12 server.py > /tmp/leadflow_server.log 2>&1 &
+python3.12 -u server.py > /tmp/leadflow_server.log 2>&1 &
 SERVER_PID=$!
-python3.12 demo_server.py > /tmp/leadflow_demo.log 2>&1 &
+python3.12 -u demo_server.py > /tmp/leadflow_demo.log 2>&1 &
 DEMO_PID=$!
 
 function start_tunnel() {

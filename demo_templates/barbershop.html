@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ lead.name }} | Premium Barbering & Grooming</title>
+<meta name="description" content="Welcome to {{ lead.name }}. Legendary haircut, shave, and grooming services in {{ lead.city or 'your city' }}.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0f0808;
+  --bg-secondary: #160c0c;
+  --bg-tertiary: #201111;
+  --accent: #c0392b;
+  --accent-glow: rgba(192, 57, 43, 0.35);
+  --text-white: #ffffff;
+  --text-gray: #d0c2c2;
+  --text-muted: #847272;
+  --glass-bg: rgba(22, 12, 12, 0.85);
+  --glass-border: rgba(192, 57, 43, 0.1);
+  --glass-border-hover: rgba(192, 57, 43, 0.4);
+  --border-radius-sm: 2px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 16px;
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.7);
+  --transition-smooth: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-primary);
+  color: var(--text-white);
+  font-family: 'Open Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+p {
+  color: var(--text-gray);
+  font-weight: 300;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* DEMO BANNER */
+.demo-banner {
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.demo-banner a {
+  color: #fff;
+  text-decoration: underline;
+  font-weight: 800;
+}
+.demo-banner .orig {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: .75;
+}
+
+/* NAVBAR */
+.navbar {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--glass-border);
+}
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 90px;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled .nav-container {
+  height: 70px;
+}
+.logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logo span {
+  color: var(--accent);
+}
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--text-gray);
+  font-weight: 400;
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
+  position: relative;
+  padding: 0.5rem 0;
+  text-transform: uppercase;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: var(--transition-smooth);
+}
+.nav-links a:hover, .nav-links a.active {
+  color: #fff;
+}
+.nav-links a:hover::after, .nav-links a.active::after {
+  width: 100%;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 2.2rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-primary {
+  background-color: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+  transform: translateY(-2px);
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: #fff;
+}
+.btn-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* HERO */
+.hero {
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(rgba(15,8,8,0.7), rgba(15,8,8,0.9)), url('{{ hero_img or "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1400" }}') center/cover no-repeat;
+  position: relative;
+  padding-top: 138px;
+}
+.hero-content {
+  max-width: 800px;
+}
+.hero-title {
+  font-size: 4.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.hero-desc {
+  font-size: 1.2rem;
+  margin-bottom: 2.5rem;
+  max-width: 600px;
+}
+.hero-btns {
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* SECTION SPECIFICS */
+section {
+  padding: 8rem 0;
+  position: relative;
+}
+.section-tag {
+  color: var(--accent);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.section-title {
+  font-size: 2.8rem;
+  margin-bottom: 3rem;
+}
+
+/* SERVICES SECTION */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem 4rem;
+}
+.service-item {
+  border-bottom: 1px dashed var(--glass-border-hover);
+  padding-bottom: 1.5rem;
+}
+.service-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+.service-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.service-price {
+  font-family: 'Oswald', sans-serif;
+  color: var(--accent);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.service-desc {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+}
+
+/* GALLERY PORTFOLIO GRID */
+.gallery {
+  background: var(--bg-secondary);
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.gallery-item {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.gallery-item:hover img {
+  transform: scale(1.06);
+}
+
+/* TEAM SECTION */
+.team {
+  background: var(--bg-tertiary);
+}
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+.barber-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  text-align: center;
+  transition: var(--transition-smooth);
+}
+.barber-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+}
+.barber-img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+.barber-name {
+  font-size: 1.4rem;
+  margin: 1.5rem 0 0.2rem;
+}
+.barber-role {
+  color: var(--accent);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+/* TESTIMONIALS */
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+.testimonial-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 2.5rem;
+  border-radius: var(--border-radius-md);
+}
+.stars {
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.t-text {
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+.t-author {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* CONTACT */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.contact-item h4 {
+  font-size: 1.25rem;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+/* FOOTER */
+.footer {
+  background: #090505;
+  padding: 4rem 0 2rem;
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+}
+.footer-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 1.5rem;
+}
+
+/* RESPONSIVE */
+@media(max-width: 991px) {
+  .services-grid, .gallery-grid, .team-grid, .testimonials-grid, .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .navbar {
+    top: 0;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
+  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <span class="orig">Built using barber template</span>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">
+      {{ lead.name }}<span>.</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#gallery">Portfolio</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.85rem">Book Now</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="home" class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <h1 class="hero-title">Shine &amp; Prestige</h1>
+      <p class="hero-desc">Elevate your personal style at {{ lead.name }}. Expert haircuts, classic hot towel shaves, and top-tier styling products.</p>
+      <div class="hero-btns">
+        <a href="#services" class="btn btn-primary">Services</a>
+        <a href="#contact" class="btn btn-outline">Book Now</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section id="services">
+  <div class="container">
+    <span class="section-tag">Classic Service</span>
+    <h2 class="section-title">Barber Menu &amp; Prices</h2>
+    <div class="services-grid">
+      <div class="service-item">
+        <div class="service-header">
+          <span class="service-name">Classic Haircut</span>
+          <span class="service-price">$35</span>
+        </div>
+        <p class="service-desc">Precision cut finished with hot towel neck shave and styling wash.</p>
+      </div>
+      <div class="service-item">
+        <div class="service-header">
+          <span class="service-name">Beard Trim &amp; Shape</span>
+          <span class="service-price">$25</span>
+        </div>
+        <p class="service-desc">Sculpting, straight razor lineup, premium beard oil conditioning.</p>
+      </div>
+      <div class="service-item">
+        <div class="service-header">
+          <span class="service-name">Signature Hot Lather Shave</span>
+          <span class="service-price">$45</span>
+        </div>
+        <p class="service-desc">Traditional straight-razor shave, pre-shave essential oils, cold towels.</p>
+      </div>
+      <div class="service-item">
+        <div class="service-header">
+          <span class="service-name">The Premium Package</span>
+          <span class="service-price">$70</span>
+        </div>
+        <p class="service-desc">Classic Cut + Signature Shave + charcoal face mask treatment.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Portfolio -->
+<section id="gallery" class="gallery">
+  <div class="container">
+    <span class="section-tag">Portfolio</span>
+    <h2 class="section-title">Grooming Work</h2>
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400" alt="Haircut">
+      </div>
+      <div class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1593702295094-aec22597af65?w=400" alt="Shave">
+      </div>
+      <div class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400" alt="Barbershop">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="team">
+  <div class="container">
+    <span class="section-tag">Master Barbers</span>
+    <h2 class="section-title">Meet Our Stylists</h2>
+    <div class="team-grid">
+      <div class="barber-card">
+        <img class="barber-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400" alt="Barber">
+        <h3 class="barber-name">Sarah Connor</h3>
+        <p class="barber-role">Senior Stylist</p>
+      </div>
+      <div class="barber-card">
+        <img class="barber-img" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400" alt="Barber">
+        <h3 class="barber-name">Marcus Aurelius</h3>
+        <p class="barber-role">Master Barber</p>
+      </div>
+      <div class="barber-card">
+        <img class="barber-img" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400" alt="Barber">
+        <h3 class="barber-name">John Doe</h3>
+        <p class="barber-role">Beard Specialist</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section>
+  <div class="container">
+    <span class="section-tag">Reviews</span>
+    <h2 class="section-title">Grooming Feedback</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"Outstanding straight razor shave. Professional, clean, and the environment feels completely authentic."</p>
+        <p class="t-author">Sarah Connor</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"Always a clean fade and sharp lines. Marcus is an absolute artist with the shears."</p>
+        <p class="t-author">David Miller</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"I love the booking setup. Great coffee, awesome conversation, and the best shave in town."</p>
+        <p class="t-author">Robert Downey</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <span class="section-tag">Book Today</span>
+        <h2 class="section-title">Schedule Seat</h2>
+        <div class="contact-info">
+          <div class="contact-item">
+            <h4>Address</h4>
+            <p>{{ lead.address or 'Heritage District' }}</p>
+          </div>
+          {% if lead.phone %}
+          <div class="contact-item">
+            <h4>Telephone</h4>
+            <p>{{ lead.phone }}</p>
+          </div>
+          {% endif %}
+          <div class="contact-item">
+            <h4>Shop Hours</h4>
+            <p>Mon - Sat: 9:00 AM - 8:00 PM<br>Sun: 10:00 AM - 4:00 PM</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <!-- Map Placeholder -->
+        <div style="width:100%;height:300px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">
+          <div style="text-align:center">
+            <span style="font-size:2rem;display:block;margin-bottom:0.5rem">📍</span>
+            Shop location for {{ lead.name }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 {{ lead.name }}. All rights reserved.</p>
+    <p class="footer-text">Grooming website concept designed by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
+  </div>
+</footer>
+
+<!-- Tracking Pixel -->
+<img src="/api/track.png?bid={{ lead.id }}" style="display:none;width:0;height:0" />
+
+<script>
+window.addEventListener('scroll', function() {
+  const navbar = document.getElementById('navbar');
+  if (window.scrollY > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+});
+</script>
+</body>
+</html>

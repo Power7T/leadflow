@@ -96,6 +96,7 @@ def check_replies():
                         else:
                             print(f"Reply detected from {sender_email} for business {bid}!")
                             cursor.execute("UPDATE businesses SET status='replied' WHERE id=?", (bid,))
+                            cursor.execute("DELETE FROM follow_ups WHERE business_id=? AND status='pending'", (bid,))
                         conn.commit()
 
         print("Finished checking replies.")

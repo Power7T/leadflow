@@ -160,7 +160,7 @@ async def get_place_details_async(place_id: str) -> dict:
             return data.get("result", {})
 
 
-def run_finder(niche: str, location: str, max_results: int = 20, source: str = "google_maps", max_score: int = 70) -> int:
+def run_finder(niche: str, location: str, max_results: int = 20, source: str = "google_maps", max_score: int = 70, require_email: bool = True) -> int:
     console.print(f"\n[bold cyan]Searching:[/] {niche} in {location} via {source} (up to {max_results} results)\n")
 
     if source == "yelp":
@@ -178,7 +178,13 @@ def run_finder(niche: str, location: str, max_results: int = 20, source: str = "
                 skipped += 1
                 continue
             contacts = extract_contacts(website, name, location)
-            if not contacts.get("email") and not contacts.get("instagram"):
+            
+            # Autopilot requirements: Require email for high quality outreach
+            if require_email and not contacts.get("email"):
+                console.print(f"[dim]skipped (no email)[/]")
+                skipped += 1
+                continue
+            elif not require_email and not any([contacts.get("email"), contacts.get("instagram")]):
                 console.print(f"[dim]skipped (no email/ig)[/]")
                 skipped += 1
                 continue
@@ -274,10 +280,14 @@ def run_finder(niche: str, location: str, max_results: int = 20, source: str = "
             except Exception:
                 pass
 
-        # Skip if zero contact channels found — nothing to outreach with
-        if not any([contacts.get("email"), contacts.get("instagram"),
+        # Skip if no email found — we need email to perform outreach
+        if require_email and not contacts.get("email"):
+            console.print(f"[dim]skipped (no email)[/]")
+            skipped += 1
+            continue
+        elif not require_email and not any([contacts.get("email"), contacts.get("instagram"),
                     contacts.get("linkedin_url"), contacts.get("whatsapp")]):
-            console.print(f"[dim]skipped (no contacts)[/]")
+            console.log(f"[dim]skipped (no contacts)[/]")
             skipped += 1
             continue
 
