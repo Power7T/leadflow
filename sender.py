@@ -69,7 +69,23 @@ def get_sender_credentials(assigned_email: str = None) -> tuple[str, str]:
 def send_email(to_email: str, subject: str, body: str,
                tracking_id: str = "", demo_url: str = "",
                business_id: int = None) -> bool:
-    from database import get_or_assign_sender_email
+    from database import get_or_assign_sender_email, get_conn
+
+    # Prevent contractors (roofer, hvac, solar) from sending/receiving demo links
+    if business_id:
+        conn = get_conn()
+        try:
+            row = conn.execute("SELECT category, name FROM businesses WHERE id=?", (business_id,)).fetchone()
+            if row:
+                category = (row["category"] or "").lower()
+                name_lower = (row["name"] or "").lower()
+                is_contractor = any(kw in category or kw in name_lower for kw in ["roof", "roofer", "hvac", "air conditioning", "heating", "cooling", "solar", "remodeler", "remodeling", "renovation", "detail", "detailing", "ceramic", "tree", "arborist"])
+                if is_contractor:
+                    demo_url = ""
+        except Exception:
+            pass
+        finally:
+            conn.close()
 
     assigned_email = None
     if business_id:

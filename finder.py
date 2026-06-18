@@ -92,7 +92,7 @@ def search_places(query: str, location: str, max_results: int = 20) -> list:
 
     while len(results) < max_results:
         if next_token:
-            params["pagetoken"] = next_token
+            params = {"key": MAPS_KEY, "pagetoken": next_token}
             time.sleep(2)
 
         resp = requests.get(PLACES_URL, params=params, timeout=10)
@@ -119,7 +119,7 @@ async def search_places_async(query: str, location: str, max_results: int = 20) 
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         while len(results) < max_results:
             if next_token:
-                params["pagetoken"] = next_token
+                params = {"key": MAPS_KEY, "pagetoken": next_token}
                 await asyncio.sleep(2)
 
             async with session.get(PLACES_URL, params=params, timeout=10, ssl=False) as resp:

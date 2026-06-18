@@ -2,6 +2,7 @@ import os
 import base64
 import json
 import urllib.request
+import ssl
 
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', '')
 GITHUB_REPO = os.getenv('GITHUB_DEMO_REPO', 'power7t/leadflow-demos')
@@ -13,6 +14,9 @@ def push_demo_to_github(filename: str, html_content: str) -> str:
         print("[github_deploy] No GITHUB_TOKEN set. Skipping GitHub deploy.")
         return ''
     try:
+        # Create an unverified SSL context to bypass macOS root cert validation issues
+        ssl_ctx = ssl._create_unverified_context()
+        
         # GitHub Contents API
         api_url = f'https://api.github.com/repos/{GITHUB_REPO}/contents/{filename}'
         content_b64 = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
@@ -28,7 +32,7 @@ def push_demo_to_github(filename: str, html_content: str) -> str:
                     'User-Agent': 'LeadFlow-Deploy-Agent'
                 }
             )
-            with urllib.request.urlopen(req, timeout=10) as r:
+            with urllib.request.urlopen(req, timeout=10, context=ssl_ctx) as r:
                 existing = json.loads(r.read().decode('utf-8'))
                 sha = existing.get('sha')
         except Exception as e:
@@ -55,7 +59,7 @@ def push_demo_to_github(filename: str, html_content: str) -> str:
                 'User-Agent': 'LeadFlow-Deploy-Agent'
             }
         )
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with urllib.request.urlopen(req, timeout=30, context=ssl_ctx) as r:
             result = json.loads(r.read().decode('utf-8'))
         
         repo_name = GITHUB_REPO.split('/')[-1]

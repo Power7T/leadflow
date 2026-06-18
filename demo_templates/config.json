@@ -7,6 +7,12 @@
     {"file": "realestate.html", "name": "Real Estate", "enabled": true, "niches": ["real estate", "realty", "property", "realtor", "brokerage", "housing", "mortgage", "insurance broker"]},
     {"file": "roofer.html", "name": "Roofer & Roofing Services", "enabled": true, "niches": ["roofer", "roofing", "contractor", "roof", "gutters", "painter", "painting", "siding", "deck builder", "home remodeler", "renovation", "remodeling"]},
     {"file": "hvac.html", "name": "HVAC Heating & Cooling", "enabled": true, "niches": ["hvac", "air conditioning", "heating", "cooling", "furnace", "ac repair", "plumber", "plumbing", "electrician", "locksmith", "pest control", "exterminator"]},
-    {"file": "solar.html", "name": "Solar & Clean Energy", "enabled": true, "niches": ["solar", "energy", "photovoltaic", "solar panels", "clean energy"]}
+    {"file": "solar.html", "name": "Solar & Clean Energy", "enabled": true, "niches": ["solar", "energy", "photovoltaic", "solar panels", "clean energy"]},
+    {"file": "lawyer.html", "name": "Law Firm & Legal Services", "enabled": true, "niches": ["lawyer", "law firm", "attorney", "legal", "solicitor", "advocate", "notary", "counsel", "litigation", "law offices"]},
+    {"file": "medspa.html", "name": "Medical Spa & Aesthetics", "enabled": true, "niches": ["medspa", "med spa", "aesthetics", "botox", "skincare", "filler", "cosmetic clinic", "plastic surgery", "dermatology"]},
+    {"file": "remodeler.html", "name": "High-End Home Remodeling", "enabled": true, "niches": ["remodeler", "remodeling", "renovation", "general contractor", "home builder", "custom builder", "kitchen remodel", "bathroom remodel", "addition", "home improvement"]},
+    {"file": "cleaning.html", "name": "Commercial Cleaning & Janitorial", "enabled": true, "niches": ["cleaning", "commercial cleaning", "janitorial", "office cleaning", "facility cleaning", "carpet cleaning", "window cleaning", "sanitization"]},
+    {"file": "detailing.html", "name": "Auto Detailing & Ceramic Coating", "enabled": true, "niches": ["detailing", "auto detailing", "car detailing", "ceramic coating", "paint correction", "auto spa", "car wash", "window tinting"]},
+    {"file": "treeservice.html", "name": "Tree Care & Arborist Services", "enabled": true, "niches": ["tree service", "tree removal", "tree care", "arborist", "tree trimming", "stump grinding", "emergency tree removal"]}
   ]
 }

@@ -5,6 +5,7 @@ Uses APScheduler. Started by server.py on launch.
 import json
 import logging
 import sys
+import threading
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -17,6 +18,9 @@ if not log.handlers:
 
 scheduler = BackgroundScheduler(timezone="UTC")
 
+_leads_send_lock = threading.Lock()
+_followups_send_lock = threading.Lock()
+
 
 def _get_config() -> dict:
     from database import get_conn
@@ -26,6 +30,45 @@ def _get_config() -> dict:
         if not row:
             return {"enabled": False}
         return dict(row)
+    finally:
+        conn.close()
+
+
+def auto_update_warmup_limit():
+    """Dynamically updates max_auto_send in database to warm up new Gmail accounts automatically."""
+    from datetime import date
+    import os
+    from database import get_conn
+    
+    # Define setup start date for new accounts
+    start_date = date(2026, 6, 18)
+    today = date.today()
+    days_elapsed = max(0, (today - start_date).days)
+    
+    # Parse configured sender emails
+    emails_str = os.getenv("SENDER_EMAIL", "")
+    emails = [e.strip() for e in emails_str.split(",") if e.strip()]
+    
+    if not emails:
+        return
+        
+    # First email is old/warmed up (limit of 25)
+    # New accounts start at 5/day and increase by 2/day up to 30/day
+    old_limit = 25
+    new_limit = min(30, 5 + 2 * days_elapsed)
+    
+    total_limit = old_limit + new_limit * (len(emails) - 1)
+    
+    conn = get_conn()
+    try:
+        cfg = conn.execute("SELECT max_auto_send FROM scheduler_config LIMIT 1").fetchone()
+        current_limit = cfg["max_auto_send"] if cfg else 10
+        if current_limit != total_limit:
+            conn.execute("UPDATE scheduler_config SET max_auto_send = ?", (total_limit,))
+            conn.commit()
+            log.info(f"[Scheduler] Auto-warmed daily send limit to {total_limit} (Old account: {old_limit}, {len(emails)-1} New accounts: {new_limit} each, Day {days_elapsed+1})")
+    except Exception as e:
+        log.error(f"[Scheduler] Failed to auto-update warmup limit: {e}")
     finally:
         conn.close()
 
@@ -111,202 +154,220 @@ def _is_gym(category: str, name: str) -> bool:
 
 def job_auto_send_leads():
     """Find untouched leads with score > 80, auto-generate demo/draft, and send email."""
-    cfg = _get_config()
-    if not cfg.get("enabled") or not cfg.get("auto_send_enabled"):
-        log.info("[Scheduler] Autopilot or Auto-send is disabled. Skipping auto-sending leads.")
+    if not _leads_send_lock.acquire(blocking=False):
+        log.info("[Scheduler] job_auto_send_leads is already running. Skipping concurrent execution.")
         return
-
-    from database import get_conn, mark_sent, get_emails_sent_today, update_business_status
-    from sender import parse_subject_body, send_email
-    from ai_writer import write_audit_pitch, write_no_website_pitch, BOOKING_URL
-    import uuid, requests, time
-
-    max_auto_send = cfg.get("max_auto_send", 10)
-    # Enforce safe daily cold email limit to prevent spam blocking
-    sent_today = get_emails_sent_today()
-    if sent_today >= max_auto_send:
-        log.info(f"[Scheduler] Daily auto-send limit ({max_auto_send}) reached. Skipping initial auto-sending today (already sent: {sent_today}).")
-        return
-
-    conn = get_conn()
     try:
-        # Find leads > 80 score that have email
-        rows = conn.execute("""
-            SELECT b.*, c.email FROM businesses b
-            LEFT JOIN contacts c ON c.business_id = b.id
-            WHERE b.status IN ('new', 'approved') AND b.lead_score >= 25 AND c.email IS NOT NULL
-            LIMIT 3
-        """).fetchall()
-        leads = [dict(r) for r in rows]
-    finally:
-        conn.close()
+        auto_update_warmup_limit()
+        cfg = _get_config()
+        if not cfg.get("enabled") or not cfg.get("auto_send_enabled"):
+            log.info("[Scheduler] Autopilot or Auto-send is disabled. Skipping auto-sending leads.")
+            return
 
-    if not leads:
-        log.info("[Scheduler] No unsent leads in queue. Proactively triggering daily lead finder to gather new leads.")
-        job_daily_find()
-        return
+        from database import get_conn, mark_sent, get_emails_sent_today, update_business_status
+        from sender import parse_subject_body, send_email
+        from ai_writer import write_audit_pitch, write_no_website_pitch, BOOKING_URL
+        import uuid, requests, time
 
-    for lead in leads:
-        log.info(f"[Scheduler] Auto-sending initial outreach to {lead['name']}")
+        max_auto_send = cfg.get("max_auto_send", 10)
+        # Enforce safe daily cold email limit to prevent spam blocking
+        sent_today = get_emails_sent_today()
+        if sent_today >= max_auto_send:
+            log.info(f"[Scheduler] Daily auto-send limit ({max_auto_send}) reached. Skipping initial auto-sending today (already sent: {sent_today}).")
+            return
+
+        conn = get_conn()
         try:
-            # Validate email address before attempting to email
-            from extractor import _clean_email
-            if not _clean_email(lead["email"]):
-                log.info(f"  -> Skipping lead {lead['name']} because email {lead['email']} is invalid/placeholder.")
-                from database import update_business_status
-                update_business_status(lead["id"], "skipped")
-                continue
+            # Find leads > 80 score that have email
+            rows = conn.execute("""
+                SELECT b.*, c.email FROM businesses b
+                LEFT JOIN contacts c ON c.business_id = b.id
+                WHERE b.status IN ('new', 'approved') AND b.lead_score >= 25 AND c.email IS NOT NULL
+                LIMIT 3
+            """).fetchall()
+            leads = [dict(r) for r in rows]
+        finally:
+            conn.close()
 
-            pitch_type = lead.get("pitch_type", "")
-            is_saas_lead = (pitch_type == "leadflow_saas") or _is_gym(lead.get("category", ""), lead.get("name", ""))
-            draft_text = ""
-            demo_url = ""
+        if not leads:
+            log.info("[Scheduler] No unsent leads in queue. Proactively triggering daily lead finder to gather new leads.")
+            job_daily_find()
+            return
 
-            if is_saas_lead:
-                # 1. SaaS CRM Lead: Generate custom demo page and pitch draft if not exists
-                if not lead.get("demo_tunnel_url"):
-                    log.info(f"  -> Building demo and draft for SaaS prospect: {lead['name']}...")
-                    res = requests.post(f"http://127.0.0.1:8765/leads/{lead['id']}/generate", json={"channels": ["email"]}, timeout=180)
-                    if res.status_code != 200:
-                        log.error(f"  -> Failed to generate: {res.text}")
+        for lead in leads:
+            log.info(f"[Scheduler] Auto-sending initial outreach to {lead['name']}")
+            try:
+                # Validate email address before attempting to email
+                from extractor import _clean_email
+                if not _clean_email(lead["email"]):
+                    log.info(f"  -> Skipping lead {lead['name']} because email {lead['email']} is invalid/placeholder.")
+                    from database import update_business_status
+                    update_business_status(lead["id"], "skipped")
+                    continue
+
+                pitch_type = lead.get("pitch_type", "")
+                category_val = (lead.get("category", "") or "").lower()
+                name_val = (lead.get("name", "") or "").lower()
+                is_contractor = any(kw in category_val or kw in name_val for kw in ["roof", "roofer", "hvac", "air conditioning", "heating", "cooling", "solar", "remodeler", "remodeling", "renovation", "detail", "detailing", "ceramic", "tree", "arborist"])
+                
+                is_saas_lead = not is_contractor and ((pitch_type == "leadflow_saas") or _is_gym(category_val, lead.get("name", "")))
+                draft_text = ""
+                demo_url = ""
+
+                if is_saas_lead:
+                    # 1. SaaS CRM Lead: Generate custom demo page and pitch draft if not exists
+                    if not lead.get("demo_tunnel_url"):
+                        log.info(f"  -> Building demo and draft for SaaS prospect: {lead['name']}...")
+                        res = requests.post(f"http://127.0.0.1:8765/leads/{lead['id']}/generate", json={"channels": ["email"]}, timeout=180)
+                        if res.status_code != 200:
+                            log.error(f"  -> Failed to generate: {res.text}")
+                            continue
+                        # Refresh lead data to get the new demo_tunnel_url
+                        conn2 = get_conn()
+                        try:
+                            lead = dict(conn2.execute("""
+                                SELECT b.*, c.email FROM businesses b
+                                LEFT JOIN contacts c ON c.business_id = b.id
+                                WHERE b.id=?
+                            """, (lead["id"],)).fetchone())
+                        finally:
+                            conn2.close()
+
+                    # Never email a dead link: confirm the demo is actually live on Pages.
+                    from deploy import is_live
+                    demo_url = lead.get("demo_tunnel_url", "")
+                    if demo_url and not is_live(demo_url, wait=150):
+                        log.error(f"  -> Demo not live yet for {lead['name']} — skipping send this round")
                         continue
-                    # Refresh lead data to get the new demo_tunnel_url
+
+                    # Get the draft
                     conn2 = get_conn()
                     try:
-                        lead = dict(conn2.execute("""
-                            SELECT b.*, c.email FROM businesses b
-                            LEFT JOIN contacts c ON c.business_id = b.id
-                            WHERE b.id=?
-                        """, (lead["id"],)).fetchone())
+                        draft_row = conn2.execute("SELECT draft FROM outreach WHERE business_id=? AND channel='email'", (lead["id"],)).fetchone()
+                        draft_text = draft_row["draft"] if draft_row else ""
                     finally:
                         conn2.close()
 
-                # Never email a dead link: confirm the demo is actually live on Pages.
-                from deploy import is_live
-                demo_url = lead.get("demo_tunnel_url", "")
-                if demo_url and not is_live(demo_url, wait=150):
-                    log.error(f"  -> Demo not live yet for {lead['name']} — skipping send this round")
+                else:
+                    # 2. Web Design Lead: Send audit report (if has site) or benefits (if no site)
+                    has_site = bool(lead.get("website"))
+                    if has_site:
+                        log.info(f"  -> Writing website audit pitch for {lead['name']}...")
+                        draft_text = write_audit_pitch(lead, BOOKING_URL)
+                    else:
+                        log.info(f"  -> Writing no-website benefit pitch for {lead['name']}...")
+                        draft_text = write_no_website_pitch(lead, BOOKING_URL)
+
+                    # Save draft to outreach table
+                    conn2 = get_conn()
+                    try:
+                        conn2.execute("DELETE FROM outreach WHERE business_id=? AND channel='email'", (lead["id"],))
+                        conn2.execute("""
+                            INSERT INTO outreach (business_id, channel, draft, status)
+                            VALUES (?, 'email', ?, 'draft')
+                        """, (lead["id"], draft_text))
+                        conn2.commit()
+                    finally:
+                        conn2.close()
+
+                if not draft_text:
                     continue
 
-                # Get the draft
-                conn2 = get_conn()
-                try:
-                    draft_row = conn2.execute("SELECT draft FROM outreach WHERE business_id=? AND channel='email'", (lead["id"],)).fetchone()
-                    draft_text = draft_row["draft"] if draft_row else ""
-                finally:
-                    conn2.close()
-
-            else:
-                # 2. Web Design Lead: Send audit report (if has site) or benefits (if no site)
-                has_site = bool(lead.get("website"))
-                if has_site:
-                    log.info(f"  -> Writing website audit pitch for {lead['name']}...")
-                    draft_text = write_audit_pitch(lead, BOOKING_URL)
-                else:
-                    log.info(f"  -> Writing no-website benefit pitch for {lead['name']}...")
-                    draft_text = write_no_website_pitch(lead, BOOKING_URL)
-
-                # Save draft to outreach table
-                conn2 = get_conn()
-                try:
-                    conn2.execute("DELETE FROM outreach WHERE business_id=? AND channel='email'", (lead["id"],))
-                    conn2.execute("""
-                        INSERT INTO outreach (business_id, channel, draft, status)
-                        VALUES (?, 'email', ?, 'draft')
-                    """, (lead["id"], draft_text))
-                    conn2.commit()
-                finally:
-                    conn2.close()
-
-            if not draft_text:
-                continue
-
-            subject, body = parse_subject_body(draft_text)
-            if subject and body:
-                tracking_id = str(uuid.uuid4())
-                send_email(lead["email"], subject, body, tracking_id, demo_url, business_id=lead["id"])
-                mark_sent(lead["id"], "email", is_autopilot=True)
-                update_business_status(lead["id"], "sent")
-                log.info(f"[Scheduler] Successfully sent to {lead['email']}")
-                
-                # Anti-spam: Add randomized human-like delay between sends
-                import random
-                jitter = random.randint(35, 85)
-                log.info(f"  -> Sleeping for {jitter}s to avoid spam filters...")
-                time.sleep(jitter)
-        except Exception as e:
-            log.error(f"[Scheduler] Failed to auto-send to {lead['name']}: {e}")
+                subject, body = parse_subject_body(draft_text)
+                if subject and body:
+                    tracking_id = str(uuid.uuid4())
+                    send_email(lead["email"], subject, body, tracking_id, demo_url, business_id=lead["id"])
+                    mark_sent(lead["id"], "email", is_autopilot=True)
+                    update_business_status(lead["id"], "sent")
+                    log.info(f"[Scheduler] Successfully sent to {lead['email']}")
+                    
+                    # Anti-spam: Add randomized human-like delay between sends
+                    import random
+                    jitter = random.randint(35, 85)
+                    log.info(f"  -> Sleeping for {jitter}s to avoid spam filters...")
+                    time.sleep(jitter)
+            except Exception as e:
+                log.error(f"[Scheduler] Failed to auto-send to {lead['name']}: {e}")
+    finally:
+        _leads_send_lock.release()
 
 
 def job_auto_send_followups():
     """Send follow-ups that are scheduled and pending."""
-    cfg = _get_config()
-    if not cfg.get("enabled") or not cfg.get("auto_send_enabled"):
-        log.info("[Scheduler] Autopilot or Auto-send is disabled. Skipping auto-sending followups.")
+    if not _followups_send_lock.acquire(blocking=False):
+        log.info("[Scheduler] job_auto_send_followups is already running. Skipping concurrent execution.")
         return
-
-    from database import get_conn, get_emails_sent_today
-    from sender import parse_subject_body, send_email
-    import uuid
-
-    max_auto_send = cfg.get("max_auto_send", 10)
-    # Enforce safe daily cold email limit to prevent spam blocking
-    sent_today = get_emails_sent_today()
-    if sent_today >= max_auto_send:
-        log.info(f"[Scheduler] Daily auto-send limit ({max_auto_send}) reached. Skipping auto follow-ups today (already sent: {sent_today}).")
-        return
-
-    conn = get_conn()
     try:
-        rows = conn.execute("""
-            SELECT f.*, c.email, b.demo_tunnel_url FROM follow_ups f
-            JOIN businesses b ON b.id = f.business_id
-            LEFT JOIN contacts c ON c.business_id = b.id
-            WHERE f.status = 'pending' AND f.scheduled_for <= datetime('now')
-              AND b.status = 'sent'
-        """).fetchall()
-        follow_ups = [dict(r) for r in rows]
-    finally:
-        conn.close()
+        auto_update_warmup_limit()
+        cfg = _get_config()
+        if not cfg.get("enabled") or not cfg.get("auto_send_enabled"):
+            log.info("[Scheduler] Autopilot or Auto-send is disabled. Skipping auto-sending followups.")
+            return
 
-    for row in follow_ups:
-        if not row["email"] or not row["draft"]:
-            continue
+        from database import get_conn, get_emails_sent_today
+        from sender import parse_subject_body, send_email
+        import uuid
+
+        max_auto_send = cfg.get("max_auto_send", 10)
+        # Enforce safe daily cold email limit to prevent spam blocking
+        sent_today = get_emails_sent_today()
+        if sent_today >= max_auto_send:
+            log.info(f"[Scheduler] Daily auto-send limit ({max_auto_send}) reached. Skipping auto follow-ups today (already sent: {sent_today}).")
+            return
+
+        conn = get_conn()
         try:
-            # Validate email address before sending followup
-            from extractor import _clean_email
-            if not _clean_email(row["email"]):
-                log.info(f"  -> Skipping followup {row['id']} because email {row['email']} is invalid.")
+            rows = conn.execute("""
+                SELECT f.*, c.email, b.demo_tunnel_url FROM follow_ups f
+                JOIN businesses b ON b.id = f.business_id
+                LEFT JOIN contacts c ON c.business_id = b.id
+                WHERE f.status = 'pending' AND f.scheduled_for <= datetime('now')
+                  AND b.status = 'sent'
+            """).fetchall()
+            follow_ups = [dict(r) for r in rows]
+        finally:
+            conn.close()
+
+        for row in follow_ups:
+            if not row["email"] or not row["draft"]:
+                continue
+            try:
+                # Validate email address before sending followup
+                from extractor import _clean_email
+                if not _clean_email(row["email"]):
+                    log.info(f"  -> Skipping followup {row['id']} because email {row['email']} is invalid.")
+                    conn2 = get_conn()
+                    try:
+                        conn2.execute("UPDATE follow_ups SET status='skipped' WHERE id=?", (row["id"],))
+                        conn2.execute("UPDATE businesses SET status='skipped' WHERE id=?", (row["business_id"],))
+                        conn2.commit()
+                    finally:
+                        conn2.close()
+                    continue
+
+                subject, body = parse_subject_body(row["draft"])
+                if not subject: subject = "Quick follow-up"
+                tracking_id = str(uuid.uuid4())
+                send_email(row["email"], subject, body, tracking_id, row.get("demo_tunnel_url", ""), business_id=row["business_id"])
+                
                 conn2 = get_conn()
                 try:
-                    conn2.execute("UPDATE follow_ups SET status='skipped' WHERE id=?", (row["id"],))
-                    conn2.execute("UPDATE businesses SET status='skipped' WHERE id=?", (row["business_id"],))
+                    conn2.execute("UPDATE follow_ups SET status='sent', sent_at=datetime('now') WHERE id=?", (row["id"],))
                     conn2.commit()
                 finally:
                     conn2.close()
-                continue
+                log.info(f"[Scheduler] Auto-sent follow-up {row['sequence_num']} to {row['email']}")
 
-            subject, body = parse_subject_body(row["draft"])
-            if not subject: subject = "Quick follow-up"
-            tracking_id = str(uuid.uuid4())
-            send_email(row["email"], subject, body, tracking_id, row.get("demo_tunnel_url", ""), business_id=row["business_id"])
-            
-            conn2 = get_conn()
-            try:
-                conn2.execute("UPDATE follow_ups SET status='sent', sent_at=datetime('now') WHERE id=?", (row["id"],))
-                conn2.commit()
-            finally:
-                conn2.close()
-            log.info(f"[Scheduler] Auto-sent follow-up {row['sequence_num']} to {row['email']}")
-
-            # Anti-spam: Add randomized human-like delay between sends
-            import random
-            jitter = random.randint(20, 60)
-            log.info(f"  -> Sleeping for {jitter}s to avoid spam filters...")
-            import time
-            time.sleep(jitter)
-        except Exception as e:
-            log.error(f"[Scheduler] Failed to send followup {row['id']}: {e}")
+                # Anti-spam: Add randomized human-like delay between sends
+                import random
+                jitter = random.randint(20, 60)
+                log.info(f"  -> Sleeping for {jitter}s to avoid spam filters...")
+                import time
+                time.sleep(jitter)
+            except Exception as e:
+                log.error(f"[Scheduler] Failed to send followup {row['id']}: {e}")
+    finally:
+        _followups_send_lock.release()
 
 
 def job_check_replies():

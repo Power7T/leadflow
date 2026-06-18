@@ -27,19 +27,41 @@
 
   <!-- LEFT: lead list -->
   <div class="leads-list" id="leadsList">
+    <!-- Campaign Segment Filter -->
+    <div style="display:flex; gap:6px; padding: 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px;" id="campaignTabs">
+      <button class="tab-btn active" data-campaign="all" onclick="filterCampaign('all', this)" style="padding: 4px 10px; font-size: 11px;">All Campaigns</button>
+      <button class="tab-btn" data-campaign="leadflow_saas" onclick="filterCampaign('leadflow_saas', this)" style="padding: 4px 10px; font-size: 11px;">⚡ SaaS CRM</button>
+      <button class="tab-btn" data-campaign="web_design" onclick="filterCampaign('web_design', this)" style="padding: 4px 10px; font-size: 11px;">🌐 Web Design</button>
+    </div>
+
     {% for lead in leads %}
     <div class="lead-row" id="row-{{ lead.id }}" onclick="selectLead({{ lead.id }})"
-      data-lead="{{ lead | tojson | e }}" data-status="{{ lead.status }}">
+      data-lead="{{ lead | tojson | e }}" data-status="{{ lead.status }}" data-pitch-type="{{ lead.pitch_type }}">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
         <div class="lead-row-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           {{ lead.name }}
           {% set score = lead.website_score | default(0) %}
-          {% if not lead.website or score < 30 %}
-            <span class="badge-hot">HOT 🔥</span>
-          {% elif score < 55 %}
-            <span class="badge-warm">WARM 🌡️</span>
+          {% set is_saas = (lead.pitch_type == 'leadflow_saas') %}
+          {% if is_saas %}
+            {% set lscore = lead.lead_score | default(0) %}
+            {% if lscore >= 80 %}
+              <span class="badge-hot">HOT 🔥</span>
+            {% elif lscore >= 45 %}
+              <span class="badge-warm">WARM 🌡️</span>
+            {% else %}
+              <span class="badge-cold">COLD 🧊</span>
+            {% endif %}
           {% else %}
-            <span class="badge-cold">COLD 🧊</span>
+            {% if not lead.website or score < 30 %}
+              <span class="badge-hot">HOT 🔥</span>
+            {% elif score < 55 %}
+              <span class="badge-warm">WARM 🌡️</span>
+            {% else %}
+              <span class="badge-cold">COLD 🧊</span>
+            {% endif %}
+          {% endif %}
+          {% if is_saas %}
+            <span class="tag-campaign">SaaS CRM</span>
           {% endif %}
         </div>
         {% if lead.status != 'new' %}
@@ -61,9 +83,20 @@
         {% if lead.email %}<span class="dot dot-green" title="Email found"></span>{% else %}<span class="dot dot-dim" title="No email"></span>{% endif %}
         {% if lead.instagram %}<span class="dot dot-blue" title="Instagram found"></span>{% else %}<span class="dot dot-dim" title="No Instagram"></span>{% endif %}
         {% if lead.linkedin_url %}<span class="dot dot-blue" title="LinkedIn found"></span>{% endif %}
-        <span class="score-pill {% if lead.website_score >= 70 %}pill-green{% elif lead.website_score >= 40 %}pill-yellow{% elif lead.website %}pill-red{% else %}pill-red{% endif %}">
-          {% if lead.website %}{{ lead.website_score }}{% else %}no site{% endif %}
-        </span>
+        {% if lead.pitch_type == 'leadflow_saas' %}
+          <span class="score-pill {% if lead.lead_score >= 80 %}pill-green{% elif lead.lead_score >= 45 %}pill-yellow{% else %}pill-red{% endif %}" title="Lead priority score" style="font-size:10px; font-weight:600;">
+            {{ lead.lead_score }} Priority
+          </span>
+          {% if lead.website %}
+            <span class="tag-web-status">Web: {{ lead.website_score }}</span>
+          {% else %}
+            <span class="tag-web-status">No Web</span>
+          {% endif %}
+        {% else %}
+          <span class="score-pill {% if lead.website_score >= 70 %}pill-green{% elif lead.website_score >= 40 %}pill-yellow{% elif lead.website %}pill-red{% else %}pill-red{% endif %}">
+            {% if lead.website %}{{ lead.website_score }}{% else %}no site{% endif %}
+          </span>
+        {% endif %}
       </div>
     </div>
     {% endfor %}
@@ -121,12 +154,34 @@
 .badge-hot { background: rgba(255,77,77,0.15); color: #ff4d4d; border: 1px solid rgba(255,77,77,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
 .badge-warm { background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
 .badge-cold { background: rgba(77,153,255,0.15); color: #4d99ff; border: 1px solid rgba(77,153,255,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+
+.tag-campaign {
+  background: rgba(0, 242, 254, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.tag-web-status {
+  font-size: 10px;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
 </style>
 <script>
 const allLeads = JSON.parse(document.getElementById('leadsData')?.textContent || '[]');
 let activeId = null;
 let drafts = {};
 let currentFilter = 'all';
+let currentCampaignFilter = 'all';
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -137,33 +192,60 @@ function escapeHtml(str) {
             .replace(/'/g, "&#039;");
 }
 
-// Count badges
-(function updateCounts() {
-  const counts = {};
-  document.querySelectorAll('.lead-row').forEach(r => {
-    const s = r.dataset.status || 'new';
-    counts[s] = (counts[s] || 0) + 1;
-  });
-  const total = document.querySelectorAll('.lead-row').length;
-  document.getElementById('cnt-all').textContent = total || '';
-  ['new','approved','sent','replied','closed'].forEach(s => {
-    const el = document.getElementById('cnt-' + s);
-    if (el) el.textContent = counts[s] || '';
-  });
-})();
-
 function filterLeads(status, btn) {
   currentFilter = status;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#statusTabs .tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  applyFilters();
+}
+
+function filterCampaign(campaign, btn) {
+  currentCampaignFilter = campaign;
+  document.querySelectorAll('#campaignTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
   let shown = 0;
+  const statusCounts = {};
+  let totalCampaignLeads = 0;
+  
   document.querySelectorAll('.lead-row').forEach(row => {
-    const match = status === 'all' || row.dataset.status === status;
-    row.style.display = match ? '' : 'none';
-    if (match) shown++;
+    const pitchType = row.dataset.pitchType || '';
+    let campaignMatch = false;
+    
+    if (currentCampaignFilter === 'all') {
+      campaignMatch = true;
+    } else if (currentCampaignFilter === 'leadflow_saas') {
+      campaignMatch = (pitchType === 'leadflow_saas');
+    } else if (currentCampaignFilter === 'web_design') {
+      campaignMatch = (pitchType !== 'leadflow_saas');
+    }
+    
+    if (campaignMatch) {
+      totalCampaignLeads++;
+      const s = row.dataset.status || 'new';
+      statusCounts[s] = (statusCounts[s] || 0) + 1;
+    }
+    
+    const statusMatch = (currentFilter === 'all' || row.dataset.status === currentFilter);
+    const show = statusMatch && campaignMatch;
+    row.style.display = show ? '' : 'none';
+    if (show) shown++;
   });
+  
+  // Update status counts badges
+  const cntAllEl = document.getElementById('cnt-all');
+  if (cntAllEl) cntAllEl.textContent = totalCampaignLeads || '';
+  ['new','approved','sent','replied','closed'].forEach(s => {
+    const el = document.getElementById('cnt-' + s);
+    if (el) el.textContent = statusCounts[s] || '';
+  });
+
   document.getElementById('leadsSubtitle').textContent =
     `${shown} lead${shown !== 1 ? 's' : ''} — click any to see full details and generate outreach.`;
+    
   // Clear detail if active lead is now filtered out
   if (activeId) {
     const activeRow = document.getElementById('row-' + activeId);
@@ -215,11 +297,15 @@ function selectLead(id) {
             ${lead.name}
             ${(function() {
               const score = lead.website_score || 0;
-              if (!lead.website || score < 30) {
-                return '<span class="badge-hot">HOT 🔥</span>';
-              } else if (score < 55) {
-                return '<span class="badge-warm">WARM 🌡️</span>';
+              const isSaas = lead.pitch_type === 'leadflow_saas';
+              if (isSaas) {
+                const lscore = lead.lead_score || 0;
+                if (lscore >= 80) return '<span class="badge-hot">HOT 🔥</span>';
+                if (lscore >= 45) return '<span class="badge-warm">WARM 🌡️</span>';
+                return '<span class="badge-cold">COLD 🧊</span>';
               } else {
+                if (!lead.website || score < 30) return '<span class="badge-hot">HOT 🔥</span>';
+                if (score < 55) return '<span class="badge-warm">WARM 🌡️</span>';
                 return '<span class="badge-cold">COLD 🧊</span>';
               }
             })()}
@@ -1068,7 +1154,8 @@ async function loadAudit(id, url) {
   panel.innerHTML = html;
 }
 
-// Auto-select first lead
+// Auto-select first lead and apply filters
+applyFilters();
 if (allLeads.length > 0) selectLead(allLeads[0].id);
 </script>
 {% endblock %}

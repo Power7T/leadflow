@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ lead.name }} | Premium Legal Representation</title>
+<meta name="description" content="Welcome to {{ lead.name }}. Distinguished attorneys providing high-caliber legal counsel and trial advocacy.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg-primary:#0B0E14;
+  --bg-secondary:#121720;
+  --bg-tertiary:#19202C;
+  --accent-gold:#C5A880;
+  --accent-gold-glow:rgba(197,168,128,0.3);
+  --accent-blue:#2C5282;
+  --accent-blue-glow:rgba(44,82,130,0.25);
+  --text-white:#FFFFFF;
+  --text-gray:#B3B9C9;
+  --text-muted:#718096;
+  --glass-bg:rgba(18,23,32,0.85);
+  --glass-border:rgba(255,255,255,0.04);
+  --glass-border-hover:rgba(197,168,128,0.25);
+  --border-radius-sm:4px;
+  --border-radius-md:12px;
+  --border-radius-lg:20px;
+  --shadow-sm:0 4px 12px rgba(0,0,0,0.4);
+  --shadow-md:0 12px 32px rgba(0,0,0,0.6);
+  --shadow-lg:0 24px 64px rgba(0,0,0,0.8);
+  --shadow-gold:0 0 25px rgba(197,168,128,0.2);
+  --transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);
+  --transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);
+  --transition-slow:0.8s cubic-bezier(0.25,1,0.5,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Inter',sans-serif;overflow-x:hidden}
+body{overflow-x:hidden;line-height:1.65;cursor:none}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--bg-tertiary);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-gold)}
+h1,h2,h3,h4,h5,h6{font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:-0.01em;line-height:1.15;color:var(--text-white)}
+p{color:var(--text-gray);font-weight:300}
+a{text-decoration:none;color:inherit}
+.text-gradient-gold{background:linear-gradient(135deg,#F7E7CE 0%,#C5A880 50%,#9A7F56 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.container{width:100%;max-width:1250px;margin:0 auto;padding:0 2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.95rem 2.2rem;font-family:'Inter',sans-serif;font-size:0.9rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;text-decoration:none;border-radius:var(--border-radius-sm);border:1px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
+.btn-primary{background-color:var(--accent-gold);color:#0B0E14;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:transparent;color:var(--accent-gold);border-color:var(--accent-gold);box-shadow:var(--shadow-gold);transform:translateY(-2px)}
+.btn-secondary{background:transparent;border-color:var(--glass-border);color:#fff}
+.btn-secondary:hover{background:rgba(255,255,255,.03);border-color:var(--accent-gold);transform:translateY(-2px)}
+section{padding:8.5rem 0;position:relative;overflow:hidden}
+.section-tag{font-family:'Inter',sans-serif;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.2em;color:var(--accent-gold);margin-bottom:1rem;display:inline-block}
+.section-title{font-size:3.2rem;margin-bottom:1.5rem}
+.section-desc{font-size:1.1rem;max-width:600px;margin-bottom:4rem}
+/* REVEAL */
+.reveal{opacity:0;transition:var(--transition-slow)}
+.reveal-slide-up{transform:translateY(50px)}
+.reveal-slide-left{transform:translateX(50px)}
+.reveal-slide-right{transform:translateX(-50px)}
+.reveal-scale-in{transform:scale(.95)}
+.reveal.revealed{opacity:1;transform:none}
+.delay-100{transition-delay:.1s}
+.delay-200{transition-delay:.2s}
+.delay-300{transition-delay:.3s}
+/* CURSOR */
+.custom-cursor-dot{position:fixed;width:6px;height:6px;background:var(--accent-gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
+.custom-cursor-ring{position:fixed;width:38px;height:38px;border:1px solid var(--accent-gold);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.5}
+body.cursor-hover .custom-cursor-dot{width:4px;height:4px;background:var(--text-white)}
+body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--text-white);opacity:.3}
+@media(max-width:768px){.custom-cursor-dot,.custom-cursor-ring{display:none}body{cursor:auto}}
+/* SPOTLIGHT */
+.spotlight{position:absolute;width:550px;height:550px;background:radial-gradient(circle,var(--accent-gold-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.35}
+/* DEMO BANNER */
+.demo-banner{background:var(--accent-gold);color:#0B0E14;text-align:center;padding:12px 20px;font-size:13px;font-weight:600;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.demo-banner a{color:#0B0E14;text-decoration:underline;font-weight:700}
+.demo-banner .orig{font-size:11px;font-weight:400;opacity:.75}
+/* NAVBAR */
+.navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;transition:var(--transition-smooth)}
+.navbar.scrolled{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border)}
+.nav-container{display:flex;justify-content:space-between;align-items:center;height:90px;transition:var(--transition-smooth)}
+.navbar.scrolled .nav-container{height:75px}
+.logo{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:#fff;display:flex;align-items:center;gap:.6rem}
+.logo span{color:var(--accent-gold)}
+.logo-icon{width:26px;height:26px;border:1px solid var(--accent-gold);position:relative;flex-shrink:0;transform:rotate(45deg)}
+.logo-icon::after{content:'';position:absolute;width:8px;height:8px;background:var(--accent-gold);top:50%;left:50%;transform:translate(-50%,-50%)}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{color:var(--text-gray);font-weight:400;font-size:.9rem;transition:var(--transition-fast);position:relative;padding:.5rem 0}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:1px;background:var(--accent-gold);transition:var(--transition-smooth);transform:translateX(-50%)}
+.nav-links a:hover,.nav-links a.active{color:#fff}.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-actions{display:flex;align-items:center;gap:1.5rem}
+.hamburger{display:none;cursor:pointer;background:none;border:none;padding:.5rem}
+.hamburger span{display:block;width:24px;height:1px;background:#fff;margin:6px 0;transition:var(--transition-smooth)}
+.hamburger.active span:nth-child(1){transform:rotate(-45deg) translate(-5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(45deg) translate(-5px,-5px)}
+/* HERO */
+.hero{height:100vh;min-height:750px;display:flex;align-items:center;background:linear-gradient(rgba(11,14,20,0.65),rgba(11,14,20,0.9)),url('{{ hero_img }}') center/cover no-repeat;position:relative;padding-top:100px}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(11,14,20,.4) 50%,rgba(11,14,20,.8) 100%);z-index:1}
+.hero .container{position:relative;z-index:2}
+.hero-content{max-width:850px}
+.hero-tag{background:rgba(197,168,128,.1);border:1px solid rgba(197,168,128,0.25);color:var(--accent-gold);padding:.4rem 1.2rem;border-radius:2px;font-family:'Inter',sans-serif;font-weight:500;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
+.hero-tag::before{content:'';width:4px;height:4px;background:var(--accent-gold);border-radius:50%;box-shadow:0 0 8px var(--accent-gold)}
+.hero-name{font-size:5rem;line-height:1.05;margin-bottom:.5rem;font-weight:600}
+.hero-subtitle-wrapper{overflow:hidden;height:4.2rem;margin-bottom:1.8rem}
+.hero-subtitle-track{animation:slideUpDown 9s cubic-bezier(0.76,0,0.24,1) infinite}
+@keyframes slideUpDown{0%,25%{transform:translateY(0)}33%,58%{transform:translateY(-100%)}66%,91%{transform:translateY(-200%)}100%{transform:translateY(0)}}
+.hero-subtitle-track span{display:block;height:4.2rem;font-family:'Cormorant Garamond',serif;font-size:3.5rem;font-style:italic;line-height:1.2;color:var(--accent-gold)}
+.hero-desc{font-size:1.15rem;color:var(--text-gray);margin-bottom:3rem;max-width:600px}
+.hero-btns{display:flex;gap:1.5rem;flex-wrap:wrap}
+/* STATS */
+.stats{padding:0;margin-top:-70px;position:relative;z-index:10}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:2.5rem;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
+.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-gold),transparent)}
+.stat-item{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
+.stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:rgba(255,255,255,.05)}
+.stat-number{font-family:'Cormorant Garamond',serif;font-size:3.2rem;font-weight:600;line-height:1;margin-bottom:.3rem;color:var(--accent-gold)}
+.stat-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-gray);font-weight:400}
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:6rem;align-items:center}
+.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:3.5rem}
+.about-feature{display:flex;gap:1.2rem}
+.about-feature-icon{width:40px;height:40px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;transition:var(--transition-smooth);color:var(--accent-gold)}
+.about-feature:hover .about-feature-icon{border-color:var(--accent-gold);box-shadow:var(--shadow-gold)}
+.about-feature h4{font-size:1.2rem;margin-bottom:.4rem;font-weight:600}.about-feature p{font-size:.85rem;line-height:1.6}
+.about-img-wrapper{position:relative;display:flex;justify-content:center;align-items:center}
+.about-image{width:100%;max-width:440px;aspect-ratio:0.85;border-radius:var(--border-radius-sm);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
+.about-img-frame{position:absolute;width:calc(100% - 30px);max-width:440px;aspect-ratio:0.85;border:1px solid var(--accent-gold);z-index:1;transform:translate(15px,15px);transition:var(--transition-smooth)}
+.about-img-wrapper:hover .about-img-frame{transform:translate(8px,8px)}
+.about-badge{position:absolute;bottom:25px;left:-25px;background:var(--bg-secondary);border:1px solid var(--glass-border);backdrop-filter:blur(10px);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
+.badge-icon{width:30px;height:30px;border-radius:50%;background:rgba(197,168,128,.1);display:flex;align-items:center;justify-content:center;color:var(--accent-gold);font-size:0.9rem}
+.about-badge h5{font-size:1.15rem;margin-bottom:.1rem;font-weight:600}.about-badge p{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em}
+/* PRACTICE AREAS / PROGRAMS */
+.programs-section{background:var(--bg-secondary)}
+.programs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}
+.program-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
+.program-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-gold-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}
+.program-card:hover{transform:translateY(-5px);border-color:var(--accent-gold-glow);box-shadow:var(--shadow-md)}.program-card:hover::before{opacity:1}
+.program-icon{width:50px;height:50px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.5rem;transition:var(--transition-smooth);color:var(--accent-gold);position:relative;z-index:1}
+.program-card:hover .program-icon{border-color:var(--accent-gold);box-shadow:var(--shadow-gold)}
+.program-card h3{font-size:1.5rem;margin-bottom:.8rem;position:relative;z-index:1}.program-card p{font-size:.9rem;line-height:1.65;margin-bottom:2rem;position:relative;z-index:1}
+.program-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:var(--accent-gold);font-family:'Inter',sans-serif;font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;transition:var(--transition-fast);position:relative;z-index:1}
+.program-card:hover .program-link{color:#fff}
+/* TESTIMONIALS */
+.testimonials-section{padding:8.5rem 0}
+.t-slider-outer{overflow:hidden;margin-top:4rem}
+.t-slider{display:flex;gap:2rem;transition:transform .5s ease;cursor:grab}
+.t-slider.dragging{cursor:grabbing;transition:none}
+.t-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px}
+.t-stars{color:var(--accent-gold);font-size:.9rem;margin-bottom:1.2rem;letter-spacing:1.5px}
+.t-card p{font-size:.95rem;line-height:1.75;margin-bottom:2rem;font-style:italic;font-family:'Cormorant Garamond',serif;color:var(--text-white);font-weight:400}
+.t-author{font-family:'Inter',sans-serif;font-weight:600;font-size:.85rem;letter-spacing:.05em;text-transform:uppercase}
+.t-author span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.75rem;color:var(--text-muted);margin-top:.3rem;text-transform:none;letter-spacing:0}
+.t-controls{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:2.5rem}
+.t-btn{width:42px;height:42px;background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:var(--transition-fast)}
+.t-btn:hover{background:var(--accent-gold);color:#0B0E14;border-color:var(--accent-gold)}
+.t-dots{display:flex;gap:.6rem}
+.t-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}.t-dot.active{background:var(--accent-gold);width:16px;border-radius:3px}
+/* CTA */
+.cta-section{padding:8.5rem 0}
+.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:6.5rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-gold),transparent)}
+.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:350px;height:350px;background:radial-gradient(circle,var(--accent-gold-glow),transparent 70%);pointer-events:none}
+.cta-banner h2{font-size:3.4rem;max-width:750px;margin:0 auto 1.5rem;font-weight:500}
+.cta-banner p{font-size:1.1rem;max-width:550px;margin:0 auto 3rem}
+/* CONTACT */
+.contact-section{background:var(--bg-secondary)}
+.cinfo-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:3rem}
+.cinfo-item{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.9rem;transition:var(--transition-fast)}
+.cinfo-item:hover{border-color:var(--accent-gold);color:#fff}
+/* FOOTER */
+.footer{background:#07090D;border-top:1px solid var(--glass-border);padding:6.5rem 0 3rem}
+.footer-grid{display:grid;grid-template-columns:1.20fr .8fr .8fr;gap:4.5rem;margin-bottom:5.5rem}
+.footer-col h4{font-size:1.25rem;margin-bottom:2rem;padding-bottom:.5rem;position:relative;font-weight:600}
+.footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:24px;height:1px;background:var(--accent-gold)}
+.footer-about p{font-size:.88rem;margin-top:1.2rem;margin-bottom:2rem;line-height:1.7}
+.social-links{display:flex;gap:1rem}
+.social-btn{width:40px;height:40px;background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;transition:var(--transition-smooth)}
+.social-btn:hover{background:var(--accent-gold);color:#0B0E14;border-color:var(--accent-gold);transform:translateY(-2px)}
+.footer-links{list-style:none}.footer-links li{margin-bottom:.9rem}.footer-links a{color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}.footer-links a:hover{color:#fff;padding-left:5px}
+.footer-bottom{border-top:1px solid var(--glass-border);padding-top:3rem;display:flex;justify-content:space-between;align-items:center}
+.footer-bottom p{font-size:.8rem;color:var(--text-muted)}
+.footer-bottom a{color:var(--accent-gold)}
+@media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3.5rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.programs-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.hero-name{font-size:3.2rem}.hero-subtitle-track span{font-size:2.4rem}.hero-subtitle-wrapper{height:3rem}.section-title{font-size:2.4rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="custom-cursor-dot" id="cursorDot"></div>
+<div class="custom-cursor-ring" id="cursorRing"></div>
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
+  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  {% if lead.website %}
+  <span class="orig">Based on <a href="http://{{ lead.website }}" target="_blank" style="color:inherit; text-decoration:underline;">http://www.{{ lead.website }}</a></span>
+  {% endif %}
+</div>
+
+<!-- Spotlights -->
+<div class="spotlight" style="top:-100px;left:-150px"></div>
+<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,var(--accent-blue-glow),transparent 70%)"></div>
+<div class="spotlight" style="bottom:10%;left:-100px"></div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">
+      <div class="logo-icon"></div>
+      {{ lead.name }}
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" class="active">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#programs">Practice Areas</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="#contact" class="btn btn-secondary" style="padding:.5rem 1.5rem;font-size:.8rem">Consultation</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="container">
+    <div class="hero-content reveal reveal-slide-up">
+      <div class="hero-tag">&#x2022; Trusted Legal Counsel</div>
+      <h1 class="hero-name text-gradient-gold">{{ lead.name }}</h1>
+      <div class="hero-subtitle-wrapper">
+        <div class="hero-subtitle-track">
+          <span>PERSONAL INJURY</span>
+          <span>BUSINESS ADVOCACY</span>
+          <span>CRIMINAL DEFENSE</span>
+        </div>
+      </div>
+      <p class="hero-desc">At {{ lead.name }}, we provide high-caliber legal representation with a focus on delivering results. Our dedicated attorneys fight for your rights, offering clear counsel and strong advocacy through complex legal challenges.</p>
+      <div class="hero-btns">
+        <a href="#contact" class="btn btn-primary">Request Free Consultation</a>
+        <a href="#programs" class="btn btn-secondary">Explore Practice Areas</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats bar -->
+<section class="stats" id="stats">
+  <div class="container">
+    <div class="stats-grid reveal reveal-scale-in">
+      <div class="stat-item">
+        <div class="stat-number text-gradient-gold">98%</div>
+        <div class="stat-label">Success Rate</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number text-gradient-gold">25+</div>
+        <div class="stat-label">Years of Advocacy</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number text-gradient-gold">24/7</div>
+        <div class="stat-label">Support Access</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number text-gradient-gold">$50M+</div>
+        <div class="stat-label">Secured for Clients</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="about" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-content reveal reveal-slide-right">
+        <span class="section-tag">About the Firm</span>
+        <h2 class="section-title">Distinguished Counsel<br><span class="text-gradient-gold">Unyielding Defense</span> &amp; Justice</h2>
+        <p class="section-desc">We represent individuals and corporate entities with absolute dedication. Our team is respected for strategic courtroom litigation, meticulous negotiations, and a track record of high-stakes victories.</p>
+        <div class="about-features">
+          <div class="about-feature">
+            <div class="about-feature-icon">⚖️</div>
+            <div><h4>Expert Advocacy</h4><p>Dedicated legal specialists representing you with rigor and integrity.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">📞</div>
+            <div><h4>24/7 Availability</h4><p>Reach our team when it matters most — day or night.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">💰</div>
+            <div><h4>No Win, No Fee</h4><p>For injury cases, you pay absolutely nothing unless we secure recovery.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">🔍</div>
+            <div><h4>Proven Success</h4><p>Over two decades of winning complex lawsuits and record settlements.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="about-img-wrapper reveal reveal-slide-left">
+        <div class="about-img-frame"></div>
+        <img src="{{ about_img }}" alt="{{ lead.name }}" class="about-image" onerror="this.parentElement.style.opacity='0.3'">
+        <div class="about-badge">
+          <div class="badge-icon">✓</div>
+          <div><h5>Top Rated</h5><p>National Legal Association</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Practice Areas -->
+<section class="programs-section" id="programs">
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Practice Areas</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Strategic Legal <span class="text-gradient-gold">Solutions</span></h2>
+      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Our firm spans multi-disciplinary fields of law, providing cohesive, high-impact strategies tailored to each client's specific legal needs.</p>
+    </div>
+    <div class="programs-grid">
+      <div class="program-card reveal reveal-slide-up">
+        <div class="program-icon">🚗</div>
+        <h3>Personal Injury</h3>
+        <p>Comprehensive representation for auto accidents, premises liability, and catastrophic injury claims.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="program-icon">🏢</div>
+        <h3>Business & Corporate Law</h3>
+        <p>Expert legal frameworks for entity formation, contract disputes, acquisitions, and risk management.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="program-icon">🛡️</div>
+        <h3>Criminal Defense</h3>
+        <p>Vigorous protection of your rights and freedom against state and federal allegations.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up">
+        <div class="program-icon">🤝</div>
+        <h3>Family & Divorce Law</h3>
+        <p>Strategic, compassionate guidance for asset division, custody matters, and marriage dissolutions.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="program-icon">🏡</div>
+        <h3>Real Estate Disputes</h3>
+        <p>Representation for complex commercial property acquisitions, leasing disputes, and zoning matters.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="program-icon">📜</div>
+        <h3>Wills, Trusts & Estates</h3>
+        <p>Asset preservation plans, family wealth trusts, corporate succession planning, and probate court filings.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials-section" id="testimonials">
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Client Reviews</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Client Success, <span class="text-gradient-gold">Proven Results</span></h2>
+    </div>
+    <div class="t-slider-outer">
+      <div class="t-slider" id="tSlider">
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"The team at {{ lead.name }} guided me through a very complex business dispute. Their attention to detail and trial experience saved my company."</p>
+          <div class="t-author">Sarah M.<span>Corporate Client</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"After my car accident, they took care of everything. They negotiated with the insurance company and got me a settlement that exceeded my expectations."</p>
+          <div class="t-author">James K.<span>Personal Injury Client</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"Extremely professional, compassionate, and sharp. They answered all my questions late at night and won my case. Highly recommend."</p>
+          <div class="t-author">Priya R.<span>Litigation Client</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"I have worked with several law firms, but {{ lead.name }} provides unmatched responsiveness and strategy. They are simply the best."</p>
+          <div class="t-author">Ahmed N.<span>Business Owner</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="t-controls">
+      <button class="t-btn" id="tPrev">&larr;</button>
+      <div class="t-dots" id="tDots"></div>
+      <button class="t-btn" id="tNext">&rarr;</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-banner reveal reveal-scale-in">
+      <span class="section-tag">Protect Your Rights</span>
+      <h2>Request a Confidential Case Evaluation from<br><span class="text-gradient-gold">{{ lead.name }}</span> Today</h2>
+      <p>Take the first step. Contact us now to schedule your private consultation with our legal team.</p>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Schedule Free Evaluation</a>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="contact-section" id="contact">
+  <div class="container" style="text-align:center">
+    <span class="section-tag">Our Offices</span>
+    <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-gold">{{ lead.name }}</span></h2>
+    <p>Schedule a consult or visit our law offices.</p>
+    <div class="cinfo-grid">
+      {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="cinfo-item">📞 Call Us: {{ lead.phone }}</a>{% endif %}
+      {% if lead.email %}<a href="mailto:{{ lead.email }}" class="cinfo-item">✉ Email: {{ lead.email }}</a>{% endif %}
+      {% if lead.address %}<div class="cinfo-item">📍 {{ lead.address }}</div>{% endif %}
+      {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="cinfo-item">📸 @{{ lead.instagram }}</a>{% endif %}
+      {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="cinfo-item">🗺 View Map & Directions</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col footer-about">
+        <a href="#home" class="logo" style="font-size:1.5rem">
+          <div class="logo-icon"></div>
+          {{ lead.name }}
+        </a>
+        <p>A prestigious law firm committed to professional excellence, advocacy, and securing justice for our clients.</p>
+        <div class="social-links">
+          {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="social-btn">IG</a>{% endif %}
+          {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="social-btn">📍</a>{% endif %}
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About the Firm</a></li>
+          <li><a href="#programs">Practice Areas</a></li>
+          <li><a href="#contact">Contact Offices</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul class="footer-links">
+          {% if lead.phone %}<li>{{ lead.phone }}</li>{% endif %}
+          {% if lead.email %}<li>{{ lead.email }}</li>{% endif %}
+          {% if lead.address %}<li>{{ lead.address }}</li>{% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here &rarr;</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Custom cursor
+const dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
+(function animRing(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
+document.querySelectorAll('a,button,.program-card,.t-btn,.gallery-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+});
+
+// Navbar scroll + active link
+const navbar=document.getElementById('navbar');
+const sections=document.querySelectorAll('section[id]');
+function onScroll(){
+  navbar.classList.toggle('scrolled',scrollY>50);
+  let cur='';
+  sections.forEach(s=>{if(scrollY>=s.offsetTop-200)cur=s.id});
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+}
+window.addEventListener('scroll',onScroll,{passive:true});
+
+// Hamburger
+const hamburger=document.getElementById('hamburger'),navLinks=document.getElementById('navLinks');
+hamburger.addEventListener('click',()=>{hamburger.classList.toggle('active');navLinks.classList.toggle('active')});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{hamburger.classList.remove('active');navLinks.classList.remove('active')}));
+
+// Scroll reveal
+const revObs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');revObs.unobserve(e.target)}},{threshold:0.1}));
+document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+// Testimonials slider
+(function(){
+  const slider=document.getElementById('tSlider'),dotsEl=document.getElementById('tDots');
+  const cards=Array.from(slider.children);
+  let cur=0,startX=0,dragX=0,isDrag=false;
+  function visible(){return window.innerWidth>991?3:window.innerWidth>600?2:1}
+  function buildDots(){
+    const pages=Math.ceil(cards.length/visible());
+    dotsEl.innerHTML='';
+    for(let i=0;i<pages;i++){
+      const d=document.createElement('div');d.className='t-dot'+(i===Math.floor(cur/visible())?' active':'');
+      d.addEventListener('click',()=>goto(i*visible()));dotsEl.appendChild(d);
+    }
+  }
+  function goto(n){
+    const max=cards.length-visible();cur=Math.max(0,Math.min(n,max));
+    const w=cards[0].offsetWidth+32;slider.style.transform=`translateX(${-cur*w}px)`;
+    buildDots();
+  }
+  document.getElementById('tPrev').addEventListener('click',()=>goto(cur-visible()));
+  document.getElementById('tNext').addEventListener('click',()=>goto(cur+visible()));
+  slider.addEventListener('mousedown',e=>{isDrag=true;startX=e.clientX;slider.classList.add('dragging')});
+  window.addEventListener('mousemove',e=>{if(isDrag)dragX=e.clientX-startX});
+  window.addEventListener('mouseup',()=>{
+    if(!isDrag)return;isDrag=false;slider.classList.remove('dragging');
+    const w=cards[0].offsetWidth+32;if(Math.abs(dragX)>w*.25)goto(dragX<0?cur+visible():cur-visible());else goto(cur);
+    dragX=0;
+  });
+  slider.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
+  slider.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-startX;
+    const w=cards[0].offsetWidth+32;if(Math.abs(dx)>w*.25)goto(dx<0?cur+visible():cur-visible());
+  },{passive:true});
+  buildDots();
+  window.addEventListener('resize',()=>goto(0));
+})();
+</script>
+
+</body>
+</html>

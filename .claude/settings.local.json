@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk read *)",
+      "Bash(rtk ls *)",
+      "Bash(rtk grep *)",
+      "Bash(rtk proxy *)",
+      "Bash(python3.12 *)",
+      "Bash(timeout 15 git -C demos ls-remote origin -h)",
+      "Bash(curl -s -o /dev/null -w \"github status: %{http_code}\\\\n\" --max-time 8 https://github.com)",
+      "Bash(awk '{print $2, $11, $12, $13, $14}')",
+      "Bash(pkill -f \"run_daemon.sh\")",
+      "Bash(pkill -f \"server.py\")",
+      "Bash(pkill -f \"cloudflared tunnel --url http://127.0.0.1:8765\")",
+      "Bash(pkill -f \"cloudflared tunnel --url http://127.0.0.1:8766\")",
+      "Bash(awk '{print $2,$11,$12,$13}')",
+      "Bash(nohup bash run_daemon.sh)",
+      "Bash(echo \"launched run_daemon.sh wrapper pid $!\")",
+      "Bash(pkill -9 -f \"run_daemon.sh\")",
+      "Bash(pkill -9 -f \"server.py\")",
+      "Bash(pkill -9 -f \"cloudflared tunnel --url http://127.0.0.1:8765\")",
+      "Bash(pkill -9 -f \"cloudflared tunnel --url http://127.0.0.1:8766\")"
+    ]
+  }
+}
