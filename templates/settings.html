@@ -148,24 +148,23 @@
 </div>
 
 <div class="form-card" style="max-width: 600px">
-  <h2>Gmail SMTP Connection</h2>
+  <h2>Gmail SMTP Connections</h2>
   <p style="color:var(--text-dim);font-size:13px;margin-bottom:18px">
     Connect one or more Gmail Workspace accounts to enable load-balanced autopilot sending.
-    For multiple accounts, enter them as **comma-separated lists** (matched in order).
-    Each account must use an <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">App Password</a>.
+    Each account must use a unique <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">App Password</a>.
   </p>
   <form id="gmailForm">
-    <div style="margin-bottom: 12px">
-      <label>Sender Emails (comma-separated for multiple)</label>
-      <input type="text" id="SENDER_EMAIL" value="{{ env.SENDER_EMAIL }}" placeholder="email1@gmail.com, email2@gmail.com">
+    <div id="gmailAccountsList" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px;">
+      <!-- JavaScript will populate account rows here -->
     </div>
-    <div style="margin-bottom: 12px">
-      <label>App Passwords (comma-separated for multiple)</label>
-      <input type="text" id="SENDER_APP_PASSWORD" value="{{ env.SENDER_APP_PASSWORD }}" placeholder="app_password_1, app_password_2">
-    </div>
+    
+    <button type="button" class="btn btn-ghost" id="addGmailBtn" onclick="addGmailRow()" style="margin-bottom: 20px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px;">
+      ➕ Add Gmail Account
+    </button>
+    
     <div style="display: flex; gap: 12px">
-      <button type="submit" class="btn btn-primary" id="saveGmailBtn">💾 Save</button>
-      <button type="button" class="btn btn-ghost" id="testGmailBtn" onclick="testGmail()">🔌 Test Connection</button>
+      <button type="submit" class="btn btn-primary" id="saveGmailBtn">💾 Save Accounts</button>
+      <button type="button" class="btn btn-ghost" id="testGmailBtn" onclick="testGmail()">🔌 Test Connections</button>
     </div>
     <div id="gmailTestResult" style="margin-top: 12px; font-size: 13px; font-weight: 500;"></div>
   </form>
@@ -221,11 +220,83 @@ document.getElementById('envForm').addEventListener('submit', (e) => {
   }, document.getElementById('saveEnvBtn'));
 });
 
+const initialEmails = "{{ env.SENDER_EMAIL }}";
+const initialPasswords = "{{ env.SENDER_APP_PASSWORD }}";
+
+const emailsList = initialEmails ? initialEmails.split(',').map(e => e.trim()) : [];
+const passwordsList = initialPasswords ? initialPasswords.split(',').map(p => p.trim()) : [];
+
+function addGmailRow(email = '', password = '') {
+  const container = document.getElementById('gmailAccountsList');
+  const index = container.children.length + 1;
+  const row = document.createElement('div');
+  row.className = 'gmail-account-row';
+  row.style.display = 'grid';
+  row.style.gridTemplateColumns = '1fr 1fr auto';
+  row.style.gap = '10px';
+  row.style.alignItems = 'center';
+  row.style.background = 'rgba(255,255,255,0.01)';
+  row.style.border = '1px solid var(--border)';
+  row.style.padding = '12px';
+  row.style.borderRadius = '8px';
+  row.style.transition = 'all 0.2s';
+  
+  row.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); font-weight: 600;">Gmail Address #${index}</span>
+      <input type="email" placeholder="your.name@gmail.com" value="${email}" class="gmail-email-input" required style="margin: 0; width: 100%;">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); font-weight: 600;">App Password</span>
+      <input type="password" placeholder="xxxx xxxx xxxx xxxx" value="${password}" class="gmail-pwd-input" required style="margin: 0; width: 100%;">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px; align-self: flex-end;">
+      <button type="button" class="btn btn-danger-icon" onclick="removeGmailRow(this)" style="padding: 10px; margin: 0; background: rgba(255, 77, 109, 0.1); color: var(--red); border: 1px solid rgba(255, 77, 109, 0.2); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; height: 38px; width: 38px;" onmouseover="this.style.background='rgba(255, 77, 109, 0.2)'" onmouseout="this.style.background='rgba(255, 77, 109, 0.1)'">🗑️</button>
+    </div>
+  `;
+  container.appendChild(row);
+  
+  // Show key toggle support for new inputs
+  const isChecked = document.getElementById('toggleShowKeys').checked;
+  row.querySelector('.gmail-pwd-input').type = isChecked ? 'text' : 'password';
+}
+
+function removeGmailRow(button) {
+  const container = document.getElementById('gmailAccountsList');
+  if (container.children.length <= 1) {
+    alert("You must keep at least one Gmail account.");
+    return;
+  }
+  const row = button.closest('.gmail-account-row');
+  row.style.transform = 'scale(0.95)';
+  row.style.opacity = '0';
+  setTimeout(() => {
+    row.remove();
+    // Re-index titles
+    Array.from(container.children).forEach((el, i) => {
+      el.querySelector('span').textContent = `Gmail Address #${i + 1}`;
+    });
+  }, 150);
+}
+
+// Populate initial accounts
+if (emailsList.length > 0) {
+  emailsList.forEach((email, idx) => {
+    const pwd = passwordsList[idx] || (passwordsList[0] || '');
+    addGmailRow(email, pwd);
+  });
+} else {
+  addGmailRow();
+}
+
 document.getElementById('gmailForm').addEventListener('submit', (e) => {
   e.preventDefault();
+  const emailInputs = Array.from(document.querySelectorAll('.gmail-email-input')).map(input => input.value.trim());
+  const pwdInputs = Array.from(document.querySelectorAll('.gmail-pwd-input')).map(input => input.value.trim());
+  
   saveEnvVars({
-    SENDER_EMAIL: document.getElementById('SENDER_EMAIL').value,
-    SENDER_APP_PASSWORD: document.getElementById('SENDER_APP_PASSWORD').value,
+    SENDER_EMAIL: emailInputs.join(', '),
+    SENDER_APP_PASSWORD: pwdInputs.join(', ')
   }, document.getElementById('saveGmailBtn'));
 });
 
@@ -299,32 +370,48 @@ async function testGmail() {
   btn.textContent = 'Testing...';
   btn.disabled = true;
   resBox.textContent = '';
-  resBox.className = '';
+  resBox.style.color = 'var(--text)';
+  
+  const emailInputs = Array.from(document.querySelectorAll('.gmail-email-input')).map(input => input.value.trim());
+  const pwdInputs = Array.from(document.querySelectorAll('.gmail-pwd-input')).map(input => input.value.trim());
   
   try {
+    // Save first to ensure environment variables are synced
+    await fetch('/settings/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        SENDER_EMAIL: emailInputs.join(', '),
+        SENDER_APP_PASSWORD: pwdInputs.join(', ')
+      })
+    });
+
     const res = await fetch('/settings/test-gmail', { method: 'POST' });
     const data = await res.json();
     if (data.ok) {
-      resBox.textContent = '✅ Connection successful! Gmail is ready for autopilot.';
+      resBox.textContent = '✅ All load-balanced sender accounts connected successfully!';
       resBox.style.color = '#00c896';
     } else {
-      resBox.textContent = '❌ Failed: ' + data.error;
+      resBox.innerHTML = '❌ Failed:<br>' + data.error.split('; ').join('<br>');
       resBox.style.color = '#ff4d4d';
     }
   } catch(e) {
     resBox.textContent = '❌ Request failed';
     resBox.style.color = '#ff4d4d';
   }
-  btn.textContent = '🔌 Test Connection';
+  btn.textContent = '🔌 Test Connections';
   btn.disabled = false;
 }
 
 document.getElementById('toggleShowKeys').addEventListener('change', (e) => {
   const type = e.target.checked ? 'text' : 'password';
-  const fields = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_MAPS_API_KEY', 'HUNTER_API_KEY', 'APOLLO_API_KEY', 'SENDER_APP_PASSWORD'];
+  const fields = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_MAPS_API_KEY', 'HUNTER_API_KEY', 'APOLLO_API_KEY'];
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.type = type;
+  });
+  document.querySelectorAll('.gmail-pwd-input').forEach(input => {
+    input.type = type;
   });
 });
 </script>
