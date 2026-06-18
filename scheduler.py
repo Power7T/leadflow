@@ -223,7 +223,7 @@ def job_auto_send_leads():
             subject, body = parse_subject_body(draft_text)
             if subject and body:
                 tracking_id = str(uuid.uuid4())
-                send_email(lead["email"], subject, body, tracking_id, demo_url)
+                send_email(lead["email"], subject, body, tracking_id, demo_url, business_id=lead["id"])
                 mark_sent(lead["id"], "email", is_autopilot=True)
                 update_business_status(lead["id"], "sent")
                 log.info(f"[Scheduler] Successfully sent to {lead['email']}")
@@ -288,7 +288,7 @@ def job_auto_send_followups():
             subject, body = parse_subject_body(row["draft"])
             if not subject: subject = "Quick follow-up"
             tracking_id = str(uuid.uuid4())
-            send_email(row["email"], subject, body, tracking_id, row.get("demo_tunnel_url", ""))
+            send_email(row["email"], subject, body, tracking_id, row.get("demo_tunnel_url", ""), business_id=row["business_id"])
             
             conn2 = get_conn()
             try:

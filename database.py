@@ -38,7 +38,8 @@ def init_db():
             demo_tunnel_url TEXT,
             template_id TEXT,
             demo_viewed INTEGER DEFAULT 0,
-            found_at TEXT DEFAULT CURRENT_TIMESTAMP
+            found_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            assigned_sender_email TEXT
         );
 
         CREATE TABLE IF NOT EXISTS contacts (
@@ -124,6 +125,7 @@ def init_db():
         ("demo_tunnel_url",  "TEXT"),
         ("template_id",      "TEXT"),
         ("demo_viewed",      "INTEGER DEFAULT 0"),
+        ("assigned_sender_email", "TEXT"),
     ]:
         try:
             conn.execute(f"ALTER TABLE businesses ADD COLUMN {col} {definition}")
@@ -519,3 +521,43 @@ def get_emails_sent_today() -> int:
     """).fetchone()["c"]
     conn.close()
     return count1 + count2
+
+
+def get_or_assign_sender_email(business_id: int) -> str:
+    """Gets the assigned sender email for a business, or assigns one from SENDER_EMAIL environment variable (which can be a comma-separated list of emails)."""
+    conn = get_conn()
+    row = conn.execute("SELECT assigned_sender_email FROM businesses WHERE id = ?", (business_id,)).fetchone()
+    if row and row["assigned_sender_email"]:
+        email = row["assigned_sender_email"]
+        conn.close()
+        return email
+
+    # If not assigned, assign one.
+    import os
+    sender_emails_str = os.getenv("SENDER_EMAIL", "")
+    emails = [e.strip() for e in sender_emails_str.split(",") if e.strip()]
+    if not emails:
+        conn.close()
+        return ""
+
+    # Simple assignment: find least used sender email among all businesses
+    # this will distribute the load nicely!
+    counts = {}
+    for email in emails:
+        counts[email] = 0
+    
+    # Query how many businesses are assigned to each sender email
+    rows = conn.execute("SELECT assigned_sender_email, COUNT(*) as c FROM businesses WHERE assigned_sender_email IS NOT NULL GROUP BY assigned_sender_email").fetchall()
+    for r in rows:
+        email = r["assigned_sender_email"]
+        if email in counts:
+            counts[email] = r["c"]
+            
+    # Find the sender email with the minimum count
+    assigned = min(counts, key=counts.get)
+    
+    conn.execute("UPDATE businesses SET assigned_sender_email = ? WHERE id = ?", (assigned, business_id))
+    conn.commit()
+    conn.close()
+    return assigned
+

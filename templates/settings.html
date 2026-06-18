@@ -127,6 +127,20 @@
           <option value="Gemini 3.1 Pro (Low)" {% if cur == 'Gemini 3.1 Pro (Low)' %}selected{% endif %}>Gemini 3.1 Pro (Low)</option>
         </select>
       </div>
+
+      <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
+        <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">Local agy Profile Backup Config</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
+          <div>
+            <label>agy Profiles Directory</label>
+            <input type="text" id="AGY_PROFILES_DIR" value="{{ env.AGY_PROFILES_DIR | default('/Users/chandan/.gemini-profiles') }}">
+          </div>
+          <div>
+            <label>agy Active Profile</label>
+            <input type="text" id="AGY_ACTIVE_PROFILE" value="{{ env.AGY_ACTIVE_PROFILE | default('profile1') }}">
+          </div>
+        </div>
+      </div>
     </div>
     
     <button type="submit" class="btn btn-primary" id="saveEnvBtn">💾 Save Settings</button>
@@ -136,17 +150,18 @@
 <div class="form-card" style="max-width: 600px">
   <h2>Gmail SMTP Connection</h2>
   <p style="color:var(--text-dim);font-size:13px;margin-bottom:18px">
-    Connect your Gmail Workspace account to enable autopilot sending.
-    You must use an <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">App Password</a>.
+    Connect one or more Gmail Workspace accounts to enable load-balanced autopilot sending.
+    For multiple accounts, enter them as **comma-separated lists** (matched in order).
+    Each account must use an <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">App Password</a>.
   </p>
   <form id="gmailForm">
     <div style="margin-bottom: 12px">
-      <label>Sender Email</label>
-      <input type="email" id="SENDER_EMAIL" value="{{ env.SENDER_EMAIL }}" placeholder="you@yourdomain.com">
+      <label>Sender Emails (comma-separated for multiple)</label>
+      <input type="text" id="SENDER_EMAIL" value="{{ env.SENDER_EMAIL }}" placeholder="email1@gmail.com, email2@gmail.com">
     </div>
     <div style="margin-bottom: 12px">
-      <label>App Password</label>
-      <input type="password" id="SENDER_APP_PASSWORD" value="{{ env.SENDER_APP_PASSWORD }}" placeholder="16-letter app password">
+      <label>App Passwords (comma-separated for multiple)</label>
+      <input type="text" id="SENDER_APP_PASSWORD" value="{{ env.SENDER_APP_PASSWORD }}" placeholder="app_password_1, app_password_2">
     </div>
     <div style="display: flex; gap: 12px">
       <button type="submit" class="btn btn-primary" id="saveGmailBtn">💾 Save</button>
@@ -201,6 +216,8 @@ document.getElementById('envForm').addEventListener('submit', (e) => {
     AGY_AUDIT_MODEL: document.getElementById('AGY_AUDIT_MODEL').value,
     AGY_DEFAULT_MODEL: document.getElementById('AGY_DEFAULT_MODEL').value,
     AGY_CHAT_MODEL: document.getElementById('AGY_CHAT_MODEL').value,
+    AGY_PROFILES_DIR: document.getElementById('AGY_PROFILES_DIR').value,
+    AGY_ACTIVE_PROFILE: document.getElementById('AGY_ACTIVE_PROFILE').value,
   }, document.getElementById('saveEnvBtn'));
 });
 

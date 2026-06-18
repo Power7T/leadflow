@@ -467,9 +467,17 @@ def _run(prompt: str, attempts: int = 2) -> str:
             for i in range(attempts):
                 try:
                     print(f"[ai_writer] Trying agy with model: {model}")
+                    env = os.environ.copy()
+                    profiles_dir = os.getenv("AGY_PROFILES_DIR")
+                    active_profile = os.getenv("AGY_ACTIVE_PROFILE")
+                    if profiles_dir and active_profile:
+                        env["AGY_PROFILES_DIR"] = profiles_dir
+                        env["AGY_ACTIVE_PROFILE"] = active_profile
+                        env["HOME"] = os.path.join(profiles_dir, active_profile)
                     result = subprocess.run(
                         [AGY_PATH, "--model", model, "-p", full],
                         capture_output=True, text=True, timeout=120,
+                        env=env
                     )
                     out = (result.stdout or "").strip()
                     stderr = (result.stderr or "").strip()

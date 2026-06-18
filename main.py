@@ -149,7 +149,7 @@ def review_lead(lead: dict) -> str:
         if send_now:
             try:
                 subject, body = parse_subject_body(drafts["email"])
-                send_email(lead["email"], subject, body)
+                send_email(lead["email"], subject, body, business_id=lead["id"])
                 mark_sent(lead["id"], "email")
                 console.print("[green]Email sent.[/]")
             except Exception as e:

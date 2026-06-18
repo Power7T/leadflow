@@ -371,26 +371,37 @@ async def settings_save(request: Request):
 @app.post("/settings/test-gmail")
 def settings_test_gmail():
     import os, smtplib, imaplib
-    email = os.getenv("SENDER_EMAIL")
-    pwd = os.getenv("SENDER_APP_PASSWORD")
-    if not email or not pwd:
+    from sender import get_all_sender_accounts
+    accounts = get_all_sender_accounts()
+    if not accounts:
         return JSONResponse({"ok": False, "error": "Email or Password not set."})
-    try:
-        # Test SMTP
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(email, pwd)
-        
-        # Test IMAP
-        imap_server = os.getenv("IMAP_SERVER", "imap.gmail.com")
+    
+    imap_server = os.getenv("IMAP_SERVER", "imap.gmail.com")
+    errors = []
+    successes = []
+    
+    for email, pwd in accounts:
         try:
+            # Test SMTP
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                server.login(email, pwd)
+            
+            # Test IMAP
             with imaplib.IMAP4_SSL(imap_server) as mail:
                 mail.login(email, pwd)
-        except Exception as imap_err:
-            return JSONResponse({"ok": False, "error": f"SMTP connected, but IMAP failed: {imap_err}"})
+                
+            successes.append(email)
+        except Exception as e:
+            errors.append(f"{email}: {e}")
             
-        return JSONResponse({"ok": True})
-    except Exception as e:
-        return JSONResponse({"ok": False, "error": str(e)})
+    if errors:
+        err_msg = "; ".join(errors)
+        if successes:
+            return JSONResponse({"ok": False, "error": f"Connected: {', '.join(successes)}. Failed: {err_msg}"})
+        else:
+            return JSONResponse({"ok": False, "error": f"Failed: {err_msg}"})
+            
+    return JSONResponse({"ok": True})
 
 
 @app.post("/settings/test-gemini")
@@ -802,7 +813,7 @@ async def send_lead(bid: int, request: Request):
             if not subject:
                 subject, email_msg = parse_subject_body(email_msg)
             tracking_id = str(uuid.uuid4())
-            send_email(to_email, subject, email_msg, tracking_id, demo_url)
+            send_email(to_email, subject, email_msg, tracking_id, demo_url, business_id=bid)
             mark_sent(bid, "email", is_autopilot=False, subject_used=subject, tracking_id=tracking_id)
         except Exception as e:
             return JSONResponse({"ok": False, "error": str(e)})
@@ -1147,7 +1158,7 @@ async def send_follow_up(fid: int):
     if f.get("email") and f.get("draft"):
         try:
             subject, body = parse_subject_body(f["draft"])
-            send_email(f["email"], subject, body)
+            send_email(f["email"], subject, body, business_id=f["business_id"])
             mark_follow_up_sent(fid)
         except Exception as e:
             return JSONResponse({"ok": False, "error": str(e)})

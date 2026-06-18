@@ -41,10 +41,41 @@ def _public_base() -> str:
         return ""
 
 
+def get_all_sender_accounts() -> list[tuple[str, str]]:
+    emails_str = os.getenv("SENDER_EMAIL", "")
+    pwds_str = os.getenv("SENDER_APP_PASSWORD", "")
+    
+    emails = [e.strip() for e in emails_str.split(",") if e.strip()]
+    pwds = [p.strip() for p in pwds_str.split(",") if p.strip()]
+    
+    accounts = []
+    for i, email in enumerate(emails):
+        pwd = pwds[i] if i < len(pwds) else (pwds[0] if pwds else "")
+        accounts.append((email, pwd))
+    return accounts
+
+
+def get_sender_credentials(assigned_email: str = None) -> tuple[str, str]:
+    accounts = get_all_sender_accounts()
+    if not accounts:
+        return "", ""
+    if assigned_email:
+        for email, pwd in accounts:
+            if email.lower() == assigned_email.lower():
+                return email, pwd
+    return accounts[0]
+
+
 def send_email(to_email: str, subject: str, body: str,
-               tracking_id: str = "", demo_url: str = "") -> bool:
-    sender_email    = os.getenv("SENDER_EMAIL", "")
-    sender_password = os.getenv("SENDER_APP_PASSWORD", "")
+               tracking_id: str = "", demo_url: str = "",
+               business_id: int = None) -> bool:
+    from database import get_or_assign_sender_email
+
+    assigned_email = None
+    if business_id:
+        assigned_email = get_or_assign_sender_email(business_id)
+
+    sender_email, sender_password = get_sender_credentials(assigned_email)
     sender_name     = os.getenv("AGENCY_NAME", "")
     if not sender_email or not sender_password:
         raise ValueError("SENDER_EMAIL and SENDER_APP_PASSWORD must be set in .env")
