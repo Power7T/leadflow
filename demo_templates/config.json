@@ -2,8 +2,11 @@
   "templates": [
     {"file": "gym.html", "name": "Fitness & Gym", "enabled": true, "niches": ["gym", "fitness", "crossfit", "yoga", "pilates"]},
     {"file": "restaurant.html", "name": "Restaurant & Cafe", "enabled": true, "niches": ["restaurant", "cafe", "bistro", "food", "bar", "pizza", "burger", "sushi", "dining", "eatery"]},
-    {"file": "dentist.html", "name": "Dental & Healthcare", "enabled": true, "niches": ["dentist", "dental", "clinic", "healthcare", "orthodontist", "teeth", "smile"]},
+    {"file": "dentist.html", "name": "Dental & Healthcare", "enabled": true, "niches": ["dentist", "dental", "clinic", "healthcare", "orthodontist", "teeth", "smile", "chiropractor", "physical therapist", "veterinarian", "optometrist", "clinic"]},
     {"file": "barbershop.html", "name": "Barbershop & Salon", "enabled": true, "niches": ["barber", "salon", "hair", "beauty", "spa", "grooming", "barbershop"]},
-    {"file": "realestate.html", "name": "Real Estate", "enabled": true, "niches": ["real estate", "realty", "property", "realtor", "brokerage", "housing"]}
+    {"file": "realestate.html", "name": "Real Estate", "enabled": true, "niches": ["real estate", "realty", "property", "realtor", "brokerage", "housing", "mortgage", "insurance broker"]},
+    {"file": "roofer.html", "name": "Roofer & Roofing Services", "enabled": true, "niches": ["roofer", "roofing", "contractor", "roof", "gutters", "painter", "painting", "siding", "deck builder", "home remodeler", "renovation", "remodeling"]},
+    {"file": "hvac.html", "name": "HVAC Heating & Cooling", "enabled": true, "niches": ["hvac", "air conditioning", "heating", "cooling", "furnace", "ac repair", "plumber", "plumbing", "electrician", "locksmith", "pest control", "exterminator"]},
+    {"file": "solar.html", "name": "Solar & Clean Energy", "enabled": true, "niches": ["solar", "energy", "photovoltaic", "solar panels", "clean energy"]}
   ]
 }
