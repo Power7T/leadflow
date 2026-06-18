@@ -38,6 +38,10 @@
       <input type="password" id="GOOGLE_MAPS_API_KEY" value="{{ env.GOOGLE_MAPS_API_KEY }}" placeholder="For business search">
     </div>
     <div style="margin-bottom: 12px">
+      <label>GitHub Personal Access Token (for Demo Sites deployment)</label>
+      <input type="password" id="GITHUB_TOKEN" value="{{ env.GITHUB_TOKEN }}" placeholder="ghp_...">
+    </div>
+    <div style="margin-bottom: 12px">
       <label>Stripe Payment Link</label>
       <input type="text" id="STRIPE_PAYMENT_LINK" value="{{ env.STRIPE_PAYMENT_LINK }}" placeholder="https://buy.stripe.com/...">
     </div>
@@ -205,6 +209,7 @@ document.getElementById('envForm').addEventListener('submit', (e) => {
     GEMINI_API_KEY: document.getElementById('GEMINI_API_KEY').value,
     OPENAI_API_KEY: document.getElementById('OPENAI_API_KEY').value,
     GOOGLE_MAPS_API_KEY: document.getElementById('GOOGLE_MAPS_API_KEY').value,
+    GITHUB_TOKEN: document.getElementById('GITHUB_TOKEN').value,
     STRIPE_PAYMENT_LINK: document.getElementById('STRIPE_PAYMENT_LINK').value,
     BOOKING_URL: document.getElementById('BOOKING_URL').value,
     HUNTER_API_KEY: document.getElementById('HUNTER_API_KEY').value,
@@ -405,7 +410,7 @@ async function testGmail() {
 
 document.getElementById('toggleShowKeys').addEventListener('change', (e) => {
   const type = e.target.checked ? 'text' : 'password';
-  const fields = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_MAPS_API_KEY', 'HUNTER_API_KEY', 'APOLLO_API_KEY'];
+  const fields = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_MAPS_API_KEY', 'GITHUB_TOKEN', 'HUNTER_API_KEY', 'APOLLO_API_KEY'];
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.type = type;
