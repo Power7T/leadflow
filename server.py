@@ -1446,8 +1446,8 @@ async def api_preview_template(filename: str):
         "roofer.html": {
             "name": "Summit Roofing Solutions",
             "category": "Roofing & Contractor Services",
-            "hero_img": "https://images.unsplash.com/photo-1632759162463-157fda9c8f00?w=1400",
-            "about_img": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600",
+            "hero_img": "/static/roofer_hero.jpg",
+            "about_img": "/static/roofer_about.jpg",
             "about_text": "Professional roofing replacement, leak detection, roof inspections, and gutter repair contractor.",
             "services": ["Complete Roof Replacements", "Emergency Structural Repairs", "Seamless Gutter Installation"]
         },
@@ -1462,8 +1462,8 @@ async def api_preview_template(filename: str):
         "solar.html": {
             "name": "Volt Solar Energy",
             "category": "Solar & Clean Energy Systems",
-            "hero_img": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=1400",
-            "about_img": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600",
+            "hero_img": "/static/solar_hero.jpg",
+            "about_img": "/static/solar_about.jpg",
             "about_text": "Harness clean, renewable energy. Professional solar panel installations and smart home battery setups.",
             "services": ["Custom Solar Panel Layouts", "Battery Storage Installations", "Energy Auditing & Consulting"]
         },
@@ -1518,7 +1518,7 @@ async def api_preview_template(filename: str):
     }
 
     cfg = preview_configs.get(filename, {
-        "name": "Sample Business",
+        "name": "Elite Professional Services",
         "category": "General Services",
         "hero_img": "https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&q=80",
         "about_img": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80",
@@ -1534,7 +1534,7 @@ async def api_preview_template(filename: str):
         "phone": "+1 (303) 555-0149",
         "email": f"info@{cfg['name'].lower().replace(' ', '')}.com",
         "instagram": cfg["name"].lower().replace(" ", "_"),
-        "website": f"www.{cfg['name'].lower().replace(' ', '')}.com",
+        "website": f"{cfg['name'].lower().replace(' ', '')}.com",
         "google_rating": "4.9",
         "google_reviews": "142",
         "maps_url": "https://maps.google.com"

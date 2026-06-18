@@ -277,7 +277,7 @@ def job_auto_send_leads():
                 if subject and body:
                     tracking_id = str(uuid.uuid4())
                     send_email(lead["email"], subject, body, tracking_id, demo_url, business_id=lead["id"])
-                    mark_sent(lead["id"], "email", is_autopilot=True)
+                    mark_sent(lead["id"], "email", is_autopilot=True, subject_used=subject, tracking_id=tracking_id)
                     update_business_status(lead["id"], "sent")
                     log.info(f"[Scheduler] Successfully sent to {lead['email']}")
                     
@@ -352,8 +352,11 @@ def job_auto_send_followups():
                 
                 conn2 = get_conn()
                 try:
-                    conn2.execute("UPDATE follow_ups SET status='sent', sent_at=datetime('now') WHERE id=?", (row["id"],))
+                    conn2.execute("UPDATE follow_ups SET status='sent', sent_at=datetime('now'), tracking_id=? WHERE id=?", (tracking_id, row["id"]))
                     conn2.commit()
+                # Also log email sent with tracking ID
+                except Exception as db_err:
+                    log.error(f"[Scheduler] Failed to update follow_up tracking_id in DB: {db_err}")
                 finally:
                     conn2.close()
                 log.info(f"[Scheduler] Auto-sent follow-up {row['sequence_num']} to {row['email']}")

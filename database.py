@@ -379,17 +379,44 @@ def mark_sent(business_id: int, channel: str, is_autopilot: bool = False, subjec
 
 def record_tracking_event(tracking_id: str, business_id: int, event_type: str, metadata: str = ""):
     conn = get_conn()
+    
+    # If business_id is 0 or not provided, resolve it from the tracking_id
+    if (not business_id or business_id == 0) and tracking_id:
+        try:
+            # Check outreach table
+            row = conn.execute("SELECT business_id FROM outreach WHERE tracking_id=?", (tracking_id,)).fetchone()
+            if row:
+                business_id = row["business_id"]
+            else:
+                # Check follow_ups table
+                row = conn.execute("SELECT business_id FROM follow_ups WHERE tracking_id=?", (tracking_id,)).fetchone()
+                if row:
+                    business_id = row["business_id"]
+        except Exception:
+            pass
+
     conn.execute("""
         INSERT INTO tracking_events (tracking_id, business_id, event_type, metadata)
         VALUES (?, ?, ?, ?)
-    """, (tracking_id, business_id, event_type, metadata))
+    """, (tracking_id, business_id or 0, event_type, metadata))
+    
     if event_type == "open":
-        conn.execute("""
-            UPDATE outreach SET opened=1, open_count=open_count+1
-            WHERE tracking_id=?
-        """, (tracking_id,))
+        if tracking_id:
+            conn.execute("""
+                UPDATE outreach SET opened=1, open_count=open_count+1
+                WHERE tracking_id=?
+            """, (tracking_id,))
+        if business_id:
+            conn.execute("""
+                UPDATE outreach SET opened=1, open_count=open_count+1
+                WHERE business_id=? AND channel='email'
+            """, (business_id,))
     elif event_type == "click":
-        conn.execute("UPDATE outreach SET clicked=1 WHERE tracking_id=?", (tracking_id,))
+        if tracking_id:
+            conn.execute("UPDATE outreach SET clicked=1 WHERE tracking_id=?", (tracking_id,))
+        if business_id:
+            conn.execute("UPDATE outreach SET clicked=1 WHERE business_id=? AND channel='email'", (business_id,))
+            
     conn.commit()
     conn.close()
 

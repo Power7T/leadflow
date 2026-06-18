@@ -1037,14 +1037,14 @@ def generate_demo_html(business: dict, website_data: dict = None, use_stock: boo
                 hero_img = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1400"
                 about_img = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600"
             elif target_template == "roofer.html":
-                hero_img = "https://images.unsplash.com/photo-1632759162463-157fda9c8f00?w=1400"
-                about_img = "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600"
+                hero_img = "/static/roofer_hero.jpg"
+                about_img = "/static/roofer_about.jpg"
             elif target_template == "hvac.html":
                 hero_img = "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400"
                 about_img = "https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?w=600"
             elif target_template == "solar.html":
-                hero_img = "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=1400"
-                about_img = "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600"
+                hero_img = "/static/solar_hero.jpg"
+                about_img = "/static/solar_about.jpg"
             elif target_template == "lawyer.html":
                 hero_img = "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400"
                 about_img = "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600"

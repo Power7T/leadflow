@@ -3,164 +3,201 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>{{ lead.name }} | Austin's Premier Roofing Specialists</title>
-<meta name="description" content="Welcome to {{ lead.name }}. Premium roofing service contractor offering installations, repairs, and gutters in {{ lead.city or 'Austin' }}.">
+<title>{{ lead.name }} | Premium Roofing & Contractor Services</title>
+<meta name="description" content="Welcome to {{ lead.name }}. The premier roofing contractor specializing in high-durability roof replacements, leak repairs, gutter systems, and storm damage inspections.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
-:root{--bg-primary:#08090C;--bg-secondary:#101217;--bg-tertiary:#161A22;--accent-orange:#FF4D24;--accent-orange-glow:rgba(255,77,36,0.45);--accent-teal:#00F2FE;--accent-teal-glow:rgba(0,242,254,0.3);--text-white:#FFFFFF;--text-gray:#A2A7B6;--text-muted:#626775;--glass-bg:rgba(16,18,23,0.75);--glass-border:rgba(255,255,255,0.05);--glass-border-hover:rgba(255,77,36,0.3);--border-radius-sm:8px;--border-radius-md:16px;--border-radius-lg:24px;--shadow-sm:0 4px 12px rgba(0,0,0,0.3);--shadow-md:0 12px 32px rgba(0,0,0,0.5);--shadow-lg:0 24px 64px rgba(0,0,0,0.7);--shadow-orange:0 0 30px rgba(255,77,36,0.35);--transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);--transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);--transition-slow:0.8s cubic-bezier(0.25,1,0.5,1)}
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg-primary:#0F1215;
+  --bg-secondary:#171B20;
+  --bg-tertiary:#20262C;
+  --accent-orange:#FF5E14;
+  --accent-orange-glow:rgba(255,94,20,0.15);
+  --accent-silver:#E2E8F0;
+  --text-white:#FFFFFF;
+  --text-gray:#B1BCC7;
+  --text-muted:#718096;
+  --glass-bg:rgba(23,27,32,0.92);
+  --glass-border:rgba(255,94,20,0.08);
+  --glass-border-hover:rgba(255,94,20,0.25);
+  --border-radius-sm:4px;
+  --border-radius-md:12px;
+  --border-radius-lg:20px;
+  --shadow-sm:0 4px 16px rgba(0,0,0,0.4);
+  --shadow-md:0 12px 32px rgba(0,0,0,0.6);
+  --shadow-lg:0 24px 64px rgba(0,0,0,0.8);
+  --shadow-orange:0 0 25px rgba(255,94,20,0.2);
+  --transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);
+  --transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);
+  --transition-slow:0.8s cubic-bezier(0.25,1,0.5,1);
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Inter',sans-serif;overflow-x:hidden}
-body{overflow-x:hidden;line-height:1.6;cursor:none}
-::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg-primary)}::-webkit-scrollbar-thumb{background:var(--bg-tertiary);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--accent-orange)}
-h1,h2,h3,h4,h5,h6{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;line-height:1.1;color:var(--text-white)}
-p{color:var(--text-gray);font-weight:400}
+body{overflow-x:hidden;line-height:1.65;cursor:none}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--bg-tertiary);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-orange)}
+h1,h2,h3,h4,h5,h6{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;line-height:1.15;color:var(--text-white)}
+p{color:var(--text-gray);font-weight:300}
 a{text-decoration:none;color:inherit}
-.text-gradient-orange{background:linear-gradient(135deg,#FF8E53 0%,#FF4D24 50%,#C41F00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.text-gradient-teal{background:linear-gradient(135deg,#00F2FE 0%,#4FACFE 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.container{width:100%;max-width:1300px;margin:0 auto;padding:0 2rem}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.9rem 2.2rem;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;text-decoration:none;border-radius:var(--border-radius-sm);border:2px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
-.btn-primary{background-color:var(--accent-orange);color:#fff;box-shadow:var(--shadow-sm)}.btn-primary:hover{background:transparent;border-color:var(--accent-orange);box-shadow:var(--shadow-orange);transform:translateY(-3px)}
-.btn-secondary{background:transparent;border-color:var(--glass-border);color:#fff}.btn-secondary:hover{background:rgba(255,255,255,.05);border-color:#fff;transform:translateY(-3px)}
-section{padding:8rem 0;position:relative;overflow:hidden}
-.section-tag{font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:.15em;color:var(--accent-orange);margin-bottom:1rem;display:inline-block}
-.section-title{font-size:2.8rem;margin-bottom:1.5rem}
-.section-desc{font-size:1.1rem;max-width:600px;margin-bottom:4rem}
+.text-gradient-orange{background:linear-gradient(135deg,#FFFFFF 0%,#FF5E14 50%,#B83C00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.95rem 2.2rem;font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1rem;text-decoration:none;border-radius:var(--border-radius-sm);border:1px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
+.btn-primary{background-color:var(--accent-orange);color:#0F1215;box-shadow:var(--shadow-sm);font-weight:900}
+.btn-primary:hover{background:transparent;color:var(--accent-orange);border-color:var(--accent-orange);box-shadow:var(--shadow-orange);transform:translateY(-2px)}
+.btn-secondary{background:transparent;border-color:var(--glass-border);color:var(--text-white)}
+.btn-secondary:hover{background:rgba(255,255,255,.03);border-color:var(--accent-orange);transform:translateY(-2px)}
+.btn-emergency{background-color:#E53E3E;color:#FFF;animation:pulse-red 2s infinite}
+.btn-emergency:hover{background-color:#C53030;transform:translateY(-2px)}
+@keyframes pulse-red{
+  0%{box-shadow:0 0 0 0 rgba(229,62,62,0.4)}
+  70%{box-shadow:0 0 0 12px rgba(229,62,62,0)}
+  100%{box-shadow:0 0 0 0 rgba(229,62,62,0)}
+}
+section{padding:8.5rem 0;position:relative;overflow:hidden}
+.section-tag{font-family:'Outfit',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent-orange);margin-bottom:1rem;display:inline-block;background:rgba(255,94,20,0.08);padding:4px 14px;border-radius:4px;border:1px solid rgba(255,94,20,0.15)}
+.section-title{font-size:3.2rem;margin-bottom:1.5rem}
+.section-desc{font-size:1.05rem;max-width:600px;margin-bottom:4rem}
 /* REVEAL */
-.reveal{opacity:0;transition:var(--transition-slow)}.reveal-slide-up{transform:translateY(60px)}.reveal-slide-left{transform:translateX(60px)}.reveal-slide-right{transform:translateX(-60px)}.reveal-scale-in{transform:scale(.9)}.reveal.revealed{opacity:1;transform:none}
-.delay-100{transition-delay:.1s}.delay-200{transition-delay:.2s}.delay-300{transition-delay:.3s}.delay-400{transition-delay:.4s}.delay-500{transition-delay:.5s}
+.reveal{opacity:0;transition:var(--transition-slow)}
+.reveal-slide-up{transform:translateY(40px)}
+.reveal-slide-left{transform:translateX(40px)}
+.reveal-slide-right{transform:translateX(-40px)}
+.reveal-scale-in{transform:scale(.97)}
+.reveal.revealed{opacity:1;transform:none}
+.delay-100{transition-delay:.1s}
+.delay-200{transition-delay:.2s}
+.delay-300{transition-delay:.3s}
 /* CURSOR */
-.custom-cursor-dot{position:fixed;width:8px;height:8px;background:var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
-.custom-cursor-ring{position:fixed;width:40px;height:40px;border:1.5px solid var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.6}
-body.cursor-hover .custom-cursor-dot{width:6px;height:6px;background:var(--accent-teal)}
-body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--accent-teal);opacity:.4}
+.custom-cursor-dot{position:fixed;width:6px;height:6px;background:var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
+.custom-cursor-ring{position:fixed;width:36px;height:36px;border:1px solid var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.5}
+body.cursor-hover .custom-cursor-dot{width:4px;height:4px;background:#FFF}
+body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;opacity:.3}
 @media(max-width:768px){.custom-cursor-dot,.custom-cursor-ring{display:none}body{cursor:auto}}
 /* SPOTLIGHT */
-.spotlight{position:absolute;width:600px;height:600px;background:radial-gradient(circle,var(--accent-orange-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.5}
+.spotlight{position:absolute;width:550px;height:550px;background:radial-gradient(circle,var(--accent-orange-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.3}
 /* DEMO BANNER */
-.demo-banner{background:var(--accent-orange);color:#000;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
-.demo-banner a{color:#000;text-decoration:underline;font-weight:800}
-.demo-banner .orig{font-size:11px;font-weight:400;opacity:.65}
+.demo-banner{background:var(--accent-orange);color:#0F1215;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.demo-banner a{color:#0F1215;text-decoration:underline;font-weight:800}
+.demo-banner .orig{font-size:11px;font-weight:400;opacity:.8}
 /* NAVBAR */
 .navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;transition:var(--transition-smooth)}
-.navbar.scrolled{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border)}
-.nav-container{display:flex;justify-content:space-between;align-items:center;height:85px;transition:var(--transition-smooth)}
-.navbar.scrolled .nav-container{height:70px}
-.logo{font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:900;color:#fff;display:flex;align-items:center;gap:.5rem}
+.navbar.scrolled{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border);box-shadow:var(--shadow-sm)}
+.nav-container{display:flex;justify-content:space-between;align-items:center;height:95px;transition:var(--transition-smooth)}
+.navbar.scrolled .nav-container{height:75px}
+.logo{font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:900;color:var(--text-white);display:flex;align-items:center;gap:.6rem;letter-spacing:-1px}
 .logo span{color:var(--accent-orange)}
-.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent-orange),#C41F00);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);position:relative;flex-shrink:0;box-shadow:var(--shadow-orange)}
-.logo-icon::after{content:'';position:absolute;width:14px;height:14px;background:#fff;clip-path:polygon(50% 15%,85% 85%,15% 85%);top:50%;left:50%;transform:translate(-50%,-55%)}
+.logo-icon{width:24px;height:24px;background:linear-gradient(135deg,var(--accent-orange),#B83C00);border-radius:4px;position:relative;flex-shrink:0}
+.logo-icon::after{content:'';position:absolute;width:12px;height:2px;background:var(--bg-primary);top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg)}
+.logo-icon::before{content:'';position:absolute;width:12px;height:2px;background:var(--bg-primary);top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg)}
 .nav-links{display:flex;gap:2.5rem;list-style:none}
-.nav-links a{color:var(--text-gray);font-weight:500;font-size:.95rem;transition:var(--transition-fast);position:relative;padding:.5rem 0}
-.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--accent-orange);transition:var(--transition-smooth)}
-.nav-links a:hover,.nav-links a.active{color:#fff}.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-links a{color:var(--text-gray);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;transition:var(--transition-fast);position:relative;padding:.5rem 0}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:var(--accent-orange);transition:var(--transition-smooth);transform:translateX(-50%)}
+.nav-links a:hover,.nav-links a.active{color:var(--text-white)}.nav-links a:hover::after,.nav-links a.active::after{width:100%}
 .nav-actions{display:flex;align-items:center;gap:1.5rem}
 .hamburger{display:none;cursor:pointer;background:none;border:none;padding:.5rem}
-.hamburger span{display:block;width:25px;height:2px;background:#fff;margin:6px 0;transition:var(--transition-smooth)}
-.hamburger.active span:nth-child(1){transform:rotate(-45deg) translate(-5px,6px)}.hamburger.active span:nth-child(2){opacity:0}.hamburger.active span:nth-child(3){transform:rotate(45deg) translate(-5px,-6px)}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text-white);margin:6px 0;transition:var(--transition-smooth)}
+.hamburger.active span:nth-child(1){transform:rotate(-45deg) translate(-5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(45deg) translate(-5px,-5px)}
 /* HERO */
-.hero{height:100vh;min-height:700px;display:flex;align-items:center;background:linear-gradient(rgba(8,9,12,0.55),rgba(8,9,12,0.85)),url('{{ hero_img }}') center/cover no-repeat;position:relative;padding-top:133px}
-.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(8,9,12,.4) 50%,rgba(8,9,12,.75) 100%);z-index:1}
+.hero{height:100vh;min-height:750px;display:flex;align-items:center;background:linear-gradient(rgba(15,18,21,0.6),rgba(15,18,21,0.92)),url('{{ hero_img }}') center/cover no-repeat;position:relative;padding-top:100px}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(15,18,21,.3) 50%,rgba(15,18,21,.85) 100%);z-index:1}
 .hero .container{position:relative;z-index:2}
-.hero-content{max-width:800px}
-.hero-tag{background:rgba(255,77,36,.15);border:1px solid var(--accent-orange);color:#fff;padding:.4rem 1.2rem;border-radius:50px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
-.hero-tag::before{content:'';width:6px;height:6px;background:var(--accent-orange);border-radius:50%;box-shadow:0 0 8px var(--accent-orange);animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.5}}
-.hero-name{font-size:4.5rem;line-height:.95;text-transform:uppercase;margin-bottom:.5rem}
-.hero-subtitle-wrapper{overflow:hidden;height:5rem;margin-bottom:1.5rem}
+.hero-content{max-width:850px}
+.hero-tag{background:rgba(255,94,20,.08);border:1px solid rgba(255,94,20,0.2);color:var(--accent-orange);padding:.4rem 1.2rem;border-radius:4px;font-weight:700;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
+.hero-tag::before{content:'';width:4px;height:4px;background:var(--accent-orange);border-radius:50%}
+.hero-name{font-size:4.8rem;line-height:1.1;margin-bottom:.5rem;font-weight:900}
+.hero-subtitle-wrapper{overflow:hidden;height:4.2rem;margin-bottom:1.8rem}
 .hero-subtitle-track{animation:slideUpDown 9s cubic-bezier(0.76,0,0.24,1) infinite}
 @keyframes slideUpDown{0%,25%{transform:translateY(0)}33%,58%{transform:translateY(-100%)}66%,91%{transform:translateY(-200%)}100%{transform:translateY(0)}}
-.hero-subtitle-track span{display:block;height:5rem;font-family:'Outfit',sans-serif;font-size:4.5rem;font-weight:900;line-height:1.1;text-transform:uppercase}
-.hero-desc{font-size:1.2rem;color:var(--text-gray);margin-bottom:3rem;max-width:600px}
+.hero-subtitle-track span{display:block;height:4.2rem;font-size:3.2rem;font-weight:900;line-height:1.3;color:var(--accent-orange)}
+.hero-desc{font-size:1.05rem;color:var(--text-gray);margin-bottom:3rem;max-width:600px}
 .hero-btns{display:flex;gap:1.5rem;flex-wrap:wrap}
 /* STATS */
-.stats{padding:0;margin-top:-60px;position:relative;z-index:10}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.5rem;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
-.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--accent-orange),var(--accent-teal))}
+.stats{padding:0;margin-top:-70px;position:relative;z-index:10}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:2.5rem;box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-orange),transparent)}
 .stat-item{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
-.stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:15%;height:70%;width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.1),transparent)}
-.stat-number{font-family:'Outfit',sans-serif;font-size:3.2rem;font-weight:900;line-height:1;margin-bottom:.5rem;letter-spacing:-.03em}
-.stat-label{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-gray);font-weight:500}
+.stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--bg-tertiary)}
+.stat-number{font-size:3rem;font-weight:800;line-height:1;margin-bottom:.3rem;color:var(--accent-orange)}
+.stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-gray);font-weight:600}
 /* ABOUT */
-.about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:5rem;align-items:center}
-.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem}
-.about-feature{display:flex;gap:1rem}
-.about-feature-icon{width:48px;height:48px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.4rem;transition:var(--transition-smooth)}
-.about-feature:hover .about-feature-icon{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:var(--shadow-orange)}
-.about-feature h4{font-size:1.05rem;margin-bottom:.4rem}.about-feature p{font-size:.9rem;line-height:1.5}
+.about-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:5.5rem;align-items:center}
+.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:3.5rem}
+.about-feature{display:flex;gap:1.2rem}
+.about-feature-icon{width:42px;height:42px;border:1px solid var(--glass-border);background:var(--bg-secondary);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;transition:var(--transition-smooth);color:var(--accent-orange)}
+.about-feature:hover .about-feature-icon{border-color:var(--accent-orange);box-shadow:var(--shadow-orange)}
+.about-feature h4{font-size:1.1rem;margin-bottom:.4rem;font-weight:700;color:var(--text-white)}.about-feature p{font-size:.85rem;line-height:1.6;color:var(--text-gray)}
 .about-img-wrapper{position:relative;display:flex;justify-content:center;align-items:center}
-.about-image{width:100%;max-width:460px;aspect-ratio:1;border-radius:var(--border-radius-lg);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
-.about-img-frame{position:absolute;width:calc(100% - 40px);max-width:460px;aspect-ratio:1;border:2px solid var(--accent-orange);border-radius:var(--border-radius-lg);z-index:1;transform:translate(20px,20px);transition:var(--transition-smooth)}
-.about-img-wrapper:hover .about-img-frame{transform:translate(10px,10px)}
-.about-badge{position:absolute;bottom:30px;left:-15px;background:var(--bg-secondary);border:1px solid var(--glass-border);backdrop-filter:blur(10px);border-radius:var(--border-radius-md);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
-.badge-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,77,36,.12);display:flex;align-items:center;justify-content:center;color:var(--accent-orange);font-size:1.1rem}
-.about-badge h5{font-size:1.1rem;margin-bottom:.1rem}.about-badge p{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
-/* GALLERY */
-.gallery-section{background:var(--bg-secondary)}
-.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-.gallery-item{aspect-ratio:1;border-radius:var(--border-radius-md);overflow:hidden;border:1px solid var(--glass-border)}
-.gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
-.gallery-item:hover img{transform:scale(1.06)}
-/* PROGRAMS */
+.about-image{width:100%;max-width:440px;aspect-ratio:0.85;border-radius:var(--border-radius-sm);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
+.about-img-frame{position:absolute;width:calc(100% - 30px);max-width:440px;aspect-ratio:0.85;border:1px solid var(--accent-orange);border-radius:var(--border-radius-sm);z-index:1;transform:translate(15px,15px);transition:var(--transition-smooth)}
+.about-img-wrapper:hover .about-img-frame{transform:translate(8px,8px)}
+.about-badge{position:absolute;bottom:25px;left:-25px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);backdrop-filter:blur(10px);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
+.badge-icon{width:30px;height:30px;border-radius:50%;background:rgba(255,94,20,.1);display:flex;align-items:center;justify-content:center;color:var(--accent-orange);font-size:0.9rem}
+.about-badge h5{font-size:1.1rem;margin-bottom:.1rem;font-weight:700}.about-badge p{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted)}
+/* SERVICES GRID */
 .programs-section{background:var(--bg-secondary)}
 .programs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}
-.program-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
+.program-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
 .program-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-orange-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}
-.program-card:hover{transform:translateY(-8px);border-color:var(--glass-border-hover);box-shadow:var(--shadow-md)}.program-card:hover::before{opacity:1}
-.program-icon{width:60px;height:60px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.8rem;transition:var(--transition-smooth);position:relative;z-index:1}
-.program-card:hover .program-icon{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:var(--shadow-orange);transform:scale(1.08)}
-.program-card h3{font-size:1.45rem;margin-bottom:.8rem;position:relative;z-index:1}.program-card p{font-size:.95rem;line-height:1.6;margin-bottom:2rem;position:relative;z-index:1}
-.program-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:.05em;transition:var(--transition-fast);position:relative;z-index:1}
-.program-card:hover .program-link{color:var(--accent-orange)}
+.program-card:hover{transform:translateY(-5px);border-color:var(--accent-orange);box-shadow:var(--shadow-sm)}.program-card:hover::before{opacity:1}
+.program-icon{width:46px;height:46px;background:var(--bg-secondary);border-radius:4px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.3rem;transition:var(--transition-smooth);color:var(--accent-orange);position:relative;z-index:1}
+.program-card:hover .program-icon{border-color:#FFF;background:#FFF;color:#0F1215}
+.program-card h3{font-size:1.35rem;margin-bottom:.8rem;position:relative;z-index:1;font-weight:700}
+.program-card p{font-size:.88rem;line-height:1.65;margin-bottom:2rem;position:relative;z-index:1;color:var(--text-gray)}
+.program-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:var(--accent-orange);font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;transition:var(--transition-fast);position:relative;z-index:1}
+.program-card:hover .program-link{color:#FFF}
 /* TESTIMONIALS */
-.testimonials-section{padding:8rem 0}
+.testimonials-section{padding:8.5rem 0;background:var(--bg-secondary)}
 .t-slider-outer{overflow:hidden;margin-top:4rem}
 .t-slider{display:flex;gap:2rem;transition:transform .5s ease;cursor:grab}
 .t-slider.dragging{cursor:grabbing;transition:none}
-.t-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px}
-.t-stars{color:var(--accent-orange);font-size:1rem;margin-bottom:1.2rem;letter-spacing:2px}
-.t-card p{font-size:.95rem;line-height:1.7;margin-bottom:1.8rem;font-style:italic}
-.t-author{font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem}
-.t-author span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.8rem;color:var(--text-muted);margin-top:.3rem}
+.t-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px;box-shadow:var(--shadow-sm)}
+.t-stars{color:var(--accent-orange);font-size:.9rem;margin-bottom:1.2rem;letter-spacing:1.5px}
+.t-card p{font-size:1.02rem;line-height:1.75;margin-bottom:2rem;font-style:italic;color:var(--text-white);font-weight:400}
+.t-author{font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+.t-author span{display:block;font-family:'Outfit',sans-serif;font-weight:400;font-size:.7rem;color:var(--text-muted);margin-top:.3rem;text-transform:none;letter-spacing:0}
 .t-controls{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:2.5rem}
-.t-btn{width:44px;height:44px;border-radius:50%;background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:var(--transition-fast)}
-.t-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange)}
+.t-btn{width:42px;height:42px;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--glass-border);color:var(--text-white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:var(--transition-fast)}
+.t-btn:hover{background:#FFF;color:#0F1215;border-color:#FFF}
 .t-dots{display:flex;gap:.6rem}
-.t-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}.t-dot.active{background:var(--accent-orange);width:20px;border-radius:4px}
+.t-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}.t-dot.active{background:var(--accent-orange);width:16px;border-radius:3px}
 /* CTA */
-.cta-section{padding:8rem 0}
-.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-lg);padding:6rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
-.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--accent-orange),var(--accent-teal))}
-.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,var(--accent-orange-glow),transparent 70%);pointer-events:none}
-.cta-banner h2{font-size:3.2rem;max-width:700px;margin:0 auto 1.5rem;text-transform:uppercase}
-.cta-banner p{font-size:1.1rem;max-width:550px;margin:0 auto 3rem}
+.cta-section{padding:8.5rem 0}
+.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:6.5rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-md)}
+.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-orange),transparent)}
+.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:350px;height:350px;background:radial-gradient(circle,var(--accent-orange-glow),transparent 70%);pointer-events:none}
+.cta-banner h2{font-size:3.4rem;max-width:750px;margin:0 auto 1.5rem;font-weight:800;letter-spacing:-2px}
+.cta-banner p{font-size:1.05rem;max-width:550px;margin:0 auto 3rem}
 /* CONTACT */
 .contact-section{background:var(--bg-secondary)}
 .cinfo-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:3rem}
-.cinfo-item{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.95rem;transition:var(--transition-fast)}
-.cinfo-item:hover{border-color:var(--accent-orange);color:#fff}
+.cinfo-item{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}
+.cinfo-item:hover{border-color:var(--accent-orange);color:var(--text-white)}
 /* FOOTER */
-.footer{background:#050608;border-top:1px solid var(--glass-border);padding:6rem 0 3rem}
-.footer-grid{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:4rem;margin-bottom:5rem}
-.footer-col h4{font-size:1.1rem;margin-bottom:2rem;padding-bottom:.5rem;position:relative}
-.footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:28px;height:2px;background:var(--accent-orange)}
-.footer-about p{font-size:.9rem;margin-top:1.2rem;margin-bottom:2rem}
+.footer{background:var(--bg-primary);border-top:1px solid var(--glass-border);padding:6.5rem 0 3rem}
+.footer-grid{display:grid;grid-template-columns:1.20fr .8fr .8fr;gap:4.5rem;margin-bottom:5.5rem}
+.footer-col h4{font-size:1.15rem;margin-bottom:2rem;padding-bottom:.5rem;position:relative;font-weight:700;text-transform:uppercase;letter-spacing:0.1em}
+.footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:24px;height:2px;background:var(--accent-orange)}
+.footer-about p{font-size:.88rem;margin-top:1.2rem;margin-bottom:2rem;line-height:1.7}
 .social-links{display:flex;gap:1rem}
-.social-btn{width:42px;height:42px;border-radius:var(--border-radius-sm);background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;transition:var(--transition-smooth);text-decoration:none}
-.social-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange);transform:translateY(-3px)}
-.footer-links{list-style:none}.footer-links li{margin-bottom:.9rem}.footer-links a{color:var(--text-gray);font-size:.9rem;transition:var(--transition-fast)}.footer-links a:hover{color:#fff;padding-left:5px}
+.social-btn{width:40px;height:40px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:4px;color:var(--text-white);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;transition:var(--transition-smooth)}
+.social-btn:hover{background:#FFF;color:#0F1215;border-color:#FFF;transform:translateY(-2px)}
+.footer-links{list-style:none}.footer-links li{margin-bottom:.9rem}.footer-links a{color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}.footer-links a:hover{color:var(--text-white);padding-left:5px}
 .footer-bottom{border-top:1px solid var(--glass-border);padding-top:3rem;display:flex;justify-content:space-between;align-items:center}
-.footer-bottom p{font-size:.85rem;color:var(--text-muted)}
-.footer-bottom a{color:var(--accent-orange)}
-@media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.gallery-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:768px){.hero-name,.hero-subtitle-track span{font-size:2.8rem}.hero-subtitle-wrapper{height:3.5rem}.section-title{font-size:2.1rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}.gallery-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.hero-name,.hero-subtitle-track span{font-size:2.2rem}.stats-grid{grid-template-columns:1fr 1fr}}
+.footer-bottom p{font-size:.8rem;color:var(--text-muted)}
+.footer-bottom a{color:var(--text-white);font-weight:700}
+@media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3.5rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.programs-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.hero-name{font-size:3.2rem}.hero-subtitle-track span{font-size:2.4rem}.hero-subtitle-wrapper{height:3rem}.section-title{font-size:2.4rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- Custom cursor -->
 <div class="custom-cursor-dot" id="cursorDot"></div>
 <div class="custom-cursor-ring" id="cursorRing"></div>
 
@@ -175,7 +212,7 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 
 <!-- Spotlights -->
 <div class="spotlight" style="top:-100px;left:-150px"></div>
-<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,var(--accent-teal-glow),transparent 70%)"></div>
+<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,rgba(255,94,20,0.06),transparent 70%)"></div>
 <div class="spotlight" style="bottom:10%;left:-100px"></div>
 
 <!-- Navbar -->
@@ -188,12 +225,11 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
     <ul class="nav-links" id="navLinks">
       <li><a href="#home" class="active">Home</a></li>
       <li><a href="#about">About</a></li>
-      <li><a href="#programs">Programs</a></li>
-      
+      <li><a href="#programs">Services</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
     <div class="nav-actions">
-      <a href="#contact" class="btn btn-secondary" style="padding:.6rem 1.5rem;font-size:.85rem">Join Now</a>
+      <a href="#contact" class="btn btn-secondary" style="padding:.5rem 1.5rem;font-size:.75rem">Get Proposal</a>
     </div>
     <button class="hamburger" id="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -205,19 +241,19 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 <section class="hero" id="home">
   <div class="container">
     <div class="hero-content reveal reveal-slide-up">
-      <div class="hero-tag">&#x2022; Premium Roofing Services</div>
+      <div class="hero-tag">&#x2022; Certified Roofing Contractor</div>
       <h1 class="hero-name text-gradient-orange">{{ lead.name }}</h1>
       <div class="hero-subtitle-wrapper">
         <div class="hero-subtitle-track">
-          <span>ROOF INSTALL.</span>
-          <span>LEAK REPAIR</span>
-          <span>GET ESTIMATE</span>
+          <span>ROOF REPLACEMENT</span>
+          <span>EMERGENCY REPAIRS</span>
+          <span>PREMIUM SHINGLES</span>
         </div>
       </div>
-      <p class="hero-desc">At {{ lead.name }}, we provide top-tier roofing solutions for residential and commercial properties. From durable new roof installations to prompt leak repairs, our team delivers quality craftsmanship and lasting protection for your home.</p>
+      <p class="hero-desc">At {{ lead.name }}, we build protection that lasts. Specializing in high-durability roof replacements, leak repairs, and seamless gutters, our licensed crews deliver top-tier craftsmanship to keep your property dry and secure.</p>
       <div class="hero-btns">
-        <a href="#contact" class="btn btn-primary">Get Started Today</a>
-        <a href="#programs" class="btn btn-secondary">Explore Services</a>
+        <a href="#contact" class="btn btn-primary">Free Inspection</a>
+        <a href="#programs" class="btn btn-secondary">Our Services</a>
       </div>
     </div>
   </div>
@@ -228,20 +264,20 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
   <div class="container">
     <div class="stats-grid reveal reveal-scale-in">
       <div class="stat-item">
-        <div class="stat-number text-gradient-orange" data-target="113+">113+</div>
-        <div class="stat-label">Google Reviews</div>
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Leak Guarantee</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number text-gradient-orange">5.0&#9733;</div>
-        <div class="stat-label">Google Rating</div>
+        <div class="stat-number">20+</div>
+        <div class="stat-label">Years Warranty</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number text-gradient-orange">24/7</div>
-        <div class="stat-label">Access Available</div>
+        <div class="stat-number">2,500+</div>
+        <div class="stat-label">Roofs Installed</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number text-gradient-orange">100%</div>
-        <div class="stat-label">Committed to You</div>
+        <div class="stat-number">$0</div>
+        <div class="stat-label">Upfront Estimates</div>
       </div>
     </div>
   </div>
@@ -252,25 +288,25 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
   <div class="container">
     <div class="about-grid">
       <div class="about-content reveal reveal-slide-right">
-        <span class="section-tag">Our Commitment</span>
-        <h2 class="section-title">Where Quality Roofs Are<br><span class="text-gradient-orange">Built</span> &amp; Homes Protected</h2>
-        <p class="section-desc">We are dedicated to providing premium roofing services that stand the test of time. Whether you need a small repair, a roof replacement, or brand new gutter installations, our licensed experts are here to protect your investment.</p>
+        <span class="section-tag">About the Company</span>
+        <h2 class="section-title">Zero-Leak Assurance<br><span class="text-gradient-orange">Expert Craftsmen</span> &amp; Trust</h2>
+        <p class="section-desc">We combine premium materials, certified crews, and strict safety guidelines to ensure your home or business receives the absolute best exterior protection.</p>
         <div class="about-features">
           <div class="about-feature">
-            <div class="about-feature-icon">🏠</div>
-            <div><h4>Quality Shingles</h4><p>Top-grade architectural shingles and metal roofing materials built to last.</p></div>
-          </div>
-          <div class="about-feature">
             <div class="about-feature-icon">🛡️</div>
-            <div><h4>Full Warranty</h4><p>Industry-leading warranties on both premium materials and skilled labor.</p></div>
+            <div><h4>Certified GAF Installers</h4><p>Certified to lay the industry's highest-grade weather barrier systems.</p></div>
           </div>
           <div class="about-feature">
             <div class="about-feature-icon">🔍</div>
-            <div><h4>Free Inspections</h4><p>Comprehensive physical and drone roof inspections to catch damage early.</p></div>
+            <div><h4>Storm Damage Inspections</h4><p>Free, thorough structural drone audits following severe hail or wind storms.</p></div>
           </div>
           <div class="about-feature">
-            <div class="about-feature-icon">🛠️</div>
-            <div><h4>Licensed Crew</h4><p>Experienced, licensed, and fully insured roofing contractors.</p></div>
+            <div class="about-feature-icon">📜</div>
+            <div><h4>Long-Term Warranties</h4><p>Full material and labor coverage backed by top-tier manufacturer warranties.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">🚨</div>
+            <div><h4>Emergency Leak Dispatch</h4><p>Rapid response crews available to tarp and secure active leaks.</p></div>
           </div>
         </div>
       </div>
@@ -279,61 +315,59 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
         <img src="{{ about_img }}" alt="{{ lead.name }}" class="about-image" onerror="this.parentElement.style.opacity='0.3'">
         <div class="about-badge">
           <div class="badge-icon">✓</div>
-          <div><h5>5.0&#9733; Rated</h5><p>On Google Maps</p></div>
+          <div><h5>Fully Insured</h5><p>Full Corporate Liability</p></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-
-
-<!-- Programs -->
+<!-- Services Grid -->
 <section class="programs-section" id="programs">
   <div class="container">
     <div style="text-align:center">
       <span class="section-tag">Our Services</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Engineered For <span class="text-gradient-orange">Extraordinary</span> Results</h2>
-      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Explore our comprehensive range of residential and commercial roofing services built to withstand the elements.</p>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Premium Roofing <span class="text-gradient-orange">Solutions</span></h2>
+      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Explore our professional roofing installation, maintenance, and structural repair services.</p>
     </div>
     <div class="programs-grid">
-        <div class="program-card reveal reveal-slide-up" style="">
-          <div class="program-icon">🏠</div>
-          <h3>Roof Installation</h3>
-          <p>High-quality residential roof replacements with premium shingles and lifetime warranties.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
-        <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
-          <div class="program-icon">🛠️</div>
-          <h3>Roof Repair & Leaks</h3>
-          <p>Fast, reliable leak repairs, storm damage mitigation, and emergency patching.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
-        <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
-          <div class="program-icon">🏢</div>
-          <h3>Commercial Roofing</h3>
-          <p>Durable, energy-efficient flat roof installations and coatings for commercial buildings.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
-        <div class="program-card reveal reveal-slide-up" style="">
-          <div class="program-icon">🌊</div>
-          <h3>Gutter Services</h3>
-          <p>Seamless aluminum gutter installations, leaf guards, and downspout tune-ups.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
-        <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
-          <div class="program-icon">📋</div>
-          <h3>Roof Inspections</h3>
-          <p>Thorough visual and digital drone inspections with reports for insurance claims.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
-        <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
-          <div class="program-icon">🔨</div>
-          <h3>Siding & Trim</h3>
-          <p>Enhance your curb appeal and protect your home with high-durability siding installation.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
+      <div class="program-card reveal reveal-slide-up">
+        <div class="program-icon">🏠</div>
+        <h3>Roof Replacement</h3>
+        <p>Complete removal and installation of architectural shingle, metal, or flat roof configurations.</p>
+        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
       </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="program-icon">🛠️</div>
+        <h3>Roof Repair</h3>
+        <p>Rapid fix for missing shingles, flashing leaks, sagging sections, and general wear decay.</p>
+        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="program-icon">🌧️</div>
+        <h3>Gutter Systems</h3>
+        <p>Seamless aluminum gutters and durable leaf guard systems custom-fit to redirect rainfall safely.</p>
+        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up">
+        <div class="program-icon">🔍</div>
+        <h3>Roof Inspections</h3>
+        <p>Complete structural and moisture audit using drone cameras to assess hail or age damage.</p>
+        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="program-icon">🏢</div>
+        <h3>Commercial Roofing</h3>
+        <p>Durable single-ply TPO, EPDM, and coating applications optimized for commercial structures.</p>
+        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="program-icon">💨</div>
+        <h3>Ventilation & Insulation</h3>
+        <p>Soffit and ridge vent upgrades to optimize attic airflow and decrease summer utility bills.</p>
+        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -341,30 +375,30 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 <section class="testimonials-section" id="testimonials">
   <div class="container">
     <div style="text-align:center">
-      <span class="section-tag">What Homeowners Say</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Real Stories, <span class="text-gradient-orange">Real Results</span></h2>
+      <span class="section-tag">Client Reviews</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Trusted Protection, <span class="text-gradient-orange">Flawless execution</span></h2>
     </div>
     <div class="t-slider-outer">
       <div class="t-slider" id="tSlider">
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"After a severe hailstorm, {{ lead.name }} replaced our roof quickly and professionally. They handled the insurance claim process completely!"</p>
-          <div class="t-author">Sarah M.<span>Homeowner</span></div>
+          <p>"The crew at {{ lead.name }} replaced our roof in just two days. They left zero debris, and the new architectural shingles look amazing. Highly professional."</p>
+          <div class="t-author">Marcus G.<span>Homeowner</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Highly recommend this team. They repaired our roof leak within 24 hours of calling. Extremely polite, prompt, and left no mess behind."</p>
-          <div class="t-author">James K.<span>Homeowner</span></div>
+          <p>"Prompt response after a hail storm. They worked directly with our insurance adjuster to ensure all damage was covered. Unbelievable customer care."</p>
+          <div class="t-author">Daniel K.<span>Property Manager</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"The new metal roof looks stunning and has completely transformed our home's curb appeal. The team did a fantastic job."</p>
-          <div class="t-author">Priya R.<span>Property Manager</span></div>
+          <p>"Had a major leak during spring rains. They sent a crew to tarp the roof within 45 minutes, then performed a permanent repair the next morning."</p>
+          <div class="t-author">Elena S.<span>Residential Client</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Prompt response, detailed estimate, and quality work. They finished the job on time and on budget. Best roofing company around."</p>
-          <div class="t-author">Ahmed N.<span>Business Owner</span></div>
+          <p>"Meticulous gutter and shingle installation. They did a walkthrough checklist with me to verify satisfaction before requesting final payment."</p>
+          <div class="t-author">Robert H.<span>Estate Owner</span></div>
         </div>
       </div>
     </div>
@@ -380,10 +414,10 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 <section class="cta-section">
   <div class="container">
     <div class="cta-banner reveal reveal-scale-in">
-      <span class="section-tag">Are You Ready?</span>
-      <h2>Get Your Free Estimate from<br><span class="text-gradient-orange">{{ lead.name }}</span> Today</h2>
-      <p>Take the first step. Contact us now to schedule your drone inspection and get an expert estimate.</p>
-      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Contact Us Now</a>
+      <span class="section-tag">Claim Your Proposal</span>
+      <h2>Claim Your Free Roof Inspection & Estimate from<br><span class="text-gradient-orange">{{ lead.name }}</span> Today</h2>
+      <p>Take the first step. Contact us now to schedule an inspection and receive a customized service estimate.</p>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Schedule Proposal</a>
     </div>
   </div>
 </section>
@@ -393,8 +427,14 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
   <div class="container" style="text-align:center">
     <span class="section-tag">Find Us</span>
     <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-orange">{{ lead.name }}</span></h2>
-    <p>We'd love to hear from you. Walk in, call, or message us anytime.</p>
-    <div class="cinfo-grid"><a href="tel:{{ lead.phone }}" class="cinfo-item">📞 {{ lead.phone }}</a><a href="mailto:{{ lead.email or 'contact@' + lead.website }}" class="cinfo-item">✉ {{ lead.email or 'contact@' + lead.website }}</a><div class="cinfo-item">📍 {{ lead.address or 'Austin, TX' }}</div>{% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="cinfo-item">📸 @{{ lead.instagram }}</a>{% endif %}{% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="cinfo-item">🗺 View on Google Maps</a>{% endif %}</div>
+    <p>Request an inspection or ask about our gutter and shingles warranty packages.</p>
+    <div class="cinfo-grid">
+      {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="cinfo-item">📞 Call Us: {{ lead.phone }}</a>{% endif %}
+      {% if lead.email %}<a href="mailto:{{ lead.email }}" class="cinfo-item">✉ Email: {{ lead.email }}</a>{% endif %}
+      {% if lead.address %}<div class="cinfo-item">📍 {{ lead.address }}</div>{% endif %}
+      {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="cinfo-item">📸 @{{ lead.instagram }}</a>{% endif %}
+      {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="cinfo-item">🗺 View on Google Maps</a>{% endif %}
+    </div>
   </div>
 </section>
 
@@ -407,24 +447,27 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
           <div class="logo-icon"></div>
           {{ lead.name }}
         </a>
-        <p>A premier roofing contractor committed to building durable, leak-proof roofs with high-grade shingles and expert craftsmanship in {{ lead.city or 'Austin, TX' }}.</p>
-        <div class="social-links">{% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="social-btn">IG</a>{% endif %}{% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="social-btn">📍</a>{% endif %}</div>
+        <p>A trusted roofing and exterior services contractor delivering safe, high-durability roofing installations and leak repairs.</p>
+        <div class="social-links">
+          {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="social-btn">IG</a>{% endif %}
+          {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="social-btn">📍</a>{% endif %}
+        </div>
       </div>
       <div class="footer-col">
         <h4>Quick Links</h4>
         <ul class="footer-links">
           <li><a href="#home">Home</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#programs">Programs</a></li>
-          <li><a href="#contact">Contact</a></li>
+          <li><a href="#about">About the Company</a></li>
+          <li><a href="#programs">Services</a></li>
+          <li><a href="#contact">Contact Us</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
         <ul class="footer-links">
-          <li>+1 210-490-2546</li>
-          <li>{{ lead.email or 'contact@' + lead.website }}</li>
-          <li>15909 San Pedro Ave #116, San Antonio, TX 78232, USA</li>
+          {% if lead.phone %}<li>{{ lead.phone }}</li>{% endif %}
+          {% if lead.email %}<li>{{ lead.email }}</li>{% endif %}
+          {% if lead.address %}<li>{{ lead.address }}</li>{% endif %}
         </ul>
       </div>
     </div>
@@ -441,7 +484,7 @@ const dot=document.getElementById('cursorDot'),ring=document.getElementById('cur
 let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
 (function animRing(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
-document.querySelectorAll('a,button,.program-card,.t-btn,.gallery-item').forEach(el=>{
+document.querySelectorAll('a,button,.program-card,.t-btn').forEach(el=>{
   el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
   el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
 });
@@ -502,110 +545,6 @@ document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
   buildDots();
   window.addEventListener('resize',()=>goto(0));
 })();
-</script>
-
-
-
-<!-- LEADFLOW CONVERSION LAYER -->
-<style>
-  .lf-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:9998;
-    display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
-    padding:14px 20px;background:rgba(10,10,12,.92);backdrop-filter:blur(12px);
-    border-top:1px solid rgba(255,255,255,.12);
-    transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
-  .lf-cta-bar.show{transform:translateY(0)}
-  .lf-cta-bar p{margin:0;font-size:15px;font-weight:500}
-  .lf-cta-bar p b{color:#4d9fff}
-  .lf-btn{display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;
-    text-decoration:none;font-size:15px;font-weight:700;padding:12px 22px;border-radius:999px;
-    transition:transform .15s,box-shadow .15s}
-  .lf-btn:hover{transform:translateY(-2px)}
-  .lf-btn-primary{background:linear-gradient(135deg,#4d9fff,#2563eb);color:#fff;
-    box-shadow:0 6px 20px rgba(77,159,255,.45)}
-  .lf-btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.18)}
-  .lf-modal-bg{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
-    background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:20px;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-  .lf-modal-bg.show{display:flex;animation:lf-fade .3s ease}
-  @keyframes lf-fade{from{opacity:0}to{opacity:1}}
-  .lf-modal{position:relative;max-width:460px;width:100%;background:#101014;color:#fff;
-    border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:38px 32px;text-align:center;
-    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:lf-pop .35s cubic-bezier(.2,.9,.3,1.2)}
-  @keyframes lf-pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
-  .lf-modal h2{margin:0 0 12px;font-size:26px;line-height:1.25}
-  .lf-modal h2 b{color:#4d9fff}
-  .lf-modal p{margin:0 0 26px;font-size:16px;line-height:1.6;color:#b9b9c3}
-  .lf-modal .lf-btn{width:100%;justify-content:center;font-size:17px;padding:16px}
-  .lf-modal .lf-sub{margin-top:16px;font-size:13px;color:#7a7a88}
-  .lf-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#777;
-    font-size:26px;line-height:1;cursor:pointer}
-  .lf-x:hover{color:#fff}
-  @media(max-width:600px){.lf-cta-bar p{flex-basis:100%;text-align:center}}
-</style>
-
-<div class="lf-cta-bar" id="lfBar">
-  <p>👀 Like this design for <b>{{ lead.name }}</b>?</p>
-  <a href="https://www.fiverr.com/s/zWZ5yWg" target="_blank" rel="noopener" class="lf-btn lf-btn-primary"
-     data-lf="cta_book_bar">Book a free call →</a>
-  
-</div>
-
-<div class="lf-modal-bg" id="lfModal">
-  <div class="lf-modal">
-    <button class="lf-x" id="lfX" aria-label="Close">&times;</button>
-    <h2>Want this site live for <b>{{ lead.name }}</b>?</h2>
-    <p>This demo was built specifically for you. Book a free 15-minute call and
-       I'll have it live on your domain — no obligation, no upfront cost.</p>
-    <a href="https://www.fiverr.com/s/zWZ5yWg" target="_blank" rel="noopener" class="lf-btn lf-btn-primary"
-       data-lf="cta_book_modal">Claim this website →</a>
-    <div class="lf-sub">Built by Chandan Gosavi</div>
-  </div>
-</div>
-
-<script>
-(function(){
-  var BEACON="{{ tracking_beacon_url or "" }}", BID="{{ lead.id }}", sent={};
-  function ping(ev){
-    if(sent[ev]||!BEACON)return; sent[ev]=true;
-    try{ fetch(BEACON+"/api/engage?bid="+BID+"&ev="+ev,{mode:"no-cors",keepalive:true}); }catch(e){}
-  }
-  // sticky CTA bar appears once they've scrolled in a bit
-  var bar=document.getElementById("lfBar"), barShown=false;
-  function onScroll(){
-    var sc=window.scrollY, h=document.body.scrollHeight-window.innerHeight;
-    var pct=h>0?sc/h:0;
-    if(pct>0.12&&!barShown){bar.classList.add("show");barShown=true;ping("scroll_in");}
-    if(pct>0.9)ping("scroll_90");
-  }
-  window.addEventListener("scroll",onScroll,{passive:true});
-
-  // modal: exit-intent on desktop, timed on mobile, once per visit
-  var modal=document.getElementById("lfModal"), fired=false;
-  function openModal(){
-    if(fired||sessionStorage.getItem("lfSeen"))return;
-    fired=true; sessionStorage.setItem("lfSeen","1");
-    modal.classList.add("show"); ping("modal_shown");
-  }
-  function closeModal(){modal.classList.remove("show");}
-  document.getElementById("lfX").addEventListener("click",closeModal);
-  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
-  if(matchMedia("(pointer:fine)").matches){
-    document.addEventListener("mouseout",function(e){if(e.clientY<=0)openModal();});
-  } else {
-    setTimeout(openModal,28000);
-  }
-  // high-intent: CTA clicks -> instant operator alert
-  document.querySelectorAll("[data-lf]").forEach(function(el){
-    el.addEventListener("click",function(){ping(el.getAttribute("data-lf"));});
-  });
-})();
-</script>
-
-
-<!-- TRACKING SCRIPT -->
-<script>
-  try { fetch("{{ tracking_beacon_url or "" }}/api/track.png?bid={{ lead.id }}", {mode:"no-cors"}); } catch(e) {}
 </script>
 
 </body>
