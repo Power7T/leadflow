@@ -35,4 +35,8 @@ TUNNEL_PID2=$!
 
 trap 'kill $SERVER_PID $DEMO_PID $TUNNEL_PID1 $TUNNEL_PID2 $(jobs -p) 2>/dev/null; exit' TERM INT EXIT
 
-wait
+# Monitor child processes. If either server.py or demo_server.py exits, terminate the daemon.
+while kill -0 $SERVER_PID 2>/dev/null && kill -0 $DEMO_PID 2>/dev/null; do
+  sleep 2
+done
+

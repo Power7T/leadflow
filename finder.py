@@ -86,25 +86,49 @@ def is_chain_or_too_big(name: str, reviews: int | None) -> bool:
 
 
 def search_places(query: str, location: str, max_results: int = 20) -> list:
-    params = {"query": f"{query} in {location}", "key": MAPS_KEY}
+    url = "https://places.googleapis.com/v1/places:searchText"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": MAPS_KEY,
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.websiteUri,places.internationalPhoneNumber,places.rating,places.userRatingCount,nextPageToken"
+    }
     results = []
     next_token = None
 
     while len(results) < max_results:
+        payload = {
+            "textQuery": f"{query} in {location}",
+            "pageSize": min(20, max_results - len(results))
+        }
         if next_token:
-            params = {"key": MAPS_KEY, "pagetoken": next_token}
-            time.sleep(2)
+            payload["pageToken"] = next_token
 
-        resp = requests.get(PLACES_URL, params=params, timeout=10)
-        data = resp.json()
-
-        if data.get("status") not in ("OK", "ZERO_RESULTS"):
-            console.print(f"[red]Maps API error: {data.get('status')} — {data.get('error_message', '')}")
+        resp = requests.post(url, json=payload, headers=headers, timeout=10)
+        if resp.status_code != 200:
+            console.print(f"[red]Maps API error: {resp.status_code} — {resp.text}")
             break
 
-        results.extend(data.get("results", []))
-        next_token = data.get("next_page_token")
+        data = resp.json()
+        places = data.get("places", [])
+        if not places:
+            break
 
+        for p in places:
+            results.append({
+                "place_id": p.get("id"),
+                "name": p.get("displayName", {}).get("text", "Unknown"),
+                "website": p.get("websiteUri", ""),
+                "phone": p.get("internationalPhoneNumber", ""),
+                "address": p.get("formattedAddress", ""),
+                "rating": p.get("rating"),
+                "reviews": p.get("userRatingCount", 0),
+                "formatted_address": p.get("formattedAddress", ""),
+                "international_phone_number": p.get("internationalPhoneNumber", ""),
+                "formatted_phone_number": p.get("internationalPhoneNumber", ""),
+                "user_ratings_total": p.get("userRatingCount", 0),
+            })
+
+        next_token = data.get("nextPageToken")
         if not next_token:
             break
 
@@ -112,26 +136,51 @@ def search_places(query: str, location: str, max_results: int = 20) -> list:
 
 
 async def search_places_async(query: str, location: str, max_results: int = 20) -> list:
-    params = {"query": f"{query} in {location}", "key": MAPS_KEY}
+    url = "https://places.googleapis.com/v1/places:searchText"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": MAPS_KEY,
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.websiteUri,places.internationalPhoneNumber,places.rating,places.userRatingCount,nextPageToken"
+    }
     results = []
     next_token = None
 
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         while len(results) < max_results:
+            payload = {
+                "textQuery": f"{query} in {location}",
+                "pageSize": min(20, max_results - len(results))
+            }
             if next_token:
-                params = {"key": MAPS_KEY, "pagetoken": next_token}
-                await asyncio.sleep(2)
+                payload["pageToken"] = next_token
 
-            async with session.get(PLACES_URL, params=params, timeout=10, ssl=False) as resp:
-                data = await resp.json()
-
-                if data.get("status") not in ("OK", "ZERO_RESULTS"):
-                    console.print(f"[red]Maps API error: {data.get('status')} — {data.get('error_message', '')}")
+            async with session.post(url, json=payload, headers=headers, timeout=10, ssl=False) as resp:
+                if resp.status != 200:
+                    text = await resp.text()
+                    console.print(f"[red]Maps API error: {resp.status} — {text}")
                     break
 
-                results.extend(data.get("results", []))
-                next_token = data.get("next_page_token")
+                data = await resp.json()
+                places = data.get("places", [])
+                if not places:
+                    break
 
+                for p in places:
+                    results.append({
+                        "place_id": p.get("id"),
+                        "name": p.get("displayName", {}).get("text", "Unknown"),
+                        "website": p.get("websiteUri", ""),
+                        "phone": p.get("internationalPhoneNumber", ""),
+                        "address": p.get("formattedAddress", ""),
+                        "rating": p.get("rating"),
+                        "reviews": p.get("userRatingCount", 0),
+                        "formatted_address": p.get("formattedAddress", ""),
+                        "international_phone_number": p.get("internationalPhoneNumber", ""),
+                        "formatted_phone_number": p.get("internationalPhoneNumber", ""),
+                        "user_ratings_total": p.get("userRatingCount", 0),
+                    })
+
+                next_token = data.get("nextPageToken")
                 if not next_token:
                     break
 
@@ -139,25 +188,54 @@ async def search_places_async(query: str, location: str, max_results: int = 20) 
 
 
 def get_place_details(place_id: str) -> dict:
-    params = {
-        "place_id": place_id,
-        "fields": "name,formatted_address,formatted_phone_number,international_phone_number,website,rating,user_ratings_total",
-        "key": MAPS_KEY,
+    url = f"https://places.googleapis.com/v1/places/{place_id}"
+    headers = {
+        "X-Goog-Api-Key": MAPS_KEY,
+        "X-Goog-FieldMask": "id,displayName,formattedAddress,websiteUri,internationalPhoneNumber,rating,userRatingCount"
     }
-    resp = requests.get(DETAILS_URL, params=params, timeout=10)
-    return resp.json().get("result", {})
+    resp = requests.get(url, headers=headers, timeout=10)
+    if resp.status_code != 200:
+        return {}
+    p = resp.json()
+    return {
+        "place_id": p.get("id"),
+        "name": p.get("displayName", {}).get("text", "Unknown"),
+        "website": p.get("websiteUri", ""),
+        "phone": p.get("internationalPhoneNumber", ""),
+        "address": p.get("formattedAddress", ""),
+        "rating": p.get("rating"),
+        "reviews": p.get("userRatingCount", 0),
+        "formatted_address": p.get("formattedAddress", ""),
+        "international_phone_number": p.get("internationalPhoneNumber", ""),
+        "formatted_phone_number": p.get("internationalPhoneNumber", ""),
+        "user_ratings_total": p.get("userRatingCount", 0),
+    }
 
 
 async def get_place_details_async(place_id: str) -> dict:
-    params = {
-        "place_id": place_id,
-        "fields": "name,formatted_address,formatted_phone_number,international_phone_number,website,rating,user_ratings_total",
-        "key": MAPS_KEY,
+    url = f"https://places.googleapis.com/v1/places/{place_id}"
+    headers = {
+        "X-Goog-Api-Key": MAPS_KEY,
+        "X-Goog-FieldMask": "id,displayName,formattedAddress,websiteUri,internationalPhoneNumber,rating,userRatingCount"
     }
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        async with session.get(DETAILS_URL, params=params, timeout=10, ssl=False) as resp:
-            data = await resp.json()
-            return data.get("result", {})
+        async with session.get(url, headers=headers, timeout=10, ssl=False) as resp:
+            if resp.status != 200:
+                return {}
+            p = await resp.json()
+            return {
+                "place_id": p.get("id"),
+                "name": p.get("displayName", {}).get("text", "Unknown"),
+                "website": p.get("websiteUri", ""),
+                "phone": p.get("internationalPhoneNumber", ""),
+                "address": p.get("formattedAddress", ""),
+                "rating": p.get("rating"),
+                "reviews": p.get("userRatingCount", 0),
+                "formatted_address": p.get("formattedAddress", ""),
+                "international_phone_number": p.get("internationalPhoneNumber", ""),
+                "formatted_phone_number": p.get("internationalPhoneNumber", ""),
+                "user_ratings_total": p.get("userRatingCount", 0),
+            }
 
 
 def run_finder(niche: str, location: str, max_results: int = 20, source: str = "google_maps", max_score: int = 70, require_email: bool = True) -> int:
@@ -228,12 +306,20 @@ def run_finder(niche: str, location: str, max_results: int = 20, source: str = "
         name = place.get("name", "Unknown")
         console.print(f"[dim]Processing:[/] {name}...", end=" ")
 
-        details = get_place_details(place["place_id"])
-        raw_website = details.get("website", "")
-        phone = details.get("international_phone_number") or details.get("formatted_phone_number", "")
-        address = details.get("formatted_address", "")
-        rating = details.get("rating")
-        reviews = details.get("user_ratings_total")
+        # Use already fetched details from new Places API, fallback to get_place_details if missing
+        raw_website = place.get("website") or ""
+        phone = place.get("phone") or place.get("international_phone_number") or place.get("formatted_phone_number", "")
+        address = place.get("address") or place.get("formatted_address", "")
+        rating = place.get("rating")
+        reviews = place.get("reviews") or place.get("user_ratings_total") or 0
+
+        if raw_website == "" and phone == "" and address == "":
+            details = get_place_details(place["place_id"])
+            raw_website = details.get("website", "")
+            phone = details.get("international_phone_number") or details.get("formatted_phone_number", "")
+            address = details.get("formatted_address", "")
+            rating = details.get("rating")
+            reviews = details.get("user_ratings_total") or 0
 
         # Skip big chains — not our clients
         if is_chain_or_too_big(name, reviews):

@@ -562,13 +562,22 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                 yield send(f"Processing: {name}...", "dim")
                 await asyncio.sleep(0.05)
 
-                details   = await get_place_details_async(place["place_id"])
-                raw_url   = details.get("website", "")
+                # Use details already fetched via new Places API, fallback if missing
+                raw_url   = place.get("website") or ""
+                phone     = place.get("phone") or place.get("international_phone_number") or place.get("formatted_phone_number", "")
+                address   = place.get("address") or place.get("formatted_address", "")
+                rating    = place.get("rating")
+                reviews   = place.get("reviews") or place.get("user_ratings_total") or 0
+
+                if raw_url == "" and phone == "" and address == "":
+                    details   = await get_place_details_async(place["place_id"])
+                    raw_url   = details.get("website", "")
+                    phone     = details.get("international_phone_number") or details.get("formatted_phone_number", "")
+                    address   = details.get("formatted_address", "")
+                    rating    = details.get("rating")
+                    reviews   = details.get("user_ratings_total") or 0
+
                 website   = clean_website_url(raw_url)
-                phone     = details.get("international_phone_number") or details.get("formatted_phone_number", "")
-                address   = details.get("formatted_address", "")
-                rating    = details.get("rating")
-                reviews   = details.get("user_ratings_total")
 
                 if no_website_only and website:
                     yield send(f"  skipped (has website)", "dim")
@@ -1393,28 +1402,149 @@ async def api_preview_template(filename: str):
     from jinja2 import Template
     t = Template(template_str)
     
-    mock_lead = {
+    preview_configs = {
+        "gym.html": {
+            "name": "Peak Fitness Studio",
+            "category": "Fitness Center & Gym",
+            "hero_img": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80",
+            "about_img": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80",
+            "about_text": "We are a high-end strength and conditioning facility dedicated to excellence and community results.",
+            "services": ["Personal Training", "Group Functional Fitness Classes", "Strength & Cardio Equipment Access"]
+        },
+        "restaurant.html": {
+            "name": "Bella Italia Bistro",
+            "category": "Italian Restaurant & Cafe",
+            "hero_img": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=600",
+            "about_text": "Authentic stone-baked pizza, hand-tossed pasta, and premium Italian wines served in a cozy ambiance.",
+            "services": ["Fine Casual Dining", "Wine Pairing Nights", "Wood-Fired Pizza Catering"]
+        },
+        "dentist.html": {
+            "name": "Bright Smiles Dental",
+            "category": "Dental & Healthcare Clinic",
+            "hero_img": "https://images.unsplash.com/photo-1588776814546-daab30f310ce?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=600",
+            "about_text": "Gentle, high-tech dental care specializing in general dentistry, teeth whitening, veneers, and smile design.",
+            "services": ["Teeth Cleaning & Checkups", "Professional Laser Whitening", "Cosmetic Veneers & Implants"]
+        },
+        "barbershop.html": {
+            "name": "Classic Cut Barbershop",
+            "category": "Barbershop & Beauty Salon",
+            "hero_img": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1593702295094-aec22597af65?w=600",
+            "about_text": "Precision haircuts, custom fades, hot towel straight-razor shaves, and top-shelf men's grooming products.",
+            "services": ["Precision Fades & Scissor Cuts", "Classic Straight-Razor Shaves", "Beard Maintenance & Lineups"]
+        },
+        "realestate.html": {
+            "name": "Apex Realty Group",
+            "category": "Real Estate Brokerage",
+            "hero_img": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600",
+            "about_text": "A premier team of high-end real estate advisors helping buyers and sellers secure luxury residential properties.",
+            "services": ["Exclusive Property Listing", "Luxury Buyer Representation", "Complimentary Home Valuations"]
+        },
+        "roofer.html": {
+            "name": "Summit Roofing Solutions",
+            "category": "Roofing & Contractor Services",
+            "hero_img": "https://images.unsplash.com/photo-1632759162463-157fda9c8f00?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600",
+            "about_text": "Professional roofing replacement, leak detection, roof inspections, and gutter repair contractor.",
+            "services": ["Complete Roof Replacements", "Emergency Structural Repairs", "Seamless Gutter Installation"]
+        },
+        "hvac.html": {
+            "name": "Comfort Air Solutions",
+            "category": "HVAC Heating & Cooling",
+            "hero_img": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?w=600",
+            "about_text": "Certified HVAC technicians providing rapid heating repairs, central AC installations, and indoor air filtration.",
+            "services": ["AC Repairs & Tuning", "Furnace Installation & Maintenance", "Indoor Air Filtration Systems"]
+        },
+        "solar.html": {
+            "name": "Volt Solar Energy",
+            "category": "Solar & Clean Energy Systems",
+            "hero_img": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600",
+            "about_text": "Harness clean, renewable energy. Professional solar panel installations and smart home battery setups.",
+            "services": ["Custom Solar Panel Layouts", "Battery Storage Installations", "Energy Auditing & Consulting"]
+        },
+        "lawyer.html": {
+            "name": "Vanguard Law Offices",
+            "category": "Law Firm & Legal Counsel",
+            "hero_img": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600",
+            "about_text": "Providing dedicated litigation, corporate counsel, estate planning, and compassionate personal representation.",
+            "services": ["Corporate Litigation", "Estate Planning & Wills", "Personal Injury Counsel"]
+        },
+        "medspa.html": {
+            "name": "Aura Aesthetics Clinic",
+            "category": "Medical Spa & Aesthetics",
+            "hero_img": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600",
+            "about_text": "Expert skincare clinic offering botox, dermal fillers, medical facials, and advanced anti-aging treatments.",
+            "services": ["Botox & Dermal Fillers", "Laser Hair Removal", "Chemical Peels & Facials"]
+        },
+        "remodeler.html": {
+            "name": "Apex Remodeling Group",
+            "category": "High-End Home Remodeling",
+            "hero_img": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400",
+            "about_img": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600",
+            "about_text": "Award-winning kitchen, bathroom, and custom whole-home renovations built with premium craftsmanship.",
+            "services": ["Luxury Kitchen Remodeling", "Bathroom Refinement", "Whole-Home Additions"]
+        },
+        "cleaning.html": {
+            "name": "Pristine Facility Solutions",
+            "category": "Commercial Cleaning & Janitorial",
+            "hero_img": "/static/cleaning_hero.jpg",
+            "about_img": "/static/cleaning_about.jpg",
+            "about_text": "Medical-grade office cleaning, floor sanitization, and janitorial contracts for workspaces.",
+            "services": ["Office Janitorial Services", "Medical Facility Disinfection", "Commercial Carpet & Floor Care"]
+        },
+        "detailing.html": {
+            "name": "Velocity Detail Studio",
+            "category": "Auto Detailing & Ceramic Coating",
+            "hero_img": "/static/detailing_hero.jpg",
+            "about_img": "/static/detailing_about.jpg",
+            "about_text": "Elite paint correction, certified ceramic coatings, and premium auto detailing interior/exterior care.",
+            "services": ["Certified Ceramic Coatings", "Multi-Stage Paint Correction", "Obsessive Interior Steam Clean"]
+        },
+        "treeservice.html": {
+            "name": "Timberline Tree Services",
+            "category": "Tree Care & Arborist Services",
+            "hero_img": "/static/treeservice_hero.jpg",
+            "about_img": "/static/treeservice_about.jpg",
+            "about_text": "Certified arborist tree care, crane removals, stump grinding, and rapid emergency dispatch.",
+            "services": ["Safe Hazardous Tree Removal", "Arborist Trimming & Pruning", "24/7 Storm Response Dispatch"]
+        }
+    }
+
+    cfg = preview_configs.get(filename, {
         "name": "Sample Business",
-        "category": "Gym / Fitness Center",
-        "address": "123 Main St, New York, NY",
-        "city": "New York",
-        "phone": "+1 555-0198",
-        "email": "contact@samplebusiness.com",
-        "instagram": "sample_business",
-        "website": "https://samplebusiness.com",
+        "category": "General Services",
+        "hero_img": "https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&q=80",
+        "about_img": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80",
+        "about_text": "We are a professional service agency dedicated to quality work and trusted solutions.",
+        "services": ["Premium Service 1", "Professional Option 2", "Custom Service 3"]
+    })
+
+    mock_lead = {
+        "name": cfg["name"],
+        "category": cfg["category"],
+        "address": "123 Commercial Way, Suite A",
+        "city": "Denver",
+        "phone": "+1 (303) 555-0149",
+        "email": f"info@{cfg['name'].lower().replace(' ', '')}.com",
+        "instagram": cfg["name"].lower().replace(" ", "_"),
+        "website": f"www.{cfg['name'].lower().replace(' ', '')}.com",
         "google_rating": "4.9",
         "google_reviews": "142",
         "maps_url": "https://maps.google.com"
     }
     
-    hero_img = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80"
-    about_img = "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80"
-    
     html = t.render(
         lead=mock_lead,
-        scraped={"about_text": "We are a high-end facility dedicated to excellence.", "services": []},
-        hero_img=hero_img,
-        about_img=about_img
+        scraped={"about_text": cfg["about_text"], "services": cfg["services"]},
+        hero_img=cfg["hero_img"],
+        about_img=cfg["about_img"]
     )
     return HTMLResponse(html)
 
