@@ -579,14 +579,13 @@ Output exactly 3 lines, numbered 1. 2. 3. — nothing else."""
 # ── Primary outreach ───────────────────────────────────────────────────────
 
 def write_email(business: dict, demo_url: str = "", scraped: dict | None = None) -> str:
-    is_gym_biz = _is_gym(business.get("category", ""), business.get("name", ""))
     booking_part = f"\nFiverr Gig Link: {BOOKING_URL}\nRule: You can optionally mention they can view my profile or order safely on Fiverr using this link." if BOOKING_URL else ""
 
-    if is_gym_biz and demo_url:
+    if demo_url:
         demo_part = f"{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your email body. Do not ask if they want to see it.'}"
         offer = _pitch_context(business.get('pitch_type', ''), demo_url)
     else:
-        # Non-gym: no demo. Ask them to message on Fiverr for a custom demo.
+        # No demo: Ask them to message on Fiverr for a custom demo.
         demo_part = f"IMPORTANT: Do NOT mention a demo link — there is no demo for this business yet. Instead, naturally invite them to message you on Fiverr ({FIVERR_URL}) where you can show them a custom demo and take it live safely."
         offer = _pitch_context(business.get('pitch_type', ''), "")
 
@@ -597,14 +596,13 @@ Offer: {offer}{booking_part}
 Write a highly-converting cold email under 100 words.
 Subject line on first line, blank line, then body.
 Start with a genuine compliment based on their business details, then gently point out the missing revenue opportunity (like not having a website).
-You MUST explicitly mention their business name, but use a shortened conversational version if it is too long (e.g. use "247 Gym" instead of "247 Gym - The Fitness District").
+You MUST explicitly mention their business name, but use a shortened conversational version if it is too long (e.g. use a natural conversation version like "Apex Roofing" instead of "Apex Roofing Specialists LLC").
 End with a confident statement. Ready to send — no placeholders."""
     return _run(prompt)
 
 
 def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None = None) -> str:
-    is_gym_biz = _is_gym(business.get("category", ""), business.get("name", ""))
-    if is_gym_biz and demo_url:
+    if demo_url:
         demo_part = f"ABSOLUTE REQUIREMENT: You MUST paste the exact link {demo_url} directly into your message. Do not ask if they want to see it."
         offer = _pitch_context(business.get('pitch_type', ''), demo_url)
     else:
@@ -623,8 +621,7 @@ No hashtags. End with a confident statement. Ready to send."""
 
 
 def write_linkedin_dm(business: dict, demo_url: str = "", scraped: dict | None = None) -> str:
-    is_gym_biz = _is_gym(business.get("category", ""), business.get("name", ""))
-    if is_gym_biz and demo_url:
+    if demo_url:
         demo_part = f"ABSOLUTE REQUIREMENT: You MUST paste the exact link {demo_url} directly into your message. Do not ask if they want to see it."
         offer = _pitch_context(business.get('pitch_type', ''), demo_url)
     else:
@@ -644,8 +641,7 @@ End with a confident statement. Ready to send."""
 
 
 def write_whatsapp_dm(business: dict, demo_url: str = "", scraped: dict | None = None) -> str:
-    is_gym_biz = _is_gym(business.get("category", ""), business.get("name", ""))
-    if is_gym_biz and demo_url:
+    if demo_url:
         demo_part = f"ABSOLUTE REQUIREMENT: You MUST paste the exact link {demo_url} directly into your message. Do not ask if they want to see it."
         offer = _pitch_context(business.get('pitch_type', ''), demo_url)
     else:
