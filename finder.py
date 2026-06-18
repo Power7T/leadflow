@@ -173,10 +173,25 @@ def run_finder(niche: str, location: str, max_results: int = 20, source: str = "
             console.print(f"[dim]Processing:[/] {name}...", end=" ")
             website = clean_website_url(biz.get("website", ""))
             score = score_website(website) if website else 0
-            if score >= max_score:
+            
+            # Detect if this is a high-ticket SaaS campaign target
+            cat_lower = niche.lower()
+            saas_niches = {"roof", "hvac", "solar", "plumb", "dent", "ortho", "gym", "fitness", "contractor", "electrician", "painter", "landscap"}
+            is_saas_campaign = any(kw in cat_lower for kw in saas_niches)
+
+            if not is_saas_campaign and score >= max_score:
                 console.print(f"[dim]skipped (score >= {max_score})[/]")
                 skipped += 1
                 continue
+
+            if is_saas_campaign:
+                biz["pitch_type"] = "leadflow_saas"
+                biz["gap"] = "Opportunity for SaaS CRM, automated follow-ups, and lead-gen landing page"
+            else:
+                gap, pitch_type = detect_gap(website, score)
+                biz["pitch_type"] = pitch_type
+                biz["gap"] = gap
+
             contacts = extract_contacts(website, name, location)
             
             # Autopilot requirements: Require email for high quality outreach
@@ -190,6 +205,7 @@ def run_finder(niche: str, location: str, max_results: int = 20, source: str = "
                 continue
             biz["website"] = website
             biz["website_score"] = score
+            biz["category"] = niche
             biz["lead_score"] = score_lead(biz, contacts)
             biz["source"] = "yelp"
             biz_id = insert_business(biz)
@@ -230,13 +246,22 @@ def run_finder(niche: str, location: str, max_results: int = 20, source: str = "
 
         score = score_website(website) if website else 0
         
-        # STRICT RULE: Never save leads with a website score >= max_score
-        if score >= max_score:
+        # Detect if this is a high-ticket SaaS campaign target
+        cat_lower = niche.lower()
+        saas_niches = {"roof", "hvac", "solar", "plumb", "dent", "ortho", "gym", "fitness", "contractor", "electrician", "painter", "landscap"}
+        is_saas_campaign = any(kw in cat_lower for kw in saas_niches)
+
+        # STRICT RULE: Never save leads with a website score >= max_score (unless it's a SaaS CRM target)
+        if not is_saas_campaign and score >= max_score:
             console.print(f"[dim]skipped (website score >= {max_score})[/]")
             skipped += 1
             continue
 
-        gap, pitch_type = detect_gap(website, score)
+        if is_saas_campaign:
+            pitch_type = "leadflow_saas"
+            gap = "Opportunity for SaaS CRM, automated follow-ups, and lead-gen landing page"
+        else:
+            gap, pitch_type = detect_gap(website, score)
 
         parts = address.split(",")
         city = parts[-3].strip() if len(parts) >= 3 else ""

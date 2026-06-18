@@ -501,10 +501,22 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                         yield send(f"  skipped (rating {rating} > {max_rating})", "dim")
                         continue
                     score = score_website(website) if website else 0
-                    if score >= max_score:
+                    
+                    # Detect if this is a high-ticket SaaS campaign target
+                    cat_lower = niche.lower()
+                    saas_niches = {"roof", "hvac", "solar", "plumb", "dent", "ortho", "gym", "fitness", "contractor", "electrician", "painter", "landscap"}
+                    is_saas_campaign = any(kw in cat_lower for kw in saas_niches)
+
+                    if not is_saas_campaign and score >= max_score:
                         yield send(f"  skipped (score >= {max_score})", "dim")
                         continue
-                    gap, pitch_type = detect_gap(website, score)
+
+                    if is_saas_campaign:
+                        pitch_type = "leadflow_saas"
+                        gap = "Opportunity for SaaS CRM, automated follow-ups, and lead-gen landing page"
+                    else:
+                        gap, pitch_type = detect_gap(website, score)
+
                     reviews = biz.get("google_reviews")
                     if is_chain_or_too_big(name, reviews):
                         yield send(f"  skipped (chain)", "dim")
@@ -512,14 +524,18 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                     domain_info = check_domain_available(name) if not website else {}
                     contacts = extract_contacts(website, name, location)
                     if require_contact and not any([contacts.get("email"), contacts.get("instagram"),
-                                contacts.get("linkedin_url"), contacts.get("whatsapp")]):
+                                 contacts.get("linkedin_url"), contacts.get("whatsapp")]):
                         yield send(f"  skipped (no contacts)", "dim")
                         continue
-                    business_data = {**biz, "website": website, "website_score": score,
-                                     "gap": gap, "pitch_type": pitch_type,
-                                     "lead_score": score_lead(biz, contacts),
+
+                    # Prepare and score business data
+                    biz_payload = {**biz, "website": website, "website_score": score,
+                                   "gap": gap, "pitch_type": pitch_type, "category": niche}
+                    lead_score = score_lead(biz_payload, contacts)
+
+                    business_data = {**biz_payload, "lead_score": lead_score,
                                      "domain_available": domain_info.get("domain") if domain_info.get("available") else None,
-                                     "source": "yelp", "category": niche}
+                                     "source": "yelp"}
                     bid = insert_business(business_data)
                     insert_contacts(bid, contacts)
                     yield send(f"  ✓ {name} | score={score}", "ok")
@@ -568,10 +584,22 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
 
                 loop = asyncio.get_event_loop()
                 score = await loop.run_in_executor(None, score_website, website) if website else 0
-                if score >= max_score:
+                
+                # Detect if this is a high-ticket SaaS campaign target
+                cat_lower = niche.lower()
+                saas_niches = {"roof", "hvac", "solar", "plumb", "dent", "ortho", "gym", "fitness", "contractor", "electrician", "painter", "landscap"}
+                is_saas_campaign = any(kw in cat_lower for kw in saas_niches)
+
+                if not is_saas_campaign and score >= max_score:
                     yield send(f"  skipped (score >= {max_score})", "dim")
                     continue
-                gap, pitch_type = detect_gap(website, score)
+
+                if is_saas_campaign:
+                    pitch_type = "leadflow_saas"
+                    gap = "Opportunity for SaaS CRM, automated follow-ups, and lead-gen landing page"
+                else:
+                    gap, pitch_type = detect_gap(website, score)
+
                 parts   = address.split(",")
                 city    = parts[-3].strip() if len(parts) >= 3 else ""
                 country = parts[-1].strip() if parts else ""
@@ -589,14 +617,19 @@ async def find_stream(niche: str, location: str, max_results: int = 20, source: 
                     yield send(f"  skipped (no contacts)", "dim")
                     continue
 
-                business_data = {
+                # Prepare and score business data
+                biz_payload = {
                     "name": name, "category": niche, "address": address,
                     "city": city, "country": country, "phone": phone,
                     "website": website, "website_score": score,
                     "google_rating": rating, "google_reviews": reviews,
-                    "gap": gap, "pitch_type": pitch_type,
-                    "lead_score": score_lead({"website": website, "website_score": score,
-                                              "google_rating": rating, "google_reviews": reviews}, contacts),
+                    "gap": gap, "pitch_type": pitch_type
+                }
+                lead_score = score_lead(biz_payload, contacts)
+
+                business_data = {
+                    **biz_payload,
+                    "lead_score": lead_score,
                     "domain_available": domain_info.get("domain") if domain_info.get("available") else None,
                     "source": source,
                     "maps_url": f"https://www.google.com/maps/place/?q=place_id:{place['place_id']}",

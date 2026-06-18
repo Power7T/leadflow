@@ -243,4 +243,5 @@ PITCH_LABELS = {
     "website_redesign": "Website redesign",
     "automation":       "AI automation / email system",
     "ai_setup":         "ClawdBot AI assistant setup",
+    "leadflow_saas":    "LeadFlow CRM & Leads",
 }

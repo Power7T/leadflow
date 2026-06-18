@@ -3,7 +3,7 @@ from scorer import score_lead
 
 conn = sqlite3.connect('/Users/chandan/leadflow/leadflow.db')
 c = conn.cursor()
-c.execute('SELECT id, website_score, google_reviews, google_rating, website FROM businesses')
+c.execute('SELECT id, website_score, google_reviews, google_rating, website, category, pitch_type, name FROM businesses')
 rows = c.fetchall()
 updates = []
 
@@ -12,7 +12,10 @@ for r in rows:
         'website_score': r[1],
         'google_reviews': r[2],
         'google_rating': r[3],
-        'website': r[4]
+        'website': r[4],
+        'category': r[5],
+        'pitch_type': r[6],
+        'name': r[7]
     }
     c.execute('SELECT email, instagram, linkedin_url, whatsapp FROM contacts WHERE business_id=?', (r[0],))
     ct = c.fetchone()

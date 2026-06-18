@@ -157,14 +157,15 @@ def job_auto_send_leads():
                 update_business_status(lead["id"], "skipped")
                 continue
 
-            is_gym_business = _is_gym(lead.get("category", ""), lead.get("name", ""))
+            pitch_type = lead.get("pitch_type", "")
+            is_saas_lead = (pitch_type == "leadflow_saas") or _is_gym(lead.get("category", ""), lead.get("name", ""))
             draft_text = ""
             demo_url = ""
 
-            if is_gym_business:
-                # 1. Gym Business: Generate demo and draft if not exists
+            if is_saas_lead:
+                # 1. SaaS CRM Lead: Generate custom demo page and pitch draft if not exists
                 if not lead.get("demo_tunnel_url"):
-                    log.info(f"  -> Building demo and draft for gym: {lead['name']}...")
+                    log.info(f"  -> Building demo and draft for SaaS prospect: {lead['name']}...")
                     res = requests.post(f"http://127.0.0.1:8765/leads/{lead['id']}/generate", json={"channels": ["email"]}, timeout=180)
                     if res.status_code != 200:
                         log.error(f"  -> Failed to generate: {res.text}")
@@ -196,7 +197,7 @@ def job_auto_send_leads():
                     conn2.close()
 
             else:
-                # 2. Non-Gym Business: Send audit report (if has site) or benefits (if no site)
+                # 2. Web Design Lead: Send audit report (if has site) or benefits (if no site)
                 has_site = bool(lead.get("website"))
                 if has_site:
                     log.info(f"  -> Writing website audit pitch for {lead['name']}...")
