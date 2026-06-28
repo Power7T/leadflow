@@ -328,20 +328,38 @@ def run_replication():
       (function() {
         var u = localStorage.getItem("lf_user");
         var p = localStorage.getItem("lf_pass");
-        if (u === "chandan" && p === "Supergo12@") {
+        if ((u === "chandan" && p === "Supergo12@") || (u === "parmeet" && p === "parmeet")) {
           document.addEventListener("DOMContentLoaded", function() {
             var overlay = document.getElementById("lf-login-overlay");
             if (overlay) overlay.style.display = "none";
+            
+            // Read-only mode for parmeet
+            if (u === "parmeet") {
+              // Create read-only banner
+              var banner = document.createElement("div");
+              banner.style.cssText = "background: #f7b731; color: #000; text-align: center; padding: 6px; font-weight: bold; font-size: 13px; position: fixed; top: 0; left: 0; width: 100%; z-index: 99999;";
+              banner.innerText = "READ ONLY MODE - Actions Disabled";
+              document.body.appendChild(banner);
+              document.body.style.paddingTop = "30px";
+              
+              // Disable buttons
+              var buttons = document.querySelectorAll("button, .btn");
+              buttons.forEach(function(b) {
+                b.style.opacity = "0.5";
+                b.style.pointerEvents = "none";
+                b.title = "Action disabled in read-only mode";
+              });
+            }
           });
         }
       })();
       function lfLogin() {
         var u = document.getElementById("lf-user").value;
         var p = document.getElementById("lf-pass").value;
-        if (u === "chandan" && p === "Supergo12@") {
+        if ((u === "chandan" && p === "Supergo12@") || (u === "parmeet" && p === "parmeet")) {
           localStorage.setItem("lf_user", u);
           localStorage.setItem("lf_pass", p);
-          document.getElementById("lf-login-overlay").style.display = "none";
+          window.location.reload(); // Reload to apply read-only mode properly
         } else {
           document.getElementById("lf-error-msg").style.display = "block";
         }
