@@ -122,6 +122,10 @@ async function onDrop(e, newStatus) {
     body: JSON.stringify({status: newStatus}),
   });
 
+  if (window.pollStats) {
+    window.pollStats();
+  }
+
   const existing = card.querySelector('.kcard-deal-btn');
   if (newStatus === 'replied') {
     if (!existing) {
@@ -172,8 +176,14 @@ async function saveDeal() {
     closeDeal();
     // Move card to converted
     const card = document.getElementById(`card-${bid}`);
-    document.getElementById('col-converted').appendChild(card);
+    if (card) {
+      const colConverted = document.getElementById('col-converted');
+      if (colConverted) colConverted.appendChild(card);
+    }
     updateCounts();
+    if (window.pollStats) {
+      window.pollStats();
+    }
   }
 }
 </script>

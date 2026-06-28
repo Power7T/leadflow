@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% block title %} — Test Leads & Conversion Triggers{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+  <h1 style="margin:0">🧪 Conversion Trigger Test Leads</h1>
+  <button class="btn btn-primary" onclick="toggleRunTriggersModal()">🚀 Run Conversion Triggers</button>
+</div>
+<p class="subtitle">Test high-converting FOMO triggers: Competitor Deficit, Visual Transform Mockup, and Maps 3-Pack Rank Triggers.</p>
+
+<!-- Success/Error Banners -->
+{% if request.query_params.get('success') %}
+<div style="background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.2); color:#10b981; padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px;">
+  ✓ {{ request.query_params.get('success') }}
+</div>
+{% endif %}
+{% if request.query_params.get('error') %}
+<div style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.2); color:#ef4444; padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px;">
+  ⚠ Error: {{ request.query_params.get('error') }}
+</div>
+{% endif %}
+
+<!-- Run Triggers Modal -->
+<div id="runTriggersModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+  <div class="card" style="width:100%; max-width:500px; padding:30px; position:relative; background:var(--card-bg); border:1px solid var(--border); border-radius:12px;">
+    <button onclick="toggleRunTriggersModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-dim); font-size:24px; cursor:pointer;">&times;</button>
+    <h3 style="margin-top:0; margin-bottom:20px;">Run Conversion Triggers per City</h3>
+    <p style="font-size:12px; color:var(--text-dim); margin-bottom:20px;">Finds local businesses, tracks their Maps rankings, analyzes top competitors, and prepares visual audit transformation mocks.</p>
+    
+    <form id="runTriggersForm" action="/test-leads/run" method="POST" style="display:flex; flex-direction:column; gap:16px;">
+      <div>
+        <label style="display:block; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; font-weight:600;">Niche *</label>
+        <input type="text" name="niche" required style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:#fff; outline:none;" placeholder="e.g. hvac, dentist, roofing">
+      </div>
+
+      <div>
+        <label style="display:block; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; font-weight:600;">City / Location *</label>
+        <input type="text" name="city" required style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:#fff; outline:none;" placeholder="e.g. Dallas, TX or Seattle, WA">
+      </div>
+
+      <div style="background:rgba(255,193,7,0.05); border:1px solid rgba(255,193,7,0.15); border-radius:6px; padding:10px; font-size:11px; color:#ffc107;">
+        ℹ️ **API Safeguard**: Searches are capped at a maximum of **5 local businesses** to prevent Google API quota exhaustion.
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submitRunBtn" style="justify-content:center; margin-top:10px; padding:12px;">Scrape & Run Triggers</button>
+    </form>
+  </div>
+</div>
+
+{% if not leads %}
+<div class="empty">
+  <div class="icon">🧪</div>
+  <p>No conversion test leads yet.</p>
+  <button class="btn btn-primary" onclick="toggleRunTriggersModal()">🚀 Run Your First City Trigger Test</button>
+</div>
+{% else %}
+
+<div class="leads-split">
+  <!-- LEFT: lead list -->
+  <div class="leads-list">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      {% for lead in leads %}
+      <div class="lead-row" id="row-{{ lead.id }}" onclick="selectLead({{ lead.id }})" data-lead='{{ lead | tojson }}' style="margin-bottom: 8px; cursor:pointer;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
+          <div class="lead-row-name" style="font-weight:600; font-size:14px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">
+            {{ lead.name }}
+          </div>
+          <span class="score-pill" style="font-size:10px; padding:2px 8px; border-radius:12px; background:rgba(239, 68, 68, 0.1); color:#ef4444; flex-shrink:0;">
+            Rank #{{ lead.maps_rank }}
+          </span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim);">
+          <span>{{ lead.category | capitalize }} · {{ lead.city }}</span>
+          <div style="display:flex; gap:4px;">
+            {% if lead.email %}<span class="channel-indicator active">✉</span>{% else %}<span class="channel-indicator dim">✉</span>{% endif %}
+            {% if lead.phone %}<span class="channel-indicator active">📞</span>{% else %}<span class="channel-indicator dim">📞</span>{% endif %}
+            {% if lead.website %}<span class="channel-indicator active">🌐</span>{% else %}<span class="channel-indicator dim">🌐</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- RIGHT: detail pane -->
+  <div class="detail-pane" id="detailsPanel">
+    <div class="empty-state">
+      <div style="font-size:3rem; margin-bottom:15px;">👈</div>
+      Select a conversion test lead from the list to view triggers and personalization...
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleRunTriggersModal() {
+  const modal = document.getElementById('runTriggersModal');
+  modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+}
+
+document.getElementById('runTriggersForm').addEventListener('submit', function() {
+  const btn = document.getElementById('submitRunBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Scraping & evaluating conversion triggers...';
+});
+
+function selectLead(id) {
+  const activeRow = document.getElementById('row-' + id);
+  if (!activeRow) return;
+  const lead = JSON.parse(activeRow.getAttribute('data-lead'));
+
+  // Highlight active row
+  document.querySelectorAll('.lead-row').forEach(row => row.classList.remove('active'));
+  activeRow.classList.add('active');
+
+  const panel = document.getElementById('detailsPanel');
+  
+  // Format standard contact indicators
+  const emailVal = lead.email || 'None';
+  const phoneVal = lead.phone || 'None';
+  const websiteVal = lead.website ? `<a href="${lead.website}" target="_blank" style="color:#00c896;">${lead.website}</a>` : 'None';
+  
+  // Format conversion trigger labels
+  const isOutsidePack = lead.maps_rank > 3;
+  const rankLabel = isOutsidePack 
+    ? `<span style="color:#ef4444; font-weight:bold;">Ranked #${lead.maps_rank} (❌ Outside Google Maps 3-Pack)</span>`
+    : `<span style="color:#10b981; font-weight:bold;">Ranked #${lead.maps_rank} (⚠️ At risk of dropping from 3-Pack)</span>`;
+    
+  panel.innerHTML = `
+    <div class="card" style="padding:24px; display:flex; flex-direction:column; gap:20px; background:var(--card-bg); border:1px solid var(--border); border-radius:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:10px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+        <div>
+          <h2 style="margin:0; font-size:20px; color:#fff;">${lead.name}</h2>
+          <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-dim);">${lead.category.toUpperCase()} · ${lead.city}</p>
+        </div>
+        <a href="${lead.maps_url || '#'}" target="_blank" class="btn btn-ghost" style="font-size:11px; padding:6px 12px;">📍 View on Maps</a>
+      </div>
+
+      <!-- Trigger 4: Google Maps 3-Pack Position -->
+      <div style="background:rgba(239, 68, 68, 0.03); border:1px solid rgba(239, 68, 68, 0.1); border-radius:8px; padding:16px;">
+        <h4 style="margin:0 0 8px 0; font-size:11px; text-transform:uppercase; color:var(--text-dim); letter-spacing:0.5px;">🚨 Trigger #4: Google Maps 3-Pack Ranking</h4>
+        <div style="font-size:14px; margin-bottom:6px;">${rankLabel}</div>
+        <p style="margin:0; font-size:12px; color:var(--text-dim); line-height:1.4;">Only the top 3 businesses get 70% of local phone calls and website clicks. This ranking position is a critical business opportunity.</p>
+      </div>
+
+      <!-- Trigger 2: Competitor Deficit Audit -->
+      <div style="background:rgba(245, 158, 11, 0.03); border:1px solid rgba(245, 158, 11, 0.1); border-radius:8px; padding:16px;">
+        <h4 style="margin:0 0 8px 0; font-size:11px; text-transform:uppercase; color:var(--text-dim); letter-spacing:0.5px;">📊 Trigger #2: Competitor Deficit Analysis</h4>
+        <div style="font-size:13.5px; font-weight:600; color:#ffb020; margin-bottom:6px;">Deficit identified:</div>
+        <p style="margin:0; font-size:12px; color:#e5e7eb; line-height:1.5; font-family:monospace; background:rgba(0,0,0,0.2); padding:10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">${lead.competitor_deficit || 'N/A'}</p>
+      </div>
+
+      <!-- Trigger 3: Visual Transformation Mockup -->
+      <div style="background:rgba(16, 185, 129, 0.03); border:1px solid rgba(16, 185, 129, 0.1); border-radius:8px; padding:16px;">
+        <h4 style="margin:0 0 8px 0; font-size:11px; text-transform:uppercase; color:var(--text-dim); letter-spacing:0.5px;">🎨 Trigger #3: Visual Transformation Status</h4>
+        <div style="font-size:13.5px; font-weight:600; color:#10b981; margin-bottom:6px;">Mockup Demo State:</div>
+        <div style="display:flex; align-items:center; gap:8px; justify-content:space-between; width:100%;">
+          <span style="font-size:11px; color:#e5e7eb; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:240px;" title="${lead.visual_preview_url}">${lead.visual_preview_url || 'Mockup Ready'}</span>
+          <a href="${lead.visual_preview_url || '#'}" target="_blank" class="btn btn-ghost" style="padding:4px 8px; font-size:10px; text-decoration:none; display:inline-block;">👁️ Preview Demo</a>
+        </div>
+      </div>
+
+      <!-- Contact details -->
+      <div style="border-top:1px solid var(--border); padding-top:15px; display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; font-size:12px;">
+        <div>
+          <span style="display:block; color:var(--text-dim); font-size:10px; text-transform:uppercase; margin-bottom:2px;">Email</span>
+          <strong style="word-break:break-all;">${emailVal}</strong>
+        </div>
+        <div>
+          <span style="display:block; color:var(--text-dim); font-size:10px; text-transform:uppercase; margin-bottom:2px;">Phone</span>
+          <strong>${phoneVal}</strong>
+        </div>
+        <div>
+          <span style="display:block; color:var(--text-dim); font-size:10px; text-transform:uppercase; margin-bottom:2px;">Website</span>
+          <strong>${websiteVal}</strong>
+        </div>
+      </div>
+
+        <!-- Pitch generation block -->
+      <div style="border-top:1px solid var(--border); padding-top:15px;">
+        <h3 style="margin:0 0 10px 0; font-size:14px; color:#fff;">Compose High-Converting Pitch</h3>
+        <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+          <button onclick="generateHighConvertingPitch(${lead.id}, 'deficit')" class="btn btn-ghost" style="font-size:11px; padding:6px 10px;" id="genPitchBtn1">🤖 Deficit Pitch</button>
+          <button onclick="generateHighConvertingPitch(${lead.id}, 'booster')" class="btn btn-ghost" style="font-size:11px; padding:6px 10px;" id="genPitchBtn2">🚀 3-Pack Booster Pitch</button>
+        </div>
+        <textarea id="testPitchArea" style="width:100%; height:120px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:#e5e7eb; font-size:12.5px; line-height:1.5; resize:vertical; outline:none; font-family:inherit;"></textarea>
+        
+        <div style="display:flex; justify-content:space-between; gap:10px; margin-top:12px;">
+          <button onclick="sendAuditPitch(${lead.id})" class="btn btn-primary" id="sendPitchBtn" style="margin-left:auto;">✉ Send Audit Email</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function generateHighConvertingPitch(leadId, type) {
+  const btn = type === 'deficit' ? document.getElementById('genPitchBtn1') : document.getElementById('genPitchBtn2');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Writing...';
+
+  setTimeout(() => {
+    const activeRow = document.querySelector('.lead-row.active');
+    if (!activeRow) return;
+    const lead = JSON.parse(activeRow.getAttribute('data-lead') || '{}');
+
+    const name      = lead.name || 'your business';
+    const city      = lead.city || 'your city';
+    const category  = lead.category || 'local business';
+    const rank      = lead.maps_rank || '?';
+    const demoUrl   = lead.demo_tunnel_url || lead.visual_preview_url || '';
+    const missedRev = lead.intent_score  || 0;   // $/month at risk
+    const reviews   = lead.google_reviews || 0;
+
+    // Parse review gap from competitor_deficit text
+    let reviewGapText = '';
+    const revMatch = (lead.competitor_deficit || '').match(/Review gap[^|]+/);
+    if (revMatch) reviewGapText = revMatch[0].trim();
+
+    const missedRevFmt = missedRev > 0
+      ? `$${Number(missedRev).toLocaleString()}`
+      : 'significant revenue';
+
+    let subject = '';
+    let body    = '';
+
+    if (type === 'deficit') {
+      subject = `Quick question about ${name}'s Google Maps visibility`;
+      body = `Hey,
+
+I'm Chandan — I help local ${category}s win more customers from Google Maps.
+
+I was researching ${category}s in ${city} today and noticed ${name} is ranked #${rank} on Google Maps.
+
+Here's the problem in plain numbers:
+
+Only the top 3 businesses in your area capture ~70% of all local map clicks and phone calls. At rank #${rank}, you're currently missing an estimated ${missedRevFmt}/month in ${category} inquiries — that's revenue going directly to the businesses ranked above you.${reviewGapText ? `\n\nOn top of that: ${reviewGapText}. Google uses review count as a direct ranking signal, which is pulling your position down further.` : ''}
+
+I built a custom local presence mockup for ${name} that shows exactly what a higher-ranking, fully optimised version of your business looks like to a customer searching right now:
+${demoUrl || '[demo link — run triggers to generate]'}
+
+I'm working with ${Math.floor(Math.random()*2)+2} other ${category}s in ${city} right now and can take 1 more client this month. Worth a quick look?
+
+Regards,
+Chandan Gosavi`;
+
+    } else {
+      subject = `${name} — you're one ranking position away from 3x more calls`;
+      body = `Hey,
+
+I was searching for ${category}s in ${city} and came across ${name}.
+
+You're ranked #${rank} on Google Maps — which puts you right at the edge of the 3-Pack. The 3 businesses above you get roughly 3x more phone calls and website visits than those just below.
+
+The difference between your current rank and the top 3? An estimated ${missedRevFmt}/month in ${category} inquiries that are currently going to your competitors instead of you.
+
+To show you what's possible, I put together a custom website mockup for ${name} that's built specifically to signal local authority to Google:
+${demoUrl || '[demo link — run triggers to generate]'}
+
+Businesses I've helped in similar positions have moved into the 3-Pack within 60–90 days. I can only take on 1 more ${city} client right now.
+
+Want me to walk you through what I found?
+
+Regards,
+Chandan Gosavi`;
+    }
+
+    document.getElementById('testPitchArea').value = `Subject: ${subject}\n\n${body}`;
+    btn.disabled = false;
+    btn.innerHTML = type === 'deficit' ? '🤖 Deficit Pitch' : '🚀 3-Pack Booster Pitch';
+  }, 600);
+}
+
+
+function sendAuditPitch(leadId) {
+  const text = document.getElementById('testPitchArea').value;
+  if (!text.trim()) {
+    alert('Please generate or compose a pitch first!');
+    return;
+  }
+
+  const activeRow = document.querySelector('.lead-row.active');
+  if (!activeRow) { alert('No lead selected.'); return; }
+  const lead = JSON.parse(activeRow.getAttribute('data-lead') || '{}');
+  const toEmail = lead.email || '';
+  if (!toEmail) {
+    alert('No email address for this lead. Cannot send.');
+    return;
+  }
+
+  const btn = document.getElementById('sendPitchBtn');
+  btn.disabled = true;
+  btn.innerHTML = '📨 Sending...';
+
+  // Parse subject and body from the textarea (format: "Subject: ...\n\n...")
+  let subject = '';
+  let body = text;
+  const subjectMatch = text.match(/^Subject:\s*(.+?)(?:\n|$)/i);
+  if (subjectMatch) {
+    subject = subjectMatch[1].trim();
+    body = text.slice(subjectMatch[0].length).replace(/^\n+/, '');
+  }
+
+  fetch(`/leads/${leadId}/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to_email: toEmail,
+      subject: subject,
+      email_msg: body,
+      demo_url: lead.demo_tunnel_url || lead.visual_preview_url || ''
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      btn.innerHTML = '✅ Sent!';
+      btn.style.background = 'rgba(16,185,129,0.2)';
+      btn.style.color = '#10b981';
+      // Show success toast
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#10b981;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.3);';
+      toast.textContent = `✓ Audit email sent to ${toEmail}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '✉ Send Audit Email';
+      alert('Send failed: ' + (data.error || 'Unknown error'));
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerHTML = '✉ Send Audit Email';
+    alert('Network error: ' + err.message);
+  });
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %} — Miami FB Group Leads{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+  <h1 style="margin:0">Miami FB Group Leads</h1>
+  <button class="btn btn-primary" onclick="toggleAddLeadModal()">➕ Add Manual Lead</button>
+</div>
+<p class="subtitle">Manually add and pitch businesses posting in the Miami Airbnb Facebook Group.</p>
+
+<!-- Success/Error Banners -->
+{% if request.query_params.get('success') %}
+<div style="background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.2); color:#10b981; padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px;">
+  ✓ {{ request.query_params.get('success') }}
+</div>
+{% endif %}
+{% if request.query_params.get('error') %}
+<div style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.2); color:#ef4444; padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px;">
+  ⚠ Error: {{ request.query_params.get('error') }}
+</div>
+{% endif %}
+
+<!-- Add Lead Modal -->
+<div id="addLeadModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+  <div class="card" style="width:100%; max-width:500px; padding:30px; position:relative; background:var(--card-bg); border:1px solid var(--border); border-radius:12px;">
+    <button onclick="toggleAddLeadModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-dim); font-size:24px; cursor:pointer;">&times;</button>
+    <h3 style="margin-top:0; margin-bottom:20px;">Add New Business Manually</h3>
+    
+    <form id="manualAddForm" action="/miami-group/add" method="POST" style="display:flex; flex-direction:column; gap:16px;">
+      <div>
+        <label style="display:block; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; font-weight:600;">Website URL *</label>
+        <input type="url" name="website" required style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:#fff; outline:none;" placeholder="https://e.g. miamicleaners.com">
+      </div>
+
+      <div>
+        <label style="display:block; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; font-weight:600;">Facebook Post/Profile URL (Optional)</label>
+        <input type="url" name="fb_link" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:#fff; outline:none;" placeholder="https://facebook.com/... (optional)">
+      </div>
+
+      <div>
+        <label style="display:block; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; font-weight:600;">Target Campaign Options</label>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="radio" name="campaign_mode" value="auto" checked onchange="toggleCampaignSelection(false)"> 🤖 Auto-Suggest (Audit suggests based on site score)
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="radio" name="campaign_mode" value="manual" onchange="toggleCampaignSelection(true)"> 🛠️ Choose Manually
+          </label>
+          
+          <div id="manualCampaignOptions" style="display:none; padding-left:24px; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" name="pitch_types" value="leadflow_saas" checked> Promote SaaS CRM
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" name="pitch_types" value="website_new" checked> Promote Custom Website
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submitAddLeadBtn" style="justify-content:center; margin-top:10px; padding:12px;">Scrape & Add Lead</button>
+    </form>
+  </div>
+</div>
+
+{% if not leads %}
+<div class="empty">
+  <div class="icon">💬</div>
+  <p>No manual Facebook Group leads added yet.</p>
+  <button class="btn btn-primary" onclick="toggleAddLeadModal()">➕ Add Your First Lead</button>
+</div>
+{% else %}
+
+<div class="leads-split">
+  <!-- LEFT: lead list -->
+  <div class="leads-list">
+    <div style="display:flex; gap:6px; padding: 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px;" id="campaignTabs">
+      <button class="tab-btn active" data-campaign="all" onclick="filterCampaign('all', this)" style="padding: 4px 10px; font-size: 11px;">All Campaigns</button>
+      <button class="tab-btn" data-campaign="leadflow_saas" onclick="filterCampaign('leadflow_saas', this)" style="padding: 4px 10px; font-size: 11px;">⚡ SaaS CRM</button>
+      <button class="tab-btn" data-campaign="website_new" onclick="filterCampaign('website_new', this)" style="padding: 4px 10px; font-size: 11px;">🌐 Web Design</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      {% for lead in leads %}
+      <a class="lead-row" id="row-{{ lead.id }}" href="{% if lead.pitch_type == 'leadflow_saas' or lead.pitch_type == 'both' %}/saas-leads?id={{ lead.id }}{% else %}/leads?id={{ lead.id }}{% endif %}"
+        data-campaign="{{ lead.pitch_type }}" style="margin-bottom: 8px; text-decoration:none; color:inherit; display:block;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
+          <div class="lead-row-name" style="font-weight:600; font-size:14px; color:var(--text);">
+            {{ lead.name }}
+          </div>
+          <span class="score-pill" style="font-size:10px; padding:2px 8px; border-radius:12px;
+            {% if lead.pitch_type == 'leadflow_saas' %}background:rgba(16, 185, 129, 0.1); color:#10b981;
+            {% elif lead.pitch_type == 'both' %}background:rgba(59, 130, 246, 0.1); color:#3b82f6;
+            {% else %}background:rgba(245, 158, 11, 0.1); color:#f59e0b;{% endif %}">
+            {% if lead.pitch_type == 'leadflow_saas' %}SaaS CRM{% elif lead.pitch_type == 'both' %}Both Campaigns{% else %}Web Design{% endif %}
+          </span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim);">
+          <span>{{ lead.category | capitalize }} · FB Lead</span>
+          <div style="display:flex; gap:4px;">
+            {% if lead.email %}<span class="channel-indicator active">✉</span>{% else %}<span class="channel-indicator dim">✉</span>{% endif %}
+            {% if lead.phone %}<span class="channel-indicator active">💬</span>{% else %}<span class="channel-indicator dim">💬</span>{% endif %}
+            {% if lead.maps_url %}<span class="channel-indicator active" title="Facebook Link">👥</span>{% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="detail-pane" id="detailsPanel">
+    <div class="empty-state">
+      <div style="font-size:3rem; margin-bottom:15px;">👈</div>
+      Select a Facebook lead from the list to manage their campaign...
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleAddLeadModal() {
+  const modal = document.getElementById('addLeadModal');
+  modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function filterCampaign(camp, btn) {
+  document.querySelectorAll('#campaignTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  
+  document.querySelectorAll('.lead-row').forEach(row => {
+    const campaign = row.getAttribute('data-campaign');
+    if (camp === 'all' || campaign === camp || campaign === 'both') {
+      row.style.display = 'block';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+
+let activeLead = null;
+
+let activeLead = null;
+
+function toggleCampaignSelection(show) {
+  const opts = document.getElementById('manualCampaignOptions');
+  if (opts) {
+    opts.style.display = show ? 'flex' : 'none';
+  }
+}
+
+document.getElementById('manualAddForm').addEventListener('submit', function() {
+  const btn = document.getElementById('submitAddLeadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Scraping website details...';
+});
+</script>
+{% endblock %}

@@ -407,6 +407,18 @@ section {
     top: 0;
   }
 }
+/* AHA MOMENT */
+.aha-section{padding:5rem 0;position:relative;overflow:hidden;background:var(--bg-secondary,#100a04)}
+.aha-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(212,100,30,0.08) 0%,transparent 70%);pointer-events:none}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.aha-controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:.5rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#c4a888;padding:9px 22px;border-radius:4px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit;transition:all .25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent,#d4641e);border-color:var(--accent,#d4641e);color:#fff;box-shadow:0 4px 16px rgba(212,100,30,0.3)}
+.aha-svg-wrap{width:100%;max-width:300px;margin:0 auto}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;min-height:2rem;margin-top:.25rem}
+.aha-sub{font-size:.85rem;color:#8a7060;margin-top:.25rem}
+@keyframes steamAnim{0%{opacity:0.6;transform:translateY(0) scaleX(1)}50%{opacity:0.3;transform:translateY(-8px) scaleX(1.2)}100%{opacity:0;transform:translateY(-18px) scaleX(0.8)}}
+.steam-wisp{animation:steamAnim 2s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -414,7 +426,7 @@ section {
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   <span class="orig">Built using gourmet template</span>
 </div>
 
@@ -439,6 +451,14 @@ section {
   <div class="container">
     <div class="hero-content">
       <h1 class="hero-title">A Symphony of Flavors and Elegance</h1>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
       <p class="hero-desc">Indulge in a premium dining experience at {{ lead.name }}. Every plate tells a story of passion, freshness, and culinary perfection.</p>
       <div class="hero-btns">
         <a href="#menu" class="btn btn-primary">Explore Menu</a>
@@ -519,6 +539,66 @@ section {
   </div>
 </section>
 
+<!-- Chef's Table Aha Moment -->
+<section class="aha-section" id="chefs-table">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Chef's Table</span>
+      <h2 class="section-title">Taste Before You Arrive</h2>
+      <p style="max-width:500px;color:#8a7060">Select your cuisine style and see our signature plating — every dish is a work of art crafted fresh daily.</p>
+      <div class="aha-controls">
+        <button class="aha-btn active" data-dish="0">Filet Mignon</button>
+        <button class="aha-btn" data-dish="1">Seafood Platter</button>
+        <button class="aha-btn" data-dish="2">Pasta Royale</button>
+        <button class="aha-btn" data-dish="3">Wagyu Burger</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg viewBox="0 0 300 200" style="width:100%;height:auto">
+          <defs>
+            <radialGradient id="plateGrad" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#2a1a0a"/><stop offset="100%" stop-color="#1a0e06"/>
+            </radialGradient>
+            <radialGradient id="plateRim" cx="50%" cy="50%" r="50%">
+              <stop offset="70%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(255,255,255,0.06)"/>
+            </radialGradient>
+          </defs>
+          <!-- Background -->
+          <rect width="300" height="200" fill="#0a0604" rx="8"/>
+          <!-- Table surface -->
+          <ellipse cx="150" cy="185" rx="130" ry="20" fill="#150e06" opacity="0.8"/>
+          <!-- Plate shadow -->
+          <ellipse cx="150" cy="162" rx="72" ry="12" fill="rgba(0,0,0,0.5)"/>
+          <!-- Plate -->
+          <ellipse cx="150" cy="130" rx="80" ry="55" fill="#f5f0e8"/>
+          <ellipse cx="150" cy="130" rx="80" ry="55" fill="url(#plateRim)"/>
+          <!-- Inner plate -->
+          <ellipse cx="150" cy="130" rx="65" ry="44" fill="#f0ece4"/>
+          <!-- Food body (dynamic) -->
+          <ellipse id="dish-food" cx="150" cy="125" rx="40" ry="28" fill="#8b4513" style="transition:fill .35s ease,ry .35s ease"/>
+          <!-- Food top detail -->
+          <path id="dish-detail" d="M130,118 Q150,108 170,118 Q160,130 150,132 Q140,130 130,118 Z" fill="#a0522d" style="transition:fill .35s ease,d .35s ease"/>
+          <!-- Garnish -->
+          <ellipse id="dish-garnish" cx="150" cy="112" rx="8" ry="5" fill="#228b22" opacity="0.9" style="transition:fill .35s ease"/>
+          <!-- Sauce drizzle -->
+          <path id="dish-sauce" d="M120,130 Q135,125 150,130 Q165,135 180,130" fill="none" stroke="#8b0000" stroke-width="2" stroke-linecap="round" opacity="0.7" style="transition:stroke .35s ease"/>
+          <!-- Steam wisps -->
+          <g id="dish-steam" opacity="1" style="transition:opacity .4s ease">
+            <path class="steam-wisp" d="M140,100 Q135,90 140,80" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" style="animation-delay:0s"/>
+            <path class="steam-wisp" d="M150,96 Q148,85 152,74" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round" style="animation-delay:.6s"/>
+            <path class="steam-wisp" d="M162,100 Q167,90 162,80" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" style="animation-delay:1.2s"/>
+          </g>
+          <!-- Price badge -->
+          <rect x="80" y="170" width="140" height="20" rx="4" fill="rgba(212,100,30,0.12)" stroke="rgba(212,100,30,0.3)" stroke-width="1"/>
+          <text id="dish-price" x="150" y="184" text-anchor="middle" fill="#d4641e" font-family="sans-serif" font-size="11" font-weight="700">Filet Mignon · Market Price</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="dish-label">8oz Prime Filet · Truffle Butter Finish</div>
+      <div class="aha-sub" id="dish-sub">Served Fri-Sun · Reservations recommended</div>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Reserve Your Table →</a>
+    </div>
+  </div>
+</section>
+
 <!-- Testimonials -->
 <section class="testimonials">
   <div class="container">
@@ -585,12 +665,12 @@ section {
 <footer class="footer">
   <div class="container">
     <p>&copy; 2026 {{ lead.name }}. All rights reserved.</p>
-    <p class="footer-text">Gourmet website concept designed by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
+    <p class="footer-text">Gourmet website concept designed by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
   </div>
 </footer>
 
 <!-- Tracking Pixel -->
-<img src="/api/track.png?bid={{ lead.id }}" style="display:none;width:0;height:0" />
+
 
 <script>
 window.addEventListener('scroll', function() {
@@ -601,6 +681,49 @@ window.addEventListener('scroll', function() {
     navbar.classList.remove('scrolled');
   }
 });
+// Chef's Table Aha Moment
+(function(){
+  const dishes = [
+    { label:"8oz Prime Filet \u00b7 Truffle Butter Finish", sub:'Served Fri-Sun \u00b7 Reservations recommended',
+      price:'Filet Mignon \u00b7 Market Price', food:'#8b4513', detail:'#a0522d', garnish:'#228b22',
+      sauce:'#8b0000', detailPath:'M130,118 Q150,108 170,118 Q160,130 150,132 Q140,130 130,118 Z', steam:1, ry:28 },
+    { label:"Lobster & Prawn \u00b7 Citrus Beurre Blanc", sub:'Fresh daily \u00b7 Market availability',
+      price:'Seafood Platter \u00b7 $89', food:'#e06030', detail:'#ff7040', garnish:'#3cb371',
+      sauce:'#ffd700', detailPath:'M125,115 Q150,105 175,115 Q168,128 150,134 Q132,128 125,115 Z', steam:1, ry:24 },
+    { label:"Pappardelle al Tartufo \u00b7 Aged Parmesan", sub:'Vegetarian option \u00b7 Gluten-free available',
+      price:'Pasta Royale \u00b7 $42', food:'#d4a870', detail:'#c49060', garnish:'#808000',
+      sauce:'#b22222', detailPath:'M128,120 Q140,110 160,112 Q170,120 165,130 Q150,136 135,132 Q124,126 128,120 Z', steam:1, ry:20 },
+    { label:"Wagyu Beef \u00b7 Brioche Bun \u00b7 Black Truffle", sub:'Signature item \u00b7 Every weekend',
+      price:'Wagyu Burger \u00b7 $58', food:'#5c3317', detail:'#8b6914', garnish:'#32cd32',
+      sauce:'#dc143c', detailPath:'M120,116 Q150,104 180,116 Q175,128 150,135 Q125,128 120,116 Z', steam:0.4, ry:32 }
+  ];
+  const btns = document.querySelectorAll('.aha-btn[data-dish]');
+  const food = document.getElementById('dish-food');
+  const detail = document.getElementById('dish-detail');
+  const garnish = document.getElementById('dish-garnish');
+  const sauce = document.getElementById('dish-sauce');
+  const steam = document.getElementById('dish-steam');
+  const priceEl = document.getElementById('dish-price');
+  const labelEl = document.getElementById('dish-label');
+  const subEl = document.getElementById('dish-sub');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const d = dishes[parseInt(btn.dataset.dish)];
+      food.setAttribute('fill', d.food);
+      food.setAttribute('ry', d.ry);
+      detail.setAttribute('fill', d.detail);
+      detail.setAttribute('d', d.detailPath);
+      garnish.setAttribute('fill', d.garnish);
+      sauce.setAttribute('stroke', d.sauce);
+      steam.style.opacity = d.steam;
+      priceEl.textContent = d.price;
+      labelEl.textContent = d.label;
+      subEl.textContent = d.sub;
+    });
+  });
+})();
 </script>
 </body>
 </html>

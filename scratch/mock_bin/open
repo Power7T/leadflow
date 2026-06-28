@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "[mock_open] Blocked URL: $@" >> scratch_agy.log
+exit 0

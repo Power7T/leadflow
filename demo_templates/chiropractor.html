@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ lead.name }} | Premium Chiropractic & Wellness</title>
+<meta name="description" content="{{ lead.name }} offers expert chiropractic care, spinal adjustments, and natural pain relief. Book your free consultation today.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-primary:#ffffff;
+  --bg-secondary:#f8fafc;
+  --bg-tertiary:#f1f5f9;
+  --accent-main:#0d9488;
+  --accent-light:#ccfbf1;
+  --accent-dark:#0f766e;
+  --accent-glow:rgba(13,148,136,0.12);
+  --text-dark:#0f172a;
+  --text-gray:#475569;
+  --text-muted:#94a3b8;
+  --glass-bg:rgba(255,255,255,0.95);
+  --glass-border:rgba(13,148,136,0.12);
+  --radius-lg:24px;
+  --radius-md:16px;
+  --radius-sm:8px;
+  --shadow-sm:0 4px 12px rgba(15,23,42,0.06);
+  --shadow-md:0 12px 32px rgba(15,23,42,0.1);
+  --shadow-lg:0 24px 64px rgba(13,148,136,0.12);
+  --shadow-accent:0 0 30px rgba(13,148,136,0.2);
+  --transition-fast:0.2s ease;
+  --transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-dark);font-family:'Inter',sans-serif;overflow-x:hidden;}
+body{line-height:1.7;overflow-x:hidden;}
+h1,h2,h3,h4,h5,h6{font-family:'Outfit',sans-serif;font-weight:700;line-height:1.15;color:var(--text-dark);}
+p{color:var(--text-gray);font-weight:400;}
+a{text-decoration:none;color:inherit;}
+img{display:block;max-width:100%;}
+
+.text-accent{color:var(--accent-main);}
+.container{width:100%;max-width:1240px;margin:0 auto;padding:0 2rem;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.9rem 2rem;font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;border-radius:50px;border:2px solid transparent;cursor:pointer;transition:var(--transition-smooth);}
+.btn-primary{background:var(--accent-main);color:#fff;box-shadow:0 8px 20px rgba(13,148,136,0.2);}
+.btn-primary:hover{background:var(--accent-dark);transform:translateY(-3px);box-shadow:0 15px 35px rgba(13,148,136,0.3);}
+.btn-outline{background:transparent;border-color:var(--accent-main);color:var(--accent-main);}
+.btn-outline:hover{background:var(--accent-main);color:#fff;transform:translateY(-3px);}
+.btn-white{background:#fff;color:var(--accent-main);border-color:#fff;}
+.btn-white:hover{background:var(--accent-light);transform:translateY(-3px);}
+
+section{padding:8rem 0;position:relative;overflow:hidden;}
+
+/* REVEAL ANIMATIONS */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-left{opacity:0;transform:translateX(-50px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal-left.visible{opacity:1;transform:translateX(0);}
+.reveal-right{opacity:0;transform:translateX(50px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal-right.visible{opacity:1;transform:translateX(0);}
+
+/* SECTION HELPERS */
+.section-tag{font-family:'Outfit',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent-main);margin-bottom:1rem;display:inline-block;background:var(--accent-light);padding:5px 16px;border-radius:30px;border:1px solid rgba(13,148,136,0.2);}
+.section-header{text-align:center;margin-bottom:4.5rem;}
+.section-header h2{font-size:clamp(2rem,4vw,3.2rem);margin-bottom:1rem;}
+.section-header p{color:var(--text-gray);font-size:1.05rem;max-width:580px;margin:0 auto;}
+
+/* =========================================
+   1. DEMO BANNER
+   ========================================= */
+.demo-banner{background:var(--accent-main);color:#fff;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
+.demo-banner a{color:#fff;text-decoration:underline;font-weight:800;transition:opacity .2s;}
+.demo-banner a:hover{opacity:.8;}
+
+/* =========================================
+   2. NAVBAR
+   ========================================= */
+.navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;background:var(--glass-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--glass-border);transition:top var(--transition-smooth),box-shadow var(--transition-smooth);}
+.navbar.scrolled{top:0;box-shadow:0 8px 32px rgba(15,23,42,0.08);}
+.nav-container{display:flex;justify-content:space-between;align-items:center;height:75px;}
+.logo{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;color:var(--text-dark);letter-spacing:-.02em;display:flex;align-items:center;gap:4px;}
+.logo-dot{color:var(--accent-main);}
+.nav-links{display:flex;gap:2.5rem;list-style:none;}
+.nav-links a{color:var(--text-gray);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;transition:var(--transition-fast);position:relative;padding-bottom:4px;}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--accent-main);border-radius:2px;transition:width var(--transition-smooth);}
+.nav-links a:hover{color:var(--text-dark);}
+.nav-links a:hover::after{width:100%;}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;background:none;border:none;}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text-dark);border-radius:2px;transition:var(--transition-smooth);}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
+.hamburger.open span:nth-child(2){opacity:0;}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px);}
+.mobile-menu{display:none;position:absolute;top:100%;left:0;width:100%;background:#fff;border-bottom:2px solid var(--accent-light);padding:1.5rem 2rem;flex-direction:column;gap:1rem;box-shadow:var(--shadow-md);}
+.mobile-menu.open{display:flex;}
+.mobile-menu a{color:var(--text-gray);font-weight:600;font-size:.95rem;padding:.5rem 0;border-bottom:1px solid var(--bg-secondary);}
+
+/* =========================================
+   3. HERO
+   ========================================= */
+.hero{min-height:100vh;display:flex;align-items:center;background:var(--bg-primary);padding-top:123px;position:relative;}
+.hero::before{content:'';position:absolute;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.hero .container{position:relative;z-index:1;}
+.hero-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:5rem;align-items:center;}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:var(--accent-light);color:var(--accent-dark);border-radius:30px;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1.5rem;}
+.hero-tag::before{content:'✦';font-size:.7rem;}
+.hero h1{font-size:clamp(2.8rem,5vw,4.5rem);margin-bottom:1.5rem;letter-spacing:-.03em;line-height:1.1;}
+.hero p{font-size:1.1rem;margin-bottom:2.5rem;max-width:520px;color:var(--text-gray);}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;}
+.hero-visual{position:relative;}
+.hero-img-wrap{border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);aspect-ratio:4/3;position:relative;}
+.hero-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease;}
+.hero-img-wrap:hover img{transform:scale(1.04);}
+.hero-badge{position:absolute;bottom:-20px;left:-20px;background:#fff;padding:1.2rem 1.5rem;border-radius:var(--radius-md);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:.9rem;border:1px solid var(--glass-border);}
+.badge-icon{width:44px;height:44px;background:var(--accent-light);color:var(--accent-main);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;flex-shrink:0;}
+.badge-text strong{font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;color:var(--text-dark);display:block;}
+.badge-text span{font-size:.8rem;color:var(--text-muted);}
+
+/* =========================================
+   4. BODY PAIN FINDER WIDGET
+   ========================================= */
+.widget-section{background:var(--bg-secondary);padding:7rem 0;}
+.pain-finder{max-width:960px;margin:0 auto;}
+.pain-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;}
+.pain-btn{display:flex;align-items:center;gap:.6rem;padding:.9rem 2rem;background:#fff;border:2px solid #e2e8f0;border-radius:50px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;cursor:pointer;transition:var(--transition-smooth);color:var(--text-dark);}
+.pain-btn:hover{border-color:var(--accent-main);color:var(--accent-main);}
+.pain-btn.active{border-color:var(--accent-main);background:var(--accent-light);color:var(--accent-dark);}
+.pain-btn .pain-emoji{font-size:1.3rem;}
+.pain-result-area{display:grid;grid-template-columns:1fr 320px;gap:2.5rem;align-items:start;}
+.pain-result-panel{background:#fff;border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:2.5rem;box-shadow:var(--shadow-sm);min-height:280px;transition:var(--transition-smooth);}
+.pain-result-panel h3{font-size:1.6rem;margin-bottom:1rem;color:var(--accent-main);}
+.pain-result-panel p{margin-bottom:1.5rem;}
+.pain-result-panel.hidden{opacity:0;transform:translateY(10px);}
+.pain-result-panel.visible-panel{opacity:1;transform:translateY(0);}
+.body-svg-wrap{background:#fff;border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:1.5rem;box-shadow:var(--shadow-sm);text-align:center;}
+.body-svg-wrap p{font-size:.8rem;color:var(--text-muted);margin-top:.5rem;margin-bottom:0;}
+.body-svg{width:160px;height:280px;}
+#zone-neck{fill:#e2e8f0;transition:fill .4s;}
+#zone-back{fill:#e2e8f0;transition:fill .4s;}
+#zone-legs{fill:#e2e8f0;transition:fill .4s;}
+
+/* =========================================
+   5. SERVICES
+   ========================================= */
+.services{background:var(--bg-primary);}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;}
+.service-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-md);padding:2.5rem;transition:var(--transition-smooth);position:relative;overflow:hidden;}
+.service-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent-glow) 0%,transparent 100%);opacity:0;transition:opacity var(--transition-smooth);}
+.service-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-accent);border-color:rgba(13,148,136,0.3);}
+.service-card:hover::before{opacity:1;}
+.service-icon{width:64px;height:64px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:1.5rem;transition:var(--transition-smooth);}
+.service-card:hover .service-icon{background:var(--accent-main);}
+.service-card h3{font-size:1.25rem;margin-bottom:.8rem;position:relative;}
+.service-card p{font-size:.95rem;color:var(--text-gray);position:relative;}
+
+/* =========================================
+   6. ABOUT
+   ========================================= */
+.about{background:var(--bg-secondary);}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
+.about-img-wrap{border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);aspect-ratio:1/1;position:relative;}
+.about-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease;}
+.about-img-wrap:hover img{transform:scale(1.04);}
+.about-img-decor{position:absolute;bottom:-15px;right:-15px;width:120px;height:120px;background:var(--accent-light);border-radius:var(--radius-md);z-index:-1;}
+.about-content h2{font-size:clamp(2rem,3.5vw,2.8rem);margin-bottom:1rem;}
+.about-content > p{margin-bottom:2rem;}
+.check-list{list-style:none;margin-bottom:2.5rem;}
+.check-list li{display:flex;align-items:flex-start;gap:.9rem;margin-bottom:1rem;font-size:.95rem;font-weight:500;color:var(--text-dark);}
+.check-icon{width:24px;height:24px;background:var(--accent-light);color:var(--accent-main);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;margin-top:2px;}
+
+/* =========================================
+   7. TESTIMONIALS
+   ========================================= */
+.testimonials{background:var(--bg-primary);}
+.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;}
+.testimonial-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-md);padding:2.5rem;transition:var(--transition-smooth);}
+.testimonial-card:hover{transform:translateY(-6px);border-color:rgba(13,148,136,0.3);box-shadow:var(--shadow-accent);}
+.stars{color:#f59e0b;font-size:1.1rem;letter-spacing:2px;margin-bottom:1.2rem;}
+.testimonial-card blockquote{font-size:.98rem;color:var(--text-gray);font-style:italic;line-height:1.8;margin-bottom:1.5rem;position:relative;padding-left:1rem;border-left:3px solid var(--accent-light);}
+.testimonial-author strong{font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;color:var(--text-dark);display:block;}
+.testimonial-author span{font-size:.85rem;color:var(--text-muted);}
+
+/* =========================================
+   8. CTA BANNER
+   ========================================= */
+.cta-banner{background:linear-gradient(135deg,var(--accent-main) 0%,var(--accent-dark) 100%);padding:7rem 0;text-align:center;}
+.cta-banner h2{color:#fff;font-size:clamp(2rem,4vw,3rem);margin-bottom:1rem;}
+.cta-banner p{color:rgba(255,255,255,.85);font-size:1.1rem;margin-bottom:2.5rem;max-width:540px;margin-left:auto;margin-right:auto;}
+
+/* =========================================
+   9. CONTACT
+   ========================================= */
+.contact{background:var(--bg-secondary);}
+.contact-inner{max-width:700px;margin:0 auto;text-align:center;}
+.contact-inner h2{font-size:clamp(2rem,3.5vw,2.8rem);margin-bottom:1rem;}
+.contact-inner > p{margin-bottom:3rem;}
+.contact-items{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;}
+.contact-item{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-md);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.2rem;box-shadow:var(--shadow-sm);transition:var(--transition-smooth);min-width:220px;}
+.contact-item:hover{border-color:rgba(13,148,136,0.3);box-shadow:var(--shadow-accent);transform:translateY(-4px);}
+.contact-item-icon{width:50px;height:50px;background:var(--accent-light);color:var(--accent-main);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.contact-item strong{font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);display:block;margin-bottom:2px;}
+.contact-item a,.contact-item span{font-size:.98rem;font-weight:600;color:var(--text-dark);}
+.contact-item a:hover{color:var(--accent-main);}
+
+/* =========================================
+   10. FOOTER
+   ========================================= */
+.footer{background:#0f172a;padding:5rem 0 2rem;}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:4rem;margin-bottom:3rem;}
+.footer-brand .footer-logo{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:1rem;}
+.footer-brand .footer-logo span{color:var(--accent-main);}
+.footer-brand p{color:#64748b;font-size:.9rem;max-width:300px;}
+.footer-links h4{font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);margin-bottom:1.5rem;}
+.footer-links ul{list-style:none;}
+.footer-links ul li{margin-bottom:.75rem;}
+.footer-links ul a{color:#64748b;font-size:.9rem;transition:color var(--transition-fast);}
+.footer-links ul a:hover{color:var(--accent-main);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:2rem;text-align:center;color:#475569;font-size:.85rem;}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media(max-width:992px){
+  .hero-grid,.about-grid{grid-template-columns:1fr;}
+  .hero-visual{order:-1;}
+  .hero-badge{display:none;}
+  .hero{text-align:center;}
+  .hero p,.hero-btns{margin-left:auto;margin-right:auto;justify-content:center;}
+  .pain-result-area{grid-template-columns:1fr;}
+  .body-svg-wrap{display:none;}
+  .footer-grid{grid-template-columns:1fr;}
+}
+@media(max-width:768px){
+  section{padding:5rem 0;}
+  .cta-banner{padding:5rem 0;}
+  .nav-links{display:none;}
+  .hamburger{display:flex;}
+  .services-grid,.testimonials-grid{grid-template-columns:1fr;}
+  .contact-items{flex-direction:column;align-items:center;}
+  .pain-buttons{flex-direction:column;align-items:stretch;}
+  .pain-btn{justify-content:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- 1. DEMO BANNER -->
+<div class="demo-banner">✨ Custom website for {{ lead.name }} &mdash; <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Hire me on Fiverr</a></div>
+
+<!-- 2. NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">{{ lead.name }}<span class="logo-dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#treatments">Treatments</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="tel:{{ lead.phone }}" class="btn btn-primary" style="padding:.55rem 1.4rem;font-size:.75rem;">Book Appointment</a>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#home">Home</a>
+    <a href="#treatments">Treatments</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+    <a href="tel:{{ lead.phone }}" class="btn btn-primary" style="text-align:center;margin-top:.5rem;">Book Appointment</a>
+  </div>
+</nav>
+
+<!-- 3. HERO -->
+<section class="hero" id="home">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content reveal-left">
+        <div class="hero-tag">Expert Chiropractic Care</div>
+        <h1>Reclaim Your <span class="text-accent">Active Life</span></h1>
+        <p>Targeted adjustments, spinal decompression, and holistic pain relief therapies tailored exclusively to your body's needs — so you can move freely again.</p>
+        <div class="hero-btns">
+          <a href="tel:{{ lead.phone }}" class="btn btn-primary">Book Free Consultation</a>
+          <a href="#treatments" class="btn btn-outline">View Treatments</a>
+        </div>
+      </div>
+      <div class="hero-visual reveal-right">
+        <div class="hero-img-wrap">
+          <img src="https://power7t.github.io/leadflow-demos/chiro-hero.jpg" alt="Chiropractic Care at {{ lead.name }}">
+        </div>
+        <div class="hero-badge">
+          <div class="badge-icon">✓</div>
+          <div class="badge-text">
+            <strong>Natural Relief</strong>
+            <span>No surgery or meds</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. BODY PAIN FINDER WIDGET -->
+<section class="widget-section" id="pain-finder">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">Interactive Tool</span>
+      <h2>Where Is Your <span class="text-accent">Pain</span>?</h2>
+      <p>Select your problem area and discover the targeted treatment we use to give you lasting relief.</p>
+    </div>
+    <div class="pain-finder reveal">
+      <div class="pain-buttons">
+        <button class="pain-btn active" data-zone="neck" id="btn-neck">
+          <span class="pain-emoji">🤕</span> Neck &amp; Shoulder
+        </button>
+        <button class="pain-btn" data-zone="back" id="btn-back">
+          <span class="pain-emoji">🦴</span> Back &amp; Spine
+        </button>
+        <button class="pain-btn" data-zone="knees" id="btn-knees">
+          <span class="pain-emoji">🏃</span> Knees &amp; Joints
+        </button>
+      </div>
+      <div class="pain-result-area">
+        <div class="pain-result-panel visible-panel" id="painResult">
+          <h3 id="painTitle">Cervical Alignment Therapy</h3>
+          <p id="painDesc">Our targeted cervical adjustments relieve nerve pressure, reduce tension headaches, and restore your full range of motion — whether it's from tech-neck, a sports injury, or an auto accident.</p>
+          <a href="tel:{{ lead.phone }}" class="btn btn-primary" style="margin-top:.5rem;">Book for This Issue</a>
+        </div>
+        <div class="body-svg-wrap">
+          <svg class="body-svg" viewBox="0 0 80 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Head -->
+            <ellipse cx="40" cy="18" rx="14" ry="16" fill="#cbd5e1"/>
+            <!-- Neck zone -->
+            <rect id="zone-neck" x="33" y="33" width="14" height="12" rx="4"/>
+            <!-- Shoulders -->
+            <rect x="10" y="44" width="60" height="10" rx="5" fill="#cbd5e1"/>
+            <!-- Torso/Back zone -->
+            <rect id="zone-back" x="22" y="53" width="36" height="54" rx="6"/>
+            <!-- Arms -->
+            <rect x="8" y="53" width="12" height="50" rx="6" fill="#cbd5e1"/>
+            <rect x="60" y="53" width="12" height="50" rx="6" fill="#cbd5e1"/>
+            <!-- Hips -->
+            <rect x="18" y="105" width="44" height="14" rx="5" fill="#cbd5e1"/>
+            <!-- Legs zone -->
+            <rect id="zone-legs" x="22" y="118" width="16" height="54" rx="6"/>
+            <rect id="zone-legs-r" x="42" y="118" width="16" height="54" rx="6"/>
+          </svg>
+          <p>Highlighted zone</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. SERVICES -->
+<section class="services" id="treatments">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">What We Treat</span>
+      <h2>Our <span class="text-accent">Treatments</span></h2>
+      <p>Specialized therapies designed to address the root cause of your pain and promote lasting natural healing.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="service-icon">🦴</div>
+        <h3>Spinal Adjustments</h3>
+        <p>Precise chiropractic adjustments restore spinal alignment, relieve nerve pressure, and eliminate the root cause of chronic pain.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">💊</div>
+        <h3>Pain Management</h3>
+        <p>Holistic, drug-free pain relief combining adjustments, cold laser therapy, and targeted muscle work for lasting results.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">🏃</div>
+        <h3>Sports Recovery</h3>
+        <p>Accelerate healing from athletic injuries with specialized sports chiropractic, deep tissue work, and performance rehabilitation.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">🧍</div>
+        <h3>Posture Correction</h3>
+        <p>Correct years of damage from desk work and tech-neck with our proven postural restoration and strengthening program.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">💆</div>
+        <h3>Massage Therapy</h3>
+        <p>Therapeutic massage relieves muscle tension, improves circulation, and prepares your body for optimal chiropractic results.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">🌿</div>
+        <h3>Wellness Consultations</h3>
+        <p>Personalized health assessments and wellness plans to keep you functioning at your peak — completely pain-free.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. ABOUT -->
+<section class="about" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-img-wrap reveal-left">
+        <img src="https://power7t.github.io/leadflow-demos/chiro-about.jpg" alt="The {{ lead.name }} Team">
+        <div class="about-img-decor"></div>
+      </div>
+      <div class="about-content reveal-right">
+        <span class="section-tag">Our Story</span>
+        <h2>Why Choose <span class="text-accent">{{ lead.name }}</span>?</h2>
+        <p>We believe your body has the innate ability to heal itself when the spine and nervous system are functioning optimally. Our doctors take a personalized, comprehensive approach to every patient — because you deserve more than a generic treatment plan.</p>
+        <ul class="check-list">
+          <li><div class="check-icon">✔</div> Comprehensive Initial Exam &amp; X-Rays</li>
+          <li><div class="check-icon">✔</div> Personalized Recovery Plans</li>
+          <li><div class="check-icon">✔</div> State-of-the-Art Modern Facility</li>
+          <li><div class="check-icon">✔</div> Dedicated Focus on Long-Term Wellness</li>
+        </ul>
+        <a href="tel:{{ lead.phone }}" class="btn btn-primary">Meet Our Team</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">Patient Stories</span>
+      <h2>Real Results, <span class="text-accent">Real Patients</span></h2>
+      <p>Hear from the patients whose lives were transformed by the team at {{ lead.name }}.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>"After just 3 sessions at {{ lead.name }}, my chronic back pain was completely gone. I can finally play with my kids again — something I hadn't done in over a year!"</blockquote>
+        <div class="testimonial-author">
+          <strong>Sarah M.</strong>
+          <span>Austin, TX</span>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>"I came in barely able to turn my neck from a car accident. {{ lead.name }} had me back on the field in two weeks. The care here is simply incredible."</blockquote>
+        <div class="testimonial-author">
+          <strong>James R.</strong>
+          <span>Denver, CO</span>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>"The team at {{ lead.name }} took time to truly understand my pain and created a real plan. No rushed appointments. Genuine care and amazing results. 10/10!"</blockquote>
+        <div class="testimonial-author">
+          <strong>Priya K.</strong>
+          <span>Houston, TX</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. CTA BANNER -->
+<section class="cta-banner">
+  <div class="container reveal">
+    <h2>Ready to Live Pain-Free?</h2>
+    <p>Join hundreds of patients who reclaimed their active lives at {{ lead.name }}. Your first consultation is completely free.</p>
+    <a href="tel:{{ lead.phone }}" class="btn btn-white">Book Your Free Consultation &rarr;</a>
+  </div>
+</section>
+
+<!-- 9. CONTACT -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="contact-inner">
+      <div class="reveal">
+        <span class="section-tag">Reach Us</span>
+        <h2>Get In <span class="text-accent">Touch</span></h2>
+        <p>Ready to start your journey to a pain-free life? We're here to help.</p>
+      </div>
+      <div class="contact-items reveal">
+        <div class="contact-item">
+          <div class="contact-item-icon">📞</div>
+          <div>
+            <strong>Phone</strong>
+            <a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-item-icon">📍</div>
+          <div>
+            <strong>Address</strong>
+            <span>123 Wellness Blvd, Your City, ST 00000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">{{ lead.name }}<span>.</span></div>
+        <p>Your Path to a Pain-Free Life. Expert chiropractic care delivered with compassion and precision.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#treatments">Treatments</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="tel:{{ lead.phone }}">Book Appointment</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2025 {{ lead.name }}. All rights reserved. &nbsp;|&nbsp; Chiropractic Care You Can Trust.
+    </div>
+  </div>
+</footer>
+
+<!-- 11. JAVASCRIPT -->
+<script>
+  // --- NAVBAR SCROLL EFFECT ---
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+
+  // --- HAMBURGER MENU ---
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    mobileMenu.classList.toggle('open');
+  });
+  mobileMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+    });
+  });
+
+  // --- INTERSECTION OBSERVER REVEALS ---
+  const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, 80 * (entry.target.dataset.delay || 0));
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  // Stagger cards
+  document.querySelectorAll('.service-card, .testimonial-card').forEach((el, i) => {
+    el.dataset.delay = i % 3;
+  });
+
+  revealEls.forEach(el => observer.observe(el));
+
+  // --- BODY PAIN FINDER WIDGET ---
+  const painData = {
+    neck: {
+      title: 'Cervical Alignment Therapy',
+      desc: 'Our targeted cervical adjustments relieve nerve pressure, reduce tension headaches, and restore your full range of motion — whether from tech-neck, a sports injury, or an auto accident.',
+      zones: ['neck']
+    },
+    back: {
+      title: 'Lumbar Decompression Therapy',
+      desc: 'Spinal decompression and targeted lumbar adjustments realign compressed discs, instantly relieving shooting sciatic pain, chronic stiffness, and lower back ache.',
+      zones: ['back']
+    },
+    knees: {
+      title: 'Joint Mobilization Therapy',
+      desc: 'Extremity adjustments combined with soft-tissue therapy reduce joint inflammation and accelerate recovery — ideal for athletes and arthritis patients alike.',
+      zones: ['legs']
+    }
+  };
+
+  const zoneColors = {
+    neck: '#0d9488',
+    back: '#0d9488',
+    legs: '#0d9488'
+  };
+
+  const painTitle = document.getElementById('painTitle');
+  const painDesc = document.getElementById('painDesc');
+  const painResult = document.getElementById('painResult');
+  const zoneNeck = document.getElementById('zone-neck');
+  const zoneBack = document.getElementById('zone-back');
+  const zoneLegs = document.getElementById('zone-legs');
+  const zoneLegsR = document.getElementById('zone-legs-r');
+
+  function resetZones() {
+    [zoneNeck, zoneBack, zoneLegs, zoneLegsR].forEach(z => {
+      if (z) z.setAttribute('fill', '#e2e8f0');
+    });
+  }
+
+  function activateZone(zone) {
+    resetZones();
+    const color = '#0d9488';
+    if (zone === 'neck' && zoneNeck) zoneNeck.setAttribute('fill', color);
+    if (zone === 'back' && zoneBack) zoneBack.setAttribute('fill', color);
+    if (zone === 'legs') {
+      if (zoneLegs) zoneLegs.setAttribute('fill', color);
+      if (zoneLegsR) zoneLegsR.setAttribute('fill', color);
+    }
+  }
+
+  document.querySelectorAll('.pain-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const zone = btn.dataset.zone;
+      const data = painData[zone];
+
+      painResult.style.opacity = '0';
+      painResult.style.transform = 'translateY(10px)';
+
+      setTimeout(() => {
+        painTitle.textContent = data.title;
+        painDesc.textContent = data.desc;
+        painResult.style.opacity = '1';
+        painResult.style.transform = 'translateY(0)';
+      }, 200);
+
+      data.zones.forEach(z => activateZone(z));
+    });
+  });
+
+  // Initialize with neck highlighted
+  activateZone('neck');
+  painResult.style.opacity = '1';
+  painResult.style.transform = 'translateY(0)';
+  painResult.style.transition = 'opacity .3s ease, transform .3s ease';
+</script>
+</body>
+</html>

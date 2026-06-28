@@ -82,4 +82,7 @@ This document records all audits, bug fixes, performance optimizations, security
 
 ---
 
+- Updated `fix_tracking.py` to use `os.getenv('HOME')` for demo directory path.
+
 *Last updated: June 18, 2026*
+

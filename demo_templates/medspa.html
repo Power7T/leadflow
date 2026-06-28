@@ -186,6 +186,16 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#2C2A2
 @media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3.5rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.programs-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.hero-name{font-size:3.2rem}.hero-subtitle-track span{font-size:2.4rem}.hero-subtitle-wrapper{height:3rem}.section-title{font-size:2.4rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}}
 @media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+/* AHA MOMENT INTERACTIVE SECTION */
+.aha-section{padding:5rem 0;position:relative;background:var(--bg-secondary);overflow:hidden}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2rem}
+.aha-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 20px;border-radius:999px;cursor:pointer;font-size:0.85rem;font-weight:600;font-family:inherit;transition:all 0.25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:0 4px 16px rgba(224,90,38,0.3)}
+.aha-svg-wrap{width:100%;max-width:320px}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;margin-top:0.5rem;min-height:2rem}
+@media(max-width:768px){.aha-controls{gap:8px}.aha-btn{font-size:0.75rem;padding:7px 14px}}
+@keyframes glow-pulse{0%{transform:scale(1);opacity:0.9}50%{transform:scale(1.06);opacity:0.5}100%{transform:scale(1);opacity:0.9}}
 </style>
 </head>
 <body>
@@ -196,16 +206,13 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#2C2A2
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   {% if lead.website %}
   <span class="orig">Based on <a href="http://{{ lead.website }}" target="_blank" style="color:inherit; text-decoration:underline;">http://www.{{ lead.website }}</a></span>
   {% endif %}
 </div>
 
-<!-- Spotlights -->
-<div class="spotlight" style="top:-100px;left:-150px"></div>
-<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,var(--accent-pink-glow),transparent 70%)"></div>
-<div class="spotlight" style="bottom:10%;left:-100px"></div>
+
 
 <!-- Navbar -->
 <nav class="navbar" id="navbar">
@@ -231,6 +238,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#2C2A2
 
 <!-- Hero -->
 <section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
   <div class="container">
     <div class="hero-content reveal reveal-slide-up">
       <div class="hero-tag">&#x2022; Luxury Medical Aesthetics</div>
@@ -242,6 +250,14 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#2C2A2
           <span>LASER TREATMENTS</span>
         </div>
       </div>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
       <p class="hero-desc">At {{ lead.name }}, we offer premium, non-surgical aesthetic treatments designed to enhance your natural beauty. Our certified medical practitioners provide personalized care in a luxurious, serene environment, helping you look and feel your absolute best.</p>
       <div class="hero-btns">
         <a href="#contact" class="btn btn-primary">Book Consultation</a>
@@ -316,6 +332,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#2C2A2
 
 <!-- Practice Areas / Treatments -->
 <section class="programs-section" id="programs">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,var(--accent-pink-glow),transparent 70%)"></div>
   <div class="container">
     <div style="text-align:center">
       <span class="section-tag">Our Treatments</span>
@@ -359,6 +376,51 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#2C2A2
         <p>Target stubborn fat pockets and tighten loose skin non-invasively for sculpted, sleek results.</p>
         <a href="#contact" class="program-link">Book Now →</a>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- AHA: Glow Level Visualizer -->
+<section class="aha-section" id="glow-visualizer">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Your Glow Journey</span>
+      <h2 class="section-title" style="max-width:600px;margin:.5rem auto 0">Unlock Your <span class="text-gradient-rose">Radiance</span></h2>
+      <p style="color:var(--text-muted);max-width:480px;margin:0 auto">Select a treatment level and watch your glow score transform.</p>
+      <div class="aha-controls">
+        <button class="aha-btn" data-glow="0" onclick="medViz(0)">Refresh</button>
+        <button class="aha-btn" data-glow="1" onclick="medViz(1)">Renew</button>
+        <button class="aha-btn active" data-glow="2" onclick="medViz(2)">Restore</button>
+        <button class="aha-btn" data-glow="3" onclick="medViz(3)">Transform</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg id="med-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 0 24px rgba(236,72,153,0.35))">
+          <defs>
+            <radialGradient id="faceGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#f9a8d4"/>
+              <stop offset="100%" stop-color="#db2777"/>
+            </radialGradient>
+          </defs>
+          <!-- Glow rings behind face -->
+          <circle id="mg1" cx="160" cy="95" r="28" fill="none" stroke="#ec4899" stroke-width="2" opacity="0.6" style="transform-origin:160px 95px;animation:glow-pulse 2s ease-in-out infinite"/>
+          <circle id="mg2" cx="160" cy="95" r="44" fill="none" stroke="#f472b6" stroke-width="1.5" opacity="0.4" style="transform-origin:160px 95px;animation:glow-pulse 2s ease-in-out infinite 0.3s"/>
+          <circle id="mg3" cx="160" cy="95" r="62" fill="none" stroke="#f9a8d4" stroke-width="1" opacity="0.25" style="transform-origin:160px 95px;animation:glow-pulse 2s ease-in-out infinite 0.6s"/>
+          <circle id="mg4" cx="160" cy="95" r="80" fill="none" stroke="#fce7f3" stroke-width="0.8" opacity="0.12" style="transform-origin:160px 95px;animation:glow-pulse 2s ease-in-out infinite 0.9s"/>
+          <!-- Face silhouette -->
+          <!-- Head/oval -->
+          <ellipse cx="160" cy="88" rx="26" ry="30" fill="#f9a8d4" opacity="0.85"/>
+          <!-- Eyes -->
+          <ellipse cx="151" cy="82" rx="3" ry="3.5" fill="#7c2d70"/>
+          <ellipse cx="169" cy="82" rx="3" ry="3.5" fill="#7c2d70"/>
+          <!-- Smile -->
+          <path d="M152,95 Q160,103 168,95" fill="none" stroke="#7c2d70" stroke-width="1.8" stroke-linecap="round"/>
+          <!-- Neck -->
+          <rect x="154" y="116" width="12" height="12" rx="2" fill="#f9a8d4" opacity="0.7"/>
+          <!-- Glow Level -->
+          <text id="med-score" x="160" y="175" text-anchor="middle" fill="#ec4899" font-size="18" font-weight="800" font-family="sans-serif">Glow Level: 72/100</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="med-label">Restore — Intensive Renewal</div>
     </div>
   </div>
 </section>
@@ -416,6 +478,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#2C2A2
 
 <!-- Contact -->
 <section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
   <div class="container" style="text-align:center">
     <span class="section-tag">Find Us</span>
     <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-rose">{{ lead.name }}</span></h2>
@@ -464,8 +527,8 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#2C2A2
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a></p>
-      <p>Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here &rarr;</a></p>
+      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here &rarr;</a></p>
     </div>
   </div>
 </footer>
@@ -536,6 +599,27 @@ document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
   },{passive:true});
   buildDots();
   window.addEventListener('resize',()=>goto(0));
+})();
+(function(){
+  var levels=[
+    {label:'Refresh — Light Brightening',score:'Glow Level: 42/100',rings:[0.3,0.15,0.08,0.04],dur:3,glow:'rgba(236,72,153,0.15)'},
+    {label:'Renew — Active Rejuvenation',score:'Glow Level: 62/100',rings:[0.5,0.3,0.18,0.08],dur:2.2,glow:'rgba(236,72,153,0.25)'},
+    {label:'Restore — Intensive Renewal',score:'Glow Level: 72/100',rings:[0.7,0.5,0.3,0.15],dur:1.8,glow:'rgba(236,72,153,0.35)'},
+    {label:'Transform — Complete Glow-Up ✨',score:'Glow Level: 98/100',rings:[1,0.75,0.5,0.3],dur:1.2,glow:'rgba(244,114,182,0.55)'}
+  ];
+  window.medViz=function(idx){
+    var l=levels[idx];
+    document.querySelectorAll('.aha-btn[data-glow]').forEach(function(b){b.classList.toggle('active',parseInt(b.dataset.glow)===idx);});
+    document.getElementById('med-svg').style.filter='drop-shadow(0 0 28px '+l.glow+')';
+    ['mg1','mg2','mg3','mg4'].forEach(function(id,i){
+      var el=document.getElementById(id);
+      el.style.opacity=l.rings[i];
+      el.style.animationDuration=l.dur+'s';
+    });
+    document.getElementById('med-score').textContent=l.score;
+    document.getElementById('med-label').textContent=l.label;
+  };
+  medViz(2);
 })();
 </script>
 

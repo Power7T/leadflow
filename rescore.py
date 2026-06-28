@@ -1,7 +1,8 @@
 import sqlite3
+from pathlib import Path
 from scorer import score_lead
 
-conn = sqlite3.connect('/Users/chandan/leadflow/leadflow.db')
+conn = sqlite3.connect(str(Path(__file__).parent / 'leadflow.db'))
 c = conn.cursor()
 c.execute('SELECT id, website_score, google_reviews, google_rating, website, category, pitch_type, name FROM businesses')
 rows = c.fetchall()

@@ -186,6 +186,16 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#1B252
 @media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3.5rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.programs-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.hero-name{font-size:3.2rem}.hero-subtitle-track span{font-size:2.4rem}.hero-subtitle-wrapper{height:3rem}.section-title{font-size:2.4rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}}
 @media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+/* AHA MOMENT INTERACTIVE SECTION */
+.aha-section{padding:5rem 0;position:relative;background:var(--bg-secondary);overflow:hidden}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2rem}
+.aha-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 20px;border-radius:999px;cursor:pointer;font-size:0.85rem;font-weight:600;font-family:inherit;transition:all 0.25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:0 4px 16px rgba(224,90,38,0.3)}
+.aha-svg-wrap{width:100%;max-width:320px}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;margin-top:0.5rem;min-height:2rem}
+@media(max-width:768px){.aha-controls{gap:8px}.aha-btn{font-size:0.75rem;padding:7px 14px}}
+@keyframes sparkle-pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.3);opacity:1}100%{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -196,16 +206,13 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#1B252
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   {% if lead.website %}
   <span class="orig">Based on <a href="http://{{ lead.website }}" target="_blank" style="color:inherit; text-decoration:underline;">http://www.{{ lead.website }}</a></span>
   {% endif %}
 </div>
 
-<!-- Spotlights -->
-<div class="spotlight" style="top:-100px;left:-150px"></div>
-<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,rgba(43,76,126,0.15),transparent 70%)"></div>
-<div class="spotlight" style="bottom:10%;left:-100px"></div>
+
 
 <!-- Navbar -->
 <nav class="navbar" id="navbar">
@@ -231,6 +238,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#1B252
 
 <!-- Hero -->
 <section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
   <div class="container">
     <div class="hero-content reveal reveal-slide-up">
       <div class="hero-tag">&#x2022; High-Grade Commercial Cleaning</div>
@@ -242,6 +250,14 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#1B252
           <span>COMMERCIAL CONTRACTS</span>
         </div>
       </div>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
       <p class="hero-desc">At {{ lead.name }}, we provide high-grade commercial cleaning and office janitorial services. Our professional, background-checked crew delivers customized cleaning solutions to ensure a healthy, safe, and pristine environment for your staff and clients.</p>
       <div class="hero-btns">
         <a href="#contact" class="btn btn-primary">Get Free Proposal</a>
@@ -316,6 +332,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#1B252
 
 <!-- Services Grid -->
 <section class="programs-section" id="programs">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,rgba(43,76,126,0.15),transparent 70%)"></div>
   <div class="container">
     <div style="text-align:center">
       <span class="section-tag">Our Services</span>
@@ -359,6 +376,77 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#1B252
         <p>Whole-room viral fogging disinfection to target airborne and surface pathogens.</p>
         <a href="#contact" class="program-link">Get Proposal →</a>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- AHA: Room Sparkle Meter -->
+<section class="aha-section" id="sparkle-meter">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">See the Difference</span>
+      <h2 class="section-title" style="max-width:600px;margin:.5rem auto 0">The <span class="text-gradient-teal">Sparkle</span> Effect</h2>
+      <p style="color:var(--text-muted);max-width:480px;margin:0 auto">Choose a cleaning tier and watch the transformation happen in real time.</p>
+      <div class="aha-controls">
+        <button class="aha-btn" data-tier="0" onclick="cleanViz(0)">Cluttered</button>
+        <button class="aha-btn active" data-tier="1" onclick="cleanViz(1)">Standard</button>
+        <button class="aha-btn" data-tier="2" onclick="cleanViz(2)">Deep Clean</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg id="clean-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 0 24px rgba(0,210,200,0.25))">
+          <!-- Room floor -->
+          <rect x="10" y="10" width="300" height="180" rx="8" fill="#1a2a2a" stroke="rgba(0,210,200,0.2)" stroke-width="1"/>
+          <!-- Divider -->
+          <line x1="160" y1="10" x2="160" y2="190" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+          <!-- Left label: Before -->
+          <text x="85" y="30" text-anchor="middle" fill="rgba(255,255,255,0.35)" font-size="10" font-family="sans-serif">BEFORE</text>
+          <!-- Right label: After -->
+          <text x="235" y="30" text-anchor="middle" fill="rgba(0,210,200,0.7)" font-size="10" font-family="sans-serif">AFTER</text>
+          <!-- Dirt dots (left side) -->
+          <g id="clean-dirt">
+            <circle cx="50" cy="80" r="4" fill="#4a3000" opacity="0.9"/>
+            <circle cx="80" cy="120" r="3" fill="#3a2800" opacity="0.8"/>
+            <circle cx="110" cy="65" r="5" fill="#4a3000" opacity="0.7"/>
+            <circle cx="60" cy="150" r="3" fill="#3a2800" opacity="0.9"/>
+            <circle cx="130" cy="140" r="4" fill="#4a3000" opacity="0.6"/>
+            <circle cx="40" cy="100" r="3" fill="#3a2800" opacity="0.8"/>
+            <circle cx="100" cy="100" r="6" fill="#5a3800" opacity="0.5"/>
+            <circle cx="70" cy="170" r="3" fill="#4a3000" opacity="0.7"/>
+            <circle cx="120" cy="170" r="4" fill="#3a2800" opacity="0.6"/>
+            <circle cx="45" cy="55" r="4" fill="#4a3000" opacity="0.8"/>
+          </g>
+          <!-- Sparkle stars (right side) -->
+          <!-- Star 1 -->
+          <g id="cstar1" transform="translate(195,60)" opacity="0">
+            <path d="M0,-10 L2,-2 L10,0 L2,2 L0,10 L-2,2 L-10,0 L-2,-2 Z" fill="#00d2c8"/>
+          </g>
+          <!-- Star 2 -->
+          <g id="cstar2" transform="translate(255,90)" opacity="0">
+            <path d="M0,-8 L1.5,-1.5 L8,0 L1.5,1.5 L0,8 L-1.5,1.5 L-8,0 L-1.5,-1.5 Z" fill="#00e5d8"/>
+          </g>
+          <!-- Star 3 -->
+          <g id="cstar3" transform="translate(215,130)" opacity="0">
+            <path d="M0,-10 L2,-2 L10,0 L2,2 L0,10 L-2,2 L-10,0 L-2,-2 Z" fill="#00d2c8"/>
+          </g>
+          <!-- Star 4 -->
+          <g id="cstar4" transform="translate(275,150)" opacity="0">
+            <path d="M0,-7 L1.2,-1.2 L7,0 L1.2,1.2 L0,7 L-1.2,1.2 L-7,0 L-1.2,-1.2 Z" fill="#80ffe8"/>
+          </g>
+          <!-- Star 5 -->
+          <g id="cstar5" transform="translate(235,170)" opacity="0">
+            <path d="M0,-9 L1.8,-1.8 L9,0 L1.8,1.8 L0,9 L-1.8,1.8 L-9,0 L-1.8,-1.8 Z" fill="#00d2c8"/>
+          </g>
+          <!-- Clean floor glow -->
+          <rect id="clean-glow" x="165" y="15" width="140" height="170" rx="4" fill="url(#cleanGlowGrad)" opacity="0"/>
+          <defs>
+            <radialGradient id="cleanGlowGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#00d2c8" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#00d2c8" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="aha-label" id="clean-label">Standard Clean</div>
     </div>
   </div>
 </section>
@@ -416,6 +504,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#1B252
 
 <!-- Contact -->
 <section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
   <div class="container" style="text-align:center">
     <span class="section-tag">Find Us</span>
     <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-teal">{{ lead.name }}</span></h2>
@@ -464,8 +553,8 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#1B252
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a></p>
-      <p>Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here &rarr;</a></p>
+      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here &rarr;</a></p>
     </div>
   </div>
 </footer>
@@ -536,6 +625,28 @@ document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
   },{passive:true});
   buildDots();
   window.addEventListener('resize',()=>goto(0));
+})();
+(function(){
+  var tiers=[
+    {label:'Cluttered — Needs Attention',stars:[0,0,0,0,0],dirt:1,glow:0,filter:'drop-shadow(0 0 8px rgba(100,70,0,0.2))'},
+    {label:'Standard Clean',stars:[1,1,0,0,0],dirt:0.4,glow:0.3,filter:'drop-shadow(0 0 20px rgba(0,210,200,0.25))'},
+    {label:'Deep Clean — Pristine ✨',stars:[1,1,1,1,1],dirt:0,glow:0.7,filter:'drop-shadow(0 0 32px rgba(0,210,200,0.5))'}
+  ];
+  window.cleanViz=function(idx){
+    var t=tiers[idx];
+    document.querySelectorAll('.aha-btn[data-tier]').forEach(function(b){b.classList.toggle('active',parseInt(b.dataset.tier)===idx);});
+    document.getElementById('clean-svg').style.filter=t.filter;
+    document.getElementById('clean-dirt').style.opacity=t.dirt;
+    document.getElementById('clean-glow').style.opacity=t.glow;
+    ['cstar1','cstar2','cstar3','cstar4','cstar5'].forEach(function(id,i){
+      var el=document.getElementById(id);
+      el.style.opacity=t.stars[i];
+      if(t.stars[i]>0){el.style.animation='sparkle-pop 0.4s ease '+(i*0.08)+'s both';}
+      else{el.style.animation='none';}
+    });
+    document.getElementById('clean-label').textContent=t.label;
+  };
+  cleanViz(1);
 })();
 </script>
 

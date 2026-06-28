@@ -423,6 +423,16 @@ section {
     top: 0;
   }
 }
+/* AHA MOMENT */
+.aha-section{padding:5rem 0;background:#120909;position:relative;overflow:hidden}
+.aha-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center, rgba(192,57,43,0.08) 0%, transparent 70%);pointer-events:none}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.aha-controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:.5rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(192,57,43,0.2);color:#d0c2c2;padding:9px 22px;border-radius:2px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:'Oswald',sans-serif;letter-spacing:.08em;text-transform:uppercase;transition:all .25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(192,57,43,0.35)}
+.aha-svg-wrap{width:100%;max-width:300px;margin:0 auto}
+.aha-label{font-family:'Oswald',sans-serif;font-size:1.15rem;font-weight:600;color:#fff;letter-spacing:.05em;text-transform:uppercase;min-height:2rem;margin-top:.25rem}
+.aha-sub{font-size:.85rem;color:var(--text-muted);margin-top:.25rem}
 </style>
 </head>
 <body>
@@ -430,7 +440,7 @@ section {
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   <span class="orig">Built using barber template</span>
 </div>
 
@@ -455,6 +465,14 @@ section {
   <div class="container">
     <div class="hero-content">
       <h1 class="hero-title">Shine &amp; Prestige</h1>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
       <p class="hero-desc">Elevate your personal style at {{ lead.name }}. Expert haircuts, classic hot towel shaves, and top-tier styling products.</p>
       <div class="hero-btns">
         <a href="#services" class="btn btn-primary">Services</a>
@@ -498,6 +516,56 @@ section {
         </div>
         <p class="service-desc">Classic Cut + Signature Shave + charcoal face mask treatment.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- Style Builder Aha Moment -->
+<section class="aha-section" id="style-builder">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Style Builder</span>
+      <h2 class="section-title">Find Your Look</h2>
+      <p style="max-width:500px;color:var(--text-gray)">Pick a style below and see how it transforms — our barbers deliver exactly this, every time.</p>
+      <div class="aha-controls">
+        <button class="aha-btn active" data-style="0">Classic Taper</button>
+        <button class="aha-btn" data-style="1">Fade &amp; Lineup</button>
+        <button class="aha-btn" data-style="2">Textured Crop</button>
+        <button class="aha-btn" data-style="3">Pompadour</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg viewBox="0 0 300 220" style="width:100%;height:auto">
+          <!-- Background glow -->
+          <circle id="bs-glow" cx="150" cy="100" r="70" fill="rgba(192,57,43,0.08)" style="transition:r .4s ease,fill .4s ease"/>
+          <!-- Neck / shoulders -->
+          <rect x="110" y="155" width="80" height="55" rx="8" fill="#201111"/>
+          <!-- Head base -->
+          <ellipse cx="150" cy="110" rx="48" ry="55" fill="#2a1515"/>
+          <!-- Ear left -->
+          <ellipse cx="102" cy="120" rx="8" ry="12" fill="#2a1515"/>
+          <!-- Ear right -->
+          <ellipse cx="198" cy="120" rx="8" ry="12" fill="#2a1515"/>
+          <!-- Face -->
+          <ellipse cx="150" cy="115" rx="38" ry="45" fill="#3d1f1f"/>
+          <!-- Eyes -->
+          <ellipse cx="136" cy="108" rx="5" ry="3.5" fill="#0f0808"/>
+          <ellipse cx="164" cy="108" rx="5" ry="3.5" fill="#0f0808"/>
+          <!-- Beard line base -->
+          <path id="bs-beard" d="M125,148 Q150,160 175,148" fill="none" stroke="#1a0d0d" stroke-width="8" stroke-linecap="round" style="transition:stroke-width .3s ease,d .3s ease"/>
+          <!-- Hair silhouette (dynamic) -->
+          <path id="bs-hair" d="M102,90 Q108,48 150,44 Q192,48 198,90 Q180,70 150,68 Q120,70 102,90 Z" fill="#c0392b" style="transition:d .35s ease,fill .35s ease"/>
+          <!-- Fade sides (dynamic) -->
+          <path id="bs-fade" d="M102,90 Q100,118 104,145 Q110,95 150,92 Q190,95 196,145 Q200,118 198,90" fill="#1a0808" style="transition:fill .35s ease,d .35s ease"/>
+          <!-- Style label on forehead -->
+          <text id="bs-style-text" x="150" y="93" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-family="Oswald,sans-serif" font-size="8" font-weight="600" letter-spacing="0.1em" style="pointer-events:none">CLASSIC TAPER</text>
+          <!-- Price badge -->
+          <rect x="90" y="185" width="120" height="24" rx="4" fill="rgba(192,57,43,0.2)" stroke="rgba(192,57,43,0.4)" stroke-width="1"/>
+          <text id="bs-price" x="150" y="201" text-anchor="middle" fill="#c0392b" font-family="Oswald,sans-serif" font-size="11" font-weight="700" letter-spacing="0.1em">HAIRCUT · $35</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="bs-label">Classic Taper · Precision Neckline</div>
+      <div class="aha-sub">Clean finish with hot towel. Ready in 30 min.</div>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Book This Style →</a>
     </div>
   </div>
 </section>
@@ -612,12 +680,12 @@ section {
 <footer class="footer">
   <div class="container">
     <p>&copy; 2026 {{ lead.name }}. All rights reserved.</p>
-    <p class="footer-text">Grooming website concept designed by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
+    <p class="footer-text">Grooming website concept designed by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
   </div>
 </footer>
 
 <!-- Tracking Pixel -->
-<img src="/api/track.png?bid={{ lead.id }}" style="display:none;width:0;height:0" />
+
 
 <script>
 window.addEventListener('scroll', function() {
@@ -628,6 +696,45 @@ window.addEventListener('scroll', function() {
     navbar.classList.remove('scrolled');
   }
 });
+// Style Builder Aha Moment
+(function(){
+  const styles = [
+    { name:'Classic Taper', sub:'Precision neckline · hot towel finish', price:'HAIRCUT · $35', text:'CLASSIC TAPER',
+      hair:'M102,90 Q108,48 150,44 Q192,48 198,90 Q180,70 150,68 Q120,70 102,90 Z',
+      hairFill:'#c0392b', fade:'M102,90 Q100,118 104,145 Q110,95 150,92 Q190,95 196,145 Q200,118 198,90', glowR:'70' },
+    { name:'Fade & Lineup', sub:'Sharp edges · temple fade · straight razor', price:'FADE + LINEUP · $45', text:'FADE & LINEUP',
+      hair:'M110,82 Q118,44 150,40 Q182,44 190,82 Q178,60 150,58 Q122,60 110,82 Z',
+      hairFill:'#e84242', fade:'M102,88 Q96,118 100,148 Q108,90 150,88 Q192,90 200,148 Q204,118 198,88', glowR:'80' },
+    { name:'Textured Crop', sub:'Modern European crop · matte finish styling', price:'TEXTURED CROP · $40', text:'TEXTURED CROP',
+      hair:'M104,94 Q106,56 150,50 Q194,56 196,94 Q186,72 150,70 Q114,72 104,94 Z',
+      hairFill:'#a93226', fade:'M104,94 Q102,115 106,138 Q112,96 150,94 Q188,96 194,138 Q198,115 196,94', glowR:'65' },
+    { name:'Pompadour', sub:'Volume swept back · classic American style', price:'POMPADOUR · $50', text:'POMPADOUR',
+      hair:'M104,100 Q100,50 150,36 Q200,50 196,100 Q178,65 150,62 Q122,65 104,100 Z',
+      hairFill:'#d0392b', fade:'M104,100 Q102,120 106,148 Q112,102 150,100 Q188,102 194,148 Q198,120 196,100', glowR:'90' }
+  ];
+  const btns = document.querySelectorAll('.aha-btn[data-style]');
+  const hair = document.getElementById('bs-hair');
+  const fade = document.getElementById('bs-fade');
+  const glow = document.getElementById('bs-glow');
+  const label = document.getElementById('bs-label');
+  const price = document.getElementById('bs-price');
+  const styleText = document.getElementById('bs-style-text');
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const s = styles[parseInt(btn.dataset.style)];
+      hair.setAttribute('d', s.hair);
+      hair.setAttribute('fill', s.hairFill);
+      fade.setAttribute('d', s.fade);
+      glow.setAttribute('r', s.glowR);
+      label.textContent = s.name + ' · ' + s.sub.split('·')[0].trim();
+      price.textContent = s.price;
+      styleText.textContent = s.text;
+    });
+  });
+})();
 </script>
 </body>
 </html>

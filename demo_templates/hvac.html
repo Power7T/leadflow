@@ -3,195 +3,332 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>{{ lead.name }} | Heating, Cooling & AC Repair Specialists</title>
-<meta name="description" content="Welcome to {{ lead.name }}. Premium fitness facility in San Francisco.">
+<title>{{ lead.name }} | Heating, Ventilation & AC Repair Specialists</title>
+<meta name="description" content="Welcome to {{ lead.name }}. NATE-certified HVAC contractors offering expert heating, cooling, indoor air filtration, and 24/7 emergency system dispatch.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
-:root{--bg-primary:#08090C;--bg-secondary:#101217;--bg-tertiary:#161A22;--accent-orange:#FF4D24;--accent-orange-glow:rgba(255,77,36,0.45);--accent-teal:#00F2FE;--accent-teal-glow:rgba(0,242,254,0.3);--text-white:#FFFFFF;--text-gray:#A2A7B6;--text-muted:#626775;--glass-bg:rgba(16,18,23,0.75);--glass-border:rgba(255,255,255,0.05);--glass-border-hover:rgba(255,77,36,0.3);--border-radius-sm:8px;--border-radius-md:16px;--border-radius-lg:24px;--shadow-sm:0 4px 12px rgba(0,0,0,0.3);--shadow-md:0 12px 32px rgba(0,0,0,0.5);--shadow-lg:0 24px 64px rgba(0,0,0,0.7);--shadow-orange:0 0 30px rgba(255,77,36,0.35);--transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);--transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);--transition-slow:0.8s cubic-bezier(0.25,1,0.5,1)}
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg-primary:#06090F;
+  --bg-secondary:#0D121C;
+  --bg-tertiary:#131B27;
+  --accent-cyan:#00E5FF;
+  --accent-cyan-glow:rgba(0,229,255,0.12);
+  --accent-orange:#FF6B35;
+  --accent-orange-glow:rgba(255,107,53,0.15);
+  --text-white:#FFFFFF;
+  --text-gray:#9CA6B4;
+  --text-muted:#5D6775;
+  --glass-bg:rgba(13,18,28,0.95);
+  --glass-border:rgba(0,229,255,0.08);
+  --glass-border-hover:rgba(255,107,53,0.3);
+  --border-radius-sm:8px;
+  --border-radius-md:16px;
+  --border-radius-lg:24px;
+  --shadow-sm:0 4px 12px rgba(6,9,15,0.5);
+  --shadow-md:0 12px 32px rgba(6,9,15,0.7);
+  --shadow-lg:0 24px 64px rgba(6,9,15,0.9);
+  --shadow-cyan:0 0 25px rgba(0,229,255,0.25);
+  --shadow-orange:0 0 25px rgba(255,107,53,0.25);
+  --transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);
+  --transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);
+  --transition-slow:0.8s cubic-bezier(0.25,1,0.5,1);
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Inter',sans-serif;overflow-x:hidden}
-body{overflow-x:hidden;line-height:1.6;cursor:none}
-::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg-primary)}::-webkit-scrollbar-thumb{background:var(--bg-tertiary);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--accent-orange)}
-h1,h2,h3,h4,h5,h6{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;line-height:1.1;color:var(--text-white)}
-p{color:var(--text-gray);font-weight:400}
+body{overflow-x:hidden;line-height:1.7;cursor:none}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--bg-tertiary);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-cyan)}
+h1,h2,h3,h4,h5,h6{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.03em;line-height:1.15;color:var(--text-white)}
+p{color:var(--text-gray);font-weight:300}
 a{text-decoration:none;color:inherit}
-.text-gradient-orange{background:linear-gradient(135deg,#FF8E53 0%,#FF4D24 50%,#C41F00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.text-gradient-teal{background:linear-gradient(135deg,#00F2FE 0%,#4FACFE 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.container{width:100%;max-width:1300px;margin:0 auto;padding:0 2rem}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.9rem 2.2rem;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;text-decoration:none;border-radius:var(--border-radius-sm);border:2px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
-.btn-primary{background-color:var(--accent-orange);color:#fff;box-shadow:var(--shadow-sm)}.btn-primary:hover{background:transparent;border-color:var(--accent-orange);box-shadow:var(--shadow-orange);transform:translateY(-3px)}
-.btn-secondary{background:transparent;border-color:var(--glass-border);color:#fff}.btn-secondary:hover{background:rgba(255,255,255,.05);border-color:#fff;transform:translateY(-3px)}
-section{padding:8rem 0;position:relative;overflow:hidden}
-.section-tag{font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:.15em;color:var(--accent-orange);margin-bottom:1rem;display:inline-block}
-.section-title{font-size:2.8rem;margin-bottom:1.5rem}
-.section-desc{font-size:1.1rem;max-width:600px;margin-bottom:4rem}
+.text-gradient-cyan{background:linear-gradient(135deg,#FFFFFF 0%,var(--accent-cyan) 60%,#0091EA 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.text-gradient-orange{background:linear-gradient(135deg,#FFFFFF 0%,var(--accent-orange) 60%,#D84315 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.95rem 2.2rem;font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-decoration:none;border-radius:var(--border-radius-sm);border:1px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
+.btn-primary{background-color:var(--accent-cyan);color:#06090F;box-shadow:var(--shadow-sm);font-weight:950}
+.btn-primary:hover{background:transparent;border-color:var(--accent-cyan);color:var(--accent-cyan);box-shadow:var(--shadow-cyan);transform:translateY(-2px)}
+.btn-secondary{background:transparent;border-color:var(--glass-border);color:var(--text-white)}
+.btn-secondary:hover{background:rgba(255,255,255,.03);border-color:var(--accent-orange);transform:translateY(-2px)}
+.btn-emergency{background-color:#E53E3E;color:#FFF;box-shadow:0 4px 15px rgba(229,62,62,0.3);animation:pulse-red 2s infinite}
+.btn-emergency:hover{background-color:#C53030;transform:translateY(-2px)}
+@keyframes pulse-red{
+  0%{box-shadow:0 0 0 0 rgba(229,62,62,0.4)}
+  70%{box-shadow:0 0 0 12px rgba(229,62,62,0)}
+  100%{box-shadow:0 0 0 0 rgba(229,62,62,0)}
+}
+section{padding:8.5rem 0;position:relative;overflow:hidden}
+.section-tag{font-family:'Outfit',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent-cyan);margin-bottom:1rem;display:inline-block;background:rgba(0,229,255,0.08);padding:4px 14px;border-radius:4px;border:1px solid rgba(0,229,255,0.15)}
+.section-title{font-size:3.2rem;margin-bottom:1.5rem}
+.section-desc{font-size:1.05rem;max-width:600px;margin-bottom:4rem}
+
 /* REVEAL */
-.reveal{opacity:0;transition:var(--transition-slow)}.reveal-slide-up{transform:translateY(60px)}.reveal-slide-left{transform:translateX(60px)}.reveal-slide-right{transform:translateX(-60px)}.reveal-scale-in{transform:scale(.9)}.reveal.revealed{opacity:1;transform:none}
-.delay-100{transition-delay:.1s}.delay-200{transition-delay:.2s}.delay-300{transition-delay:.3s}.delay-400{transition-delay:.4s}.delay-500{transition-delay:.5s}
+.reveal{opacity:0;transition:var(--transition-slow)}
+.reveal-slide-up{transform:translateY(40px)}
+.reveal-slide-left{transform:translateX(40px)}
+.reveal-slide-right{transform:translateX(-40px)}
+.reveal-scale-in{transform:scale(.97)}
+.reveal.revealed{opacity:1;transform:none}
+.delay-100{transition-delay:.1s}
+.delay-200{transition-delay:.2s}
+.delay-300{transition-delay:.3s}
+
 /* CURSOR */
-.custom-cursor-dot{position:fixed;width:8px;height:8px;background:var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
-.custom-cursor-ring{position:fixed;width:40px;height:40px;border:1.5px solid var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.6}
-body.cursor-hover .custom-cursor-dot{width:6px;height:6px;background:var(--accent-teal)}
-body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--accent-teal);opacity:.4}
+.custom-cursor-dot{position:fixed;width:6px;height:6px;background:var(--accent-cyan);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
+.custom-cursor-ring{position:fixed;width:36px;height:36px;border:1px solid var(--accent-cyan);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.5}
+body.cursor-hover .custom-cursor-dot{width:4px;height:4px;background:#FFF}
+body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;opacity:.3}
 @media(max-width:768px){.custom-cursor-dot,.custom-cursor-ring{display:none}body{cursor:auto}}
+
 /* SPOTLIGHT */
-.spotlight{position:absolute;width:600px;height:600px;background:radial-gradient(circle,var(--accent-orange-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.5}
+.spotlight{position:absolute;width:550px;height:550px;background:radial-gradient(circle,var(--accent-cyan-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.4}
+
 /* DEMO BANNER */
-.demo-banner{background:var(--accent-orange);color:#000;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
-.demo-banner a{color:#000;text-decoration:underline;font-weight:800}
-.demo-banner .orig{font-size:11px;font-weight:400;opacity:.65}
+.demo-banner{background:var(--accent-cyan);color:#06090F;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.demo-banner a{color:#06090F;text-decoration:underline;font-weight:800}
+.demo-banner .orig{font-size:11px;font-weight:400;opacity:.8}
+
+/* Floating Emergency Badge */
+{% if lead.phone %}
+.emergency-float{position:fixed;bottom:30px;right:30px;z-index:999;display:flex;align-items:center;gap:10px;background:#E53E3E;color:#FFF;padding:12px 24px;border-radius:50px;box-shadow:0 8px 30px rgba(229,62,62,0.4);font-weight:700;font-size:0.85rem;letter-spacing:0.05em;text-transform:uppercase;transition:var(--transition-smooth);font-family:'Outfit',sans-serif}
+.emergency-float:hover{background:#C53030;transform:translateY(-3px)}
+.emergency-icon-ring{width:8px;height:8px;background:#FFF;border-radius:50%;animation:ping-red 1.2s infinite}
+@keyframes ping-red{
+  0%{transform:scale(0.8);opacity:1}
+  100%{transform:scale(2.4);opacity:0}
+}
+@media(max-width:768px){.emergency-float{bottom:20px;right:20px;padding:10px 18px;font-size:0.75rem}}
+{% endif %}
+
 /* NAVBAR */
 .navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;transition:var(--transition-smooth)}
-.navbar.scrolled{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border)}
-.nav-container{display:flex;justify-content:space-between;align-items:center;height:85px;transition:var(--transition-smooth)}
-.navbar.scrolled .nav-container{height:70px}
-.logo{font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:900;color:#fff;display:flex;align-items:center;gap:.5rem}
+.navbar.scrolled{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border);box-shadow:var(--shadow-sm)}
+.nav-container{display:flex;justify-content:space-between;align-items:center;height:95px;transition:var(--transition-smooth)}
+.navbar.scrolled .nav-container{height:75px}
+.logo{font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:900;color:var(--text-white);display:flex;align-items:center;gap:.6rem;letter-spacing:-1px}
 .logo span{color:var(--accent-orange)}
-.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent-orange),#C41F00);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);position:relative;flex-shrink:0;box-shadow:var(--shadow-orange)}
-.logo-icon::after{content:'';position:absolute;width:14px;height:14px;background:#fff;clip-path:polygon(50% 15%,85% 85%,15% 85%);top:50%;left:50%;transform:translate(-50%,-55%)}
+.logo-icon{width:26px;height:26px;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-orange));border-radius:4px;position:relative;flex-shrink:0}
+.logo-icon::after{content:'';position:absolute;width:4px;height:12px;background:var(--bg-primary);top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg)}
+.logo-icon::before{content:'';position:absolute;width:4px;height:12px;background:var(--bg-primary);top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg)}
 .nav-links{display:flex;gap:2.5rem;list-style:none}
-.nav-links a{color:var(--text-gray);font-weight:500;font-size:.95rem;transition:var(--transition-fast);position:relative;padding:.5rem 0}
-.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--accent-orange);transition:var(--transition-smooth)}
-.nav-links a:hover,.nav-links a.active{color:#fff}.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-links a{color:var(--text-gray);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;transition:var(--transition-fast);position:relative;padding:.5rem 0}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:var(--accent-cyan);transition:var(--transition-smooth);transform:translateX(-50%)}
+.nav-links a:hover,.nav-links a.active{color:var(--text-white)}.nav-links a:hover::after,.nav-links a.active::after{width:100%}
 .nav-actions{display:flex;align-items:center;gap:1.5rem}
 .hamburger{display:none;cursor:pointer;background:none;border:none;padding:.5rem}
-.hamburger span{display:block;width:25px;height:2px;background:#fff;margin:6px 0;transition:var(--transition-smooth)}
-.hamburger.active span:nth-child(1){transform:rotate(-45deg) translate(-5px,6px)}.hamburger.active span:nth-child(2){opacity:0}.hamburger.active span:nth-child(3){transform:rotate(45deg) translate(-5px,-6px)}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text-white);margin:6px 0;transition:var(--transition-smooth)}
+.hamburger.active span:nth-child(1){transform:rotate(-45deg) translate(-5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(45deg) translate(-5px,-5px)}
+
 /* HERO */
-.hero{height:100vh;min-height:700px;display:flex;align-items:center;background:linear-gradient(rgba(8,9,12,0.55),rgba(8,9,12,0.85)),url('{{ hero_img }}') center/cover no-repeat;position:relative;padding-top:133px}
-.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(8,9,12,.4) 50%,rgba(8,9,12,.75) 100%);z-index:1}
+.hero{height:100vh;min-height:800px;display:flex;align-items:center;position:relative;padding-top:100px;background:var(--bg-primary)}
+.hero-bg-overlay{position:absolute;inset:0;background:linear-gradient(rgba(6,9,15,0.85),rgba(6,9,15,0.94)),url('{{ hero_img }}') center/cover no-repeat;z-index:1}
 .hero .container{position:relative;z-index:2}
-.hero-content{max-width:800px}
-.hero-tag{background:rgba(255,77,36,.15);border:1px solid var(--accent-orange);color:#fff;padding:.4rem 1.2rem;border-radius:50px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
-.hero-tag::before{content:'';width:6px;height:6px;background:var(--accent-orange);border-radius:50%;box-shadow:0 0 8px var(--accent-orange);animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.5}}
-.hero-name{font-size:4.5rem;line-height:.95;text-transform:uppercase;margin-bottom:.5rem}
-.hero-subtitle-wrapper{overflow:hidden;height:5rem;margin-bottom:1.5rem}
-.hero-subtitle-track{animation:slideUpDown 9s cubic-bezier(0.76,0,0.24,1) infinite}
-@keyframes slideUpDown{0%,25%{transform:translateY(0)}33%,58%{transform:translateY(-100%)}66%,91%{transform:translateY(-200%)}100%{transform:translateY(0)}}
-.hero-subtitle-track span{display:block;height:5rem;font-family:'Outfit',sans-serif;font-size:4.5rem;font-weight:900;line-height:1.1;text-transform:uppercase}
-.hero-desc{font-size:1.2rem;color:var(--text-gray);margin-bottom:3rem;max-width:600px}
+.hero-grid{display:grid;grid-template-columns:1.15fr 0.85fr;gap:4.5rem;align-items:center}
+.hero-content{max-width:650px}
+.hero-tag{background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);color:var(--accent-cyan);padding:.4rem 1.2rem;border-radius:4px;font-weight:700;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
+.hero-tag::before{content:'';width:4px;height:4px;background:var(--accent-cyan);border-radius:50%}
+.hero-name{font-size:4.5rem;line-height:1.05;margin-bottom:1.5rem;font-weight:800}
+.hero-desc{font-size:1.1rem;color:var(--text-gray);margin-bottom:2.5rem}
 .hero-btns{display:flex;gap:1.5rem;flex-wrap:wrap}
+.hero-visual{position:relative;display:flex;justify-content:center;align-items:center}
+.hero-image-frame{width:100%;max-width:440px;aspect-ratio:1.1;border-radius:var(--border-radius-lg);overflow:hidden;border:1px solid var(--glass-border);box-shadow:var(--shadow-lg);position:relative;z-index:2}
+.hero-image-frame img{width:100%;height:100%;object-fit:cover}
+.hero-floating-badge{position:absolute;bottom:25px;left:-20px;background:var(--bg-secondary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-md);padding:1rem 1.5rem;box-shadow:var(--shadow-md);z-index:3;display:flex;align-items:center;gap:.8rem}
+.h-badge-icon{font-size:1.5rem;color:var(--accent-orange)}
+
 /* STATS */
 .stats{padding:0;margin-top:-60px;position:relative;z-index:10}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.5rem;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
-.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--accent-orange),var(--accent-teal))}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.5rem;box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-orange),var(--accent-cyan))}
 .stat-item{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
-.stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:15%;height:70%;width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.1),transparent)}
-.stat-number{font-family:'Outfit',sans-serif;font-size:3.2rem;font-weight:900;line-height:1;margin-bottom:.5rem;letter-spacing:-.03em}
-.stat-label{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-gray);font-weight:500}
+.stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--bg-tertiary)}
+.stat-number{font-family:'Outfit',sans-serif;font-size:3rem;font-weight:900;line-height:1;margin-bottom:.3rem;color:var(--text-white)}
+.stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-gray);font-weight:600}
+
 /* ABOUT */
-.about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:5rem;align-items:center}
-.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem}
-.about-feature{display:flex;gap:1rem}
-.about-feature-icon{width:48px;height:48px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.4rem;transition:var(--transition-smooth)}
-.about-feature:hover .about-feature-icon{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:var(--shadow-orange)}
-.about-feature h4{font-size:1.05rem;margin-bottom:.4rem}.about-feature p{font-size:.9rem;line-height:1.5}
+.about{background:var(--bg-secondary)}
+.about-grid{display:grid;grid-template-columns:0.95fr 1.05fr;gap:5.5rem;align-items:center}
+.about-content{position:relative}
+.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3.5rem}
+.about-feature{display:flex;gap:1.2rem;flex-direction:column}
+.about-feature-icon{width:42px;height:42px;border:1px solid var(--glass-border);background:var(--bg-tertiary);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--accent-cyan);transition:var(--transition-smooth)}
+.about-feature:hover .about-feature-icon{border-color:var(--accent-orange);box-shadow:var(--shadow-orange);background:var(--accent-orange);color:#FFF}
+.about-feature h4{font-size:1.1rem;margin-bottom:.4rem;font-weight:700;color:var(--text-white)}
+.about-feature p{font-size:.85rem;line-height:1.6;color:var(--text-gray)}
 .about-img-wrapper{position:relative;display:flex;justify-content:center;align-items:center}
-.about-image{width:100%;max-width:460px;aspect-ratio:1;border-radius:var(--border-radius-lg);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
-.about-img-frame{position:absolute;width:calc(100% - 40px);max-width:460px;aspect-ratio:1;border:2px solid var(--accent-orange);border-radius:var(--border-radius-lg);z-index:1;transform:translate(20px,20px);transition:var(--transition-smooth)}
-.about-img-wrapper:hover .about-img-frame{transform:translate(10px,10px)}
-.about-badge{position:absolute;bottom:30px;left:-15px;background:var(--bg-secondary);border:1px solid var(--glass-border);backdrop-filter:blur(10px);border-radius:var(--border-radius-md);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
-.badge-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,77,36,.12);display:flex;align-items:center;justify-content:center;color:var(--accent-orange);font-size:1.1rem}
-.about-badge h5{font-size:1.1rem;margin-bottom:.1rem}.about-badge p{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
-/* GALLERY */
-.gallery-section{background:var(--bg-secondary)}
-.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-.gallery-item{aspect-ratio:1;border-radius:var(--border-radius-md);overflow:hidden;border:1px solid var(--glass-border)}
-.gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
-.gallery-item:hover img{transform:scale(1.06)}
-/* PROGRAMS */
-.programs-section{background:var(--bg-secondary)}
-.programs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}
-.program-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
-.program-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-orange-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}
-.program-card:hover{transform:translateY(-8px);border-color:var(--glass-border-hover);box-shadow:var(--shadow-md)}.program-card:hover::before{opacity:1}
-.program-icon{width:60px;height:60px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.8rem;transition:var(--transition-smooth);position:relative;z-index:1}
-.program-card:hover .program-icon{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:var(--shadow-orange);transform:scale(1.08)}
-.program-card h3{font-size:1.45rem;margin-bottom:.8rem;position:relative;z-index:1}.program-card p{font-size:.95rem;line-height:1.6;margin-bottom:2rem;position:relative;z-index:1}
-.program-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:.05em;transition:var(--transition-fast);position:relative;z-index:1}
-.program-card:hover .program-link{color:var(--accent-orange)}
+.about-image{width:100%;max-width:440px;aspect-ratio:0.85;border-radius:var(--border-radius-md);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
+.about-img-frame{position:absolute;width:calc(100% - 30px);max-width:440px;aspect-ratio:0.85;border:2px solid var(--accent-cyan);border-radius:var(--border-radius-md);z-index:1;transform:translate(15px,15px);transition:var(--transition-smooth)}
+.about-img-wrapper:hover .about-img-frame{transform:translate(8px,8px)}
+.about-badge{position:absolute;bottom:-20px;left:-15px;background:var(--bg-primary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-sm);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
+
+/* INTERACTIVE SYSTEM SIZING CALCULATOR */
+.calculator-section{background:var(--bg-primary);position:relative}
+.calc-container{max-width:950px;margin:0 auto;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-lg);padding:4rem;box-shadow:var(--shadow-lg);position:relative;z-index:2}
+.calc-header{text-align:center;margin-bottom:3.5rem}
+.calc-header h3{font-size:2.5rem;margin-bottom:.5rem}
+.calc-header p{color:var(--text-gray)}
+.calc-grid{display:grid;grid-template-columns:1.05fr 0.95fr;gap:4rem;align-items:flex-start}
+.calc-inputs{display:flex;flex-direction:column;gap:2.5rem}
+.calc-group{display:flex;flex-direction:column;gap:.8rem}
+.calc-label{font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:600;display:flex;justify-content:space-between}
+.calc-label span:last-child{color:var(--accent-cyan)}
+.slider-container{position:relative;display:flex;align-items:center}
+.calc-slider{width:100%;height:6px;background:var(--bg-tertiary);outline:none;border-radius:3px;-webkit-appearance:none}
+.calc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--accent-cyan);border-radius:50%;cursor:pointer;transition:var(--transition-fast);box-shadow:0 0 10px var(--accent-cyan)}
+.calc-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.insulation-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.insulation-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:1.2rem;text-align:center;cursor:pointer;transition:var(--transition-smooth)}
+.insulation-card h5{font-size:.95rem;margin-bottom:.3rem}
+.insulation-card p{font-size:.75rem;color:var(--text-muted)}
+.insulation-card.active{border-color:var(--accent-cyan);background:rgba(0,229,255,0.05);box-shadow:0 0 15px rgba(0,229,255,0.15)}
+
+.calc-outputs{background:var(--bg-tertiary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-md);padding:3rem;display:flex;flex-direction:column;gap:2rem}
+.calc-total-box{display:flex;flex-direction:column;gap:.3rem}
+.calc-total-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted)}
+.calc-total-val{font-family:'Outfit',sans-serif;font-size:2.8rem;font-weight:900;color:var(--accent-orange);line-height:1}
+.calc-breakdown{border-top:1px solid var(--glass-border);padding-top:1.5rem;display:flex;flex-direction:column;gap:1rem;font-size:.9rem}
+.calc-row{display:flex;justify-content:space-between}
+.calc-row span:last-child{font-weight:600;color:var(--text-white)}
+
+/* SERVICES */
+.services-section{background:var(--bg-secondary)}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}
+.service-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
+.service-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-cyan-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}
+.service-card:hover{transform:translateY(-8px);border-color:var(--accent-cyan);box-shadow:var(--shadow-md)}
+.service-card:hover::before{opacity:1}
+.service-icon{width:50px;height:50px;background:var(--bg-secondary);border-radius:4px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.4rem;transition:var(--transition-smooth);color:var(--accent-cyan);position:relative;z-index:1}
+.service-card:hover .service-icon{border-color:#FFF;background:#FFF;color:#06090F}
+.service-card h3{font-size:1.35rem;margin-bottom:.8rem;position:relative;z-index:1;font-weight:700}
+.service-card p{font-size:.88rem;line-height:1.65;margin-bottom:2rem;position:relative;z-index:1;color:var(--text-gray)}
+.service-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:var(--accent-cyan);font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;transition:var(--transition-fast);position:relative;z-index:1}
+.service-card:hover .service-link{color:#FFF}
+
 /* TESTIMONIALS */
-.testimonials-section{padding:8rem 0}
+.testimonials-section{padding:8.5rem 0;background:var(--bg-primary)}
 .t-slider-outer{overflow:hidden;margin-top:4rem}
 .t-slider{display:flex;gap:2rem;transition:transform .5s ease;cursor:grab}
 .t-slider.dragging{cursor:grabbing;transition:none}
-.t-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px}
-.t-stars{color:var(--accent-orange);font-size:1rem;margin-bottom:1.2rem;letter-spacing:2px}
-.t-card p{font-size:.95rem;line-height:1.7;margin-bottom:1.8rem;font-style:italic}
-.t-author{font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem}
-.t-author span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.8rem;color:var(--text-muted);margin-top:.3rem}
+.t-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:3rem 2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px;box-shadow:var(--shadow-sm)}
+.t-stars{color:var(--accent-cyan);font-size:.9rem;margin-bottom:1.2rem;letter-spacing:1.5px}
+.t-card p{font-size:1.02rem;line-height:1.75;margin-bottom:2rem;font-style:italic;color:var(--text-white);font-weight:400}
+.t-author{font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+.t-author span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.7rem;color:var(--text-muted);margin-top:.3rem;text-transform:none;letter-spacing:0}
 .t-controls{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:2.5rem}
-.t-btn{width:44px;height:44px;border-radius:50%;background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:var(--transition-fast)}
-.t-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange)}
+.t-btn{width:42px;height:42px;border-radius:4px;background:var(--bg-secondary);border:1px solid var(--glass-border);color:var(--text-white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:var(--transition-fast)}
+.t-btn:hover{background:#FFF;color:#06090F;border-color:#FFF}
 .t-dots{display:flex;gap:.6rem}
-.t-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}.t-dot.active{background:var(--accent-orange);width:20px;border-radius:4px}
+.t-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}.t-dot.active{background:var(--accent-cyan);width:16px;border-radius:3px}
+
 /* CTA */
-.cta-section{padding:8rem 0}
-.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-lg);padding:6rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
-.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--accent-orange),var(--accent-teal))}
-.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,var(--accent-orange-glow),transparent 70%);pointer-events:none}
-.cta-banner h2{font-size:3.2rem;max-width:700px;margin:0 auto 1.5rem;text-transform:uppercase}
-.cta-banner p{font-size:1.1rem;max-width:550px;margin:0 auto 3rem}
+.cta-section{padding:8.5rem 0;background:var(--bg-primary)}
+.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-lg);padding:6.5rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-md)}
+.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-orange),var(--accent-cyan))}
+.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:350px;height:350px;background:radial-gradient(circle,var(--accent-cyan-glow),transparent 70%);pointer-events:none}
+.cta-banner h2{font-size:3.4rem;max-width:750px;margin:0 auto 1.5rem;font-weight:800}
+.cta-banner p{font-size:1.05rem;max-width:550px;margin:0 auto 3rem}
+
 /* CONTACT */
 .contact-section{background:var(--bg-secondary)}
 .cinfo-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:3rem}
-.cinfo-item{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.95rem;transition:var(--transition-fast)}
-.cinfo-item:hover{border-color:var(--accent-orange);color:#fff}
+.cinfo-item{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}
+.cinfo-item:hover{border-color:var(--accent-cyan);color:var(--text-white)}
+
 /* FOOTER */
-.footer{background:#050608;border-top:1px solid var(--glass-border);padding:6rem 0 3rem}
-.footer-grid{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:4rem;margin-bottom:5rem}
-.footer-col h4{font-size:1.1rem;margin-bottom:2rem;padding-bottom:.5rem;position:relative}
-.footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:28px;height:2px;background:var(--accent-orange)}
-.footer-about p{font-size:.9rem;margin-top:1.2rem;margin-bottom:2rem}
+.footer{background:var(--bg-primary);border-top:1px solid var(--glass-border);padding:6.5rem 0 3rem}
+.footer-grid{display:grid;grid-template-columns:1.20fr .8fr .8fr;gap:4.5rem;margin-bottom:5.5rem}
+.footer-col h4{font-size:1.15rem;margin-bottom:2rem;padding-bottom:.5rem;position:relative;font-weight:700;text-transform:uppercase;letter-spacing:0.1em}
+.footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:24px;height:2px;background:var(--accent-cyan)}
+.footer-about p{font-size:.88rem;margin-top:1.2rem;margin-bottom:2rem;line-height:1.7}
 .social-links{display:flex;gap:1rem}
-.social-btn{width:42px;height:42px;border-radius:var(--border-radius-sm);background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;transition:var(--transition-smooth);text-decoration:none}
-.social-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange);transform:translateY(-3px)}
-.footer-links{list-style:none}.footer-links li{margin-bottom:.9rem}.footer-links a{color:var(--text-gray);font-size:.9rem;transition:var(--transition-fast)}.footer-links a:hover{color:#fff;padding-left:5px}
+.social-btn{width:40px;height:40px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:4px;color:var(--text-white);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;transition:var(--transition-smooth)}
+.social-btn:hover{background:#FFF;color:#06090F;border-color:#FFF;transform:translateY(-2px)}
+.footer-links{list-style:none}.footer-links li{margin-bottom:.9rem}.footer-links a{color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}.footer-links a:hover{color:var(--text-white);padding-left:5px}
 .footer-bottom{border-top:1px solid var(--glass-border);padding-top:3rem;display:flex;justify-content:space-between;align-items:center}
-.footer-bottom p{font-size:.85rem;color:var(--text-muted)}
-.footer-bottom a{color:var(--accent-orange)}
-@media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.gallery-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:768px){.hero-name,.hero-subtitle-track span{font-size:2.8rem}.hero-subtitle-wrapper{height:3.5rem}.section-title{font-size:2.1rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}.gallery-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.hero-name,.hero-subtitle-track span{font-size:2.2rem}.stats-grid{grid-template-columns:1fr 1fr}}
+.footer-bottom p{font-size:.8rem;color:var(--text-muted)}
+.footer-bottom a{color:var(--text-white);font-weight:700}
+
+/* RESPONSIVE */
+@media(max-width:991px){
+  .hero-grid{grid-template-columns:1fr;gap:3rem;text-align:center}
+  .hero-visual{order:-1}
+  .hero-content{margin:0 auto}
+  .about-grid{grid-template-columns:1fr;gap:3.5rem}
+  .about-img-wrapper{order:-1}
+  .hamburger{display:block}
+  .nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}
+  .nav-links.active{right:0}
+  .nav-actions{margin-right:3rem}
+  .services-grid{grid-template-columns:repeat(2,1fr)}
+  .calc-grid{grid-template-columns:1fr;gap:2.5rem}
+}
+@media(max-width:768px){
+  .hero-name{font-size:3.2rem}
+  .section-title{font-size:2.4rem}
+  .services-grid{grid-template-columns:1fr}
+  .t-card{flex:0 0 calc(100% - 1rem)}
+  .stats-grid{grid-template-columns:repeat(2,1fr);padding:1.5rem}
+  .cta-banner{padding:3.5rem 1.5rem}
+  .cta-banner h2{font-size:2.2rem}
+  .footer-grid{grid-template-columns:1fr;gap:2.5rem}
+  .footer-bottom{flex-direction:column;gap:1rem;text-align:center}
+  .calc-container{padding:2rem 1.5rem}
+  .insulation-selector{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<!-- Custom cursor -->
 <div class="custom-cursor-dot" id="cursorDot"></div>
 <div class="custom-cursor-ring" id="cursorRing"></div>
 
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
-  <span class="orig">Based on http://www.edensf.com</span>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
+  {% if lead.website %}
+  <span class="orig">Based on <a href="http://{{ lead.website }}" target="_blank" style="color:inherit; text-decoration:underline;">http://www.{{ lead.website }}</a></span>
+  {% endif %}
 </div>
 
-<!-- Spotlights -->
-<div class="spotlight" style="top:-100px;left:-150px"></div>
-<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,var(--accent-teal-glow),transparent 70%)"></div>
-<div class="spotlight" style="bottom:10%;left:-100px"></div>
+<!-- Floating Emergency Dispatch Badge -->
+{% if lead.phone %}
+<a href="tel:{{ lead.phone }}" class="emergency-float">
+  <span class="emergency-icon-ring"></span>
+  📞 24/7 Comfort Dispatch
+</a>
+{% endif %}
+
+
 
 <!-- Navbar -->
 <nav class="navbar" id="navbar">
   <div class="container nav-container">
     <a href="#home" class="logo">
       <div class="logo-icon"></div>
-      EDEN<span>FITNESS STUDIO</span>
+      {{ lead.name }}
     </a>
     <ul class="nav-links" id="navLinks">
       <li><a href="#home" class="active">Home</a></li>
       <li><a href="#about">About</a></li>
-      <li><a href="#programs">Programs</a></li>
-      
+      <li><a href="#sizing">Sizing Tool</a></li>
+      <li><a href="#services">Services</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
     <div class="nav-actions">
-      <a href="#contact" class="btn btn-secondary" style="padding:.6rem 1.5rem;font-size:.85rem">Join Now</a>
+      {% if lead.phone %}
+      <a href="tel:{{ lead.phone }}" class="btn btn-primary" style="padding:.5rem 1.5rem;font-size:.75rem">Emergency Dispatch</a>
+      {% else %}
+      <a href="#contact" class="btn btn-primary" style="padding:.5rem 1.5rem;font-size:.75rem">Get Quote</a>
+      {% endif %}
     </div>
     <button class="hamburger" id="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -201,21 +338,38 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 
 <!-- Hero -->
 <section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
+  <div class="hero-bg-overlay"></div>
   <div class="container">
-    <div class="hero-content reveal reveal-slide-up">
-      <div class="hero-tag">&#x2022; Professional HVAC Services</div>
-      <h1 class="hero-name text-gradient-orange">{{ lead.name }}</h1>
-      <div class="hero-subtitle-wrapper">
-        <div class="hero-subtitle-track">
-          <span>HEATING & COOLING</span>
-          <span>HEATING REPAIR</span>
-          <span>EMERGENCY CALL</span>
+    <div class="hero-grid">
+      <div class="hero-content reveal reveal-slide-up">
+        <div class="hero-tag">&#x2022; NATE Certified Heating & Cooling Experts</div>
+        <h1 class="hero-name text-gradient-cyan">Smart Cooling.<br><span class="text-gradient-orange">Reliable Heating.</span></h1>
+        
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
+      <p class="hero-desc">At {{ lead.name }}, we engineering complete home comfort. From installing ultra-efficient central AC units to maintaining basement furnaces, our certified technicians deliver peak system performance and cut your energy costs.</p>
+        <div class="hero-btns">
+          <a href="#sizing" class="btn btn-primary">Try System Sizer</a>
+          <a href="#services" class="btn btn-secondary">Our Services</a>
         </div>
       </div>
-      <p class="hero-desc">At {{ lead.name }}, we keep your home or business perfectly comfortable year-round. Our certified technicians specialize in fast AC repairs, heating installations, and energy-efficient system tune-ups.</p>
-      <div class="hero-btns">
-        <a href="#contact" class="btn btn-primary">Get Started Today</a>
-        <a href="#programs" class="btn btn-secondary">Explore Services</a>
+      <div class="hero-visual reveal reveal-slide-left">
+        <div class="hero-image-frame">
+          <img src="{{ hero_img }}" alt="{{ lead.name }} Condenser Unit" onerror="this.parentElement.style.opacity='0.3'">
+        </div>
+        <div class="hero-floating-badge">
+          <span class="h-badge-icon">❄️</span>
+          <div>
+            <h5 style="font-size:1rem;font-weight:700">10-Year Warranty</h5>
+            <p style="font-size:.7rem;color:var(--text-muted)">Parts & Labor Guaranteed</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -226,20 +380,20 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
   <div class="container">
     <div class="stats-grid reveal reveal-scale-in">
       <div class="stat-item">
-        <div class="stat-number text-gradient-orange" data-target="53+">53+</div>
-        <div class="stat-label">Google Reviews</div>
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Emergency Dispatch</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number text-gradient-orange">5.0&#9733;</div>
-        <div class="stat-label">Google Rating</div>
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Comfort Guarantee</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number text-gradient-orange">24/7</div>
-        <div class="stat-label">Access Available</div>
+        <div class="stat-number">15+</div>
+        <div class="stat-label">Years Local Service</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number text-gradient-orange">100%</div>
-        <div class="stat-label">Committed to You</div>
+        <div class="stat-number">$0</div>
+        <div class="stat-label">Diagnostic Fees on Repair</div>
       </div>
     </div>
   </div>
@@ -249,89 +403,205 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 <section class="about" id="about">
   <div class="container">
     <div class="about-grid">
-      <div class="about-content reveal reveal-slide-right">
-        <span class="section-tag">Our Experts</span>
-        <h2 class="section-title">Where Home Comfort Is<br><span class="text-gradient-orange">Restored</span> &amp; Bills Reduced</h2>
-        <p class="section-desc">We are dedicated to providing top-quality heating, ventilation, and air conditioning services to our community. From regular maintenance to complete system replacement, our skilled technicians ensure your home comfort system runs at peak performance.</p>
+      <div class="about-img-wrapper reveal reveal-slide-right">
+        <div class="about-img-frame"></div>
+        <img src="{{ about_img }}" alt="{{ lead.name }} Technician" class="about-image" onerror="this.parentElement.style.opacity='0.3'">
+        <div class="about-badge">
+          <span style="font-size:1.5rem">🔥</span>
+          <div><h5 style="font-weight:700;font-size:0.95rem">NATE Certified</h5><p style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Licensed & Bonded</p></div>
+        </div>
+      </div>
+      <div class="about-content reveal reveal-slide-left">
+        <span class="section-tag">About the Company</span>
+        <h2 class="section-title">Engineered Home Comfort, <span class="text-gradient-orange">Restored Instantly</span></h2>
+        <p class="section-desc">We combine premium high-efficiency components, certified repair crews, and strict safety guidelines to ensure your home heating and cooling runs optimally year-round.</p>
         <div class="about-features">
           <div class="about-feature">
             <div class="about-feature-icon">❄️</div>
-            <div><h4>Smart Cooling</h4><p>High-efficiency air conditioning systems installed by certified experts.</p></div>
+            <div><h4>AC Installations</h4><p>High-efficiency SEER-2 air conditioning systems engineered for lower billing.</p></div>
           </div>
           <div class="about-feature">
             <div class="about-feature-icon">🔥</div>
-            <div><h4>Reliable Heating</h4><p>Furnace and heat pump repairs and tune-ups to keep you warm in winter.</p></div>
-          </div>
-          <div class="about-feature">
-            <div class="about-feature-icon">⏰</div>
-            <div><h4>24/7 Support</h4><p>Emergency repair dispatch to restore your comfort whenever you need it.</p></div>
+            <div><h4>Heating Restorations</h4><p>Furnace and heat pump diagnostics, structural checkups, and tune-ups.</p></div>
           </div>
           <div class="about-feature">
             <div class="about-feature-icon">🍃</div>
-            <div><h4>Clean Air</h4><p>Advanced air filtration, UV purifiers, and duct inspections for a healthier home.</p></div>
+            <div><h4>Indoor Air Safety</h4><p>Certified installation of HEPA carbon filters, UV lights, and air scrubbers.</p></div>
           </div>
-        </div>
-      </div>
-      <div class="about-img-wrapper reveal reveal-slide-left">
-        <div class="about-img-frame"></div>
-        <img src="{{ about_img }}" alt="{{ lead.name }}" class="about-image" onerror="this.parentElement.style.opacity='0.3'">
-        <div class="about-badge">
-          <div class="badge-icon">✓</div>
-          <div><h5>5.0&#9733; Rated</h5><p>On Google Maps</p></div>
+          <div class="about-feature">
+            <div class="about-feature-icon">🚨</div>
+            <div><h4>24/7 Priority Dispatch</h4><p>Rapid emergency dispatch to get air flowing when weather is extreme.</p></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-
-
-<!-- Programs -->
-<section class="programs-section" id="programs">
+<!-- Sizing Calculator -->
+<section class="calculator-section" id="sizing">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,rgba(255,107,53,0.06),transparent 70%)"></div>
   <div class="container">
-    <div style="text-align:center">
-      <span class="section-tag">Our Services</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Engineered For <span class="text-gradient-orange">Extraordinary</span> Results</h2>
-      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Explore our expert AC and heating services designed to keep your home comfortable and utility bills low.</p>
-    </div>
-    <div class="programs-grid">
-        <div class="program-card reveal reveal-slide-up" style="">
-          <div class="program-icon">❄️</div>
-          <h3>AC Installation</h3>
-          <p>Energy-efficient air conditioning systems installed by certified HVAC experts with long-term warranties.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
+    <div class="calc-container reveal reveal-slide-up">
+      <div class="calc-header">
+        <span class="section-tag">Interactive Sizer</span>
+        <h3>Smart HVAC Sizing Tool</h3>
+        <p>Ballpark your home's recommended heating/cooling load and estimate monthly SEER energy savings.</p>
+      </div>
+      
+      <div class="calc-grid">
+        <div class="calc-inputs">
+          <div class="calc-group">
+            <label class="calc-label" for="sqftSlider">
+              <span>Home Square Footage</span>
+              <span id="sqftVal">2,200 sq. ft.</span>
+            </label>
+            <div class="slider-container">
+              <input type="range" id="sqftSlider" class="calc-slider" min="1000" max="4000" step="100" value="2200">
+            </div>
+          </div>
+          
+          <div class="calc-group">
+            <span class="calc-label">Home Insulation Quality</span>
+            <div class="insulation-selector">
+              <div class="insulation-card active" data-factor="30" data-ins="Standard Insulation">
+                <h5>Standard</h5>
+                <p>Standard double-paned drywall</p>
+              </div>
+              <div class="insulation-card" data-factor="25" data-ins="Premium Insulation">
+                <h5>Premium</h5>
+                <p>Triple-pane foam encapsulated</p>
+              </div>
+              <div class="insulation-card" data-factor="35" data-ins="Drafty Insulation">
+                <h5>Drafty / Historic</h5>
+                <p>Older single pane structures</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
-          <div class="program-icon">🔧</div>
-          <h3>AC Repair & Tune-ups</h3>
-          <p>Rapid diagnostics, refrigerant leak checks, compressor repairs, and seasonal AC maintenance.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
-        <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
-          <div class="program-icon">🔥</div>
-          <h3>Heating Services</h3>
-          <p>Furnace repairs, heat pump installations, thermostat wiring, and heating system safety checks.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
-        <div class="program-card reveal reveal-slide-up" style="">
-          <div class="program-icon">🍃</div>
-          <h3>Indoor Air Quality</h3>
-          <p>Whole-house filtration systems, UV air purifiers, humidifiers, and duct cleaning inspections.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
-        <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
-          <div class="program-icon">🏢</div>
-          <h3>Commercial HVAC</h3>
-          <p>Reliable commercial heating and cooling installations and preventive maintenance for businesses.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
-        </div>
-        <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
-          <div class="program-icon">🚨</div>
-          <h3>Emergency Service</h3>
-          <p>24/7 rapid dispatch for emergency heating or cooling breakdowns to restore your home comfort fast.</p>
-          <a href="#contact" class="program-link">Get Free Quote →</a>
+        
+        <div class="calc-outputs" style="position:relative;">
+          <!-- Interactive HVAC Airflow Blueprint SVG (Aha Moment!) -->
+          <svg viewBox="0 0 200 120" class="hvac-svg" style="width:100%; max-width:240px; height:auto; margin:0 auto 1.5rem; display:block;">
+            <defs>
+              <!-- Glowing gradients -->
+              <linearGradient id="coolFlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#4FACFE" stop-opacity="0.2"/>
+              </linearGradient>
+            </defs>
+            
+            <!-- Blueprint Grid Background -->
+            <rect width="200" height="120" fill="#0b0f19" rx="8" />
+            <path d="M0,20 L200,20 M0,40 L200,40 M0,60 L200,60 M0,80 L200,80 M0,100 L200,100 M20,0 L20,120 M40,0 L40,120 M60,0 L60,120 M80,0 L80,120 M100,0 L100,120 M120,0 L120,120 M140,0 L140,120 M160,0 L160,120 M180,0 L180,120" stroke="rgba(0, 242, 254, 0.05)" stroke-width="0.5" />
+            
+            <!-- House Blueprint outline -->
+            <rect x="25" y="25" width="150" height="70" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5" rx="3" />
+            <line x1="75" y1="25" x2="75" y2="95" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1" />
+            <line x1="125" y1="25" x2="125" y2="95" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1" />
+            
+            <!-- Zone Labels -->
+            <text x="50" y="38" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="sans-serif" font-size="6" font-weight="700">ZONE 1 (BED)</text>
+            <text x="100" y="38" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="sans-serif" font-size="6" font-weight="700">ZONE 2 (LIVING)</text>
+            <text x="150" y="38" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="sans-serif" font-size="6" font-weight="700">ZONE 3 (KIT)</text>
+            
+            <!-- Airflow Ripples (glowing cooling vectors) -->
+            <path id="airflow1" d="M30,60 Q50,55 70,60" fill="none" stroke="url(#coolFlow)" stroke-width="1.5" opacity="0.8" style="transition: stroke 0.3s ease, stroke-width 0.3s ease;" />
+            <path id="airflow2" d="M80,60 Q100,55 120,60" fill="none" stroke="url(#coolFlow)" stroke-width="2" opacity="0.8" style="transition: stroke 0.3s ease, stroke-width 0.3s ease;" />
+            <path id="airflow3" d="M130,60 Q150,55 170,60" fill="none" stroke="url(#coolFlow)" stroke-width="1.5" opacity="0.8" style="transition: stroke 0.3s ease, stroke-width 0.3s ease;" />
+            
+            <!-- Airflow arrows / symbols -->
+            <circle cx="50" cy="73" r="5" fill="rgba(0, 242, 254, 0.15)" id="zoneGlow1" style="transition: fill 0.3s ease;" />
+            <text x="50" y="75" text-anchor="middle" fill="#00F2FE" font-family="sans-serif" font-weight="700" font-size="6.5" id="zoneTemp1" style="transition: fill 0.3s ease;">68°</text>
+            
+            <circle cx="100" cy="73" r="5" fill="rgba(0, 242, 254, 0.15)" id="zoneGlow2" style="transition: fill 0.3s ease;" />
+            <text x="100" y="75" text-anchor="middle" fill="#00F2FE" font-family="sans-serif" font-weight="700" font-size="6.5" id="zoneTemp2" style="transition: fill 0.3s ease;">68°</text>
+            
+            <circle cx="150" cy="73" r="5" fill="rgba(0, 242, 254, 0.15)" id="zoneGlow3" style="transition: fill 0.3s ease;" />
+            <text x="150" y="75" text-anchor="middle" fill="#00F2FE" font-family="sans-serif" font-weight="700" font-size="6.5" id="zoneTemp3" style="transition: fill 0.3s ease;">68°</text>
+            
+            <!-- Flow status info -->
+            <rect x="35" y="102" width="130" height="12" fill="rgba(0, 0, 0, 0.4)" rx="3" />
+            <text id="hvacStatus" x="100" y="110" text-anchor="middle" fill="#00F2FE" font-family="'Space Grotesk', sans-serif" font-weight="700" font-size="6.5" style="letter-spacing:0.02em;">Recommended: 3.0 Tons</text>
+          </svg>
+
+          <div class="calc-total-box">
+            <span class="calc-total-label">Recommended Capacity</span>
+            <span class="calc-total-val" id="calcTonnage">3.0 Tons</span>
+          </div>
+          
+          <div class="calc-breakdown">
+            <div class="calc-row">
+              <span>Estimated Furnace BTUs:</span>
+              <span id="furnaceBtus">66,000 BTU</span>
+            </div>
+            <div class="calc-row">
+              <span>Monthly Bill Savings (18 SEER):</span>
+              <span id="monthlySave" style="color:var(--accent-cyan);">$55 / mo.</span>
+            </div>
+            <div class="calc-row">
+              <span>Federal Efficiency Rebate:</span>
+              <span id="fedCredit">$2,000 Tax Credit</span>
+            </div>
+            <div class="calc-row" style="margin-top:.8rem; border-top:1px dashed var(--glass-border); padding-top:.8rem">
+              <span style="color:var(--accent-orange)">LeadFlow Bonus:</span>
+              <span style="color:var(--accent-orange)">Free Smart Thermostat</span>
+            </div>
+          </div>
+          
+          <a href="#contact" class="btn btn-primary" style="width:100%; text-align:center; padding:.8rem">Book AC & Furnace Sizing Survey &rarr;</a>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services Grid -->
+<section class="services-section" id="services">
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Niche Scope</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Heating &amp; Cooling Solutions</h2>
+      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Certified system configurations designed to deliver complete energy resilience and lower utility margins.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal reveal-slide-up">
+        <div class="service-icon">❄️</div>
+        <h3>Air Conditioning</h3>
+        <p>Installation, repair, and annual tune-ups of high-efficiency central and mini-split AC units.</p>
+        <a href="#contact" class="service-link">View Cooling &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="service-icon">🔥</div>
+        <h3>Furnace Systems</h3>
+        <p>Emergency heating repairs, heat exchanger cleaning, and new furnace installs.</p>
+        <a href="#contact" class="service-link">View Heating &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="service-icon">🚨</div>
+        <h3>24/7 Repair Dispatch</h3>
+        <p>Rapid deployment technician crew equipped with parts to repair cooling and heating loss instantly.</p>
+        <a href="#contact" class="service-link">Get Dispatch &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up">
+        <div class="service-icon">🍃</div>
+        <h3>Indoor Air Quality</h3>
+        <p>HEPA carbon filters, sanitizing UV duct lights, and air scrubbers to control pollen and mold.</p>
+        <a href="#contact" class="service-link">View Air Quality &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="service-icon">🔄</div>
+        <h3>Heat Pumps</h3>
+        <p>Hybrid electric heating and cooling setups engineered to drastically cut gas utility bills.</p>
+        <a href="#contact" class="service-link">View Heat Pumps &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="service-icon">🔧</div>
+        <h3>Maintenance Plans</h3>
+        <p>Bi-annual seasonal tuning, safety checks, and compressor optimizations to prevent outages.</p>
+        <a href="#contact" class="service-link">View Maintenance &rarr;</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -339,30 +609,30 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 <section class="testimonials-section" id="testimonials">
   <div class="container">
     <div style="text-align:center">
-      <span class="section-tag">What Homeowners Say</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Real Stories, <span class="text-gradient-orange">Real Results</span></h2>
+      <span class="section-tag">Client Reviews</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Real Comfort Restored</h2>
     </div>
     <div class="t-slider-outer">
       <div class="t-slider" id="tSlider">
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Our AC died on a 100-degree day, and {{ lead.name }} came out and fixed it the same afternoon. Incredible service and fair pricing!"</p>
-          <div class="t-author">Sarah M.<span>Homeowner</span></div>
+          <p>"Our AC compressor died during the hottest week in July. Their tech was here within two hours and had a new fan relay installed in no time. Unbelievable response!"</p>
+          <div class="t-author">Marcus G.<span>Homeowner</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Very impressed with the team's professionalism. They installed a new heat pump and explained how to use the smart thermostat. Saving 20% on bills!"</p>
-          <div class="t-author">James K.<span>Homeowner</span></div>
+          <p>"Replaced our old furnace with a hybrid heat pump system. The gas bills have plummeted, and the air filtration is clean. Highly recommend their engineering crew."</p>
+          <div class="t-author">Daniel K.<span>Property Owner</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"I've tried many HVAC companies but {{ lead.name }} is on a different level. Their maintenance plan keeps our system running perfectly."</p>
-          <div class="t-author">Priya R.<span>Property Manager</span></div>
+          <p>"Clean, professional, and NATE certified. They vacuumed the utility closet, verified the thermostat wires, and walked me through energy tax rebate forms."</p>
+          <div class="t-author">Elena S.<span>Residential Client</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Super professional, clean work, and explained every step of the diagnostic. I won't call anyone else for heating or cooling."</p>
-          <div class="t-author">Ahmed N.<span>Business Owner</span></div>
+          <p>"We signed up for their seasonal maintenance program. It's paid for itself in energy bill savings alone. Outstanding local service."</p>
+          <div class="t-author">Robert H.<span>Estate Owner</span></div>
         </div>
       </div>
     </div>
@@ -378,21 +648,28 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 <section class="cta-section">
   <div class="container">
     <div class="cta-banner reveal reveal-scale-in">
-      <span class="section-tag">Are You Ready?</span>
-      <h2>Schedule AC Repair or HVAC Tune-Up with<br><span class="text-gradient-orange">{{ lead.name }}</span> Today</h2>
-      <p>Take the first step. Contact us now to restore your comfort and lower your utility bills.</p>
-      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Contact Us Now</a>
+      <span class="section-tag">Claim Your Quote</span>
+      <h2>Claim Your Free Sizing Inspection &amp; Quote from<br><span class="text-gradient-cyan">{{ lead.name }}</span> Today</h2>
+      <p>Schedule a certified layout technician today. We'll verify duct sizing, structural static pressure, and outline a flat-rate proposal.</p>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Schedule Free Inspection</a>
     </div>
   </div>
 </section>
 
 <!-- Contact -->
 <section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
   <div class="container" style="text-align:center">
-    <span class="section-tag">Find Us</span>
-    <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-orange">{{ lead.name }}</span></h2>
-    <p>We'd love to hear from you. Walk in, call, or message us anytime.</p>
-    <div class="cinfo-grid"><a href="tel:+1 415-317-6827" class="cinfo-item">📞 +1 415-317-6827</a><a href="mailto:info@edensf.com" class="cinfo-item">✉ info@edensf.com</a><div class="cinfo-item">📍 1640 and 1650 Bush St</div><a href="https://instagram.com/edenfit.sf" target="_blank" class="cinfo-item">📸 @edenfit.sf</a><a href="https://www.google.com/maps/place/?q=place_id:ChIJ6S7pd3GBhYARJNRwbbnr66g" target="_blank" class="cinfo-item">🗺 View on Google Maps</a></div>
+    <span class="section-tag">Get in Touch</span>
+    <h2 class="section-title" style="margin:.5rem auto 1rem">Secure Your Comfort</h2>
+    <p>Contact us for system designs, quick AC repairs, or furnace tune-ups.</p>
+    <div class="cinfo-grid">
+      {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="cinfo-item">📞 Call Us: {{ lead.phone }}</a>{% endif %}
+      {% if lead.email %}<a href="mailto:{{ lead.email }}" class="cinfo-item">✉ Email: {{ lead.email }}</a>{% endif %}
+      {% if lead.address %}<div class="cinfo-item">📍 Address: {{ lead.address }}</div>{% endif %}
+      {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="cinfo-item">📸 @{{ lead.instagram }}</a>{% endif %}
+      {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="cinfo-item">🗺 View on Google Maps</a>{% endif %}
+    </div>
   </div>
 </section>
 
@@ -405,30 +682,33 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
           <div class="logo-icon"></div>
           {{ lead.name }}
         </a>
-        <p>Your trusted heating and cooling specialists committed to rapid service, energy efficiency, and home comfort.</p>
-        <div class="social-links"><a href="https://instagram.com/edenfit.sf" target="_blank" class="social-btn">IG</a><a href="https://www.google.com/maps/place/?q=place_id:ChIJ6S7pd3GBhYARJNRwbbnr66g" target="_blank" class="social-btn">📍</a></div>
+        <p>NATE Certified professional contractor delivering highly efficient home heating installations, central air conditioners, and air filtration systems.</p>
+        <div class="social-links">
+          {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="social-btn">IG</a>{% endif %}
+          {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="social-btn">📍</a>{% endif %}
+        </div>
       </div>
       <div class="footer-col">
-        <h4>Quick Links</h4>
+        <h4>Solutions</h4>
         <ul class="footer-links">
-          <li><a href="#home">Home</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#programs">Programs</a></li>
-          <li><a href="#contact">Contact</a></li>
+          <li><a href="#services">Air Conditioning</a></li>
+          <li><a href="#services">Heating Systems</a></li>
+          <li><a href="#services">Emergency dispatch</a></li>
+          <li><a href="#services">Maintenance tuning</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
         <ul class="footer-links">
-          <li>+1 415-317-6827</li>
-          <li>info@edensf.com</li>
-          <li>1640 and 1650 Bush St, San Francisco, CA 94109, USA</li>
+          {% if lead.phone %}<li>{{ lead.phone }}</li>{% endif %}
+          {% if lead.email %}<li>{{ lead.email }}</li>{% endif %}
+          {% if lead.address %}<li>{{ lead.address }}</li>{% endif %}
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a></p>
-      <p>Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here &rarr;</a></p>
+      <p>&copy; 2026 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this website live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order on Fiverr &rarr;</a></p>
     </div>
   </div>
 </footer>
@@ -439,7 +719,7 @@ const dot=document.getElementById('cursorDot'),ring=document.getElementById('cur
 let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
 (function animRing(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
-document.querySelectorAll('a,button,.program-card,.t-btn,.gallery-item').forEach(el=>{
+document.querySelectorAll('a,button,.service-card,.t-btn,.insulation-card').forEach(el=>{
   el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
   el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
 });
@@ -463,6 +743,102 @@ navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{hambur
 // Scroll reveal
 const revObs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');revObs.unobserve(e.target)}},{threshold:0.1}));
 document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+// Interactive System Sizer Calculator
+(function(){
+  const slider = document.getElementById('sqftSlider');
+  const sqftVal = document.getElementById('sqftVal');
+  const calcTonnage = document.getElementById('calcTonnage');
+  const furnaceBtus = document.getElementById('furnaceBtus');
+  const monthlySave = document.getElementById('monthlySave');
+  const cards = document.querySelectorAll('.insulation-card');
+  const fedCredit = document.getElementById('fedCredit');
+  
+  const hvacStatus = document.getElementById('hvacStatus');
+  const zoneTemp1 = document.getElementById('zoneTemp1');
+  const zoneTemp2 = document.getElementById('zoneTemp2');
+  const zoneTemp3 = document.getElementById('zoneTemp3');
+  const zoneGlow1 = document.getElementById('zoneGlow1');
+  const zoneGlow2 = document.getElementById('zoneGlow2');
+  const zoneGlow3 = document.getElementById('zoneGlow3');
+  const airflow1 = document.getElementById('airflow1');
+  const airflow2 = document.getElementById('airflow2');
+  const airflow3 = document.getElementById('airflow3');
+  
+  let currentFactor = 30; // Default: Standard
+  
+  // Custom airflow blueprint colors based on insulation efficiency
+  const insulationSettings = {
+    30: { temp: "68°", color: "#00F2FE", stroke: "#00F2FE", opacity: "0.8", glow: "rgba(0, 242, 254, 0.15)", width: "1.5" }, // Standard
+    25: { temp: "66°", color: "#10B981", stroke: "#10B981", opacity: "0.95", glow: "rgba(16, 185, 129, 0.2)", width: "2.5" }, // Premium
+    35: { temp: "73°", color: "#FF6B35", stroke: "#FF6B35", opacity: "0.6", glow: "rgba(255, 107, 53, 0.15)", width: "1.0" } // Drafty
+  };
+  
+  function calculate(){
+    const area = parseInt(slider.value);
+    sqftVal.textContent = area.toLocaleString() + ' sq. ft.';
+    
+    // HVAC load calculation rule of thumb: BTU = Area * Factor
+    const totalBtu = area * currentFactor;
+    const tonnage = (totalBtu / 12000).toFixed(1);
+    
+    // Furnace BTUs
+    const heatBtu = Math.round(area * 35);
+    
+    // Monthly SEER Savings ballparks
+    const savings = Math.round(area * 0.025);
+    
+    const tonStr = tonnage + ' Tons';
+    calcTonnage.textContent = tonStr + ' Capacity';
+    furnaceBtus.textContent = heatBtu.toLocaleString() + ' BTU Heating';
+    monthlySave.textContent = '$' + savings + ' / mo. Saving';
+    
+    // Update blueprint sizer text
+    if (hvacStatus) {
+      hvacStatus.textContent = "Recommended: " + tonStr + " • Save $" + savings + "/mo";
+    }
+  }
+  
+  function updateBlueprint() {
+    const config = insulationSettings[currentFactor];
+    if (!config) return;
+    
+    // Set zone labels
+    if (zoneTemp1) { zoneTemp1.textContent = config.temp; zoneTemp1.setAttribute('fill', config.color); }
+    if (zoneTemp2) { zoneTemp2.textContent = config.temp; zoneTemp2.setAttribute('fill', config.color); }
+    if (zoneTemp3) { zoneTemp3.textContent = config.temp; zoneTemp3.setAttribute('fill', config.color); }
+    
+    // Set zone indicators glow
+    if (zoneGlow1) zoneGlow1.setAttribute('fill', config.glow);
+    if (zoneGlow2) zoneGlow2.setAttribute('fill', config.glow);
+    if (zoneGlow3) zoneGlow3.setAttribute('fill', config.glow);
+    
+    // Set vector line styles
+    [airflow1, airflow2, airflow3].forEach(flow => {
+      if (flow) {
+        flow.setAttribute('stroke', config.stroke);
+        flow.setAttribute('stroke-width', config.width);
+        flow.setAttribute('opacity', config.opacity);
+      }
+    });
+  }
+  
+  slider.addEventListener('input', calculate);
+  
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      cards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      
+      currentFactor = parseInt(card.dataset.factor);
+      updateBlueprint();
+      calculate();
+    });
+  });
+  
+  updateBlueprint();
+  calculate();
+})();
 
 // Testimonials slider
 (function(){
@@ -500,110 +876,6 @@ document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
   buildDots();
   window.addEventListener('resize',()=>goto(0));
 })();
-</script>
-
-
-
-<!-- LEADFLOW CONVERSION LAYER -->
-<style>
-  .lf-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:9998;
-    display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
-    padding:14px 20px;background:rgba(10,10,12,.92);backdrop-filter:blur(12px);
-    border-top:1px solid rgba(255,255,255,.12);
-    transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
-  .lf-cta-bar.show{transform:translateY(0)}
-  .lf-cta-bar p{margin:0;font-size:15px;font-weight:500}
-  .lf-cta-bar p b{color:#4d9fff}
-  .lf-btn{display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;
-    text-decoration:none;font-size:15px;font-weight:700;padding:12px 22px;border-radius:999px;
-    transition:transform .15s,box-shadow .15s}
-  .lf-btn:hover{transform:translateY(-2px)}
-  .lf-btn-primary{background:linear-gradient(135deg,#4d9fff,#2563eb);color:#fff;
-    box-shadow:0 6px 20px rgba(77,159,255,.45)}
-  .lf-btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.18)}
-  .lf-modal-bg{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
-    background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:20px;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-  .lf-modal-bg.show{display:flex;animation:lf-fade .3s ease}
-  @keyframes lf-fade{from{opacity:0}to{opacity:1}}
-  .lf-modal{position:relative;max-width:460px;width:100%;background:#101014;color:#fff;
-    border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:38px 32px;text-align:center;
-    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:lf-pop .35s cubic-bezier(.2,.9,.3,1.2)}
-  @keyframes lf-pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
-  .lf-modal h2{margin:0 0 12px;font-size:26px;line-height:1.25}
-  .lf-modal h2 b{color:#4d9fff}
-  .lf-modal p{margin:0 0 26px;font-size:16px;line-height:1.6;color:#b9b9c3}
-  .lf-modal .lf-btn{width:100%;justify-content:center;font-size:17px;padding:16px}
-  .lf-modal .lf-sub{margin-top:16px;font-size:13px;color:#7a7a88}
-  .lf-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#777;
-    font-size:26px;line-height:1;cursor:pointer}
-  .lf-x:hover{color:#fff}
-  @media(max-width:600px){.lf-cta-bar p{flex-basis:100%;text-align:center}}
-</style>
-
-<div class="lf-cta-bar" id="lfBar">
-  <p>👀 Like this design for <b>{{ lead.name }}</b>?</p>
-  <a href="https://www.fiverr.com/s/zWZ5yWg" target="_blank" rel="noopener" class="lf-btn lf-btn-primary"
-     data-lf="cta_book_bar">Book a free call →</a>
-  
-</div>
-
-<div class="lf-modal-bg" id="lfModal">
-  <div class="lf-modal">
-    <button class="lf-x" id="lfX" aria-label="Close">&times;</button>
-    <h2>Want this site live for <b>{{ lead.name }}</b>?</h2>
-    <p>This demo was built specifically for you. Book a free 15-minute call and
-       I'll have it live on your domain — no obligation, no upfront cost.</p>
-    <a href="https://www.fiverr.com/s/zWZ5yWg" target="_blank" rel="noopener" class="lf-btn lf-btn-primary"
-       data-lf="cta_book_modal">Claim this website →</a>
-    <div class="lf-sub">Built by Chandan Gosavi</div>
-  </div>
-</div>
-
-<script>
-(function(){
-  var BEACON="{{ tracking_beacon_url or "" }}", BID="{{ lead.id }}", sent={};
-  function ping(ev){
-    if(sent[ev]||!BEACON)return; sent[ev]=true;
-    try{ fetch(BEACON+"/api/engage?bid="+BID+"&ev="+ev,{mode:"no-cors",keepalive:true}); }catch(e){}
-  }
-  // sticky CTA bar appears once they've scrolled in a bit
-  var bar=document.getElementById("lfBar"), barShown=false;
-  function onScroll(){
-    var sc=window.scrollY, h=document.body.scrollHeight-window.innerHeight;
-    var pct=h>0?sc/h:0;
-    if(pct>0.12&&!barShown){bar.classList.add("show");barShown=true;ping("scroll_in");}
-    if(pct>0.9)ping("scroll_90");
-  }
-  window.addEventListener("scroll",onScroll,{passive:true});
-
-  // modal: exit-intent on desktop, timed on mobile, once per visit
-  var modal=document.getElementById("lfModal"), fired=false;
-  function openModal(){
-    if(fired||sessionStorage.getItem("lfSeen"))return;
-    fired=true; sessionStorage.setItem("lfSeen","1");
-    modal.classList.add("show"); ping("modal_shown");
-  }
-  function closeModal(){modal.classList.remove("show");}
-  document.getElementById("lfX").addEventListener("click",closeModal);
-  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
-  if(matchMedia("(pointer:fine)").matches){
-    document.addEventListener("mouseout",function(e){if(e.clientY<=0)openModal();});
-  } else {
-    setTimeout(openModal,28000);
-  }
-  // high-intent: CTA clicks -> instant operator alert
-  document.querySelectorAll("[data-lf]").forEach(function(el){
-    el.addEventListener("click",function(){ping(el.getAttribute("data-lf"));});
-  });
-})();
-</script>
-
-
-<!-- TRACKING SCRIPT -->
-<script>
-  try { fetch("{{ tracking_beacon_url or "" }}/api/track.png?bid={{ lead.id }}", {mode:"no-cors"}); } catch(e) {}
 </script>
 
 </body>

@@ -1,25 +1,66 @@
-# Environments
+# ── Secrets & Credentials ──────────────────────────────────────────────────
 .env
+*.pem
+*.key
+*.pfx
+*.p12
+*credentials*
+*secret*
+cf_credentials
+.cf_credentials
 
-# Database
+# ── Databases ──────────────────────────────────────────────────────────────
 *.db
 *.sqlite3
+*.db-wal
+*.db-shm
 leadflow.db
+leadflow_merged.db
+leadflow_backup*.db
 
-# Caches & Logs
+# ── Session / Auth files ───────────────────────────────────────────────────
+ig_session.json
+ig_daily_sends.json
+/tmp/
+
+# ── Python ─────────────────────────────────────────────────────────────────
 __pycache__/
-*.log
-.DS_Store
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+pip-log.txt
 
-# Virtual Environments
+# ── Virtual Environments ────────────────────────────────────────────────────
 venv/
 .venv/
 env/
+ENV/
 
-# Output directories
+# ── Logs ────────────────────────────────────────────────────────────────────
+*.log
+*.bak
+server_run.log
+daemon.log
+
+# ── Generated output ─────────────────────────────────────────────────────────
 demos/
+cf_stage/
+leadflow-demos/
+*.html.bak
 
-# Temporary patch scripts
+# ── Patch/fix scripts (one-off) ─────────────────────────────────────────────
 patch_*.py
 fix_*.py
-leadflow-demos/
+merge_*.py
+smart_merge*.py
+
+# ── OS junk ─────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ── Node (wrangler) ─────────────────────────────────────────────────────────
+node_modules/
+.wrangler/

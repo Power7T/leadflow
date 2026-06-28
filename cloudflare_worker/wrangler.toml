@@ -1,0 +1,13 @@
+name = "leadflow-relay"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+SECRET_TOKEN = "lf_sec_9e21808ccce4d37"
+NTFY_TOPIC = "leadflow-chandan-secret"
+TELEGRAM_BOT_TOKEN = "8602831176:AAGsDQjxb1iUcKe9twlLFcs3DSVfmyMkhyA"
+TELEGRAM_USER_ID = "935977950"
+
+[[kv_namespaces]]
+binding = "LEADFLOW_KV"
+id = "38d80fc95a394801ab9b241f2b01b870"

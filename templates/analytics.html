@@ -95,6 +95,9 @@
 <!-- A/B Subject Lines Table -->
 <div class="form-card" style="margin-top:24px">
   <h2 style="font-size:14px;margin-bottom:16px">A/B Subject Line Performance</h2>
+  <div id="abChartContainer" style="margin-bottom: 24px; padding: 16px; background: rgba(255, 255, 255, 0.01); border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px;">
+    <div style="text-align:center;color:var(--text-dim);font-size:13px">Loading A/B comparison chart...</div>
+  </div>
   <table style="width:100%;border-collapse:collapse;font-size:13px" id="abSubjectsTable">
     <thead>
       <tr style="border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;color:var(--text-dim)">
@@ -169,11 +172,16 @@ async function loadABSubjects() {
     const res = await fetch('/analytics/ab-subjects');
     const rows = await res.json();
     const tbody = document.getElementById('abSubjectsBody');
+    const chartContainer = document.getElementById('abChartContainer');
     if (!tbody) return;
     tbody.innerHTML = '';
+    if (chartContainer) chartContainer.innerHTML = '';
     
     if (!rows || rows.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-dim)">No A/B testing data recorded yet.</td></tr>`;
+      if (chartContainer) {
+        chartContainer.innerHTML = `<div style="text-align:center;color:var(--text-dim);font-size:13px">No comparison data available yet.</div>`;
+      }
       return;
     }
     
@@ -191,16 +199,37 @@ async function loadABSubjects() {
       const rate = r.sends > 0 ? Math.round((r.opens / r.sends) * 100) : 0;
       const isWinner = idx === maxIdx;
       
+      // Add row to table
       const tr = document.createElement('tr');
       tr.style = 'border-bottom:1px solid rgba(255,255,255,0.05)';
       tr.innerHTML = `
         <td style="padding:10px 8px;font-family:'SF Mono',Monaco,monospace">${r.subject_used}</td>
         <td style="padding:10px 8px;text-align:center">${r.sends}</td>
         <td style="padding:10px 8px;text-align:center">${r.opens}</td>
-        <td style="padding:10px 8px;text-align:center;font-weight:700;color:${rate >= 50 ? 'var(--accent)' : 'var(--text-white)'}">${rate}%</td>
+        <td style="padding:10px 8px;text-align:center;font-weight:700;color:${rate >= 50 ? 'var(--accent)' : '#ffffff'}">${rate}%</td>
         <td style="padding:10px 8px;text-align:center">${isWinner ? '⭐ <span style="font-size:10px;font-weight:700;color:var(--accent)">BEST</span>' : ''}</td>
       `;
       tbody.appendChild(tr);
+
+      // Render custom interactive HTML bar in chartContainer
+      if (chartContainer) {
+        const color = isWinner ? '#00f2fe' : 'var(--blue)'; // Cyan vs Blue gradient
+        const barWrap = document.createElement('div');
+        barWrap.style = "margin-bottom: 8px; display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s;";
+        barWrap.onmouseover = () => { barWrap.style.transform = 'translateX(4px)'; };
+        barWrap.onmouseout = () => { barWrap.style.transform = 'none'; };
+        
+        barWrap.innerHTML = `
+          <div style="display: flex; justify-content: space-between; font-size: 11px; align-items: center;">
+            <span style="font-family:'SF Mono',Monaco,monospace; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;">${r.subject_used}</span>
+            <span style="font-weight: bold; color: ${isWinner ? '#00f2fe' : 'var(--text)'}">${rate}% (${r.opens}/${r.sends}) ${isWinner ? '🏆 BEST' : ''}</span>
+          </div>
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 4px; height: 10px; width: 100%; position: relative; overflow: hidden; cursor: pointer;" title="Subject: ${r.subject_used}\nSends: ${r.sends}\nOpens: ${r.opens}\nOpen Rate: ${rate}%">
+            <div style="width: ${rate}%; height: 100%; background: linear-gradient(90deg, ${color}, #7b2cbf); border-radius: 2px; transition: width 1s ease-in-out;"></div>
+          </div>
+        `;
+        chartContainer.appendChild(barWrap);
+      }
     });
   } catch(e) {
     console.error('Failed to load AB subjects:', e);

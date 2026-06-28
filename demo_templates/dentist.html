@@ -409,6 +409,16 @@ section {
     grid-template-columns: 1fr;
   }
 }
+/* AHA MOMENT */
+.aha-section{padding:5rem 0;background:var(--bg-secondary,#0a1628);position:relative;overflow:hidden}
+.aha-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(32,178,170,0.07) 0%,transparent 70%);pointer-events:none}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.aha-controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:.5rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#b0c4c4;padding:9px 22px;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit;transition:all .25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent,#20b2aa);border-color:var(--accent,#20b2aa);color:#fff;box-shadow:0 4px 16px rgba(32,178,170,0.3)}
+.aha-svg-wrap{width:100%;max-width:300px;margin:0 auto}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;min-height:2rem;margin-top:.25rem}
+.aha-sub{font-size:.85rem;color:#718096;margin-top:.25rem}
 </style>
 </head>
 <body>
@@ -416,7 +426,7 @@ section {
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   <span class="orig">Built using clinical template</span>
 </div>
 
@@ -441,6 +451,14 @@ section {
   <div class="container">
     <div class="hero-content">
       <h1 class="hero-title">Healthy Smiles For A Lifetime</h1>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
       <p class="hero-desc">Experience state-of-the-art dental care at {{ lead.name }}. Our dedicated experts combine technology and comfort to keep your smile bright and healthy.</p>
       <div class="hero-btns">
         <a href="#services" class="btn btn-primary">Our Services</a>
@@ -518,6 +536,67 @@ section {
   </div>
 </section>
 
+<!-- Smile Simulator Aha Moment -->
+<section class="aha-section" id="smile-sim">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Smile Simulator</span>
+      <h2 class="section-title">See Your Transformation</h2>
+      <p style="max-width:500px;color:#718096">Choose a treatment and watch the difference our care makes. Every smile we create is crafted for you.</p>
+      <div class="aha-controls">
+        <button class="aha-btn active" data-tx="0">Cleaning</button>
+        <button class="aha-btn" data-tx="1">Whitening</button>
+        <button class="aha-btn" data-tx="2">Veneers</button>
+        <button class="aha-btn" data-tx="3">Full Restoration</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg viewBox="0 0 300 200" style="width:100%;height:auto">
+          <defs>
+            <radialGradient id="toothGrad" cx="50%" cy="30%" r="60%">
+              <stop id="tg-stop1" offset="0%" stop-color="#ffffff"/>
+              <stop id="tg-stop2" offset="100%" stop-color="#d4e8e6"/>
+            </radialGradient>
+            <filter id="glowF"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <!-- Background glow ring -->
+          <circle id="tx-glow" cx="150" cy="105" r="60" fill="rgba(32,178,170,0.06)" style="transition:r .4s ease,fill .4s ease"/>
+          <!-- Lips outline -->
+          <path d="M60,90 Q100,75 150,72 Q200,75 240,90 Q220,140 150,148 Q80,140 60,90 Z" fill="#1a2a2a" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+          <!-- Upper lip arch -->
+          <path d="M60,90 Q100,82 130,86 Q150,80 170,86 Q200,82 240,90" fill="none" stroke="rgba(255,80,80,0.15)" stroke-width="1.5"/>
+          <!-- Teeth row top -->
+          <g id="teeth-top">
+            <rect x="98" y="95" width="18" height="22" rx="4" fill="url(#toothGrad)" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+            <rect x="118" y="93" width="20" height="24" rx="4" fill="url(#toothGrad)" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+            <rect x="140" y="93" width="20" height="24" rx="4" fill="url(#toothGrad)" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+            <rect x="162" y="95" width="18" height="22" rx="4" fill="url(#toothGrad)" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+            <rect id="tx-stain" x="98" y="95" width="82" height="22" rx="4" fill="rgba(180,150,80,0.35)" style="transition:opacity .4s ease"/>
+          </g>
+          <!-- Teeth row bottom -->
+          <g opacity="0.7">
+            <rect x="102" y="119" width="16" height="18" rx="3" fill="url(#toothGrad)"/>
+            <rect x="120" y="119" width="18" height="18" rx="3" fill="url(#toothGrad)"/>
+            <rect x="140" y="119" width="18" height="18" rx="3" fill="url(#toothGrad)"/>
+            <rect x="160" y="119" width="16" height="18" rx="3" fill="url(#toothGrad)"/>
+          </g>
+          <!-- Sparkle stars (hidden by default) -->
+          <g id="tx-sparkles" opacity="0" style="transition:opacity .4s ease">
+            <text x="93" y="90" font-size="12" fill="#fff" style="filter:drop-shadow(0 0 4px #20b2aa)">✦</text>
+            <text x="192" y="88" font-size="10" fill="#fff" style="filter:drop-shadow(0 0 4px #20b2aa)">✦</text>
+            <text x="145" y="80" font-size="8" fill="#fff" style="filter:drop-shadow(0 0 4px #20b2aa)">✦</text>
+          </g>
+          <!-- Score badge -->
+          <rect x="95" y="158" width="110" height="24" rx="6" fill="rgba(32,178,170,0.12)" stroke="rgba(32,178,170,0.3)" stroke-width="1"/>
+          <text id="tx-score" x="150" y="174" text-anchor="middle" fill="#20b2aa" font-family="sans-serif" font-size="11" font-weight="700">Smile Level: 72 / 100</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="tx-label">Deep Cleaning · Plaque Removal</div>
+      <div class="aha-sub" id="tx-sub">Starting at $149 · Insurance accepted</div>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Book Your Consult →</a>
+    </div>
+  </div>
+</section>
+
 <!-- Testimonials -->
 <section class="testimonials">
   <div class="container">
@@ -584,12 +663,12 @@ section {
 <footer class="footer">
   <div class="container">
     <p>&copy; 2026 {{ lead.name }}. All rights reserved.</p>
-    <p class="footer-text">Healthcare website concept designed by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
+    <p class="footer-text">Healthcare website concept designed by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
   </div>
 </footer>
 
 <!-- Tracking Pixel -->
-<img src="/api/track.png?bid={{ lead.id }}" style="display:none;width:0;height:0" />
+
 
 <script>
 window.addEventListener('scroll', function() {
@@ -600,6 +679,44 @@ window.addEventListener('scroll', function() {
     navbar.classList.remove('scrolled');
   }
 });
+// Smile Simulator Aha Moment
+(function(){
+  const treatments = [
+    { label:'Deep Cleaning · Plaque Removal', sub:'Starting at $149 · Insurance accepted',
+      score:'Smile Level: 72 / 100', stain:0.35, glow:'rgba(32,178,170,0.06)', glowR:60, sparkles:0, stop1:'#f5f0e8', stop2:'#d4e8e6' },
+    { label:'Teeth Whitening · 6-8 Shades Brighter', sub:'Starting at $299 · Results same day',
+      score:'Smile Level: 88 / 100', stain:0.05, glow:'rgba(32,178,170,0.12)', glowR:75, sparkles:0.6, stop1:'#ffffff', stop2:'#e8f8f7' },
+    { label:'Porcelain Veneers · Custom Smile Design', sub:'Starting at $899/tooth · Forever beautiful',
+      score:'Smile Level: 96 / 100', stain:0, glow:'rgba(32,178,170,0.18)', glowR:88, sparkles:1, stop1:'#ffffff', stop2:'#edfffe' },
+    { label:'Full Mouth Restoration · Complete Rebuild', sub:'Free consultation · Financing available',
+      score:'Smile Level: 100 / 100 ✨', stain:0, glow:'rgba(32,200,180,0.22)', glowR:100, sparkles:1, stop1:'#ffffff', stop2:'#f0ffff' }
+  ];
+  const btns = document.querySelectorAll('.aha-btn[data-tx]');
+  const stain = document.getElementById('tx-stain');
+  const glowEl = document.getElementById('tx-glow');
+  const sparkles = document.getElementById('tx-sparkles');
+  const scoreEl = document.getElementById('tx-score');
+  const labelEl = document.getElementById('tx-label');
+  const subEl = document.getElementById('tx-sub');
+  const stop1 = document.getElementById('tg-stop1');
+  const stop2 = document.getElementById('tg-stop2');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = treatments[parseInt(btn.dataset.tx)];
+      stain.style.opacity = t.stain;
+      glowEl.setAttribute('fill', t.glow);
+      glowEl.setAttribute('r', t.glowR);
+      sparkles.style.opacity = t.sparkles;
+      scoreEl.textContent = t.score;
+      labelEl.textContent = t.label;
+      subEl.textContent = t.sub;
+      stop1.setAttribute('stop-color', t.stop1);
+      stop2.setAttribute('stop-color', t.stop2);
+    });
+  });
+})();
 </script>
 </body>
 </html>

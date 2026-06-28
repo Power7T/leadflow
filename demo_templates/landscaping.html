@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ lead.name }} | Premium Landscaping &amp; Outdoor Living</title>
+<meta name="description" content="{{ lead.name }} offers expert hardscaping, lawn care, and outdoor oasis building. Get your free estimate today.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-primary:#0a120c;
+  --bg-secondary:#111d15;
+  --bg-tertiary:#182b1f;
+  --accent-main:#10b981;
+  --accent-glow:rgba(16,185,129,0.15);
+  --accent-bright:#34d399;
+  --text-white:#FFFFFF;
+  --text-gray:#a3b8ad;
+  --text-muted:#6b8778;
+  --glass-bg:rgba(17,29,21,0.95);
+  --glass-border:rgba(16,185,129,0.1);
+  --glass-border-hover:rgba(16,185,129,0.35);
+  --border-radius-sm:8px;
+  --border-radius-md:16px;
+  --border-radius-lg:24px;
+  --shadow-sm:0 4px 12px rgba(10,18,12,0.5);
+  --shadow-md:0 12px 32px rgba(10,18,12,0.7);
+  --shadow-lg:0 24px 64px rgba(10,18,12,0.9);
+  --shadow-accent:0 0 25px rgba(16,185,129,0.25);
+  --transition-fast:0.2s ease;
+  --transition-smooth:0.4s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Outfit',sans-serif;}
+body{line-height:1.7;overflow-x:hidden;}
+h1,h2,h3,h4,h5,h6{font-weight:700;line-height:1.15;}
+p{color:var(--text-gray);font-weight:300}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+.text-gradient{background:linear-gradient(135deg,#FFFFFF 0%,var(--accent-bright) 60%,var(--accent-main) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.95rem 2.2rem;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;border-radius:var(--border-radius-sm);border:1px solid transparent;cursor:pointer;font-family:'Outfit',sans-serif;transition:var(--transition-smooth);}
+.btn-primary{background-color:var(--accent-main);color:#0a120c;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:transparent;border-color:var(--accent-main);color:var(--accent-main);box-shadow:var(--shadow-accent);transform:translateY(-2px)}
+.btn-outline{background:transparent;border-color:var(--accent-main);color:var(--accent-main);border:1px solid var(--accent-main);}
+.btn-outline:hover{background:var(--accent-main);color:#0a120c;box-shadow:var(--shadow-accent);transform:translateY(-2px)}
+section{padding:8.5rem 0;position:relative;overflow:hidden}
+.section-tag{font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent-bright);margin-bottom:1rem;display:inline-block;background:rgba(16,185,129,0.08);padding:4px 14px;border-radius:4px;border:1px solid rgba(16,185,129,0.15)}
+.section-title{font-size:clamp(2rem,4vw,3.2rem);margin-bottom:1.5rem}
+
+/* REVEAL ANIMATIONS */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-left{opacity:0;transform:translateX(-50px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal-left.visible{opacity:1;transform:translateX(0);}
+.reveal-right{opacity:0;transform:translateX(50px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal-right.visible{opacity:1;transform:translateX(0);}
+
+/* DEMO BANNER */
+.demo-banner{background:var(--accent-main);color:#0a120c;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;}
+.demo-banner a{color:#0a120c;text-decoration:underline;font-weight:800;transition:opacity .2s;}
+.demo-banner a:hover{opacity:.75;}
+
+/* NAVBAR */
+.navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border);transition:top var(--transition-smooth),box-shadow var(--transition-smooth);}
+.navbar.scrolled{top:0;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.nav-container{display:flex;justify-content:space-between;align-items:center;height:75px;}
+.logo{font-size:1.5rem;font-weight:800;color:var(--text-white);letter-spacing:-.02em;}
+.logo .logo-dot{color:var(--accent-main);}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{color:var(--text-gray);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;transition:var(--transition-fast);position:relative;padding-bottom:4px;}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--accent-bright);transition:width var(--transition-smooth);}
+.nav-links a:hover{color:var(--text-white);}
+.nav-links a:hover::after{width:100%;}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;background:none;border:none;}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text-white);border-radius:2px;transition:var(--transition-smooth);}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
+.hamburger.open span:nth-child(2){opacity:0;}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px);}
+
+/* HERO */
+.hero{height:100vh;min-height:750px;display:flex;align-items:center;position:relative;padding-top:123px;}
+.hero-bg-overlay{position:absolute;inset:0;background:linear-gradient(120deg,rgba(10,18,12,0.92) 50%,rgba(10,18,12,0.6) 100%),url('https://power7t.github.io/leadflow-demos/landscaping-hero.jpg') center/cover no-repeat;z-index:1}
+.hero .container{position:relative;z-index:2}
+.hero-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:4rem;align-items:center}
+.hero-name{font-size:clamp(2.8rem,5vw,4.4rem);margin-bottom:1.5rem;line-height:1.08;}
+.hero-sub{font-size:1.1rem;margin-bottom:2.5rem;max-width:480px;}
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+.hero-visual{position:relative;}
+.hero-image-frame{width:100%;aspect-ratio:.9;border-radius:var(--border-radius-md);overflow:hidden;border:1px solid var(--glass-border-hover);box-shadow:var(--shadow-lg),var(--shadow-accent);}
+.hero-image-frame img{width:100%;height:100%;object-fit:cover}
+.hero-badge{position:absolute;bottom:-1.5rem;left:-1.5rem;background:var(--bg-tertiary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-sm);padding:1rem 1.4rem;display:flex;align-items:center;gap:.8rem;box-shadow:var(--shadow-md);}
+.hero-badge-icon{font-size:1.6rem;}
+.hero-badge-text{font-size:.75rem;color:var(--text-gray);}
+.hero-badge-text strong{display:block;color:var(--text-white);font-size:.95rem;}
+
+/* WIDGET */
+.widget-section{background:var(--bg-secondary);}
+.widget-container{max-width:1000px;margin:0 auto;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:3.5rem;box-shadow:var(--shadow-lg);display:grid;grid-template-columns:1fr 1.5fr;gap:3rem;}
+.toggle-btn{display:flex;width:100%;padding:1rem 1.2rem;margin-bottom:.9rem;background:var(--bg-primary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);color:var(--text-white);font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;cursor:pointer;transition:var(--transition-fast);text-align:left;align-items:center;justify-content:space-between;gap:.5rem;}
+.toggle-btn:hover{border-color:var(--accent-main);}
+.toggle-btn.active{background:rgba(16,185,129,0.1);border-color:var(--accent-bright);box-shadow:0 0 15px rgba(16,185,129,0.2);}
+.toggle-btn .price-tag{font-size:.75rem;color:var(--accent-bright);font-weight:700;white-space:nowrap;}
+.value-display{margin-top:2rem;padding-top:2rem;border-top:1px solid var(--glass-border);}
+.value-label{color:var(--text-gray);font-size:0.85rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;}
+#estValue{font-size:2.8rem;font-weight:800;color:var(--accent-bright);transition:color .3s;}
+.yard-svg{width:100%;height:auto;background:#1e3a2a;border-radius:var(--border-radius-sm);border:2px solid var(--glass-border);overflow:hidden;}
+
+/* SERVICES */
+.services-section{background:var(--bg-primary);}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+.service-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.2rem;transition:var(--transition-smooth);position:relative;overflow:hidden;}
+.service-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(16,185,129,0.05),transparent);opacity:0;transition:var(--transition-smooth);}
+.service-card:hover{border-color:var(--glass-border-hover);transform:translateY(-6px);box-shadow:var(--shadow-md),var(--shadow-accent);}
+.service-card:hover::before{opacity:1;}
+.service-icon{font-size:2.2rem;margin-bottom:1.2rem;display:block;}
+.service-card h3{font-size:1.15rem;margin-bottom:.7rem;color:var(--text-white);}
+.service-card p{font-size:.9rem;line-height:1.6;}
+.service-link{display:inline-flex;align-items:center;gap:.4rem;margin-top:1.2rem;font-size:.8rem;font-weight:700;color:var(--accent-main);text-transform:uppercase;letter-spacing:.08em;transition:gap var(--transition-fast);}
+.service-card:hover .service-link{gap:.7rem;}
+
+/* ABOUT */
+.about-section{background:var(--bg-secondary);}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
+.about-image-wrap{position:relative;}
+.about-image-frame{border-radius:var(--border-radius-md);overflow:hidden;border:1px solid var(--glass-border-hover);box-shadow:var(--shadow-lg);aspect-ratio:.9;}
+.about-image-frame img{width:100%;height:100%;object-fit:cover;}
+.about-image-badge{position:absolute;top:-1.2rem;right:-1.2rem;background:var(--accent-main);color:#0a120c;border-radius:50%;width:90px;height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;text-align:center;box-shadow:var(--shadow-accent);}
+.about-image-badge .big-num{font-size:1.8rem;line-height:1;}
+.about-points{display:flex;flex-direction:column;gap:1.1rem;margin-top:2rem;}
+.about-point{display:flex;align-items:flex-start;gap:1rem;}
+.about-point-check{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,0.12);border:1px solid var(--accent-main);display:flex;align-items:center;justify-content:center;color:var(--accent-bright);font-size:.85rem;margin-top:3px;}
+.about-point-text h4{color:var(--text-white);font-size:1rem;font-weight:700;margin-bottom:.2rem;}
+.about-point-text p{font-size:.88rem;margin:0;}
+
+/* TESTIMONIALS */
+.testimonials-section{background:var(--bg-primary);}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+.testi-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.2rem;transition:var(--transition-smooth);}
+.testi-card:hover{border-color:var(--glass-border-hover);box-shadow:var(--shadow-md);}
+.stars{color:var(--accent-bright);font-size:1rem;letter-spacing:2px;margin-bottom:1.2rem;}
+.testi-card blockquote{font-size:.95rem;color:var(--text-gray);font-style:italic;line-height:1.7;margin-bottom:1.5rem;}
+.testi-author{display:flex;align-items:center;gap:.9rem;}
+.testi-avatar{width:44px;height:44px;border-radius:50%;background:var(--bg-tertiary);border:2px solid var(--accent-main);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;color:var(--accent-bright);flex-shrink:0;}
+.testi-author-info strong{display:block;color:var(--text-white);font-size:.9rem;}
+.testi-author-info span{font-size:.78rem;color:var(--text-muted);}
+
+/* CTA BANNER */
+.cta-section{padding:7rem 0;}
+.cta-inner{background:linear-gradient(135deg,#0d2218 0%,#0a3320 40%,#0e2819 100%);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-lg);padding:5rem 3rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-lg),0 0 80px rgba(16,185,129,0.1);}
+.cta-inner::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at center,rgba(16,185,129,0.08) 0%,transparent 60%);pointer-events:none;}
+.cta-inner h2{font-size:clamp(2rem,4vw,3rem);margin-bottom:1.2rem;}
+.cta-inner p{font-size:1.1rem;max-width:520px;margin:0 auto 2.5rem;}
+.cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+
+/* CONTACT */
+.contact-section{background:var(--bg-secondary);}
+.contact-grid{display:grid;grid-template-columns:1.2fr 0.8fr;gap:5rem;align-items:start;}
+.contact-title{font-size:clamp(2rem,3.5vw,2.8rem);margin-bottom:.8rem;}
+.contact-sub{margin-bottom:2.5rem;}
+.contact-items{display:flex;flex-direction:column;gap:1.2rem;}
+.contact-item{display:flex;align-items:center;gap:1.2rem;padding:1.4rem 1.8rem;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);transition:var(--transition-smooth);}
+.contact-item:hover{border-color:var(--accent-main);box-shadow:0 0 20px rgba(16,185,129,0.15);}
+.contact-icon{font-size:1.5rem;flex-shrink:0;}
+.contact-item-info span{display:block;font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.2rem;}
+.contact-item-info strong{font-size:1rem;color:var(--text-white);}
+.contact-hours{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2rem;}
+.contact-hours h4{color:var(--accent-bright);font-size:.9rem;text-transform:uppercase;letter-spacing:.12em;margin-bottom:1.2rem;}
+.hours-row{display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:.88rem;}
+.hours-row:last-child{border:none;}
+.hours-row span:last-child{color:var(--accent-bright);font-weight:600;}
+
+/* FOOTER */
+.footer{background:#050d07;border-top:1px solid var(--glass-border);padding:4.5rem 0 2rem;}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1.2fr;gap:4rem;margin-bottom:3.5rem;}
+.footer-brand p{font-size:.88rem;max-width:260px;line-height:1.8;margin-top:1rem;}
+.footer-col h5{color:var(--text-white);font-size:.8rem;text-transform:uppercase;letter-spacing:.15em;margin-bottom:1.5rem;}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:.8rem;}
+.footer-links a{font-size:.88rem;color:var(--text-gray);transition:color var(--transition-fast);}
+.footer-links a:hover{color:var(--accent-bright);}
+.footer-contact-list{display:flex;flex-direction:column;gap:.9rem;}
+.footer-contact-item{display:flex;align-items:center;gap:.8rem;font-size:.88rem;color:var(--text-gray);}
+.footer-contact-item a{color:var(--text-gray);transition:color var(--transition-fast);}
+.footer-contact-item a:hover{color:var(--accent-bright);}
+.footer-bottom{padding-top:2rem;border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.footer-bottom p{font-size:.8rem;color:var(--text-muted);}
+.footer-bottom a{color:var(--accent-main);font-weight:700;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .services-grid,.testi-grid{grid-template-columns:repeat(2,1fr);}
+  .hero-grid,.about-grid,.contact-grid{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr 1fr;}
+  .widget-container{grid-template-columns:1fr;}
+  .hero-visual{display:none;}
+}
+@media(max-width:640px){
+  .services-grid,.testi-grid,.footer-grid{grid-template-columns:1fr;}
+  .nav-links,.btn-nav{display:none;}
+  .nav-links.open{display:flex;flex-direction:column;position:absolute;top:75px;left:0;width:100%;background:var(--glass-bg);backdrop-filter:blur(15px);padding:1.5rem 2rem 2rem;gap:1.2rem;border-bottom:1px solid var(--glass-border);}
+  .hamburger{display:flex;}
+  section{padding:5rem 0;}
+  .cta-inner{padding:3rem 1.5rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- 1. DEMO BANNER -->
+<div class="demo-banner">
+  &#10024; FREE demo built for {{ lead.name }} &mdash; <a href="#">Hire me</a>
+</div>
+
+<!-- 2. NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">{{ lead.name }}<span class="logo-dot">.</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#builder">Oasis Builder</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="tel:{{ lead.phone }}" class="btn btn-primary btn-nav">Get Estimate</a>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- 3. HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg-overlay"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <span class="section-tag reveal">Premium Landscaping &amp; Hardscaping</span>
+        <h1 class="hero-name text-gradient reveal">Your Perfect<br>Outdoor Oasis.</h1>
+        <p class="hero-sub reveal">From lush lawn care to custom stone patios, firepits, and cedar pergolas &mdash; we turn your backyard into a living masterpiece.</p>
+        <div class="hero-ctas reveal">
+          <a href="#builder" class="btn btn-primary">Build Your Oasis</a>
+          <a href="#services" class="btn btn-outline">View Services</a>
+        </div>
+      </div>
+      <div class="hero-visual reveal-right">
+        <div class="hero-image-frame">
+          <img src="https://power7t.github.io/leadflow-demos/landscaping-about.jpg" alt="{{ lead.name }} premium landscaping">
+        </div>
+        <div class="hero-badge">
+          <span class="hero-badge-icon">&#127807;</span>
+          <div class="hero-badge-text">
+            <strong>10+ Years</strong>
+            Trusted Outdoor Experts
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. INTERACTIVE WIDGET — Outdoor Oasis Builder -->
+<section class="widget-section" id="builder">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem;" class="reveal">
+      <span class="section-tag">Interactive Preview</span>
+      <h2 class="section-title">Outdoor Oasis Builder</h2>
+      <p>Select features below to watch your backyard transform in real time.</p>
+    </div>
+    <div class="widget-container reveal">
+      <div>
+        <button class="toggle-btn" data-target="poolGroup">
+          <span>&#127946;&#65039; Swimming Pool</span>
+          <span class="price-tag">+ $35,000</span>
+        </button>
+        <button class="toggle-btn" data-target="firepitGroup">
+          <span>&#128293; Stone Firepit</span>
+          <span class="price-tag">+ $4,500</span>
+        </button>
+        <button class="toggle-btn" data-target="pergolaGroup">
+          <span>&#127750; Cedar Pergola</span>
+          <span class="price-tag">+ $8,000</span>
+        </button>
+        <div class="value-display">
+          <div class="value-label">Estimated Value Add</div>
+          <div id="estValue">+ $0</div>
+        </div>
+      </div>
+      <div>
+        <svg class="yard-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+          <!-- Base grass -->
+          <rect width="400" height="300" fill="#1e3a2a"/>
+          <!-- House back wall -->
+          <path d="M 0 50 Q 200 80 400 40 L 400 0 L 0 0 Z" fill="#111d15"/>
+          <!-- Patio base -->
+          <rect x="60" y="155" width="280" height="110" rx="6" fill="#2d4a3e" opacity="0.6"/>
+          <!-- House label -->
+          <text x="200" y="35" text-anchor="middle" fill="#6b8778" font-size="12" font-family="Outfit,sans-serif">Your Home</text>
+
+          <!-- POOL GROUP -->
+          <g id="poolGroup" style="opacity:0;transition:opacity 0.5s ease;">
+            <path d="M 100 120 C 150 100 250 100 300 120 C 350 150 320 250 250 260 C 150 270 50 220 100 120 Z" fill="#bae6fd" stroke="#e2e8f0" stroke-width="4"/>
+            <path d="M 120 140 C 160 125 240 125 280 140 C 320 160 300 230 240 240 C 160 250 80 200 120 140 Z" fill="#0284c7"/>
+            <line x1="130" y1="165" x2="270" y2="155" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+            <line x1="125" y1="185" x2="275" y2="175" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+            <text x="200" y="205" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10" font-family="Outfit,sans-serif">Swimming Pool</text>
+          </g>
+
+          <!-- FIREPIT GROUP -->
+          <g id="firepitGroup" style="opacity:0;transition:opacity 0.5s ease;">
+            <circle cx="320" cy="195" r="42" fill="none" stroke="#4a3000" stroke-width="8" stroke-dasharray="12 6"/>
+            <circle cx="320" cy="195" r="26" fill="#475569"/>
+            <circle cx="320" cy="195" r="18" fill="#1e293b"/>
+            <ellipse cx="320" cy="192" rx="8" ry="11" fill="#f97316"/>
+            <ellipse cx="320" cy="194" rx="5" ry="7" fill="#fbbf24"/>
+            <text x="320" y="242" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="10" font-family="Outfit,sans-serif">Stone Firepit</text>
+          </g>
+
+          <!-- PERGOLA GROUP -->
+          <g id="pergolaGroup" style="opacity:0;transition:opacity 0.5s ease;">
+            <rect x="50" y="80" width="130" height="100" rx="4" fill="#000" opacity="0.25"/>
+            <rect x="60" y="68" width="10" height="112" fill="#6b3e1e"/>
+            <rect x="162" y="68" width="10" height="112" fill="#6b3e1e"/>
+            <rect x="50" y="58" width="130" height="12" fill="#8B5E3C" rx="3"/>
+            <rect x="65" y="50" width="6" height="130" fill="#78350f" transform="rotate(90 65 50)"/>
+            <rect x="85" y="50" width="6" height="130" fill="#78350f" transform="rotate(90 85 50)"/>
+            <rect x="105" y="50" width="6" height="130" fill="#78350f" transform="rotate(90 105 50)"/>
+            <rect x="125" y="50" width="6" height="130" fill="#78350f" transform="rotate(90 125 50)"/>
+            <rect x="145" y="50" width="6" height="130" fill="#78350f" transform="rotate(90 145 50)"/>
+            <text x="117" y="194" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="10" font-family="Outfit,sans-serif">Cedar Pergola</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. SERVICES -->
+<section class="services-section" id="services">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:4rem;" class="reveal">
+      <span class="section-tag">What We Do</span>
+      <h2 class="section-title">Full-Service Outdoor Care</h2>
+      <p style="max-width:520px;margin:0 auto;">From the first blade of grass to the final stone, {{ lead.name }} handles every detail of your outdoor space.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <span class="service-icon">&#127807;</span>
+        <h3>Lawn Care &amp; Maintenance</h3>
+        <p>Weekly mowing, edging, fertilization, and seasonal treatments to keep your lawn lush and perfectly manicured all year round.</p>
+        <span class="service-link">Learn More &#8594;</span>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">&#129704;</span>
+        <h3>Hardscaping &amp; Patios</h3>
+        <p>Custom stone patios, walkways, retaining walls, and driveways crafted from premium natural and manufactured stone.</p>
+        <span class="service-link">Learn More &#8594;</span>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">&#127795;</span>
+        <h3>Tree Service &amp; Pruning</h3>
+        <p>Expert tree trimming, removal, stump grinding, and health assessments to keep your property safe and beautiful.</p>
+        <span class="service-link">Learn More &#8594;</span>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">&#127804;</span>
+        <h3>Garden Design &amp; Planting</h3>
+        <p>Seasonal flower beds, native plantings, and full garden design that transforms your outdoor space into a vibrant sanctuary.</p>
+        <span class="service-link">Learn More &#8594;</span>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">&#128167;</span>
+        <h3>Irrigation Systems</h3>
+        <p>Smart drip and sprinkler system installation, upgrades, and maintenance to maximize water efficiency and lawn health.</p>
+        <span class="service-link">Learn More &#8594;</span>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">&#10052;&#65039;</span>
+        <h3>Snow Removal</h3>
+        <p>Reliable residential and commercial snow plowing, salting, and ice management to keep your property clear and safe all winter.</p>
+        <span class="service-link">Learn More &#8594;</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. ABOUT -->
+<section class="about-section" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-image-wrap reveal-left">
+        <div class="about-image-frame">
+          <img src="https://power7t.github.io/leadflow-demos/landscaping-about.jpg" alt="{{ lead.name }} team at work">
+        </div>
+        <div class="about-image-badge">
+          <span class="big-num">10+</span>
+          Years of Excellence
+        </div>
+      </div>
+      <div class="reveal-right">
+        <span class="section-tag">Our Story</span>
+        <h2 class="section-title">Why <span class="text-gradient">{{ lead.name }}</span>?</h2>
+        <p>We're more than a lawn company &mdash; we're outdoor lifestyle creators. For over a decade, {{ lead.name }} has been the trusted partner for homeowners who demand beauty, precision, and lasting quality from their outdoor spaces.</p>
+        <div class="about-points">
+          <div class="about-point">
+            <div class="about-point-check">&#10003;</div>
+            <div class="about-point-text">
+              <h4>10+ Years Experience</h4>
+              <p>Hundreds of completed projects across residential and commercial properties, delivering results that exceed expectations every time.</p>
+            </div>
+          </div>
+          <div class="about-point">
+            <div class="about-point-check">&#10003;</div>
+            <div class="about-point-text">
+              <h4>Licensed &amp; Insured</h4>
+              <p>Fully licensed, bonded, and insured for your complete peace of mind. Every project is backed by our satisfaction guarantee.</p>
+            </div>
+          </div>
+          <div class="about-point">
+            <div class="about-point-check">&#10003;</div>
+            <div class="about-point-text">
+              <h4>Eco-Friendly Materials</h4>
+              <p>We use sustainable, environmentally responsible products and practices to protect your family and our planet.</p>
+            </div>
+          </div>
+          <div class="about-point">
+            <div class="about-point-check">&#10003;</div>
+            <div class="about-point-text">
+              <h4>Satisfaction Guaranteed</h4>
+              <p>We don't rest until you're 100% happy. Our track record of 5-star reviews speaks for itself.</p>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:2.5rem;">
+          <a href="tel:{{ lead.phone }}" class="btn btn-primary">&#128222; Call Us Today</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. TESTIMONIALS -->
+<section class="testimonials-section" id="testimonials">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:4rem;" class="reveal">
+      <span class="section-tag">Client Stories</span>
+      <h2 class="section-title">What Homeowners Are Saying</h2>
+      <p>Real transformations, real results &mdash; see why neighbors trust {{ lead.name }}.</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card reveal">
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote>"{{ lead.name }} completely transformed our backyard. The stone patio and custom pergola they built are absolutely stunning &mdash; we use it every single weekend. Best investment we've ever made in our home."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar">SR</div>
+          <div class="testi-author-info">
+            <strong>Sarah &amp; Robert M.</strong>
+            <span>Backyard Patio + Pergola Project</span>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal">
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote>"From the very first consultation, {{ lead.name }} showed genuine care about our vision. The irrigation system installation was seamless, and our lawn has never looked this green. Truly professional."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar">JK</div>
+          <div class="testi-author-info">
+            <strong>James K.</strong>
+            <span>Full Lawn Care + Irrigation System</span>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal">
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote>"They removed three giant trees safely and installed a beautiful garden bed with native plants. {{ lead.name }} is thorough, reliable, and their pricing is completely transparent. 10/10 would recommend."</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar">LA</div>
+          <div class="testi-author-info">
+            <strong>Linda A.</strong>
+            <span>Tree Removal + Garden Design</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. CTA BANNER -->
+<section class="cta-section" id="cta">
+  <div class="container">
+    <div class="cta-inner reveal">
+      <span class="section-tag">Ready to Start?</span>
+      <h2 class="section-title text-gradient">Transform Your<br>Outdoor Space</h2>
+      <p>Book your free, no-obligation estimate and let {{ lead.name }} design the outdoor living space you've always dreamed of.</p>
+      <div class="cta-btns">
+        <a href="tel:{{ lead.phone }}" class="btn btn-primary">&#128222; Get Free Estimate</a>
+        <a href="#builder" class="btn btn-outline">Try Oasis Builder</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="reveal-left">
+        <span class="section-tag">Get In Touch</span>
+        <h2 class="contact-title">Let's Build Something <span class="text-gradient">Beautiful</span></h2>
+        <p class="contact-sub">We're always ready to discuss your next project. Reach out and we'll get back to you within one business day.</p>
+        <div class="contact-items">
+          <a href="tel:{{ lead.phone }}" class="contact-item">
+            <span class="contact-icon">&#128222;</span>
+            <div class="contact-item-info">
+              <span>Phone</span>
+              <strong>{{ lead.phone }}</strong>
+            </div>
+          </a>
+          <div class="contact-item">
+            <span class="contact-icon">&#128205;</span>
+            <div class="contact-item-info">
+              <span>Service Area</span>
+              <strong>Local &amp; Surrounding Areas</strong>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">&#9993;&#65039;</span>
+            <div class="contact-item-info">
+              <span>Email</span>
+              <strong>info@{{ lead.name | lower | replace(' ', '') }}.com</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-right">
+        <div class="contact-hours">
+          <h4>Business Hours</h4>
+          <div class="hours-row"><span>Monday &ndash; Friday</span><span>7:00 AM &ndash; 6:00 PM</span></div>
+          <div class="hours-row"><span>Saturday</span><span>8:00 AM &ndash; 4:00 PM</span></div>
+          <div class="hours-row"><span>Sunday</span><span>Emergency Only</span></div>
+          <div style="margin-top:1.8rem;">
+            <a href="tel:{{ lead.phone }}" class="btn btn-primary" style="width:100%;justify-content:center;">Schedule Free Visit</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#home" class="logo">{{ lead.name }}<span class="logo-dot">.</span></a>
+        <p>Premium landscaping, hardscaping, and outdoor living design. Creating beautiful, functional outdoor spaces that last a lifetime.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Quick Links</h5>
+        <ul class="footer-links">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#builder">Oasis Builder</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#testimonials">Testimonials</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact Info</h5>
+        <div class="footer-contact-list">
+          <div class="footer-contact-item">
+            <span>&#128222;</span>
+            <a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>
+          </div>
+          <div class="footer-contact-item">
+            <span>&#8987;</span>
+            <span>Mon&ndash;Fri: 7AM &ndash; 6PM</span>
+          </div>
+          <div class="footer-contact-item">
+            <span>&#127807;</span>
+            <span>Licensed &amp; Insured</span>
+          </div>
+          <div class="footer-contact-item">
+            <span>&#11088;</span>
+            <span>5-Star Rated Service</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 <a href="#home">{{ lead.name }}</a>. All rights reserved.</p>
+      <p>Built with &#10084;&#65039; for outdoor excellence.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- 11. JAVASCRIPT -->
+<script>
+// Navbar scroll effect
+(function () {
+  var navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', function () {
+    if (window.scrollY > 60) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  }, { passive: true });
+}());
+
+// Hamburger menu toggle
+(function () {
+  var burger   = document.getElementById('hamburger');
+  var navLinks = document.getElementById('navLinks');
+  burger.addEventListener('click', function () {
+    burger.classList.toggle('open');
+    navLinks.classList.toggle('open');
+  });
+  navLinks.querySelectorAll('a').forEach(function (link) {
+    link.addEventListener('click', function () {
+      burger.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
+  });
+}());
+
+// IntersectionObserver — reveal animations
+(function () {
+  var els = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function (el) { observer.observe(el); });
+
+  // Stagger grid children
+  document.querySelectorAll('.services-grid, .testi-grid').forEach(function (grid) {
+    grid.querySelectorAll('.reveal').forEach(function (card, i) {
+      card.style.transitionDelay = (i * 80) + 'ms';
+    });
+  });
+}());
+
+// Oasis Builder toggle logic
+(function () {
+  var totalValue = 0;
+  var values = {
+    'poolGroup':    35000,
+    'firepitGroup':  4500,
+    'pergolaGroup':  8000
+  };
+  var valDisplay = document.getElementById('estValue');
+
+  document.querySelectorAll('.toggle-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      btn.classList.toggle('active');
+      var targetId = btn.getAttribute('data-target');
+      var target   = document.getElementById(targetId);
+      if (btn.classList.contains('active')) {
+        target.style.opacity = '1';
+        totalValue += values[targetId];
+      } else {
+        target.style.opacity = '0';
+        totalValue -= values[targetId];
+      }
+      valDisplay.textContent = '+ $' + totalValue.toLocaleString();
+    });
+  });
+}());
+</script>
+</body>
+</html>

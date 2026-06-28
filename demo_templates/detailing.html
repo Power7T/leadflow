@@ -203,6 +203,16 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 @media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3.5rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.programs-grid,.pricing-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.hero-name{font-size:3.2rem}.hero-subtitle-track span{font-size:2.4rem}.hero-subtitle-wrapper{height:3rem}.section-title{font-size:2.4rem}.programs-grid,.pricing-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}}
 @media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+/* AHA MOMENT INTERACTIVE SECTION */
+.aha-section{padding:5rem 0;position:relative;background:var(--bg-secondary);overflow:hidden}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2rem}
+.aha-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 20px;border-radius:999px;cursor:pointer;font-size:0.85rem;font-weight:600;font-family:inherit;transition:all 0.25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:0 4px 16px rgba(224,90,38,0.3)}
+.aha-svg-wrap{width:100%;max-width:320px}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;margin-top:0.5rem;min-height:2rem}
+@media(max-width:768px){.aha-controls{gap:8px}.aha-btn{font-size:0.75rem;padding:7px 14px}}
+@keyframes shine-sweep{0%{opacity:0;transform:translateX(-40px)}50%{opacity:0.9}100%{opacity:0;transform:translateX(40px)}}
 </style>
 </head>
 <body>
@@ -213,7 +223,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   {% if lead.website %}
   <span class="orig">Based on <a href="http://{{ lead.website }}" target="_blank" style="color:inherit; text-decoration:underline;">http://www.{{ lead.website }}</a></span>
   {% endif %}
@@ -221,9 +231,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 
 <!-- Carbon Grid Background and Spotlights -->
 <div class="carbon-grid"></div>
-<div class="spotlight" style="top:-100px;left:-150px"></div>
-<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,rgba(0,81,255,0.12),transparent 70%)"></div>
-<div class="spotlight" style="bottom:10%;left:-100px"></div>
+
 
 <!-- Navbar -->
 <nav class="navbar" id="navbar">
@@ -250,6 +258,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 
 <!-- Hero -->
 <section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
   <div class="container">
     <div class="hero-content reveal reveal-slide-up">
       <div class="hero-tag">&#x2022; Elite Paint Care & Protection</div>
@@ -261,6 +270,14 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
           <span>ELITE AUTO DETAILING</span>
         </div>
       </div>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
       <p class="hero-desc">At {{ lead.name }}, we elevate your vehicle's presentation. Specializing in multi-stage paint correction, certified ceramic coatings, and high-end detailing, our passion drives us to deliver absolute perfection to every car we touch.</p>
       <div class="hero-btns">
         <a href="#contact" class="btn btn-primary">Request a Quote</a>
@@ -335,6 +352,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 
 <!-- Services Grid -->
 <section class="programs-section" id="programs">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,rgba(0,81,255,0.12),transparent 70%)"></div>
   <div class="container">
     <div style="text-align:center">
       <span class="section-tag">Our Services</span>
@@ -434,6 +452,76 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
   </div>
 </section>
 
+<!-- AHA: Car Paint Condition Meter -->
+<section class="aha-section" id="paint-condition-meter">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Paint Assessment</span>
+      <h2 class="section-title" style="max-width:600px;margin:.5rem auto 0">From Dull to <span class="text-gradient-cyan">Mirror Finish</span></h2>
+      <p style="color:var(--text-muted);max-width:480px;margin:0 auto">Select a detailing package and watch your car's paint transform to a flawless shine.</p>
+      <div class="aha-controls">
+        <button class="aha-btn" data-detail="0" onclick="detailViz(0)">Light Wash</button>
+        <button class="aha-btn" data-detail="1" onclick="detailViz(1)">Clay Bar</button>
+        <button class="aha-btn active" data-detail="2" onclick="detailViz(2)">Paint Correction</button>
+        <button class="aha-btn" data-detail="3" onclick="detailViz(3)">Ceramic Coat</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg id="detail-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 0 20px rgba(0,188,212,0.35))">
+          <defs>
+            <linearGradient id="carGrad-dull" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2a2a2a"/>
+              <stop offset="100%" stop-color="#1a1a1a"/>
+            </linearGradient>
+            <linearGradient id="carGrad-clay" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#1a3a4a"/>
+              <stop offset="100%" stop-color="#0d2030"/>
+            </linearGradient>
+            <linearGradient id="carGrad-correct" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#003d5c"/>
+              <stop offset="100%" stop-color="#001f3f"/>
+            </linearGradient>
+            <linearGradient id="carGrad-ceramic" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#00bcd4"/>
+              <stop offset="30%" stop-color="#006080"/>
+              <stop offset="70%" stop-color="#001f3f"/>
+              <stop offset="100%" stop-color="#00bcd4"/>
+            </linearGradient>
+            <!-- Shine sweep gradient -->
+            <linearGradient id="shineGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="white" stop-opacity="0"/>
+              <stop offset="50%" stop-color="white" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="white" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Road / ground -->
+          <rect x="0" y="170" width="320" height="30" rx="0" fill="#111"/>
+          <line x1="0" y1="185" x2="320" y2="185" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="20,10"/>
+          <!-- Car body (simplified side profile) -->
+          <!-- Main body rectangle -->
+          <rect id="car-body" x="30" y="110" width="260" height="58" rx="10" fill="url(#carGrad-correct)"/>
+          <!-- Roof -->
+          <path id="car-roof" d="M95,110 L120,68 L220,68 L250,110 Z" fill="url(#carGrad-correct)"/>
+          <!-- Windows -->
+          <path d="M105,107 L125,74 L170,74 L165,107 Z" fill="rgba(0,188,212,0.2)" stroke="rgba(0,188,212,0.4)" stroke-width="1"/>
+          <path d="M168,107 L173,74 L215,74 L237,107 Z" fill="rgba(0,188,212,0.2)" stroke="rgba(0,188,212,0.4)" stroke-width="1"/>
+          <!-- Wheels -->
+          <circle cx="90" cy="168" r="22" fill="#111" stroke="#333" stroke-width="2"/>
+          <circle cx="90" cy="168" r="13" fill="#222" stroke="#555" stroke-width="1"/>
+          <circle cx="230" cy="168" r="22" fill="#111" stroke="#333" stroke-width="2"/>
+          <circle cx="230" cy="168" r="13" fill="#222" stroke="#555" stroke-width="1"/>
+          <!-- Headlight -->
+          <ellipse cx="285" cy="130" rx="8" ry="5" fill="rgba(0,188,212,0.15)" stroke="rgba(0,188,212,0.5)" stroke-width="1"/>
+          <!-- Shine sweep (mirror finish only) -->
+          <rect id="car-shine" x="30" y="68" width="260" height="100" rx="10" fill="url(#shineGrad)" opacity="0" style="animation:none"/>
+          <!-- Gloss label -->
+          <text id="detail-gloss" x="160" y="195" text-anchor="middle" fill="#00bcd4" font-size="11" font-weight="700" font-family="sans-serif">Paint Correction — High Gloss</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="detail-label">Paint Correction — Swirl Marks Removed</div>
+    </div>
+  </div>
+</section>
+
 <!-- Testimonials -->
 <section class="testimonials-section" id="testimonials">
   <div class="container">
@@ -487,6 +575,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 
 <!-- Contact -->
 <section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
   <div class="container" style="text-align:center">
     <span class="section-tag">Find Us</span>
     <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-cyan">{{ lead.name }}</span></h2>
@@ -535,8 +624,8 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a></p>
-      <p>Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here &rarr;</a></p>
+      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here &rarr;</a></p>
     </div>
   </div>
 </footer>
@@ -607,6 +696,28 @@ document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
   },{passive:true});
   buildDots();
   window.addEventListener('resize',()=>goto(0));
+})();
+(function(){
+  var packs=[
+    {label:'Light Wash — Surface Clean Only',gloss:'Light Wash — Basic Clean',grad:'carGrad-dull',shine:0,glow:'rgba(80,80,80,0.2)'},
+    {label:'Clay Bar — Contaminants Removed',gloss:'Clay Bar — Smooth Finish',grad:'carGrad-clay',shine:0.1,glow:'rgba(0,100,150,0.25)'},
+    {label:'Paint Correction — Swirl Marks Removed',gloss:'Paint Correction — High Gloss',grad:'carGrad-correct',shine:0.25,glow:'rgba(0,188,212,0.35)'},
+    {label:'Ceramic Coat — Mirror Finish 💫',gloss:'Ceramic Coat — Mirror Finish',grad:'carGrad-ceramic',shine:0.8,glow:'rgba(0,188,212,0.6)'}
+  ];
+  window.detailViz=function(idx){
+    var p=packs[idx];
+    document.querySelectorAll('.aha-btn[data-detail]').forEach(function(b){b.classList.toggle('active',parseInt(b.dataset.detail)===idx);});
+    document.getElementById('car-body').setAttribute('fill','url(#'+p.grad+')');
+    document.getElementById('car-roof').setAttribute('fill','url(#'+p.grad+')');
+    var shine=document.getElementById('car-shine');
+    shine.style.opacity=p.shine;
+    if(idx===3){shine.style.animation='shine-sweep 2s ease-in-out infinite';}
+    else{shine.style.animation='none';}
+    document.getElementById('detail-gloss').textContent=p.gloss;
+    document.getElementById('detail-label').textContent=p.label;
+    document.getElementById('detail-svg').style.filter='drop-shadow(0 0 24px '+p.glow+')';
+  };
+  detailViz(2);
 })();
 </script>
 

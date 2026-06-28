@@ -68,10 +68,11 @@ def get_sender_credentials(assigned_email: str = None) -> tuple[str, str]:
 
 def send_email(to_email: str, subject: str, body: str,
                tracking_id: str = "", demo_url: str = "",
-               business_id: int = None) -> bool:
+               business_id: int = None, smtp_server=None,
+               reply_to_message_id: str = None) -> bool:
     from database import get_or_assign_sender_email, get_conn
 
-    # Prevent contractors (roofer, hvac, solar) from sending/receiving demo links
+    # Prevent contractors (roofer, hvac, solar, plumbers) from sending/receiving demo links to boost reply rates
     if business_id:
         conn = get_conn()
         try:
@@ -79,13 +80,15 @@ def send_email(to_email: str, subject: str, body: str,
             if row:
                 category = (row["category"] or "").lower()
                 name_lower = (row["name"] or "").lower()
-                is_contractor = any(kw in category or kw in name_lower for kw in ["roof", "roofer", "hvac", "air conditioning", "heating", "cooling", "solar", "remodeler", "remodeling", "renovation", "detail", "detailing", "ceramic", "tree", "arborist"])
+                contractor_kws = ["remodeler", "remodeling", "renovation", "detail", "detailing", "ceramic", "tree", "arborist", "roof", "hvac", "solar", "plumb", "landscap", "moving", "handyman"]
+                is_contractor = any(kw in category or kw in name_lower for kw in contractor_kws)
                 if is_contractor:
                     demo_url = ""
         except Exception:
             pass
         finally:
             conn.close()
+
 
     assigned_email = None
     if business_id:
@@ -101,7 +104,6 @@ def send_email(to_email: str, subject: str, body: str,
         return False
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
     msg["From"]    = formataddr((sender_name, sender_email)) if sender_name else sender_email
     msg["To"]      = to_email
 
@@ -114,6 +116,35 @@ def send_email(to_email: str, subject: str, body: str,
         msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
     unsub_parts.append(f"<mailto:{sender_email}?subject=unsubscribe>")
     msg["List-Unsubscribe"] = ", ".join(unsub_parts)
+
+    # ── Email Threading for Follow-ups ──
+    parent_message_id = reply_to_message_id
+    if not parent_message_id and business_id:
+        conn = get_conn()
+        try:
+            row = conn.execute(
+                "SELECT message_id FROM outreach WHERE business_id=? AND channel='email' AND status='sent' LIMIT 1",
+                (business_id,)
+            ).fetchone()
+            if row and row["message_id"]:
+                parent_message_id = row["message_id"]
+        except Exception:
+            pass
+        finally:
+            conn.close()
+
+    if parent_message_id:
+        msg["In-Reply-To"] = parent_message_id
+        msg["References"] = parent_message_id
+        if not subject.lower().startswith("re:"):
+            subject = f"Re: {subject}"
+
+    msg["Subject"] = subject
+
+    # Generate unique RFC-compliant Message-ID
+    from email.utils import make_msgid
+    msg_id = make_msgid(domain=sender_email.split('@')[-1])
+    msg['Message-ID'] = msg_id
 
     # CAN-SPAM footer: postal address + clear opt-out.
     address = os.getenv("AGENCY_ADDRESS", "")
@@ -138,9 +169,53 @@ def send_email(to_email: str, subject: str, body: str,
     msg.attach(MIMEText(html, "html"))
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, to_email, msg.as_string())
+        if smtp_server is not None:
+            smtp_server.sendmail(sender_email, to_email, msg.as_string())
+        else:
+            smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+            try:
+                smtp_port = int(os.getenv("SMTP_PORT", "465"))
+            except ValueError:
+                smtp_port = 465
+            
+            if smtp_port == 465:
+                with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
+                    server.login(sender_email, sender_password)
+                    server.sendmail(sender_email, to_email, msg.as_string())
+            else:
+                with smtplib.SMTP(smtp_host, smtp_port) as server:
+                    server.starttls()
+                    server.login(sender_email, sender_password)
+                    server.sendmail(sender_email, to_email, msg.as_string())
+
+        # Update database with generated message_id
+        if business_id:
+            conn = get_conn()
+            try:
+                if parent_message_id:
+                    # Update message_id for the most recent pending/sending follow-up
+                    conn.execute("""
+                        UPDATE follow_ups 
+                        SET message_id=? 
+                        WHERE id = (
+                            SELECT id FROM follow_ups 
+                            WHERE business_id=? AND status='pending' 
+                            ORDER BY sequence_num ASC LIMIT 1
+                        )
+                    """, (msg_id, business_id))
+                else:
+                    # Update message_id for the initial email
+                    conn.execute("""
+                        UPDATE outreach 
+                        SET message_id=? 
+                        WHERE business_id=? AND channel='email'
+                    """, (msg_id, business_id))
+                conn.commit()
+            except Exception:
+                pass
+            finally:
+                conn.close()
+
         return True
     except Exception as e:
         raise RuntimeError(f"Failed to send email: {e}")

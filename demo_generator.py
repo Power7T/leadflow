@@ -14,7 +14,7 @@ from deploy import public_base
 
 # Stock imagery shipped with the templates. We NEVER put the prospect's own
 # images on a demo — always these, so nothing can hotlink-break or look "theirs".
-_STOCK_HERO  = "https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&q=80"
+_STOCK_HERO  = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80" # Modern professional office interior
 _STOCK_ABOUT = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80"
 
 
@@ -348,24 +348,67 @@ def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = Fals
     else:
         gallery_section = ""
 
-    # Program cards — use scraped services or Iron Peak defaults
-    services    = (scraped.get("services") or [])[:6]
-    icons       = ["\U0001f3cb️","\U0001f525","\U0001f94a","\U0001f9d8","\U0001f3c3","\U0001f4aa"]
-    default_svcs = [
-        ("Strength Training","Build muscle and power through progressive overload and compound movements."),
-        ("HIIT & Cardio","Torch fat and boost cardiovascular fitness with high-intensity circuits."),
-        ("Personal Training","One-on-one coaching sessions tailored entirely to your body and goals."),
-        ("Yoga & Recovery","Improve flexibility and restore your body between intense training sessions."),
-        ("Group Classes","High-energy group sessions that push you further than training alone."),
-        ("Nutrition Coaching","Expert nutrition plans to fuel performance and maximise your results."),
-    ]
+    category_lower = (category or "gym").lower()
+    
+    if "chiropractor" in category_lower or "chiropractic" in category_lower:
+        default_svcs = [
+            ("Spinal Adjustments", "Gentle, precise alignments to relieve nerve pressure and restore mobility."),
+            ("Pain Management", "Comprehensive care plans to alleviate chronic back, neck, and joint pain."),
+            ("Sports Recovery", "Specialized therapies to help athletes heal faster and perform at their peak."),
+            ("Posture Correction", "Targeted plans to correct spinal curvature and improve daily posture."),
+            ("Massage Therapy", "Deep tissue relaxation to complement and enhance your chiropractic adjustments."),
+            ("Wellness Consultations", "Holistic advice on ergonomics, nutrition, and long-term joint health.")
+        ]
+        icons = ["🦴","🧘","🏃","🛌","💆","📈"]
+        prog_tag = "Our Treatments"
+        prog_title = "Engineered For <span class=\"text-gradient-orange\">Pain Relief</span>"
+        prog_desc = "Discover targeted treatments structured to improve mobility, alleviate pain, and restore your well-being."
+        testi_tag = "Patient Reviews"
+        testi_title = "Real Healing, <span class=\"text-gradient-orange\">Real Relief</span>"
+        testi_1 = f"\"Coming to {name} was life-changing. The doctors are incredibly knowledgeable and I am finally pain-free after years of back issues.\""
+        testi_2 = f"\"The atmosphere at {name} is incredibly welcoming. They took the time to explain my x-rays and the adjustments have drastically improved my sleep.\""
+        testi_3 = f"\"I've tried many clinics, but {name} is on a different level. The personalized recovery plan got me back to running in just a few weeks.\""
+        testi_4 = f"\"Best investment I've made in my health. The staff is supportive, the clinic is modern, and the adjustments provide instant relief.\""
+        phrase1_def = "PAIN RELIEF"
+        phrase2 = "SPINAL HEALTH"
+        phrase3 = "TRUE WELLNESS"
+        page_title = f"{name} | Expert Chiropractic Care"
+        page_desc = f"Welcome to {name}. Premium chiropractic facility in your city."
+    else:
+        default_svcs = [
+            ("Strength Training","Build muscle and power through progressive overload and compound movements."),
+            ("HIIT & Cardio","Torch fat and boost cardiovascular fitness with high-intensity circuits."),
+            ("Personal Training","One-on-one coaching sessions tailored entirely to your body and goals."),
+            ("Yoga & Recovery","Improve flexibility and restore your body between intense training sessions."),
+            ("Group Classes","High-energy group sessions that push you further than training alone."),
+            ("Nutrition Coaching","Expert nutrition plans to fuel performance and maximise your results."),
+        ]
+        icons = ["🏋️","🔥","🥊","🧘","🏃","💪"]
+        prog_tag = "Our Programs"
+        prog_title = "Engineered For <span class=\"text-gradient-orange\">Extraordinary</span> Results"
+        prog_desc = "Discover programs structured to improve strength, conditioning, agility and mental resilience."
+        testi_tag = "What Members Say"
+        testi_title = "Real Stories, <span class=\"text-gradient-orange\">Real Results</span>"
+        testi_1 = f"\"Joining {name} was the best decision I made. The coaches are incredible and the equipment is top-notch. I've seen results I never thought possible.\""
+        testi_2 = f"\"The atmosphere at {name} is unmatched. Everyone is motivated and the trainers really push you to your limits while keeping it safe and fun.\""
+        testi_3 = f"\"I've tried many gyms but {name} is on a different level. The personal training sessions changed my physique completely in just 6 months.\""
+        testi_4 = f"\"Best investment I've made in my health. The group classes are energetic, the staff is supportive and the facilities are always clean and modern.\""
+        phrase1_def = "PEAK POWER"
+        phrase2 = "INNER BEAST"
+        phrase3 = "TRUE POTENTIAL"
+        page_title = f"{name} | Elevate Your Performance"
+        page_desc = f"Welcome to {name}. Premium fitness facility in your city."
+
+    # Program cards — use scraped services or defaults
+    services = (scraped.get("services") or [])[:6]
+    
     if services:
         prog_cards = ""
         for i, svc in enumerate(services):
             icon  = icons[i % len(icons)]
             delay = f"transition-delay:{(i%3)*0.1:.1f}s" if i % 3 > 0 else ""
             title = svc["title"] if isinstance(svc, dict) else str(svc)
-            desc  = (svc.get("desc") or f"Expert {title.lower()} coaching and world-class equipment.") if isinstance(svc, dict) else f"World-class {title.lower()} at {name}."
+            desc  = (svc.get("desc") or f"Expert {title.lower()} and world-class care.") if isinstance(svc, dict) else f"World-class {title.lower()} at {name}."
             prog_cards += (
                 f'<div class="program-card reveal reveal-slide-up" style="{delay}">'
                 f'<div class="program-icon">{icon}</div>'
@@ -406,17 +449,15 @@ def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = Fals
     city       = addr_parts[1] if len(addr_parts) > 1 else (addr_parts[0] if addr_parts else "your city")
 
     # Cycling hero text — use scraped hero_text as first phrase if available
-    phrase1 = (scraped.get("hero_text") or "PEAK POWER").upper()[:30]
-    phrase2 = "INNER BEAST"
-    phrase3 = "TRUE POTENTIAL"
+    phrase1 = (scraped.get("hero_text") or phrase1_def).upper()[:30]
 
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>{name} | Elevate Your Performance</title>
-<meta name="description" content="Welcome to {name}. Premium fitness facility in {city}.">
+<title>{page_title}</title>
+<meta name="description" content="{page_desc}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -579,7 +620,7 @@ body.cursor-hover .custom-cursor-ring{{width:60px;height:60px;border-color:var(-
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {name} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   <span class="orig">{orig_note}</span>
 </div>
 
@@ -702,11 +743,11 @@ body.cursor-hover .custom-cursor-ring{{width:60px;height:60px;border-color:var(-
 <section class="programs-section" id="programs">
   <div class="container">
     <div style="text-align:center">
-      <span class="section-tag">Our Programs</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Engineered For <span class="text-gradient-orange">Extraordinary</span> Results</h2>
-      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Discover programs structured to improve strength, conditioning, agility and mental resilience.</p>
+      <span class="section-tag">{prog_tag}</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">{prog_title}</h2>
+      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">{prog_desc}</p>
     </div>
-    <div class="programs-grid">{prog_cards}</div>
+    <div class="programs-grid">{{prog_cards}}</div>
   </div>
 </section>
 
@@ -714,29 +755,29 @@ body.cursor-hover .custom-cursor-ring{{width:60px;height:60px;border-color:var(-
 <section class="testimonials-section" id="testimonials">
   <div class="container">
     <div style="text-align:center">
-      <span class="section-tag">What Members Say</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Real Stories, <span class="text-gradient-orange">Real Results</span></h2>
+      <span class="section-tag">{testi_tag}</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">{testi_title}</h2>
     </div>
     <div class="t-slider-outer">
       <div class="t-slider" id="tSlider">
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Joining {name} was the best decision I made. The coaches are incredible and the equipment is top-notch. I've seen results I never thought possible."</p>
+          <p>{testi_1}</p>
           <div class="t-author">Sarah M.<span>Member since 2023</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"The atmosphere at {name} is unmatched. Everyone is motivated and the trainers really push you to your limits while keeping it safe and fun."</p>
+          <p>{testi_2}</p>
           <div class="t-author">James K.<span>Member since 2022</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"I've tried many gyms but {name} is on a different level. The personal training sessions changed my physique completely in just 6 months."</p>
+          <p>{testi_3}</p>
           <div class="t-author">Priya R.<span>Member since 2024</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Best investment I've made in my health. The group classes are energetic, the staff is supportive and the facilities are always clean and modern."</p>
+          <p>{testi_4}</p>
           <div class="t-author">Ahmed N.<span>Member since 2023</span></div>
         </div>
       </div>
@@ -802,8 +843,8 @@ body.cursor-hover .custom-cursor-ring{{width:60px;height:60px;border-color:var(-
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 {name}. Demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a></p>
-      <p>Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here &rarr;</a></p>
+      <p>&copy; 2025 {name}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here &rarr;</a></p>
     </div>
   </div>
 </footer>
@@ -1062,7 +1103,27 @@ def generate_demo_html(business: dict, website_data: dict = None, use_stock: boo
                 about_img = "/static/detailing_about.jpg"
             elif target_template == "treeservice.html":
                 hero_img = "/static/treeservice_hero.jpg"
-                about_img = "/static/treeservice_about.jpg"
+            elif target_template == "chiropractor.html":
+                hero_img = "https://power7t.github.io/leadflow-demos/chiro-hero.jpg"
+                about_img = "https://power7t.github.io/leadflow-demos/chiro-about.jpg"
+            elif target_template == "plumber.html":
+                hero_img = "https://power7t.github.io/leadflow-demos/plumber-hero.jpg"
+                about_img = "https://power7t.github.io/leadflow-demos/plumber-about.jpg"
+            elif target_template == "valet_laundry.html":
+                hero_img = "https://power7t.github.io/leadflow-demos/laundry-hero.jpg"
+                about_img = "https://power7t.github.io/leadflow-demos/laundry-about.jpg"
+            elif target_template == "accountant.html":
+                hero_img = "https://power7t.github.io/leadflow-demos/accountant-hero.jpg"
+                about_img = "https://power7t.github.io/leadflow-demos/accountant-about.jpg"
+            elif target_template == "moving.html":
+                hero_img = "https://power7t.github.io/leadflow-demos/moving-hero.jpg"
+                about_img = "https://power7t.github.io/leadflow-demos/moving-about.jpg"
+            elif target_template == "landscaping.html":
+                hero_img = "https://power7t.github.io/leadflow-demos/landscaping-hero.jpg"
+                about_img = "https://power7t.github.io/leadflow-demos/landscaping-about.jpg"
+            elif target_template == "interiordesign.html":
+                hero_img = "https://power7t.github.io/leadflow-demos/interiordesign-hero.jpg"
+                about_img = "https://power7t.github.io/leadflow-demos/interiordesign-about.jpg"
             else:
                 hero_img, about_img = _STOCK_HERO, _STOCK_ABOUT
 
@@ -1157,56 +1218,54 @@ def generate_demo_html(business: dict, website_data: dict = None, use_stock: boo
 <title>{display_name} — New Website Demo</title>
 <style>
 *{{box-sizing:border-box;margin:0;padding:0}}
-body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;background:#0d0d0d;color:#e4e4e4;line-height:1.6}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.6}}
 
 /* DEMO BANNER */
-.demo-banner{{background:{accent};color:#000;text-align:center;padding:11px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}}
-.demo-banner a{{color:#000;text-decoration:underline;font-weight:700}}
-.orig-note{{font-size:11px;font-weight:400;opacity:0.7}}
+.demo-banner{{background:{accent};color:#fff;text-align:center;padding:12px 20px;font-size:14px;font-weight:700;position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;box-shadow:0 4px 12px rgba(0,0,0,0.1)}}
+.demo-banner a{{color:#fff;text-decoration:underline;font-weight:700}}
+.orig-note{{font-size:12px;font-weight:500;opacity:0.9}}
 
 /* NAV */
-.nav{{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);position:sticky;top:48px;z-index:100;border-bottom:1px solid rgba(255,255,255,0.06)}}
-.nav-brand{{font-size:18px;font-weight:800;color:{accent};letter-spacing:-0.5px}}
-.nav-links{{display:flex;gap:28px}}
-.nav-links a{{color:rgba(255,255,255,0.65);text-decoration:none;font-size:14px;transition:color 0.2s}}
+.nav{{display:flex;align-items:center;justify-content:space-between;padding:20px 50px;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);position:sticky;top:48px;z-index:100;border-bottom:1px solid #e2e8f0;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05)}}
+.nav-brand{{font-size:22px;font-weight:800;color:{accent};letter-spacing:-0.5px}}
+.nav-links{{display:flex;gap:32px}}
+.nav-links a{{color:#475569;text-decoration:none;font-size:15px;font-weight:500;transition:color 0.2s}}
 .nav-links a:hover{{color:{accent}}}
-.nav-cta{{background:{accent};color:#000;padding:9px 22px;border-radius:50px;font-size:13px;font-weight:700;text-decoration:none;transition:transform 0.15s}}
-.nav-cta:hover{{transform:translateY(-1px)}}
+.nav-cta{{background:{accent};color:#fff;padding:10px 24px;border-radius:50px;font-size:14px;font-weight:700;text-decoration:none;transition:transform 0.15s,box-shadow 0.15s}}
+.nav-cta:hover{{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}}
 
 /* HERO */
-.hero{{{hero_style}min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 60px}}
-.hero-eyebrow{{font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:{accent};margin-bottom:18px}}
-.hero h1{{font-size:clamp(2.4rem,6vw,4.2rem);font-weight:900;letter-spacing:-1.5px;line-height:1.1;margin-bottom:20px;max-width:820px;text-shadow:0 2px 30px rgba(0,0,0,0.6)}}
-.hero-tagline{{font-size:1.15rem;color:rgba(255,255,255,0.72);max-width:560px;margin:0 auto 32px;line-height:1.65}}
-.hero-rating{{margin-bottom:36px;display:flex;align-items:center;gap:8px;justify-content:center}}
-.stars{{color:{accent};font-size:1.25rem;letter-spacing:2px}}
-.rating-num{{font-size:1.1rem;font-weight:700}}
-.rating-ct{{color:rgba(255,255,255,0.5);font-size:0.88rem}}
-.hero-btns{{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}}
-.btn-main{{background:{accent};color:#000;padding:16px 38px;border-radius:50px;font-weight:800;font-size:1rem;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 6px 24px rgba(0,0,0,0.35)}}
-.btn-main:hover{{transform:translateY(-2px);box-shadow:0 10px 36px rgba(0,0,0,0.45)}}
-.btn-outline{{border:2px solid rgba(255,255,255,0.4);color:#fff;padding:14px 32px;border-radius:50px;font-weight:600;font-size:1rem;text-decoration:none;transition:all 0.2s}}
-.btn-outline:hover{{border-color:{accent};color:{accent}}}
+.hero{{{hero_style}min-height:85vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 24px 80px}}
+.hero-eyebrow{{font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:20px;text-shadow:0 2px 10px rgba(0,0,0,0.5)}}
+.hero h1{{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;letter-spacing:-1.5px;line-height:1.1;margin-bottom:24px;max-width:850px;color:#fff;text-shadow:0 4px 20px rgba(0,0,0,0.6)}}
+.hero-tagline{{font-size:1.25rem;color:rgba(255,255,255,0.9);max-width:600px;margin:0 auto 40px;line-height:1.6;text-shadow:0 2px 10px rgba(0,0,0,0.5)}}
+.hero-rating{{margin-bottom:40px;display:flex;align-items:center;gap:10px;justify-content:center;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);padding:10px 20px;border-radius:50px}}
+.stars{{color:#fbbf24;font-size:1.3rem;letter-spacing:2px}}
+.rating-num{{font-size:1.15rem;font-weight:800;color:#fff}}
+.rating-ct{{color:rgba(255,255,255,0.8);font-size:0.95rem}}
+.hero-btns{{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}}
+.btn-main{{background:{accent};color:#fff;padding:18px 42px;border-radius:50px;font-weight:800;font-size:1.1rem;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 8px 24px rgba(0,0,0,0.25)}}
+.btn-main:hover{{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,0.35)}}
+.btn-outline{{border:2px solid #fff;background:rgba(255,255,255,0.1);color:#fff;padding:16px 36px;border-radius:50px;font-weight:700;font-size:1.1rem;text-decoration:none;transition:all 0.2s}}
+.btn-outline:hover{{background:#fff;color:#000}}
 
 /* SECTIONS */
-.container{{max-width:960px;margin:0 auto;padding:0 24px}}
-.section-title{{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-0.5px;margin-bottom:12px;color:#fff}}
-.section-sub{{color:rgba(255,255,255,0.5);font-size:1rem;margin-bottom:48px;max-width:520px}}
+.container{{max-width:1100px;margin:0 auto;padding:0 24px}}
+.section-title{{font-size:clamp(2rem,4vw,2.8rem);font-weight:800;letter-spacing:-0.5px;margin-bottom:16px;color:#0f172a}}
+.section-sub{{color:#64748b;font-size:1.1rem;margin-bottom:56px;max-width:600px}}
 
 /* ABOUT */
-.about-section{{padding:96px 0;background:#111}}
-.about-inner{{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}}
-.about-text p{{color:rgba(255,255,255,0.7);font-size:1.05rem;line-height:1.8;margin-bottom:16px}}
-.about-stat{{text-align:center;padding:28px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px}}
-.about-stat-num{{font-size:2.4rem;font-weight:900;color:{accent};display:block;margin-bottom:4px}}
-.about-stat-label{{font-size:13px;color:#777;text-transform:uppercase;letter-spacing:0.5px}}
-.about-stats{{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
-@media(max-width:640px){{.about-inner{{grid-template-columns:1fr}}}}
+.about-section{{padding:112px 0;background:#ffffff}}
+.about-inner{{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}}
+.about-text p{{color:#475569;font-size:1.1rem;line-height:1.8;margin-bottom:20px}}
+.about-stat{{text-align:center;padding:32px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;transition:transform 0.2s,box-shadow 0.2s}}
+.about-stat:hover{{transform:translateY(-5px);box-shadow:0 12px 24px rgba(0,0,0,0.05)}}
+.about-stat-num{{font-size:2.8rem;font-weight:900;color:{accent};display:block;margin-bottom:8px}}
+.about-stat-label{{font-size:14px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:1px}}
+.about-stats{{display:grid;grid-template-columns:1fr 1fr;gap:20px}}
+@media(max-width:768px){{.about-inner{{grid-template-columns:1fr}}}}
 
 /* SERVICES */
-.services-section{{padding:96px 0;background:#0d0d0d}}
-.svc-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:48px}}
-.svc-card{{background:#161616;border:1px solid #252525;border-radius:14px;padding:30px 26px;transition:border-color 0.2s,transform 0.2s}}
 .svc-card:hover{{border-color:{accent};transform:translateY(-3px)}}
 .svc-icon{{font-size:1.6rem;display:block;margin-bottom:14px;color:{accent}}}
 .svc-card h3{{font-size:1.05rem;font-weight:700;margin-bottom:8px;color:#fff}}
@@ -1254,7 +1313,7 @@ footer a:hover{{text-decoration:underline}}
 
 <div class="demo-banner">
   ✨ FREE demo website built by Chandan Gosavi —
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live →</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live →</a>
   {original_note}
 </div>
 
@@ -1314,8 +1373,8 @@ footer a:hover{{text-decoration:underline}}
 
 <footer>
   &copy; {display_name} &nbsp;·&nbsp;
-  Website demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a>
-  &nbsp;·&nbsp; Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here →</a>
+  Website demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a>
+  &nbsp;·&nbsp; Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here →</a>
 </footer>
 
 
@@ -1326,3 +1385,13 @@ footer a:hover{{text-decoration:underline}}
 
 </body>
 </html>"""
+
+
+def generate_saas_crm_demo_html(business: dict) -> str:
+    """
+    Generates a SaaS CRM Demo landing page for the prospect.
+    Falls back to the generic generate_demo_html but with a SaaS theme twist.
+    """
+    # For now, we wrap the generic demo HTML to satisfy the import. 
+    # In a full implementation, you could build a distinct Jinja template for SaaS.
+    return generate_demo_html(business)

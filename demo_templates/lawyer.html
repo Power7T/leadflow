@@ -186,6 +186,18 @@ body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--
 @media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3.5rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.programs-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.hero-name{font-size:3.2rem}.hero-subtitle-track span{font-size:2.4rem}.hero-subtitle-wrapper{height:3rem}.section-title{font-size:2.4rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}}
 @media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+/* AHA MOMENT INTERACTIVE SECTION */
+.aha-section{padding:5rem 0;position:relative;background:var(--bg-secondary);overflow:hidden}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2rem}
+.aha-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 20px;border-radius:999px;cursor:pointer;font-size:0.85rem;font-weight:600;font-family:inherit;transition:all 0.25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:0 4px 16px rgba(224,90,38,0.3)}
+.aha-svg-wrap{width:100%;max-width:320px}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;margin-top:0.5rem;min-height:2rem}
+@media(max-width:768px){.aha-controls{gap:8px}.aha-btn{font-size:0.75rem;padding:7px 14px}}
+.aha-slider{-webkit-appearance:none;appearance:none;width:260px;height:6px;border-radius:3px;background:rgba(255,255,255,0.1);outline:none;cursor:pointer}
+.aha-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:#c8a84b;box-shadow:0 0 8px rgba(200,168,75,0.6);cursor:pointer}
+.aha-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#c8a84b;box-shadow:0 0 8px rgba(200,168,75,0.6);cursor:pointer;border:none}
 </style>
 </head>
 <body>
@@ -196,16 +208,13 @@ body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   {% if lead.website %}
   <span class="orig">Based on <a href="http://{{ lead.website }}" target="_blank" style="color:inherit; text-decoration:underline;">http://www.{{ lead.website }}</a></span>
   {% endif %}
 </div>
 
-<!-- Spotlights -->
-<div class="spotlight" style="top:-100px;left:-150px"></div>
-<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,var(--accent-blue-glow),transparent 70%)"></div>
-<div class="spotlight" style="bottom:10%;left:-100px"></div>
+
 
 <!-- Navbar -->
 <nav class="navbar" id="navbar">
@@ -231,6 +240,7 @@ body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--
 
 <!-- Hero -->
 <section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
   <div class="container">
     <div class="hero-content reveal reveal-slide-up">
       <div class="hero-tag">&#x2022; Trusted Legal Counsel</div>
@@ -242,6 +252,14 @@ body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--
           <span>CRIMINAL DEFENSE</span>
         </div>
       </div>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
       <p class="hero-desc">At {{ lead.name }}, we provide high-caliber legal representation with a focus on delivering results. Our dedicated attorneys fight for your rights, offering clear counsel and strong advocacy through complex legal challenges.</p>
       <div class="hero-btns">
         <a href="#contact" class="btn btn-primary">Request Free Consultation</a>
@@ -316,6 +334,7 @@ body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--
 
 <!-- Practice Areas -->
 <section class="programs-section" id="programs">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,var(--accent-blue-glow),transparent 70%)"></div>
   <div class="container">
     <div style="text-align:center">
       <span class="section-tag">Practice Areas</span>
@@ -359,6 +378,51 @@ body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--
         <p>Asset preservation plans, family wealth trusts, corporate succession planning, and probate court filings.</p>
         <a href="#contact" class="program-link">Case Evaluation →</a>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- AHA: Case Strength Meter -->
+<section class="aha-section" id="case-strength-meter">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Case Assessment</span>
+      <h2 class="section-title" style="max-width:600px;margin:.5rem auto 0">How Strong Is Your <span class="text-gradient-gold">Case?</span></h2>
+      <p style="color:var(--text-muted);max-width:480px;margin:0 auto">Drag the slider to see how the scales of justice shift with your case strength.</p>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;margin-top:0.5rem">
+        <input type="range" min="0" max="100" value="55" id="case-slider" class="aha-slider" oninput="lawyerViz(this.value)">
+        <div style="display:flex;justify-content:space-between;width:260px;font-size:0.75rem;color:rgba(255,255,255,0.4)">
+          <span>0 — Weak</span><span>50 — Even</span><span>100 — Strong</span>
+        </div>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg id="lawyer-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 0 20px rgba(200,168,75,0.35))">
+          <!-- Scale pole -->
+          <line x1="160" y1="40" x2="160" y2="170" stroke="#c8a84b" stroke-width="3"/>
+          <!-- Base -->
+          <rect x="130" y="170" width="60" height="8" rx="4" fill="#c8a84b"/>
+          <!-- Pivot point -->
+          <circle cx="160" cy="75" r="6" fill="#c8a84b"/>
+          <!-- Balance beam (rotates) -->
+          <g id="scale-beam" style="transform-origin:160px 75px;transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1)">
+            <line x1="60" y1="75" x2="260" y2="75" stroke="#c8a84b" stroke-width="2.5"/>
+            <!-- Left pan rope -->
+            <line x1="80" y1="75" x2="80" y2="110" stroke="#c8a84b" stroke-width="1.5"/>
+            <!-- Right pan rope -->
+            <line x1="240" y1="75" x2="240" y2="110" stroke="#c8a84b" stroke-width="1.5"/>
+            <!-- Left pan (Opposition) -->
+            <ellipse cx="80" cy="113" rx="28" ry="6" fill="none" stroke="#c0392b" stroke-width="2"/>
+            <!-- Right pan (Your Position) -->
+            <ellipse cx="240" cy="113" rx="28" ry="6" fill="none" stroke="#27ae60" stroke-width="2"/>
+          </g>
+          <!-- Labels -->
+          <text x="80" y="145" text-anchor="middle" fill="#c0392b" font-size="9" font-family="sans-serif" font-weight="700">OPPOSITION</text>
+          <text x="240" y="145" text-anchor="middle" fill="#27ae60" font-size="9" font-family="sans-serif" font-weight="700">YOUR POSITION</text>
+          <!-- Score display -->
+          <text id="law-score" x="160" y="30" text-anchor="middle" fill="#c8a84b" font-size="16" font-weight="800" font-family="sans-serif">55/100</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="lawyer-label">Moderate Position — Build Your Case</div>
     </div>
   </div>
 </section>
@@ -416,6 +480,7 @@ body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--
 
 <!-- Contact -->
 <section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
   <div class="container" style="text-align:center">
     <span class="section-tag">Our Offices</span>
     <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-gold">{{ lead.name }}</span></h2>
@@ -464,8 +529,8 @@ body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a></p>
-      <p>Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here &rarr;</a></p>
+      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here &rarr;</a></p>
     </div>
   </div>
 </footer>
@@ -536,6 +601,23 @@ document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
   },{passive:true});
   buildDots();
   window.addEventListener('resize',()=>goto(0));
+})();
+(function(){
+  window.lawyerViz=function(val){
+    val=parseInt(val);
+    var angle=((val-50)/50)*22;
+    document.getElementById('scale-beam').style.transform='rotate('+angle+'deg)';
+    document.getElementById('law-score').textContent=val+'/100';
+    var label,color;
+    if(val<40){label='Weak Position — Critical to Build Evidence';color='#e74c3c';}
+    else if(val<70){label='Moderate Position — Build Your Case';color='#c8a84b';}
+    else{label='Strong Position — Favorable Outcome Likely';color='#27ae60';}
+    document.getElementById('lawyer-label').textContent=label;
+    document.getElementById('lawyer-label').style.color=color;
+    var glow=val>70?'rgba(39,174,96,0.4)':val<40?'rgba(231,76,60,0.35)':'rgba(200,168,75,0.35)';
+    document.getElementById('lawyer-svg').style.filter='drop-shadow(0 0 20px '+glow+')';
+  };
+  lawyerViz(55);
 })();
 </script>
 

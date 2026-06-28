@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ lead.name }} | Licensed Electricians</title>
+<meta name="description" content="{{ lead.name }} — Licensed & insured electricians serving {{ lead.city or 'your area' }}. Panel upgrades, EV chargers, smart home wiring & 24/7 emergency repairs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060608;--bg2:#0d0d12;--bg3:#13131a;--accent:#F5A623;--accent-glow:rgba(245,166,35,0.25);--accent-dim:rgba(245,166,35,0.12);--tw:#fff;--tg:#a8a8b8;--tm:#555565;--r-sm:8px;--r-md:16px;--r-lg:24px;--trans:0.35s cubic-bezier(0.25,1,0.5,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:var(--bg);color:var(--tw);font-family:'Inter',sans-serif;overflow-x:hidden}
+body{overflow-x:hidden;line-height:1.6}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+h1,h2,h3,h4{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;line-height:1.15}
+p{color:var(--tg);font-weight:400}a{text-decoration:none;color:inherit}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 0;transition:background var(--trans),backdrop-filter var(--trans)}
+nav.scrolled{background:rgba(6,6,8,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(245,166,35,0.08)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:'Outfit',sans-serif;font-size:1.35rem;font-weight:800;display:flex;align-items:center;gap:10px}
+.nav-logo span{color:var(--accent)}
+.logo-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:0.875rem;color:var(--tg);transition:color var(--trans)}
+.nav-links a:hover{color:var(--tw)}
+.nav-cta{background:var(--accent);color:#000;padding:10px 22px;border-radius:8px;font-weight:700;font-size:0.875rem;transition:opacity var(--trans),transform var(--trans)}
+.nav-cta:hover{opacity:0.88;transform:translateY(-1px)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-image:linear-gradient(135deg,rgba(6,6,8,0.92) 0%,rgba(6,6,8,0.6) 50%,rgba(6,6,8,0.85) 100%),url('{{ hero_img }}');background-position:center;background-size:cover;background-repeat:no-repeat}
+.hero-content{position:relative;z-index:2;padding-top:100px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-dim);border:1px solid rgba(245,166,35,0.3);border-radius:50px;padding:8px 18px;font-size:0.8rem;font-weight:600;color:var(--accent);margin-bottom:28px;text-transform:uppercase;letter-spacing:0.06em}
+.hero h1{font-size:clamp(2.8rem,6vw,5rem);font-weight:900;margin-bottom:24px;max-width:780px}
+.hero h1 .hl{color:var(--accent);text-shadow:0 0 40px rgba(245,166,35,0.4)}
+.hero p{font-size:1.15rem;max-width:560px;margin-bottom:40px;color:var(--tg)}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap}
+.btn-primary{background:var(--accent);color:#000;padding:15px 32px;border-radius:10px;font-weight:800;font-size:1rem;font-family:'Outfit',sans-serif;transition:transform var(--trans),box-shadow var(--trans);display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px var(--accent-glow)}
+.btn-ghost{border:1px solid rgba(255,255,255,0.15);color:var(--tw);padding:15px 32px;border-radius:10px;font-weight:600;font-size:1rem;transition:border-color var(--trans),background var(--trans)}
+.btn-ghost:hover{border-color:var(--accent);background:rgba(245,166,35,0.06)}
+.hero-stats{display:flex;gap:40px;margin-top:60px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat .num{font-family:'Outfit',sans-serif;font-size:2rem;font-weight:900;color:var(--tw)}
+.hero-stat .lbl{font-size:0.75rem;color:var(--tm);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px}
+
+/* TRUST BAR */
+.trust-bar{background:var(--bg2);border-top:1px solid rgba(245,166,35,0.08);border-bottom:1px solid rgba(245,166,35,0.08);padding:20px 0}
+.trust-items{display:flex;justify-content:center;gap:48px;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:10px;font-size:0.875rem;font-weight:600;color:var(--tg)}
+.trust-item span:first-child{font-size:1.2rem}
+
+/* SECTIONS */
+section{padding:100px 0}
+.section-tag{display:inline-block;background:var(--accent-dim);color:var(--accent);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:6px 16px;border-radius:50px;margin-bottom:16px}
+.section-title{font-size:clamp(2rem,4vw,3rem);margin-bottom:16px}
+.section-sub{font-size:1.05rem;max-width:560px;margin-bottom:60px}
+
+/* SERVICES */
+#services{background:var(--bg2)}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.svc-card{background:rgba(19,19,26,0.8);border:1px solid rgba(245,166,35,0.08);border-radius:var(--r-md);padding:32px;transition:border-color var(--trans),transform var(--trans),box-shadow var(--trans)}
+.svc-card:hover{border-color:rgba(245,166,35,0.35);transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+.svc-icon{width:52px;height:52px;background:var(--accent-dim);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:20px}
+.svc-card h3{font-size:1.15rem;margin-bottom:10px;font-family:'Outfit',sans-serif;font-weight:700}
+.svc-card p{font-size:0.9rem;line-height:1.7}
+
+/* AHA MOMENT - SAFETY AUDIT */
+#audit{background:var(--bg)}
+.audit-wrap{background:var(--bg2);border:1px solid rgba(245,166,35,0.12);border-radius:var(--r-lg);padding:48px;max-width:860px;margin:0 auto}
+.audit-title{font-size:1.8rem;margin-bottom:8px;font-family:'Outfit',sans-serif;font-weight:800}
+.audit-sub{font-size:0.95rem;color:var(--tg);margin-bottom:36px}
+.hazard-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:36px}
+.hazard-item{display:flex;align-items:center;gap:14px;background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:var(--r-sm);padding:16px 18px;cursor:pointer;transition:border-color var(--trans),background var(--trans)}
+.hazard-item:hover{border-color:rgba(245,166,35,0.25);background:rgba(245,166,35,0.04)}
+.hazard-item.checked{border-color:rgba(245,166,35,0.5);background:rgba(245,166,35,0.08)}
+.hazard-item input[type=checkbox]{display:none}
+.haz-box{width:22px;height:22px;border:2px solid rgba(255,255,255,0.15);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--trans)}
+.hazard-item.checked .haz-box{background:var(--accent);border-color:var(--accent);color:#000}
+.haz-label{font-size:0.9rem;font-weight:500;line-height:1.4}
+.meter-wrap{margin-bottom:28px}
+.meter-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.meter-label{font-size:0.875rem;font-weight:600;color:var(--tg)}
+.risk-score-text{font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:800}
+.meter-bar-bg{height:14px;background:rgba(255,255,255,0.06);border-radius:7px;overflow:hidden}
+.meter-bar-fill{height:100%;border-radius:7px;transition:width 0.6s cubic-bezier(0.25,1,0.5,1),background 0.6s}
+.audit-result{text-align:center;padding:20px;border-radius:var(--r-md);transition:all 0.4s}
+.audit-result.safe{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25)}
+.audit-result.low{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25)}
+.audit-result.high{background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25)}
+.audit-result.urgent{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.4)}
+.audit-result h3{font-size:1.2rem;margin-bottom:6px}
+.audit-result p{font-size:0.9rem;margin-bottom:16px}
+.audit-cta{display:inline-block;background:var(--accent);color:#000;padding:14px 28px;border-radius:10px;font-weight:800;font-family:'Outfit',sans-serif;font-size:0.95rem;transition:transform var(--trans),box-shadow var(--trans)}
+.audit-cta.pulse{animation:pulse-cta 1.5s ease-in-out infinite}
+@keyframes pulse-cta{0%,100%{box-shadow:0 0 0 0 var(--accent-glow)}50%{box-shadow:0 0 0 12px rgba(245,166,35,0)}}
+.audit-cta:hover{transform:translateY(-2px);box-shadow:0 12px 30px var(--accent-glow)}
+
+/* ABOUT */
+#about{background:var(--bg2)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.about-img{border-radius:var(--r-lg);overflow:hidden;aspect-ratio:4/3}
+.about-img img{width:100%;height:100%;object-fit:cover}
+.about-stats{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:32px}
+.astat{background:var(--bg3);border:1px solid rgba(245,166,35,0.08);border-radius:var(--r-md);padding:24px;text-align:center}
+.astat .num{font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:900;color:var(--accent)}
+.astat .lbl{font-size:0.78rem;color:var(--tm);text-transform:uppercase;letter-spacing:0.07em;margin-top:4px}
+
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+.testi-card{background:var(--bg2);border:1px solid rgba(255,255,255,0.05);border-radius:var(--r-md);padding:32px;transition:transform var(--trans),border-color var(--trans)}
+.testi-card:hover{transform:translateY(-4px);border-color:rgba(245,166,35,0.2)}
+.stars{color:var(--accent);font-size:1.1rem;margin-bottom:16px}
+.testi-card p{font-size:0.95rem;font-style:italic;line-height:1.8;margin-bottom:20px}
+.testi-card .author{font-weight:700;font-size:0.875rem;color:var(--tw)}
+
+/* CONTACT */
+#contact{background:var(--bg2)}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+.contact-info{display:flex;flex-direction:column;gap:20px;margin-top:32px}
+.cinfo{display:flex;align-items:flex-start;gap:14px;padding:20px;background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:var(--r-sm)}
+.cinfo-icon{font-size:1.3rem;flex-shrink:0}
+.cinfo-text h4{font-size:0.875rem;font-weight:700;margin-bottom:4px}
+.cinfo-text p{font-size:0.875rem}
+.contact-cta-box{background:linear-gradient(135deg,rgba(245,166,35,0.12),rgba(245,166,35,0.04));border:1px solid rgba(245,166,35,0.25);border-radius:var(--r-lg);padding:48px;text-align:center}
+.contact-cta-box h3{font-size:1.6rem;margin-bottom:12px}
+.contact-cta-box p{margin-bottom:28px}
+.emergency-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:8px 16px;font-size:0.8rem;font-weight:700;color:#f87171;margin-bottom:20px}
+
+/* FOOTER */
+footer{background:var(--bg);border-top:1px solid rgba(255,255,255,0.04);padding:40px 0;text-align:center}
+footer p{font-size:0.875rem;color:var(--tm)}
+footer a{color:var(--accent)}
+
+/* SCROLL ANIM */
+.fade-up{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease}
+.fade-up.visible{opacity:1;transform:none}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .hazard-list{grid-template-columns:1fr}
+  .about-grid,.contact-grid{grid-template-columns:1fr}
+  .about-img{display:none}
+  .nav-links{display:none}
+  .hero h1{font-size:2.5rem}
+  .hero-stats{gap:24px}
+  .audit-wrap{padding:28px 20px}
+}
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="container nav-inner">
+    <div class="nav-logo">
+      <div class="logo-icon">⚡</div>
+      <span>{{ lead.name }}</span>
+    </div>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#audit">Safety Audit</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a href="tel:{{ lead.phone or '' }}" class="nav-cta">Call Now</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container hero-content">
+    <div class="hero-badge">⚡ Licensed & Insured Electricians</div>
+    <h1>Expert Electrical <span class="hl">You Can Trust.</span></h1>
+    <p>Serving {{ lead.city or 'your area' }} with top-rated residential & commercial electrical services. From panel upgrades to EV chargers — done right, done safe.</p>
+    <div class="hero-btns">
+      <a href="#contact" class="btn-primary">⚡ Get Free Estimate</a>
+      <a href="#audit" class="btn-ghost">Run Safety Audit →</a>
+    </div>
+    <div class="hero-stats">
+      {% if lead.google_rating %}<div class="hero-stat"><div class="num">{{ lead.google_rating }}★</div><div class="lbl">Google Rating</div></div>{% endif %}
+      {% if lead.google_reviews %}<div class="hero-stat"><div class="num">{{ lead.google_reviews }}</div><div class="lbl">Reviews</div></div>{% endif %}
+      <div class="hero-stat"><div class="num">24/7</div><div class="lbl">Emergency</div></div>
+      <div class="hero-stat"><div class="num">5yr</div><div class="lbl">Warranty</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="container trust-items">
+    <div class="trust-item"><span>✅</span><span>Licensed & Insured</span></div>
+    <div class="trust-item"><span>🚨</span><span>24/7 Emergency Service</span></div>
+    <div class="trust-item"><span>⚡</span><span>Same-Day Dispatch</span></div>
+    <div class="trust-item"><span>🛡️</span><span>5-Year Workmanship Warranty</span></div>
+    <div class="trust-item"><span>🌿</span><span>Fully Permitted Work</span></div>
+  </div>
+</div>
+
+<section id="services">
+  <div class="container">
+    <span class="section-tag">What We Do</span>
+    <h2 class="section-title">Electrical Services We Offer</h2>
+    <p class="section-sub">From simple repairs to full rewiring projects — our licensed team handles it all safely and on time.</p>
+    <div class="services-grid">
+      <div class="svc-card fade-up"><div class="svc-icon">🏠</div><h3>Electrical Installations</h3><p>New construction wiring, outlet installations, lighting upgrades, and complete electrical rough-ins for residential and commercial builds.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🔌</div><h3>Panel Upgrades & Replacement</h3><p>Outdated fuse boxes and undersized panels are fire hazards. We upgrade to modern 200A+ panels that handle today's power demands safely.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🚗</div><h3>EV Charger Installation</h3><p>Level 2 home charger installation for all major EV brands. Permitted, inspected, and fast — charge overnight at 3x the speed of a wall outlet.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🏡</div><h3>Smart Home Wiring</h3><p>Whole-home automation wiring for smart thermostats, lighting controls, security cameras, audio systems, and smart panels.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🚨</div><h3>Emergency Repairs</h3><p>Sparking outlets, power outages, burning smells — we're available 24/7 with rapid response for all electrical emergencies.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🛡️</div><h3>Safety Inspections</h3><p>Comprehensive home electrical inspections, pre-purchase inspections, code compliance checks, and arc-fault protection upgrades.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="audit">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:48px">
+      <span class="section-tag">Free Tool</span>
+      <h2 class="section-title">Home Electrical Safety Audit</h2>
+      <p style="max-width:540px;margin:0 auto">Check which electrical hazards apply to your home. Find out your risk level instantly.</p>
+    </div>
+    <div class="audit-wrap">
+      <div class="hazard-list" id="hazardList">
+        <div class="hazard-item" onclick="toggleHazard(this)">
+          <div class="haz-box" id="box0">✓</div>
+          <div class="haz-label">🔌 Wiring older than 1980 (knob-and-tube or aluminum)</div>
+        </div>
+        <div class="hazard-item" onclick="toggleHazard(this)">
+          <div class="haz-box" id="box1">✓</div>
+          <div class="haz-label">🚿 No GFCI outlets in bathrooms, kitchen, or garage</div>
+        </div>
+        <div class="hazard-item" onclick="toggleHazard(this)">
+          <div class="haz-box" id="box2">✓</div>
+          <div class="haz-label">📦 Outdated fuse box / panel under 100 amps</div>
+        </div>
+        <div class="hazard-item" onclick="toggleHazard(this)">
+          <div class="haz-box" id="box3">✓</div>
+          <div class="haz-label">⛈️ No whole-home surge protector installed</div>
+        </div>
+        <div class="hazard-item" onclick="toggleHazard(this)">
+          <div class="haz-box" id="box4">✓</div>
+          <div class="haz-label">🔋 Circuit breakers frequently trip or fuses blow</div>
+        </div>
+        <div class="hazard-item" onclick="toggleHazard(this)">
+          <div class="haz-box" id="box5">✓</div>
+          <div class="haz-label">💡 Lights flicker or outlets feel warm to touch</div>
+        </div>
+      </div>
+      <div class="meter-wrap">
+        <div class="meter-header">
+          <span class="meter-label">Your Electrical Risk Level</span>
+          <span class="risk-score-text" id="riskText">Select hazards above</span>
+        </div>
+        <div class="meter-bar-bg"><div class="meter-bar-fill" id="meterFill" style="width:0%;background:#22c55e"></div></div>
+      </div>
+      <div class="audit-result safe" id="auditResult">
+        <h3>☑️ Select hazards to see your risk level</h3>
+        <p>Check the boxes above that apply to your home. This free audit takes 30 seconds.</p>
+        <a href="#contact" class="audit-cta">Get a Free Inspection Quote</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div>
+        <span class="section-tag">About Us</span>
+        <h2 class="section-title">{{ lead.city or 'Local' }}'s Most Trusted Electrical Team</h2>
+        <p style="margin-bottom:16px">{{ lead.name }} is a family-owned electrical contracting company proudly serving {{ lead.city or 'our community' }}. Every job is done to code, fully permitted, and backed by our 5-year workmanship warranty.</p>
+        <p>Our licensed master electricians bring decades of experience to every project — from a single outlet replacement to complete panel overhauls for commercial buildings.</p>
+        <div class="about-stats">
+          <div class="astat"><div class="num">500+</div><div class="lbl">Projects Done</div></div>
+          <div class="astat"><div class="num">100%</div><div class="lbl">Licensed & Permitted</div></div>
+          <div class="astat"><div class="num">24/7</div><div class="lbl">Emergency Line</div></div>
+          <div class="astat"><div class="num">5yr</div><div class="lbl">Warranty</div></div>
+        </div>
+      </div>
+      <div class="about-img"><img src="{{ about_img }}" alt="{{ lead.name }} electrician team" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" style="background:var(--bg2)">
+  <div class="container">
+    <span class="section-tag">Reviews</span>
+    <h2 class="section-title" style="margin-bottom:48px">What Our Customers Say</h2>
+    <div class="testi-grid">
+      <div class="testi-card fade-up">
+        <div class="stars">★★★★★</div>
+        <p>"Had a full panel upgrade done and they were incredibly professional. Everything was permitted and inspected. The guys cleaned up better than they found it. 10/10."</p>
+        <div class="author">— Michael Harrington</div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="stars">★★★★★</div>
+        <p>"Called them at 9pm for a sparking outlet and they were at my door within the hour. Fixed the issue, explained what caused it, and didn't overcharge. Outstanding."</p>
+        <div class="author">— Sandra Okafor</div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="stars">★★★★★</div>
+        <p>"Had them install two Level 2 EV chargers in my garage. Neat work, done in one day, no mess. Even caught an old wiring issue while they were at it. Worth every penny."</p>
+        <div class="author">— James Trevino</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <span class="section-tag">Get In Touch</span>
+        <h2 class="section-title">Ready to Fix It Right?</h2>
+        <p style="margin-bottom:32px">Get a free estimate from our licensed team. We serve all of {{ lead.city or 'the area' }} and surrounding regions.</p>
+        <div class="contact-info">
+          {% if lead.phone %}<div class="cinfo"><div class="cinfo-icon">📞</div><div class="cinfo-text"><h4>Phone</h4><p>{{ lead.phone }}</p></div></div>{% endif %}
+          <div class="cinfo"><div class="cinfo-icon">📍</div><div class="cinfo-text"><h4>Address</h4><p>{{ lead.address or lead.city or 'Contact us for our location' }}</p></div></div>
+          <div class="cinfo"><div class="cinfo-icon">⏰</div><div class="cinfo-text"><h4>Hours</h4><p>Mon–Fri 7am–7pm · Sat 8am–5pm · Emergency: 24/7</p></div></div>
+        </div>
+      </div>
+      <div class="contact-cta-box">
+        <div class="emergency-badge">🚨 24/7 Emergency Service Available</div>
+        <h3>Get Your Free Estimate</h3>
+        <p>No obligation. Most estimates same-day. Licensed master electrician on every job.</p>
+        {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="btn-primary" style="margin-bottom:16px;display:inline-flex">⚡ Call {{ lead.phone }}</a><br>{% endif %}
+        <a href="mailto:{{ lead.email or '' }}" class="btn-ghost" style="display:inline-flex;margin-top:12px">✉ Send a Message</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p style="margin-bottom:8px">© 2026 {{ lead.name }}. All rights reserved.</p>
+    <p>Website concept by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a> · Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here →</a></p>
+  </div>
+</footer>
+
+<img src="/api/track.png?bid={{ lead.id }}" style="display:none;width:0;height:0" alt="tracker" />
+
+<script>
+// Navbar scroll
+window.addEventListener('scroll',()=>{
+  document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>50)
+});
+
+// Fade-up on scroll
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.12});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+// Safety Audit
+let checked=new Set();
+function toggleHazard(el){
+  const idx=[...document.querySelectorAll('.hazard-item')].indexOf(el);
+  if(checked.has(idx)){checked.delete(idx);el.classList.remove('checked');el.querySelector('.haz-box').textContent='✓'}
+  else{checked.add(idx);el.classList.add('checked');el.querySelector('.haz-box').textContent='✓'}
+  updateMeter();
+}
+function updateMeter(){
+  const n=checked.size;
+  const pct=Math.round((n/6)*100);
+  const fill=document.getElementById('meterFill');
+  const result=document.getElementById('auditResult');
+  const cta=result.querySelector('.audit-cta');
+  fill.style.width=pct+'%';
+  const colors=['#22c55e','#22c55e','#eab308','#f97316','#ef4444','#dc2626'];
+  fill.style.background=n===0?'#22c55e':colors[n-1];
+  const states=[
+    {cls:'safe',icon:'✅',title:'Your home looks safe!',msg:'No major electrical hazards detected. Consider a routine inspection every 5 years to stay ahead of any issues.',pulse:false},
+    {cls:'safe',icon:'✅',title:'Mostly safe — one issue flagged',msg:'One potential hazard identified. A quick inspection can give you peace of mind and prevent future problems.',pulse:false},
+    {cls:'low',icon:'⚠️',title:'Low-Medium Risk Detected',msg:'Two hazards flagged. We recommend scheduling an inspection soon to prevent escalation.',pulse:false},
+    {cls:'high',icon:'🔴',title:'High Risk — Inspection Recommended',msg:'Three hazards identified. This is above average and warrants professional evaluation before it becomes an emergency.',pulse:true},
+    {cls:'urgent',icon:'🚨',title:'HIGH RISK — Act Soon',msg:'Four hazards detected. Your home\'s electrical system poses a real safety risk. Schedule an inspection this week.',pulse:true},
+    {cls:'urgent',icon:'🚨',title:'CRITICAL — Book Inspection Now',msg:'Five hazards detected. Your electrical system needs immediate professional attention. Contact us today.',pulse:true},
+    {cls:'urgent',icon:'🚨',title:'URGENT — Serious Fire/Shock Risk',msg:'All six hazards present. This is a serious safety situation. Please call us immediately for an emergency assessment.',pulse:true},
+  ];
+  const s=states[n];
+  result.className='audit-result '+s.cls;
+  result.querySelector('h3').textContent=s.icon+' '+s.title;
+  result.querySelector('p').textContent=s.msg;
+  if(s.pulse)cta.classList.add('pulse');else cta.classList.remove('pulse');
+  const texts=['Select hazards above','1 Hazard Found','2 Hazards Found','⚠️ 3 Hazards Found','🔴 4 Hazards Found','🚨 5 Hazards Found','🚨 ALL 6 — URGENT'];
+  document.getElementById('riskText').textContent=texts[n];
+}
+</script>
+</body>
+</html>

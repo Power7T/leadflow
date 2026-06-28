@@ -11,13 +11,13 @@
 <aside class="sidebar">
   <div class="logo">LeadFlow<span>by Chandan</span></div>
   
-  <a href="/autopilot" class="autopilot-status">
+  <a href="/" class="autopilot-status" id="sidebar-autopilot-status">
     {% if stats.autopilot_active %}
-      <span class="pulse-dot green"></span>
-      <span style="color:#00c896; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Autopilot Active</span>
+      <span class="pulse-dot green" id="sidebar-autopilot-dot"></span>
+      <span id="sidebar-autopilot-text" style="color:#00c896; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Autopilot Active</span>
     {% else %}
-      <span class="pulse-dot gray"></span>
-      <span style="color:var(--text-dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Autopilot Stopped</span>
+      <span class="pulse-dot gray" id="sidebar-autopilot-dot"></span>
+      <span id="sidebar-autopilot-text" style="color:var(--text-dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Autopilot Stopped</span>
     {% endif %}
   </a>
 
@@ -30,7 +30,21 @@
     </a>
     <a href="/leads" class="{% if page=='leads' %}active{% endif %}">
       <span class="icon">📋</span> Review Leads
-      {% if stats.new > 0 %}<span class="badge badge-new" style="margin-left:auto">{{ stats.new }}</span>{% endif %}
+      <span class="badge badge-new" id="sidebar-badge-leads-new" style="margin-left:auto; {% if stats.new == 0 %}display:none;{% endif %}">{{ stats.new }}</span>
+    </a>
+    <a href="/saas-leads" class="{% if page=='saas_leads' %}active{% endif %}">
+      <span class="icon">💻</span> SaaS CRM Leads
+    </a>
+    <a href="/instagram-reach" class="{% if page=='instagram_reach' %}active{% endif %}">
+      <span class="icon">📸</span> Instagram Reach
+      <span class="badge badge-new" id="sidebar-badge-ig-new" style="margin-left:auto; {% if stats.instagram_reach_new == 0 %}display:none;{% endif %}">{{ stats.instagram_reach_new }}</span>
+    </a>
+    <a href="/ig-manual" class="{% if page=='ig_manual' %}active{% endif %}" style="{% if page=='ig_manual' %}border-left:2px solid #E1306C;{% endif %}">
+      <span class="icon">💬</span> Manual DM Queue
+    </a>
+    <a href="/test-leads" class="{% if page=='test_leads' %}active{% endif %}">
+      <span class="icon">🧪</span> Test Leads
+      <span class="badge badge-new" id="sidebar-badge-test-new" style="margin-left:auto; {% if stats.test_leads_new == 0 %}display:none;{% endif %}">{{ stats.test_leads_new }}</span>
     </a>
     <a href="/kanban" class="{% if page=='kanban' %}active{% endif %}">
       <span class="icon">🗂</span> Pipeline
@@ -50,18 +64,21 @@
     <a href="/analytics" class="{% if page=='analytics' %}active{% endif %}">
       <span class="icon">📊</span> Analytics
     </a>
+    <a href="/ab-test" class="{% if page=='ab_test' %}active{% endif %}">
+      <span class="icon">🧪</span> A/B Tests
+    </a>
     <a href="/settings" class="{% if page=='settings' %}active{% endif %}">
       <span class="icon">⚙️</span> Settings
     </a>
   </nav>
   <div class="sidebar-stats">
-    <div class="stat"><span>New</span><b>{{ stats.new }}</b></div>
-    <div class="stat"><span>Sent</span><b>{{ stats.sent }}</b></div>
-    <div class="stat"><span>Replied</span><b>{{ stats.replied }}</b></div>
-    <div class="stat"><span>Closed</span><b style="color:var(--accent)">{{ stats.closed }}</b></div>
-    {% if stats.opted_out > 0 %}
-    <div class="stat"><span style="color:var(--red)">Opted Out</span><b style="color:var(--red)">{{ stats.opted_out }}</b></div>
-    {% endif %}
+    <div class="stat"><span>New</span><b id="sidebar-stat-new">{{ stats.new }}</b></div>
+    <div class="stat"><span>Sent</span><b id="sidebar-stat-sent">{{ stats.sent }}</b></div>
+    <div class="stat"><span>Replied</span><b id="sidebar-stat-replied">{{ stats.replied }}</b></div>
+    <div class="stat"><span>Closed</span><b id="sidebar-stat-closed" style="color:var(--accent)">{{ stats.closed }}</b></div>
+    <div class="stat" id="sidebar-stat-opted-out-container" style="{% if stats.opted_out == 0 %}display:none;{% endif %}">
+      <span style="color:var(--red)">Opted Out</span><b id="sidebar-stat-opted-out" style="color:var(--red)">{{ stats.opted_out }}</b>
+    </div>
   </div>
 </aside>
 
@@ -107,6 +124,66 @@ const fastPoll = setInterval(async () => {
   await pollTunnelUrl();
   if (tunnelUrl) { clearInterval(fastPoll); setInterval(pollTunnelUrl, 30000); }
 }, 3000);
+
+async function pollStats() {
+  try {
+    const res = await fetch('/api/stats');
+    const stats = await res.json();
+    
+    // Update autopilot badge
+    const dot = document.getElementById('sidebar-autopilot-dot');
+    const text = document.getElementById('sidebar-autopilot-text');
+    if (dot && text) {
+      if (stats.autopilot_active) {
+        dot.className = 'pulse-dot green';
+        text.style.color = '#00c896';
+        text.textContent = 'Autopilot Active';
+      } else {
+        dot.className = 'pulse-dot gray';
+        text.style.color = 'var(--text-dim)';
+        text.textContent = 'Autopilot Stopped';
+      }
+    }
+    
+    // Update stats text
+    const newStat = document.getElementById('sidebar-stat-new');
+    if (newStat) newStat.textContent = stats.new;
+    const sentStat = document.getElementById('sidebar-stat-sent');
+    if (sentStat) sentStat.textContent = stats.sent;
+    const repliedStat = document.getElementById('sidebar-stat-replied');
+    if (repliedStat) repliedStat.textContent = stats.replied;
+    const closedStat = document.getElementById('sidebar-stat-closed');
+    if (closedStat) closedStat.textContent = stats.closed;
+    const optedOutStat = document.getElementById('sidebar-stat-opted-out');
+    const optedOutContainer = document.getElementById('sidebar-stat-opted-out-container');
+    if (optedOutStat && optedOutContainer) {
+      optedOutStat.textContent = stats.opted_out;
+      optedOutContainer.style.display = stats.opted_out > 0 ? '' : 'none';
+    }
+    
+    // Update badges
+    const badgeLeadsNew = document.getElementById('sidebar-badge-leads-new');
+    if (badgeLeadsNew) {
+      badgeLeadsNew.textContent = stats.new;
+      badgeLeadsNew.style.display = stats.new === 0 ? 'none' : '';
+    }
+    const badgeIgNew = document.getElementById('sidebar-badge-ig-new');
+    if (badgeIgNew) {
+      badgeIgNew.textContent = stats.instagram_reach_new;
+      badgeIgNew.style.display = stats.instagram_reach_new === 0 ? 'none' : '';
+    }
+    const badgeTestNew = document.getElementById('sidebar-badge-test-new');
+    if (badgeTestNew) {
+      badgeTestNew.textContent = stats.test_leads_new;
+      badgeTestNew.style.display = stats.test_leads_new === 0 ? 'none' : '';
+    }
+  } catch (e) {
+    console.error("Failed to poll sidebar stats", e);
+  }
+}
+window.pollStats = pollStats;
+setInterval(pollStats, 5000);
+document.addEventListener('DOMContentLoaded', pollStats);
 </script>
 </body>
 </html>

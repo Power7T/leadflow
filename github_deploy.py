@@ -4,21 +4,24 @@ import json
 import urllib.request
 import ssl
 
-GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', '')
-GITHUB_REPO = os.getenv('GITHUB_DEMO_REPO', 'power7t/leadflow-demos')
-GITHUB_BRANCH = 'main'
-
 def push_demo_to_github(filename: str, html_content: str) -> str:
     """Push a demo HTML file to GitHub Pages. Returns public URL or empty string."""
-    if not GITHUB_TOKEN:
+    token = os.getenv('GITHUB_TOKEN', '')
+    repo = os.getenv('GITHUB_DEMO_REPO', 'power7t/leadflow-demos')
+    branch = 'main'
+    if not token:
         print("[github_deploy] No GITHUB_TOKEN set. Skipping GitHub deploy.")
         return ''
     try:
-        # Create an unverified SSL context to bypass macOS root cert validation issues
-        ssl_ctx = ssl._create_unverified_context()
+        # fix #7: use verified SSL context (certifi bundle if available, else system certs)
+        try:
+            import certifi
+            ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+        except ImportError:
+            ssl_ctx = ssl.create_default_context()
         
         # GitHub Contents API
-        api_url = f'https://api.github.com/repos/{GITHUB_REPO}/contents/{filename}'
+        api_url = f'https://api.github.com/repos/{repo}/contents/{filename}'
         content_b64 = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
         
         # Check if file exists (to get sha for update)
@@ -27,7 +30,7 @@ def push_demo_to_github(filename: str, html_content: str) -> str:
             req = urllib.request.Request(
                 api_url, 
                 headers={
-                    'Authorization': f'token {GITHUB_TOKEN}', 
+                    'Authorization': f'token {token}', 
                     'Accept': 'application/vnd.github.v3+json',
                     'User-Agent': 'LeadFlow-Deploy-Agent'
                 }
@@ -42,7 +45,7 @@ def push_demo_to_github(filename: str, html_content: str) -> str:
         payload = {
             'message': f'Deploy demo: {filename}', 
             'content': content_b64, 
-            'branch': GITHUB_BRANCH
+            'branch': branch
         }
         if sha:
             payload['sha'] = sha
@@ -53,7 +56,7 @@ def push_demo_to_github(filename: str, html_content: str) -> str:
             data=data, 
             method='PUT',
             headers={
-                'Authorization': f'token {GITHUB_TOKEN}', 
+                'Authorization': f'token {token}', 
                 'Content-Type': 'application/json', 
                 'Accept': 'application/vnd.github.v3+json',
                 'User-Agent': 'LeadFlow-Deploy-Agent'
@@ -62,8 +65,8 @@ def push_demo_to_github(filename: str, html_content: str) -> str:
         with urllib.request.urlopen(req, timeout=30, context=ssl_ctx) as r:
             result = json.loads(r.read().decode('utf-8'))
         
-        repo_name = GITHUB_REPO.split('/')[-1]
-        owner = GITHUB_REPO.split('/')[0]
+        repo_name = repo.split('/')[-1]
+        owner = repo.split('/')[0]
         public_url = f'https://{owner}.github.io/{repo_name}/{filename}'
         print(f"[github_deploy] Successfully deployed {filename} to GitHub: {public_url}")
         return public_url

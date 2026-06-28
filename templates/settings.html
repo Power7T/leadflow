@@ -24,43 +24,203 @@
     <div style="margin-bottom: 12px">
       <label>Google Gemini API Key(s) (comma-separated for rotation)</label>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <input type="password" id="GEMINI_API_KEY" value="{{ env.GEMINI_API_KEY }}" placeholder="API Key 1, API Key 2, ..." style="flex: 1; margin: 0;">
+        <div style="position: relative; flex: 1; display: flex; align-items: center;">
+          <input type="password" id="GEMINI_API_KEY" value="{{ env.GEMINI_API_KEY }}" placeholder="API Key 1, API Key 2, ..." style="width: 100%; padding-right: 40px; margin: 0;">
+          <button type="button" onclick="toggleField('GEMINI_API_KEY', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+        </div>
         <button type="button" class="btn btn-ghost" id="testGeminiBtn" onclick="testGeminiKeys()" style="white-space: nowrap;">🔌 Test Keys</button>
       </div>
       <div id="geminiTestResult" style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;"></div>
     </div>
     <div style="margin-bottom: 12px">
       <label>OpenAI API Key (Fallback)</label>
-      <input type="password" id="OPENAI_API_KEY" value="{{ env.OPENAI_API_KEY }}">
+      <div style="position: relative; display: flex; align-items: center; width: 100%;">
+        <input type="password" id="OPENAI_API_KEY" value="{{ env.OPENAI_API_KEY }}" style="width: 100%; padding-right: 40px; margin: 0;">
+        <button type="button" onclick="toggleField('OPENAI_API_KEY', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+      </div>
     </div>
     <div style="margin-bottom: 12px">
       <label>Google Maps API Key</label>
-      <input type="password" id="GOOGLE_MAPS_API_KEY" value="{{ env.GOOGLE_MAPS_API_KEY }}" placeholder="For business search">
+      <div style="position: relative; display: flex; align-items: center; width: 100%;">
+        <input type="password" id="GOOGLE_MAPS_API_KEY" value="{{ env.GOOGLE_MAPS_API_KEY }}" placeholder="For business search" style="width: 100%; padding-right: 40px; margin: 0;">
+        <button type="button" onclick="toggleField('GOOGLE_MAPS_API_KEY', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+      </div>
     </div>
     <div style="margin-bottom: 12px">
       <label>GitHub Personal Access Token (for Demo Sites deployment)</label>
-      <input type="password" id="GITHUB_TOKEN" value="{{ env.GITHUB_TOKEN }}" placeholder="ghp_...">
+      <div style="position: relative; display: flex; align-items: center; width: 100%;">
+        <input type="password" id="GITHUB_TOKEN" value="{{ env.GITHUB_TOKEN }}" placeholder="ghp_..." style="width: 100%; padding-right: 40px; margin: 0;">
+        <button type="button" onclick="toggleField('GITHUB_TOKEN', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+      </div>
     </div>
     <div style="margin-bottom: 12px">
       <label>Stripe Payment Link</label>
-      <input type="text" id="STRIPE_PAYMENT_LINK" value="{{ env.STRIPE_PAYMENT_LINK }}" placeholder="https://buy.stripe.com/...">
+      <input type="text" id="STRIPE_PAYMENT_LINK" value="{{ env.STRIPE_PAYMENT_LINK }}" placeholder="https://buy.stripe.com/..." style="width: 100%; margin: 0;">
     </div>
     <div style="margin-bottom: 12px">
       <label>Booking URL (Calendly)</label>
-      <input type="text" id="BOOKING_URL" value="{{ env.BOOKING_URL }}">
+      <input type="text" id="BOOKING_URL" value="{{ env.BOOKING_URL }}" style="width: 100%; margin: 0;">
     </div>
     <div style="margin-bottom: 12px">
       <label>Hunter.io API Key (Email enrichment)</label>
-      <input type="password" id="HUNTER_API_KEY" value="{{ env.HUNTER_API_KEY }}">
+      <div style="position: relative; display: flex; align-items: center; width: 100%;">
+        <input type="password" id="HUNTER_API_KEY" value="{{ env.HUNTER_API_KEY }}" style="width: 100%; padding-right: 40px; margin: 0;">
+        <button type="button" onclick="toggleField('HUNTER_API_KEY', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+      </div>
     </div>
     <div style="margin-bottom: 12px">
       <label>Apollo.io API Key (Email enrichment)</label>
-      <input type="password" id="APOLLO_API_KEY" value="{{ env.APOLLO_API_KEY }}">
+      <div style="position: relative; display: flex; align-items: center; width: 100%;">
+        <input type="password" id="APOLLO_API_KEY" value="{{ env.APOLLO_API_KEY }}" style="width: 100%; padding-right: 40px; margin: 0;">
+        <button type="button" onclick="toggleField('APOLLO_API_KEY', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+      </div>
     </div>
-    
+
+    <!-- Agency & Scraper Settings -->
+    <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
+      <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">🏢 Agency & Lead Scraping</h3>
+      <div style="margin-bottom: 12px">
+        <label>Agency Name</label>
+        <input type="text" id="AGENCY_NAME" value="{{ env.AGENCY_NAME }}" placeholder="e.g. Alex from Sitelink" style="width: 100%; margin: 0;">
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>Serper.dev Search API Key</label>
+        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+          <input type="password" id="SERPER_API_KEY" value="{{ env.SERPER_API_KEY }}" placeholder="For Google Search enrichment" style="width: 100%; padding-right: 40px; margin: 0;">
+          <button type="button" onclick="toggleField('SERPER_API_KEY', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+        </div>
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>Google PageSpeed API Key</label>
+        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+          <input type="password" id="GOOGLE_PAGESPEED_API_KEY" value="{{ env.GOOGLE_PAGESPEED_API_KEY }}" placeholder="For page performance metrics" style="width: 100%; padding-right: 40px; margin: 0;">
+          <button type="button" onclick="toggleField('GOOGLE_PAGESPEED_API_KEY', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Social & Messaging Integrations -->
+    <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
+      <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">💬 Social & Messaging Integrations</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
+        <div>
+          <label>Instagram Username</label>
+          <input type="text" id="INSTAGRAM_USERNAME" value="{{ env.INSTAGRAM_USERNAME }}" placeholder="username" style="width: 100%; margin: 0;">
+        </div>
+        <div>
+          <label>Instagram Password</label>
+          <div style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="password" id="INSTAGRAM_PASSWORD" value="{{ env.INSTAGRAM_PASSWORD }}" style="width: 100%; padding-right: 40px; margin: 0;">
+            <button type="button" onclick="toggleField('INSTAGRAM_PASSWORD', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+          </div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
+        <div>
+          <label>Twilio Account SID</label>
+          <input type="text" id="TWILIO_ACCOUNT_SID" value="{{ env.TWILIO_ACCOUNT_SID }}" placeholder="AC..." style="width: 100%; margin: 0;">
+        </div>
+        <div>
+          <label>Twilio Auth Token</label>
+          <div style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="password" id="TWILIO_AUTH_TOKEN" value="{{ env.TWILIO_AUTH_TOKEN }}" style="width: 100%; padding-right: 40px; margin: 0;">
+            <button type="button" onclick="toggleField('TWILIO_AUTH_TOKEN', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>Twilio WhatsApp From (Phone Number)</label>
+        <input type="text" id="TWILIO_WHATSAPP_FROM" value="{{ env.TWILIO_WHATSAPP_FROM }}" placeholder="whatsapp:+1234567890" style="width: 100%; margin: 0;">
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>OpenRouter API Key (Alternative Model Provider)</label>
+        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+          <input type="password" id="OPENROUTER_API_KEY" value="{{ env.OPENROUTER_API_KEY }}" placeholder="sk-or-..." style="width: 100%; padding-right: 40px; margin: 0;">
+          <button type="button" onclick="toggleField('OPENROUTER_API_KEY', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sync Engine, Cloudflare & Alerts Config -->
+    <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
+      <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">🔀 Cloudflare Sync, Pages & Alerts</h3>
+      <div style="margin-bottom: 12px">
+        <label>LeadFlow Public URL</label>
+        <input type="text" id="LEADFLOW_PUBLIC_URL" value="{{ env.LEADFLOW_PUBLIC_URL }}" placeholder="https://..." style="width: 100%; margin: 0;">
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>LeadFlow Secret Token</label>
+        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+          <input type="password" id="LEADFLOW_SECRET_TOKEN" value="{{ env.LEADFLOW_SECRET_TOKEN }}" style="width: 100%; padding-right: 40px; margin: 0;">
+          <button type="button" onclick="toggleField('LEADFLOW_SECRET_TOKEN', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; align-items: center;">
+        <div style="display: flex; align-items: center; height: 100%;">
+          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none; font-size: 13px; margin: 0; color: var(--text);">
+            <input type="checkbox" id="USE_CLOUDFLARE_PAGES" {% if env.USE_CLOUDFLARE_PAGES == 'true' %}checked{% endif %} style="width: auto; margin: 0;"> Deploy Demos to Cloudflare Pages
+          </label>
+        </div>
+        <div>
+          <label>Cloudflare Pages Project Name</label>
+          <input type="text" id="CLOUDFLARE_PAGES_PROJECT" value="{{ env.CLOUDFLARE_PAGES_PROJECT }}" placeholder="leadflow-demos" style="margin: 0; width: 100%;">
+        </div>
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>Ntfy Topic (Push Notifications Alert)</label>
+        <input type="text" id="NTFY_TOPIC" value="{{ env.NTFY_TOPIC }}" style="width: 100%; margin: 0;">
+      </div>
+    </div>
+
+    <!-- Telegram Control Bot & Failover Config -->
+    <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
+      <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">🤖 Telegram Control Bot & Failover</h3>
+      <div style="margin-bottom: 12px">
+        <label>Telegram Control Bot Token</label>
+        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+          <input type="password" id="TELEGRAM_CONTROL_BOT_TOKEN" value="{{ env.TELEGRAM_CONTROL_BOT_TOKEN }}" placeholder="12345678:ABC..." style="width: 100%; padding-right: 40px; margin: 0;">
+          <button type="button" onclick="toggleField('TELEGRAM_CONTROL_BOT_TOKEN', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+        </div>
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>Telegram Control User/Chat ID</label>
+        <input type="text" id="TELEGRAM_CONTROL_USER_ID" value="{{ env.TELEGRAM_CONTROL_USER_ID }}" placeholder="e.g. 935977950" style="width: 100%; margin: 0;">
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>LeadFlow Device Role (Failover Setup)</label>
+        <select id="LEADFLOW_DEVICE_ROLE">
+          {% set role = env.LEADFLOW_DEVICE_ROLE | default('backup') %}
+          <option value="primary" {% if role == 'primary' %}selected{% endif %}>Primary (Actively sends cold emails)</option>
+          <option value="backup" {% if role == 'backup' %}selected{% endif %}>Backup (Only syncs & acts as failover)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- AI Model Routing & Fallbacks -->
     <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
       <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">AI Model Routing & Fallbacks</h3>
       
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
+        <div>
+          <label>REST API Default Writing Model</label>
+          <select id="REST_DEFAULT_MODEL">
+            {% set cur = env.REST_DEFAULT_MODEL | default('gemini-2.5-pro') %}
+            <option value="gemini-2.5-pro" {% if cur == 'gemini-2.5-pro' %}selected{% endif %}>gemini-2.5-pro</option>
+            <option value="gemini-2.5-flash" {% if cur == 'gemini-2.5-flash' %}selected{% endif %}>gemini-2.5-flash</option>
+            <option value="gemini-3-flash-preview" {% if cur == 'gemini-3-flash-preview' %}selected{% endif %}>gemini-3-flash-preview</option>
+          </select>
+        </div>
+        <div>
+          <label>REST API Audit Model</label>
+          <select id="REST_AUDIT_MODEL">
+            {% set cur = env.REST_AUDIT_MODEL | default('gemini-2.5-pro') %}
+            <option value="gemini-2.5-pro" {% if cur == 'gemini-2.5-pro' %}selected{% endif %}>gemini-2.5-pro</option>
+            <option value="gemini-2.5-flash" {% if cur == 'gemini-2.5-flash' %}selected{% endif %}>gemini-2.5-flash</option>
+            <option value="gemini-3-flash-preview" {% if cur == 'gemini-3-flash-preview' %}selected{% endif %}>gemini-3-flash-preview</option>
+          </select>
+        </div>
+      </div>
+
       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 12px;">
         <div>
           <label>REST Primary Model</label>
@@ -133,11 +293,26 @@
       </div>
 
       <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
+        <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">📨 Cold Email Throttling & Warmup</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; align-items: center;">
+          <div style="display: flex; align-items: center; height: 100%;">
+            <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none; font-size: 13px; margin: 0; color: var(--text);">
+              <input type="checkbox" id="BYPASS_WARMUP" {% if env.BYPASS_WARMUP == 'true' %}checked{% endif %} style="width: auto; margin: 0;"> Bypass Dynamic Warmup Limits
+            </label>
+          </div>
+          <div>
+            <label>Custom Daily Limit Per Sender</label>
+            <input type="number" id="CUSTOM_SENDER_LIMIT" value="{{ env.CUSTOM_SENDER_LIMIT | default(50) }}" min="1" max="500" style="margin: 0; width: 100%;">
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
         <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">Local agy Profile Backup Config</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
           <div>
             <label>agy Profiles Directory</label>
-            <input type="text" id="AGY_PROFILES_DIR" value="{{ env.AGY_PROFILES_DIR | default('/Users/chandan/.gemini-profiles') }}">
+            <input type="text" id="AGY_PROFILES_DIR" value="${HOME}/.gemini-profiles">
           </div>
           <div>
             <label>agy Active Profile</label>
@@ -214,6 +389,8 @@ document.getElementById('envForm').addEventListener('submit', (e) => {
     BOOKING_URL: document.getElementById('BOOKING_URL').value,
     HUNTER_API_KEY: document.getElementById('HUNTER_API_KEY').value,
     APOLLO_API_KEY: document.getElementById('APOLLO_API_KEY').value,
+    REST_DEFAULT_MODEL: document.getElementById('REST_DEFAULT_MODEL').value,
+    REST_AUDIT_MODEL: document.getElementById('REST_AUDIT_MODEL').value,
     REST_PRIMARY_MODEL: document.getElementById('REST_PRIMARY_MODEL').value,
     REST_SECONDARY_MODEL: document.getElementById('REST_SECONDARY_MODEL').value,
     REST_TERTIARY_MODEL: document.getElementById('REST_TERTIARY_MODEL').value,
@@ -222,6 +399,25 @@ document.getElementById('envForm').addEventListener('submit', (e) => {
     AGY_CHAT_MODEL: document.getElementById('AGY_CHAT_MODEL').value,
     AGY_PROFILES_DIR: document.getElementById('AGY_PROFILES_DIR').value,
     AGY_ACTIVE_PROFILE: document.getElementById('AGY_ACTIVE_PROFILE').value,
+    BYPASS_WARMUP: document.getElementById('BYPASS_WARMUP').checked ? 'true' : 'false',
+    CUSTOM_SENDER_LIMIT: document.getElementById('CUSTOM_SENDER_LIMIT').value,
+    AGENCY_NAME: document.getElementById('AGENCY_NAME').value,
+    SERPER_API_KEY: document.getElementById('SERPER_API_KEY').value,
+    GOOGLE_PAGESPEED_API_KEY: document.getElementById('GOOGLE_PAGESPEED_API_KEY').value,
+    INSTAGRAM_USERNAME: document.getElementById('INSTAGRAM_USERNAME').value,
+    INSTAGRAM_PASSWORD: document.getElementById('INSTAGRAM_PASSWORD').value,
+    TWILIO_ACCOUNT_SID: document.getElementById('TWILIO_ACCOUNT_SID').value,
+    TWILIO_AUTH_TOKEN: document.getElementById('TWILIO_AUTH_TOKEN').value,
+    TWILIO_WHATSAPP_FROM: document.getElementById('TWILIO_WHATSAPP_FROM').value,
+    OPENROUTER_API_KEY: document.getElementById('OPENROUTER_API_KEY').value,
+    LEADFLOW_PUBLIC_URL: document.getElementById('LEADFLOW_PUBLIC_URL').value,
+    LEADFLOW_SECRET_TOKEN: document.getElementById('LEADFLOW_SECRET_TOKEN').value,
+    USE_CLOUDFLARE_PAGES: document.getElementById('USE_CLOUDFLARE_PAGES').checked ? 'true' : 'false',
+    CLOUDFLARE_PAGES_PROJECT: document.getElementById('CLOUDFLARE_PAGES_PROJECT').value,
+    NTFY_TOPIC: document.getElementById('NTFY_TOPIC').value,
+    TELEGRAM_CONTROL_BOT_TOKEN: document.getElementById('TELEGRAM_CONTROL_BOT_TOKEN').value,
+    TELEGRAM_CONTROL_USER_ID: document.getElementById('TELEGRAM_CONTROL_USER_ID').value,
+    LEADFLOW_DEVICE_ROLE: document.getElementById('LEADFLOW_DEVICE_ROLE').value,
   }, document.getElementById('saveEnvBtn'));
 });
 
@@ -253,7 +449,10 @@ function addGmailRow(email = '', password = '') {
     </div>
     <div style="display: flex; flex-direction: column; gap: 4px;">
       <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); font-weight: 600;">App Password</span>
-      <input type="password" placeholder="xxxx xxxx xxxx xxxx" value="${password}" class="gmail-pwd-input" required style="margin: 0; width: 100%;">
+      <div style="position: relative; display: flex; align-items: center; width: 100%;">
+        <input type="password" placeholder="xxxx xxxx xxxx xxxx" value="${password}" class="gmail-pwd-input" required style="margin: 0; width: 100%; padding-right: 40px;">
+        <button type="button" onclick="toggleInputEl(this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+      </div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 4px; align-self: flex-end;">
       <button type="button" class="btn btn-danger-icon" onclick="removeGmailRow(this)" style="padding: 10px; margin: 0; background: rgba(255, 77, 109, 0.1); color: var(--red); border: 1px solid rgba(255, 77, 109, 0.2); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; height: 38px; width: 38px;" onmouseover="this.style.background='rgba(255, 77, 109, 0.2)'" onmouseout="this.style.background='rgba(255, 77, 109, 0.1)'">🗑️</button>
@@ -262,8 +461,37 @@ function addGmailRow(email = '', password = '') {
   container.appendChild(row);
   
   // Show key toggle support for new inputs
-  const isChecked = document.getElementById('toggleShowKeys').checked;
-  row.querySelector('.gmail-pwd-input').type = isChecked ? 'text' : 'password';
+  const showCheckbox = document.getElementById('toggleShowKeys');
+  if (showCheckbox) {
+    const isChecked = showCheckbox.checked;
+    row.querySelector('.gmail-pwd-input').type = isChecked ? 'text' : 'password';
+  }
+}
+
+function toggleField(fieldId, btn) {
+  const el = document.getElementById(fieldId);
+  if (el) {
+    if (el.type === 'password') {
+      el.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      el.type = 'password';
+      btn.textContent = '👁️';
+    }
+  }
+}
+
+function toggleInputEl(btn) {
+  const el = btn.previousElementSibling;
+  if (el) {
+    if (el.type === 'password') {
+      el.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      el.type = 'password';
+      btn.textContent = '👁️';
+    }
+  }
 }
 
 function removeGmailRow(button) {
@@ -410,7 +638,11 @@ async function testGmail() {
 
 document.getElementById('toggleShowKeys').addEventListener('change', (e) => {
   const type = e.target.checked ? 'text' : 'password';
-  const fields = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_MAPS_API_KEY', 'GITHUB_TOKEN', 'HUNTER_API_KEY', 'APOLLO_API_KEY'];
+  const fields = [
+    'GEMINI_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_MAPS_API_KEY', 'GITHUB_TOKEN', 'HUNTER_API_KEY', 'APOLLO_API_KEY',
+    'SERPER_API_KEY', 'GOOGLE_PAGESPEED_API_KEY', 'INSTAGRAM_PASSWORD', 'TWILIO_AUTH_TOKEN', 'OPENROUTER_API_KEY',
+    'LEADFLOW_SECRET_TOKEN', 'TELEGRAM_CONTROL_BOT_TOKEN'
+  ];
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.type = type;

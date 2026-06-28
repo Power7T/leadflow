@@ -6,7 +6,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from demo_generator import generate_demo_html
 from ai_writer import generate_all
-from scheduler import _is_gym
 
 def test_lead_generation(business_id, name, category, pitch_type, expected_template, expected_has_demo):
     lead = {

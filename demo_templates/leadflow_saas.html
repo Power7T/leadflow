@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ lead.name }} - LeadFlow AI CRM Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --bg-card: #121214;
+      --bg-hover: #18181b;
+      --text: #fafafa;
+      --text-dim: #a1a1aa;
+      --border: #27272a;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.2);
+      --green: #10b981;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --yellow: #f59e0b;
+      --pink: #ec4899;
+      --font-body: 'Inter', sans-serif;
+      --font-head: 'Outfit', sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    * { box-sizing: border-box; }
+    
+    /* Top Navigation */
+    .top-nav {
+      border-bottom: 1px solid var(--border);
+      background: rgba(18, 18, 20, 0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 24px;
+    }
+    .nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-family: var(--font-head);
+    }
+    
+    /* Header Area */
+    .header {
+      padding: 48px 24px 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header h1 {
+      font-family: var(--font-head);
+      font-size: 32px;
+      margin: 0 0 8px 0;
+      background: linear-gradient(to right, #fff, #a1a1aa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p {
+      color: var(--text-dim);
+      margin: 0;
+      font-size: 16px;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 1200px;
+      margin: 0 auto 32px;
+      padding: 0 24px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; left: 0;
+      height: 2px;
+      background: var(--card-color, var(--border));
+    }
+    .stat-value {
+      font-family: var(--font-head);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+    
+    /* Main Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto 64px;
+      padding: 0 24px;
+    }
+    @media (max-width: 800px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .card h2 {
+      font-family: var(--font-head);
+      font-size: 18px;
+      margin: 0 0 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* CRM Table */
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .table th {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+    .table td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .table tr:last-child td { border-bottom: none; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-hot { background: rgba(239, 68, 68, 0.1); color: var(--red); }
+    .status-warm { background: rgba(245, 158, 11, 0.1); color: var(--yellow); }
+    .status-new { background: rgba(59, 130, 246, 0.1); color: var(--blue); }
+    
+    /* Autopilot Log */
+    .log-box {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #a1a1aa;
+      height: 250px;
+      overflow-y: auto;
+    }
+    .log-entry { margin-bottom: 8px; }
+    .log-time { color: #52525b; margin-right: 8px; }
+    .log-success { color: var(--green); }
+    
+    /* Banner/Notice */
+    .demo-notice {
+      background: linear-gradient(to right, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 0 auto 32px;
+      max-width: calc(1200px - 48px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    @media(max-width: 700px) { .demo-notice { flex-direction: column; text-align: center; } }
+    .demo-notice h3 { margin: 0 0 8px 0; color: #fff; font-family: var(--font-head); }
+    .demo-notice p { margin: 0; color: var(--text-dim); font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <div class="container nav-inner">
+      <div class="logo">
+        <div class="pulse-dot"></div>
+        LeadFlow AI
+      </div>
+      <div class="user-profile">
+        <div class="avatar">{{ lead.name[0] }}</div>
+        {{ lead.name }}
+      </div>
+    </div>
+  </nav>
+
+  <div class="demo-notice">
+    <div>
+      <h3>✨ Custom CRM Demo for {{ lead.name }}</h3>
+      <p>This is a live preview of how the <b>LeadFlow Autopilot CRM</b> would look running locally for your business. It automatically scrapes local clients and sends AI-personalized outreach 24/7.</p>
+    </div>
+  </div>
+
+  <header class="header">
+    <h1>🚀 Command Center</h1>
+    <p>Your high-level metrics and autopilot outreach engine.</p>
+  </header>
+
+  {% set cat = (lead.category | lower) if lead.category else "" %}
+  {% set target_audience = "Local Clients" %}
+  {% set prospect_1 = "Local Prospect A" %}
+  {% set prospect_2 = "Local Prospect B" %}
+  {% set prospect_3 = "Local Prospect C" %}
+  {% set prospect_4 = "Local Prospect D" %}
+
+  {% if "clean" in cat or "valet" in cat or "trash" in cat %}
+    {% set target_audience = "Airbnb Hosts & PMs" %}
+    {% set prospect_1 = "Luxury Villa Rentals" %}
+    {% set prospect_2 = "Downtown Airbnb Host" %}
+    {% set prospect_3 = "Property Management LLC" %}
+    {% set prospect_4 = "Superhost (South Beach)" %}
+  {% elif "medspa" in cat or "dentist" in cat or "ortho" in cat or "chiro" in cat or "salon" in cat %}
+    {% set target_audience = "High-Income Residents" %}
+    {% set prospect_1 = "New Patient (Consultation booked)" %}
+    {% set prospect_2 = "Local Resident (Opened email)" %}
+    {% set prospect_3 = "Past Client (Re-engagement)" %}
+    {% set prospect_4 = "Waitlisted Client" %}
+  {% elif "roof" in cat or "plumb" in cat or "hvac" in cat or "electric" in cat or "handyman" in cat %}
+    {% set target_audience = "Homeowners" %}
+    {% set prospect_1 = "Recent Homebuyer" %}
+    {% set prospect_2 = "Homeowner in " ~ (lead.city if lead.city else "your area") %}
+    {% set prospect_3 = "Commercial Property" %}
+    {% set prospect_4 = "Real Estate Investor" %}
+  {% elif "real estate" in cat or "realtor" in cat %}
+    {% set target_audience = "Sellers & Buyers" %}
+    {% set prospect_1 = "Homeowner (Considering selling)" %}
+    {% set prospect_2 = "First-time Buyer" %}
+    {% set prospect_3 = "Property Investor" %}
+    {% set prospect_4 = "Relocating Family" %}
+  {% else %}
+    {% set target_audience = "Local Customers" %}
+    {% set prospect_1 = "Local Business Owner" %}
+    {% set prospect_2 = "Local Resident" %}
+    {% set prospect_3 = "Potential Partner" %}
+    {% set prospect_4 = "Recent Inquiry" %}
+  {% endif %}
+
+  <div class="stats-grid">
+    <div class="stat-card" style="--card-color: var(--accent);">
+      <div class="stat-value">1,402</div>
+      <div class="stat-label">{{ target_audience }} Scraped</div>
+    </div>
+    <div class="stat-card" style="--card-color: var(--blue);">
+      <div class="stat-value">845</div>
+      <div class="stat-label">Outreach Sent</div>
+    </div>
+    <div class="stat-card" style="--card-color: var(--yellow);">
+      <div class="stat-value">312</div>
+      <div class="stat-label">Emails Opened</div>
+    </div>
+    <div class="stat-card" style="--card-color: var(--green);">
+      <div class="stat-value">47</div>
+      <div class="stat-label">Hot Replies</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Active Pipeline -->
+    <div class="card">
+      <h2>🔥 Active Pipeline</h2>
+      <div style="overflow-x: auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Lead Name</th>
+              <th>Status</th>
+              <th>Last Contact</th>
+              <th>Campaign</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: 500; color: #fff;">{{ prospect_1 }}</td>
+              <td><span class="status-badge status-hot">Replied Yes</span></td>
+              <td>10 mins ago</td>
+              <td>Outbound AI</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 500; color: #fff;">{{ prospect_2 }}</td>
+              <td><span class="status-badge status-warm">Opened (x3)</span></td>
+              <td>2 hours ago</td>
+              <td>Outbound AI</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 500; color: #fff;">{{ prospect_3 }}</td>
+              <td><span class="status-badge status-new">Sent</span></td>
+              <td>Yesterday</td>
+              <td>Outbound AI</td>
+            </tr>
+            <tr>
+              <td style="font-weight: 500; color: #fff;">{{ prospect_4 }}</td>
+              <td><span class="status-badge status-new">Drafting</span></td>
+              <td>Just now</td>
+              <td>Autopilot</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Live Terminal -->
+    <div class="card">
+      <h2>📟 Live Autopilot Logs</h2>
+      <div class="log-box">
+        <div class="log-entry"><span class="log-time">[08:00:01]</span> Starting daily scheduled tasks...</div>
+        <div class="log-entry"><span class="log-time">[08:00:05]</span> Scraping data sources for new {{ target_audience }}...</div>
+        <div class="log-entry"><span class="log-time">[08:01:12]</span> <span class="log-success">✓ Found 45 new prospects in {{ lead.city if lead.city else "your area" }}.</span></div>
+        <div class="log-entry"><span class="log-time">[08:01:15]</span> Sending prospects to AI for personalization...</div>
+        <div class="log-entry"><span class="log-time">[08:02:30]</span> Drafts generated. Queueing for delivery.</div>
+        <div class="log-entry"><span class="log-time">[08:15:00]</span> <span class="log-success">✓ 10 emails successfully sent.</span></div>
+        <div class="log-entry" style="color: var(--accent);"><span class="log-time">[08:45:22]</span> ⚡ {{ prospect_1 }} opened email!</div>
+        <div class="log-entry"><span class="log-time">[09:00:00]</span> Sleeping until next hourly cycle...</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; padding-bottom: 64px; color: var(--text-dim); font-size: 13px;">
+    {% if lead.google_rating %}
+      <div style="margin-bottom: 12px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 6px 16px; border-radius: 20px;">
+        <span style="color:#f59e0b;">★★★★★</span>
+        <span style="color:#fff; font-weight: 600;">{{ lead.google_rating }} Rating</span>
+        <span>({{ lead.google_reviews }} reviews)</span>
+      </div>
+    {% endif %}
+    <p>This is a custom-generated demo. All data is mocked for demonstration purposes.</p>
+    <p>&copy; 2026 LeadFlow AI</p>
+  </div>
+
+</body>
+</html>

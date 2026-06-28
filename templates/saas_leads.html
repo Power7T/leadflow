@@ -1,0 +1,1496 @@
+{% extends "base.html" %}
+{% block title %} — SaaS CRM Leads{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <h1 style="margin:0">SaaS CRM Leads</h1>
+    <button class="btn btn-primary" onclick="toggleAddLeadModal()" style="padding: 4px 10px; font-size: 12px;">➕ Add Manual Lead</button>
+  </div>
+  <div style="display:flex;gap:4px;flex-wrap:wrap" id="statusTabs">
+    <button class="tab-btn active" data-filter="all"      onclick="filterLeads('all',this)">All <span class="tab-count" id="cnt-all"></span></button>
+    <button class="tab-btn"        data-filter="new"      onclick="filterLeads('new',this)">New <span class="tab-count" id="cnt-new"></span></button>
+    <button class="tab-btn"        data-filter="approved" onclick="filterLeads('approved',this)">Approved <span class="tab-count" id="cnt-approved"></span></button>
+    <button class="tab-btn"        data-filter="sent"     onclick="filterLeads('sent',this)">Sent <span class="tab-count" id="cnt-sent"></span></button>
+    <button class="tab-btn"        data-filter="replied"  onclick="filterLeads('replied',this)">Replied <span class="tab-count" id="cnt-replied"></span></button>
+    <button class="tab-btn"        data-filter="closed"   onclick="filterLeads('closed',this)">Closed <span class="tab-count" id="cnt-closed"></span></button>
+    <button class="tab-btn"        data-filter="opted_out" onclick="filterLeads('opted_out',this)">Opted Out <span class="tab-count" id="cnt-opted_out"></span></button>
+  </div>
+</div>
+<p class="subtitle" id="leadsSubtitle">{{ leads|length }} lead{% if leads|length != 1 %}s{% endif %} — click any to see full details and generate outreach.</p>
+
+<!-- Success/Error Banners -->
+{% if request.query_params.get('success') %}
+<div style="background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.2); color:#10b981; padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px;">
+  ✓ {{ request.query_params.get('success') }}
+</div>
+{% endif %}
+{% if request.query_params.get('error') %}
+<div style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.2); color:#ef4444; padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px;">
+  ⚠ Error: {{ request.query_params.get('error') }}
+</div>
+{% endif %}
+
+<!-- Add Lead Modal -->
+<div id="addLeadModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+  <div class="card" style="width:100%; max-width:500px; padding:30px; position:relative; background:var(--card-bg); border:1px solid var(--border); border-radius:12px;">
+    <button onclick="toggleAddLeadModal()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:var(--text-dim); font-size:24px; cursor:pointer;">&times;</button>
+    <h3 style="margin-top:0; margin-bottom:20px;">Add New Business Manually</h3>
+    
+    <form id="manualAddForm" action="/saas-leads/add" method="POST" style="display:flex; flex-direction:column; gap:16px;">
+      <div>
+        <label style="display:block; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; font-weight:600;">Website URL *</label>
+        <input type="url" name="website" required style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:#fff; outline:none;" placeholder="https://e.g. miamicleaners.com">
+      </div>
+
+      <div>
+        <label style="display:block; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; font-weight:600;">Facebook Post/Profile URL (Optional)</label>
+        <input type="url" name="fb_link" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:#fff; outline:none;" placeholder="https://facebook.com/... (optional)">
+      </div>
+
+      <div>
+        <label style="display:block; font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; font-weight:600;">Target Campaign Options</label>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="radio" name="campaign_mode" value="auto" checked onchange="toggleCampaignSelection(false)"> 🤖 Auto-Suggest (Audit suggests based on site score)
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="radio" name="campaign_mode" value="manual" onchange="toggleCampaignSelection(true)"> 🛠️ Choose Manually
+          </label>
+          
+          <div id="manualCampaignOptions" style="display:none; padding-left:24px; display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" name="pitch_types" value="leadflow_saas" checked> Promote SaaS CRM
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" name="pitch_types" value="website_new" checked> Promote Custom Website
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submitAddLeadBtn" style="justify-content:center; margin-top:10px; padding:12px;">Scrape & Add Lead</button>
+    </form>
+  </div>
+</div>
+
+{% if not leads %}
+<div class="empty">
+  <div class="icon">📭</div>
+  <p>No new leads yet.</p>
+  <a href="/find" class="btn btn-primary">🔍 Find Businesses</a>
+</div>
+{% else %}
+
+<div class="leads-split">
+
+  <!-- LEFT: lead list -->
+  <div class="leads-list" id="leadsList">
+    <!-- Search Bar -->
+    <div style="padding: 10px; border-bottom: 1px solid var(--border);">
+      <input type="text" id="leadSearch" placeholder="Search by name, website, email..." style="width:100%; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); outline:none; font-size:12px;" onkeyup="applyFilters()">
+    </div>
+
+    <!-- Campaign Segment Filter -->
+    <div style="display:flex; gap:6px; padding: 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px;" id="campaignTabs">
+      <button class="tab-btn active" data-campaign="all" onclick="filterCampaign('all', this)" style="padding: 4px 10px; font-size: 11px;">All Campaigns</button>
+      <button class="tab-btn" data-campaign="leadflow_saas" onclick="filterCampaign('leadflow_saas', this)" style="padding: 4px 10px; font-size: 11px;">⚡ SaaS CRM</button>
+      <button class="tab-btn" data-campaign="web_design" onclick="filterCampaign('web_design', this)" style="padding: 4px 10px; font-size: 11px;">🌐 Web Design</button>
+    </div>
+
+    <!-- Advanced Filters Toggle & Panel -->
+    <div style="padding: 0 10px 10px 10px; border-bottom: 1px solid var(--border); margin-bottom: 12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleAdvancedFilters()">
+        <span style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:4px">
+          ⚙️ Advanced Filters
+        </span>
+        <span id="advFiltersToggleIcon" style="font-size:10px; color:var(--text-dim)">[+] Expand</span>
+      </div>
+      
+      <div id="advancedFiltersPanel" style="display:none; margin-top:10px; flex-direction:column; gap:10px;">
+        <!-- Engagement Section -->
+        <div>
+          <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px; font-weight:600;">Engagement</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <label class="filter-chip" id="chip-opened">
+              <input type="checkbox" id="filter-opened"> 👁️ Opened Email
+            </label>
+            <label class="filter-chip" id="chip-clicked">
+              <input type="checkbox" id="filter-clicked"> 🔗 Clicked Link
+            </label>
+            <label class="filter-chip" id="chip-demo">
+              <input type="checkbox" id="filter-demo"> 🌐 Demo Viewed
+            </label>
+            <label class="filter-chip" id="chip-replied">
+              <input type="checkbox" id="filter-replied"> 💬 Replied
+            </label>
+          </div>
+        </div>
+
+        <!-- Contact Methods Section -->
+        <div>
+          <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px; font-weight:600;">Contact Available</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <label class="filter-chip" id="chip-has-email">
+              <input type="checkbox" id="filter-has-email"> Email
+            </label>
+            <label class="filter-chip" id="chip-has-phone">
+              <input type="checkbox" id="filter-has-phone"> Phone
+            </label>
+            <label class="filter-chip" id="chip-has-ig">
+              <input type="checkbox" id="filter-has-ig"> Instagram
+            </label>
+            <label class="filter-chip" id="chip-has-wa">
+              <input type="checkbox" id="filter-has-wa"> WhatsApp
+            </label>
+            <label class="filter-chip" id="chip-has-li">
+              <input type="checkbox" id="filter-has-li"> LinkedIn
+            </label>
+          </div>
+        </div>
+
+        <!-- Source Section -->
+        <div>
+          <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px; font-weight:600;">Source</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <label class="filter-chip" id="chip-manual">
+              <input type="checkbox" id="filter-manual"> ✍️ Manually Added
+            </label>
+          </div>
+        </div>
+
+        <!-- Niche / Location Dropdown -->
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1;">
+            <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px; font-weight:600;">Niche</div>
+            <select id="filter-niche" onchange="applyFilters()" style="width:100%; font-size:11px; padding:4px; border-radius:4px; border:1px solid var(--border); background:var(--bg); color:var(--text)">
+              <option value="all">All Niches</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px; font-weight:600;">Location</div>
+            <select id="filter-location" onchange="applyFilters()" style="width:100%; font-size:11px; padding:4px; border-radius:4px; border:1px solid var(--border); background:var(--bg); color:var(--text)">
+              <option value="all">All Locations</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- Reset Button -->
+        <button class="btn btn-ghost" onclick="resetAdvancedFilters()" style="width:100%; font-size:11px; padding:4px; justify-content:center;">Clear Filters</button>
+      </div>
+    </div>
+
+    {% for lead in leads %}
+    <div class="lead-row" id="row-{{ lead.id }}" onclick="selectLead({{ lead.id }})"
+      data-lead='{{ lead | tojson }}' data-status="{{ lead.status }}" data-pitch-type="{{ lead.pitch_type }}" style="margin-bottom: 8px;">
+      
+      <!-- Top Row: Name and Score Pill -->
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
+        <div class="lead-row-name" style="margin:0; font-size:13.5px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">
+          {{ lead.name }}
+        </div>
+        
+        <!-- Score Pill -->
+        {% if lead.pitch_type == 'leadflow_saas' %}
+          {% set l_score = lead.lead_score or 0 %}
+          <span class="score-pill {% if l_score >= 80 %}pill-green{% elif l_score >= 45 %}pill-yellow{% else %}pill-red{% endif %}" title="Lead priority score" style="font-size:10px; font-weight:600; padding:2px 8px; border-radius:12px; margin-left:auto; flex-shrink:0;">
+            {{ lead.lead_score or 0 }} Priority
+          </span>
+        {% else %}
+          {% set w_score = lead.website_score or 0 %}
+          <span class="score-pill {% if w_score >= 70 %}pill-green{% elif w_score >= 40 %}pill-yellow{% else %}pill-red{% endif %}" style="font-size:10px; font-weight:600; padding:2px 8px; border-radius:12px; margin-left:auto; flex-shrink:0;">
+            {% if lead.website %}{{ lead.website_score or 0 }} Score{% else %}No Site{% endif %}
+          </span>
+        {% endif %}
+      </div>
+
+      <!-- Middle Row: Niche + Location (left), and Channel Indicators (right) -->
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
+        <div class="lead-row-meta" style="margin:0; font-size:11px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">
+          {{ lead.category | capitalize }} · {{ lead.city }}{% if lead.country %}, {{ lead.country }}{% endif %}
+        </div>
+        
+        <!-- Channel indicators -->
+        <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+          {% if lead.email %}<span class="channel-indicator active" title="Email: {{ lead.email }}">✉</span>{% else %}<span class="channel-indicator dim">✉</span>{% endif %}
+          {% if lead.instagram %}<span class="channel-indicator active" title="Instagram: @{{ lead.instagram }}">📸</span>{% else %}<span class="channel-indicator dim">📸</span>{% endif %}
+          {% if lead.whatsapp %}<span class="channel-indicator active" title="WhatsApp: {{ lead.whatsapp }}">💬</span>{% else %}<span class="channel-indicator dim">💬</span>{% endif %}
+          {% if lead.linkedin_url %}<span class="channel-indicator active" title="LinkedIn">💼</span>{% endif %}
+        </div>
+      </div>
+
+      <!-- Bottom Row: Qualification & Status Badges -->
+      <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <!-- Campaign Niche Tag -->
+        {% if is_saas %}
+          <span class="tag-campaign" style="font-size:9px; padding:1px 5px; border-radius:4px;">SaaS CRM</span>
+        {% else %}
+          <span class="tag-campaign" style="font-size:9px; padding:1px 5px; border-radius:4px; background:rgba(0,150,255,0.1); color:var(--blue); border:1px solid rgba(0,150,255,0.2);">Web Design</span>
+        {% endif %}
+
+        <!-- Demo viewed badge -->
+        {% if lead.demo_viewed %}
+          <span style="font-size:9px; font-weight:600; letter-spacing:.04em; padding:1px 5px; border-radius:4px; white-space:nowrap; background:rgba(255,0,0,.15); color:var(--red); border: 1px solid rgba(255,0,0,0.2);">🔥 VIEWED DEMO</span>
+        {% endif %}
+
+        <!-- Lead Pipeline Status Badge -->
+        {% if lead.status != 'new' %}
+          <span style="font-size:9px; font-weight:600; letter-spacing:.04em; padding:1px 5px; border-radius:4px; white-space:nowrap; margin-left:auto;
+            {% if lead.status == 'sent' %}background:rgba(0,242,254,.12);color:var(--accent);border:1px solid rgba(0,242,254,.2)
+            {% elif lead.status == 'replied' %}background:rgba(40,200,80,.15);color:#4caf50;border:1px solid rgba(40,200,80,.2)
+            {% elif lead.status == 'closed' %}background:rgba(255,77,36,.12);color:var(--orange);border:1px solid rgba(255,77,36,.2)
+            {% elif lead.status == 'approved' %}background:rgba(255,200,0,.1);color:var(--yellow);border:1px solid rgba(255,200,0,.2)
+            {% elif lead.status == 'opted_out' %}background:rgba(255,77,109,.15);color:var(--red);border:1px solid rgba(255,77,109,.3)
+            {% endif %}">{{ lead.status | upper }}</span>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- RIGHT: detail panel -->
+  <div class="lead-detail" id="leadDetail">
+    <div class="detail-empty">
+      <div style="font-size:32px;margin-bottom:12px">👈</div>
+      <div style="color:var(--text-dim)">Select a lead to see full details</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- lead data embedded for JS -->
+<script id="leadsData" type="application/json">
+{{ leads | tojson }}
+</script>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<style>
+.tab-btn {
+  padding: 5px 12px; font-size: 12px; font-weight: 500; border-radius: 6px;
+  border: 1px solid var(--border); background: transparent; color: var(--text-dim);
+  cursor: pointer; transition: all .15s;
+}
+.tab-btn:hover { color: var(--text); border-color: var(--accent); }
+.tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.tab-count { font-size: 10px; opacity: .7; margin-left: 3px; }
+
+/* Channel selector pills */
+.chan-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; font-size: 11px; font-weight: 500; border-radius: 20px;
+  border: 1px solid var(--border); color: var(--text-dim);
+  cursor: pointer; transition: all .15s; user-select: none;
+}
+.chan-pill input { display: none; }
+.chan-pill:hover { border-color: var(--accent); color: var(--text); }
+.chan-pill.active { border-color: var(--accent); background: rgba(0,242,254,.1); color: var(--accent); }
+.chan-pill.active::before { content: '✓ '; }
+
+/* Channel indicator inside lead row */
+.channel-indicator {
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+.channel-indicator.active {
+  background: rgba(0, 242, 254, 0.1);
+  color: var(--accent);
+  border-color: rgba(0, 242, 254, 0.2);
+}
+.channel-indicator.dim {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-dim);
+  opacity: 0.35;
+}
+
+/* Filter chip */
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; font-size: 10px; font-weight: 500; border-radius: 12px;
+  border: 1px solid var(--border); color: var(--text-dim);
+  cursor: pointer; transition: all .15s; user-select: none;
+}
+.filter-chip input { display: none; }
+.filter-chip:hover { border-color: var(--accent); color: var(--text); }
+.filter-chip.active { border-color: var(--accent); background: rgba(0,242,254,.1); color: var(--accent); }
+.filter-chip.active::before { content: '✓ '; }
+
+/* Suggestion chips */
+.sugg-chip {
+  padding: 3px 9px; font-size: 11px; border-radius: 12px;
+  border: 1px solid var(--border); background: transparent; color: var(--text-dim);
+  cursor: pointer; transition: all .12s;
+}
+.sugg-chip:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,242,254,.06); }
+
+.badge-hot { background: rgba(255,77,77,0.15); color: #ff4d4d; border: 1px solid rgba(255,77,77,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.badge-warm { background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.badge-cold { background: rgba(77,153,255,0.15); color: #4d99ff; border: 1px solid rgba(77,153,255,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+
+.tag-campaign {
+  background: rgba(0, 242, 254, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.tag-web-status {
+  font-size: 10px;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+</style>
+<script>
+const allLeads = JSON.parse(document.getElementById('leadsData')?.textContent || '[]');
+let activeId = null;
+let drafts = {};
+let currentFilter = 'all';
+let currentCampaignFilter = 'all';
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+}
+
+function filterLeads(status, btn) {
+  currentFilter = status;
+  document.querySelectorAll('#statusTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function filterCampaign(campaign, btn) {
+  currentCampaignFilter = campaign;
+  document.querySelectorAll('#campaignTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  let shown = 0;
+  const statusCounts = {};
+  let totalCampaignLeads = 0;
+  
+  // Read current states of advanced filters
+  const filterOpened = document.getElementById('filter-opened')?.checked;
+  const filterClicked = document.getElementById('filter-clicked')?.checked;
+  const filterDemo = document.getElementById('filter-demo')?.checked;
+  const filterReplied = document.getElementById('filter-replied')?.checked;
+  
+  const filterHasEmail = document.getElementById('filter-has-email')?.checked;
+  const filterHasPhone = document.getElementById('filter-has-phone')?.checked;
+  const filterHasIg = document.getElementById('filter-has-ig')?.checked;
+  const filterHasWa = document.getElementById('filter-has-wa')?.checked;
+  const filterHasLi = document.getElementById('filter-has-li')?.checked;
+  
+  const filterManual = document.getElementById('filter-manual')?.checked;
+  
+  const selectedNiche = document.getElementById('filter-niche')?.value || 'all';
+  const selectedLocation = document.getElementById('filter-location')?.value || 'all';
+  
+  const searchQuery = (document.getElementById('leadSearch')?.value || '').toLowerCase();
+
+  document.querySelectorAll('.lead-row').forEach(row => {
+    const leadId = parseInt(row.id.split('-')[1]);
+    const lead = allLeads.find(l => l.id === leadId);
+    
+    let advancedMatch = true;
+    
+    if (lead) {
+      // Engagement filters
+      if (filterOpened && !lead.email_opened) advancedMatch = false;
+      if (filterClicked && !lead.email_clicked) advancedMatch = false;
+      if (filterDemo && !lead.demo_viewed) advancedMatch = false;
+      if (filterReplied && !(lead.status === 'replied' || lead.replied_at || lead.reply_text)) advancedMatch = false;
+      
+      // Contact filters
+      if (filterHasEmail && !lead.email) advancedMatch = false;
+      if (filterHasPhone && !lead.phone) advancedMatch = false;
+      if (filterHasIg && !lead.instagram) advancedMatch = false;
+      if (filterHasWa && !lead.whatsapp) advancedMatch = false;
+      if (filterHasLi && !lead.linkedin_url) advancedMatch = false;
+      
+      // Source filters
+      if (filterManual && lead.source !== 'facebook_miami') advancedMatch = false;
+      
+      // Dropdown filters
+      if (selectedNiche !== 'all' && lead.category !== selectedNiche) advancedMatch = false;
+      if (selectedLocation !== 'all' && lead.city !== selectedLocation && lead.country !== selectedLocation) advancedMatch = false;
+      
+      // Text Search
+      if (searchQuery && advancedMatch) {
+        const searchableText = `${lead.name || ''} ${lead.email || ''} ${lead.website || ''} ${lead.category || ''}`.toLowerCase();
+        if (!searchableText.includes(searchQuery)) {
+          advancedMatch = false;
+        }
+      }
+    } else {
+      advancedMatch = false;
+    }
+
+    const pitchType = row.dataset.pitchType || '';
+    let campaignMatch = false;
+    
+    if (currentCampaignFilter === 'all') {
+      campaignMatch = true;
+    } else if (currentCampaignFilter === 'leadflow_saas') {
+      campaignMatch = (pitchType === 'leadflow_saas' || pitchType === 'both');
+    } else if (currentCampaignFilter === 'web_design') {
+      campaignMatch = (pitchType === 'website_new' || pitchType === 'both');
+    }
+    
+    if (campaignMatch && advancedMatch) {
+      totalCampaignLeads++;
+      const s = row.dataset.status || 'new';
+      statusCounts[s] = (statusCounts[s] || 0) + 1;
+    }
+    
+    const statusMatch = (currentFilter === 'all' || row.dataset.status === currentFilter);
+    const show = statusMatch && campaignMatch && advancedMatch;
+    row.style.display = show ? '' : 'none';
+    if (show) shown++;
+  });
+  
+  // Update status counts badges
+  const cntAllEl = document.getElementById('cnt-all');
+  if (cntAllEl) cntAllEl.textContent = totalCampaignLeads || '';
+  ['new','approved','sent','replied','closed','opted_out'].forEach(s => {
+    const el = document.getElementById('cnt-' + s);
+    if (el) el.textContent = statusCounts[s] || '';
+  });
+
+  document.getElementById('leadsSubtitle').textContent =
+    `${shown} lead${shown !== 1 ? 's' : ''} — click any to see full details and generate outreach.`;
+    
+  // Clear detail if active lead is now filtered out
+  if (activeId) {
+    const activeRow = document.getElementById('row-' + activeId);
+    if (activeRow && activeRow.style.display === 'none') {
+      document.getElementById('leadDetail').innerHTML = `<div class="detail-empty"><div style="color:var(--text-dim)">Select a lead to see full details</div></div>`;
+      activeId = null;
+    }
+  }
+}
+
+function selectLead(id) {
+  activeId = id;
+  const lead = allLeads.find(l => l.id === id);
+  if (!lead) return;
+
+  // highlight row
+  document.querySelectorAll('.lead-row').forEach(r => r.classList.remove('active'));
+  document.getElementById(`row-${id}`)?.classList.add('active');
+
+  const score = lead.website_score || 0;
+  const scoreColor = score >= 70 ? 'var(--accent)' : score >= 40 ? 'var(--yellow)' : 'var(--red)';
+  const scoreLabel = lead.website ? `${score}/100` : 'No website';
+  const pitchLabels = {
+    website_new: 'Build new website',
+    website_redesign: 'Website redesign',
+    automation: 'AI email automation',
+    ai_setup: 'ClawdBot AI setup',
+    leadflow_saas: 'LeadFlow CRM & Leads',
+  };
+
+  const optOutBanner = lead.status === 'opted_out' ? `
+    <div style="background:rgba(255,77,109,0.1); border:1px solid rgba(255,77,109,0.3); border-radius:8px; padding:14px; margin-bottom:16px; color:var(--red); font-size:13px; font-weight:600; display:flex; align-items:center; gap:10px; text-align:left;">
+      <span style="font-size:20px;">⚠️</span>
+      <div>
+        <div style="font-size:14px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">Opted Out — Blacklisted</div>
+        <div style="font-weight:400; color:var(--text-dim); font-size:12px;">This business has requested to opt out. Automated and manual outreach is disabled. We keep them in the database to prevent re-contacting them.</div>
+      </div>
+    </div>
+  ` : '';
+
+  document.getElementById('leadDetail').innerHTML = `
+    <div class="detail-inner">
+      ${optOutBanner}
+
+      <!-- Header -->
+      <div class="detail-header">
+        <div>
+          <div class="detail-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${lead.name}
+          </div>
+          <div class="detail-location">${[lead.address].filter(Boolean).join(' · ')}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+          <select id="statusSelect-${id}" onchange="setLeadStatus(${id},this.value)"
+            style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer">
+            <option value="" disabled>Mark as…</option>
+            <option value="new" ${lead.status === 'new' ? 'selected' : ''}>New</option>
+            <option value="approved" ${lead.status === 'approved' ? 'selected' : ''}>Approved</option>
+            <option value="sent" ${lead.status === 'sent' ? 'selected' : ''}>Contacted</option>
+            <option value="replied" ${lead.status === 'replied' ? 'selected' : ''}>Replied</option>
+            <option value="closed" ${lead.status === 'closed' ? 'selected' : ''}>Closed</option>
+            <option value="opted_out" ${lead.status === 'opted_out' ? 'selected' : ''}>Opted Out</option>
+          </select>
+          <button class="btn btn-danger" style="font-size:12px" onclick="skipLead(${id})">Skip</button>
+          <button class="btn btn-danger" style="font-size:12px;background:rgba(180,0,0,.2);border-color:rgba(180,0,0,.4)" onclick="deleteLead(${id})">🗑 Delete</button>
+        </div>
+      </div>
+
+      <!-- Info grid -->
+      <div class="detail-grid">
+
+        <div class="detail-section">
+          <div class="section-label">Business Info</div>
+          <div class="info-row"><span>Category</span><b>${lead.category || '—'}</b></div>
+          <div class="info-row"><span>Google Rating</span><b>${lead.google_rating ? `★ ${lead.google_rating} (${lead.google_reviews} reviews)` : '—'}</b></div>
+          <div class="info-row"><span>Phone</span><b>${lead.phone ? lead.phone + (lead.country ? ' (' + lead.country + ')' : '') : '—'}</b></div>
+          <div class="info-row"><span>Google Maps</span><b>${lead.maps_url ? `<a href="${lead.maps_url}" target="_blank" style="color:var(--accent)">View on Maps ↗</a>` : '—'}</b></div>
+          <div class="info-row"><span>Found</span><b>${lead.found_at ? lead.found_at.split('T')[0] : '—'}</b></div>
+        </div>
+
+        <div class="detail-section">
+          <div class="section-label">Website</div>
+          <div class="info-row"><span>URL</span><b>${lead.website ? `<a href="${lead.website}" target="_blank" style="color:var(--accent)">${lead.website}</a>` : '<span style="color:var(--red)">None found</span>'}</b></div>
+          <div class="info-row"><span>Our Score</span><b style="color:${scoreColor}">${scoreLabel}</b></div>
+          <div class="info-row"><span>Gap</span><b style="color:var(--yellow)">${lead.gap || '—'}</b></div>
+          <div class="info-row"><span>Pitch</span><b style="color:var(--accent)">${pitchLabels[lead.pitch_type] || '—'}</b></div>
+          ${lead.website ? `<div class="info-row" style="margin-top:6px"><span></span><b><button class="copy-btn" style="padding:4px 10px" onclick="loadAudit(${id}, '${lead.website}')">🔍 Run Full Audit</button></b></div>` : ''}
+          <div id="auditPanel-${id}" style="margin-top:10px"></div>
+        </div>
+
+        <div class="detail-section">
+          <div class="section-label">Contact Details</div>
+          <div class="info-row">
+            <span style="align-self:flex-start;margin-top:2px">Emails</span>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              ${lead.email ? `<div><span style="font-size:10px;color:var(--text-dim);margin-right:4px">WEB</span> <a href="mailto:${lead.email}" style="color:var(--accent)">${lead.email}</a> <button class="copy-btn" onclick="copyText('${lead.email}', this)">copy</button></div>` : ''}
+              ${lead.hunter_email ? `<div><span style="font-size:10px;color:var(--orange);margin-right:4px">HUNTER</span> <a href="mailto:${lead.hunter_email}" style="color:var(--accent)">${lead.hunter_email}</a> <button class="copy-btn" onclick="copyText('${lead.hunter_email}', this)">copy</button></div>` : ''}
+              ${lead.apollo_email ? `<div><span style="font-size:10px;color:var(--blue);margin-right:4px">APOLLO</span> <a href="mailto:${lead.apollo_email}" style="color:var(--accent)">${lead.apollo_email}</a> <button class="copy-btn" onclick="copyText('${lead.apollo_email}', this)">copy</button></div>` : ''}
+              ${(!lead.email && !lead.hunter_email && !lead.apollo_email) ? '<span style="color:var(--text-dim)">Not found</span>' : ''}
+            </div>
+          </div>
+          <div class="info-row">
+            <span>Instagram</span>
+            <b>${lead.instagram
+              ? `<a href="https://instagram.com/${lead.instagram}" target="_blank" style="color:var(--blue)">@${lead.instagram}</a>
+                 <button class="copy-btn" onclick="copyText('@${lead.instagram}', this)">copy</button>`
+              : '<span style="color:var(--text-dim)">Not found</span>'}</b>
+          </div>
+          <div class="info-row">
+            <span>LinkedIn</span>
+            <b>${lead.linkedin_url
+              ? `<a href="${lead.linkedin_url}" target="_blank" style="color:var(--blue)">${lead.linkedin_name || lead.linkedin_url}</a>
+                 <button class="copy-btn" onclick="copyText('${lead.linkedin_url}', this)">copy</button>`
+              : '<span style="color:var(--text-dim)">Not found</span>'}</b>
+          </div>
+          <div class="info-row">
+            <span>WhatsApp</span>
+            <b>${lead.whatsapp
+              ? `<span style="color:var(--accent)">${lead.whatsapp}</span>
+                 <button class="copy-btn" onclick="copyText('${lead.whatsapp}', this)">copy</button>`
+              : '<span style="color:var(--text-dim)">Not found</span>'}</b>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Outreach History -->
+      ${(lead.interactions && lead.interactions.length > 0) ? `
+      <div class="detail-section" style="margin-bottom:14px;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border); grid-column: 1 / -1;">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">
+          Communication History
+        </div>
+        ${lead.interactions.map(msg => `
+          <div style="padding:8px;background:${msg.is_inbound ? 'rgba(0,180,216,0.1)' : 'rgba(255,255,255,0.03)'};border:1px solid ${msg.is_inbound ? 'rgba(0,180,216,0.2)' : 'rgba(255,255,255,0.05)'};border-radius:6px;margin-bottom:12px;white-space:pre-wrap;color:${msg.is_inbound ? 'var(--text)' : 'var(--text-dim)'};font-size:13px;max-height:300px;overflow-y:auto">
+            <div style="font-size:11px;opacity:0.7;margin-bottom:6px"><strong>${msg.is_inbound ? 'Their Reply' : 'Our Email'}</strong> • ${msg.timestamp ? msg.timestamp.substring(0, 19).replace('T', ' ') : ''}</div>
+            ${msg.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+          </div>
+        `).join('')}
+      </div>
+      ` : ''}
+
+      <!-- AI Chat section -->
+      <div class="chat-section" style="margin-bottom:14px;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <div class="section-label" style="margin:0 0 8px 0">💬 Chat with AI about this business</div>
+        <div id="chatHistory-${id}" style="max-height:180px;overflow-y:auto;font-size:13px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px">
+          <!-- populated by JS -->
+        </div>
+        <div style="display:flex;gap:6px">
+          <input id="chatInput-${id}" type="text" placeholder="e.g. What are their main services? Any red flags?"
+            style="flex:1;font-size:12px;padding:8px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text)"
+            onkeydown="if(event.key==='Enter')sendChat(${id})">
+          <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="sendChat(${id})">Ask</button>
+        </div>
+      </div>
+
+      <!-- Draft section -->
+      <div class="draft-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="section-label" style="margin:0">Outreach Messages</div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            ${lead.status === 'opted_out' ? `
+              <span style="color:var(--red);font-size:12px;font-style:italic;display:flex;align-items:center;font-weight:600;">⚠️ Outreach disabled for opted-out leads.</span>
+            ` : `
+              ${(function() {
+                return `
+                  <a id="demoBtn-${id}" href="/demo/${id}" target="_blank" class="btn btn-outline" style="background:rgba(0,242,254,0.1);color:var(--accent);border-color:var(--accent);font-size:12px;">🌐 Preview CRM Dashboard</a>
+                  <button class="btn btn-outline" style="background:var(--bg-card);color:var(--text);border-color:#333;font-size:12px;" onclick="copyDemoLink(${id}, this)">🔗 Copy Demo Link</button>
+                `;
+              })()}
+              <button class="btn btn-outline" style="background:var(--bg-card);color:var(--accent);border-color:var(--accent);font-size:12px;" onclick="generateAuditReport(${id}, this)">📊 Generate Audit Report</button>
+              <button class="btn" style="font-size:12px" onclick="generateDraft(${id})">✨ Generate</button>
+            `}
+
+          </div>
+        </div>
+
+        ${lead.status === 'opted_out' ? '' : `
+          ${lead.demo_viewed ? `
+            <div style="background:rgba(255,77,77,0.08); border:1px solid rgba(255,77,77,0.25); border-radius:8px; padding:12px; margin-bottom:14px; display:flex; flex-direction:column; gap:4px;">
+              <span style="color:#ff4d4d; font-weight:bold; font-size:12px; display:flex; align-items:center; gap:6px;">🔥 PROSPECT HAS VIEWED THE DEMO</span>
+              <span style="font-size:12px; color:var(--text-dim);">
+                They are actively checking out the prototype right now! You should send a live follow-up message to convert them immediately.
+              </span>
+            </div>
+          ` : ''}
+          
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;" id="chanPills-${id}">
+            ${lead.demo_viewed ? `
+              <label class="chan-pill" style="border-color:#ff4d4d;" id="pill-live-${id}">
+                <input type="checkbox" value="live" onchange="toggleLivePill(this, ${id})">
+                ⚡ Live Follow-up
+              </label>
+            ` : ''}
+            <label class="chan-pill ${lead.email ? 'active' : ''}"><input type="checkbox" value="email" ${lead.email ? 'checked' : ''} onchange="toggleChan(this)">Email</label>
+            <label class="chan-pill ${lead.instagram ? 'active' : ''}"><input type="checkbox" value="instagram" ${lead.instagram ? 'checked' : ''} onchange="toggleChan(this)">Instagram</label>
+            <label class="chan-pill ${lead.whatsapp ? 'active' : ''}"><input type="checkbox" value="whatsapp" ${lead.whatsapp ? 'checked' : ''} onchange="toggleChan(this)">WhatsApp</label>
+            <label class="chan-pill ${lead.linkedin_url ? 'active' : ''}"><input type="checkbox" value="linkedin" ${lead.linkedin_url ? 'checked' : ''} onchange="toggleChan(this)">LinkedIn</label>
+          </div>
+
+          <div id="liveSubChannelRow-${id}" style="display:none; margin-bottom:12px; align-items:center; gap:8px;">
+            <span style="font-size:12px; color:var(--text-dim);">Live Follow-up Channel:</span>
+            <select id="liveChannel-${id}" style="background:var(--bg-card); color:var(--text); border:1px solid rgba(255,77,77,0.4); font-size:11px; padding:4px 8px; border-radius:4px; outline:none; cursor:pointer;">
+              <option value="email">Email</option>
+              <option value="instagram" ${lead.instagram ? 'selected' : ''}>Instagram DM</option>
+              <option value="whatsapp" ${lead.whatsapp ? 'selected' : ''}>WhatsApp</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:14px" id="genBtn-${id}" onclick="generateDraft(${id})">✨ Generate</button>
+          <div id="draftArea-${id}"></div>
+          
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:none;justify-content:flex-end" id="sendRow-${id}">
+            <button class="btn btn-primary" onclick="sendMessages(${id})">🚀 Mark as Sent & Queue Follow-ups</button>
+          </div>
+        `}
+      </div>
+
+  `;
+
+  // Restore from in-memory cache first, then fetch from server
+  
+  // Render chat history
+  const historyData = JSON.parse(localStorage.getItem(`chatData-${id}`) || '[]');
+  const historyEl = document.getElementById(`chatHistory-${id}`);
+  if (historyData.length === 0) {
+    historyEl.innerHTML = `<div style="color:var(--text-dim);font-size:12px;align-self:flex-start">Ask me anything about ${lead.name} based on their website and reviews...</div>`;
+  } else {
+    historyEl.innerHTML = historyData.map(h => {
+      if (h.role === 'user') {
+        return `<div style="align-self:flex-end;background:rgba(0,242,254,.1);padding:6px 10px;border-radius:8px;border-bottom-right-radius:2px;max-width:85%;color:var(--text)">${escapeHtml(h.content)}</div>`;
+      } else {
+        const escapedContent = escapeHtml(h.content);
+        const formatted = escapedContent.replace(/\r?\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        return `<div style="align-self:flex-start;background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:8px;border-bottom-left-radius:2px;max-width:85%;line-height:1.5;color:var(--text)">${formatted}</div>`;
+      }
+    }).join('');
+    historyEl.scrollTop = historyEl.scrollHeight;
+  }
+
+  if (drafts[id]) {
+    renderDrafts(id, drafts[id]);
+  } else {
+    fetch(`/leads/${id}/drafts`).then(r => r.json()).then(saved => {
+        const d = {
+          email:           saved.email?.draft       || '',
+          instagram:       saved.instagram?.draft   || '',
+          whatsapp_msg:    saved.whatsapp?.draft    || '',
+          linkedin:        saved.linkedin?.draft    || '',
+          subject_options: saved.email?.subject_options || [],
+          to_email:        lead.email || '',
+          demo_url:        lead.demo_tunnel_url || '',
+        };
+        // Always ensure email and IG show up as blank boxes if they exist
+        if (!d.email && lead.email) d.email = '';
+        if (!d.instagram && lead.instagram) d.instagram = '';
+        
+        drafts[id] = d;
+        renderDrafts(id, d);
+    }).catch(() => {
+        const d = { email: '', instagram: '', whatsapp_msg: '', linkedin: '', to_email: lead.email || '', demo_url: lead.demo_tunnel_url || '' };
+        drafts[id] = d;
+        renderDrafts(id, d);
+    });
+  }
+}
+
+function toggleChan(cb) {
+  const pill = cb.closest('.chan-pill');
+  if (cb.checked) {
+    pill.classList.add('active');
+    // Deselect live follow-up pill if checked
+    const liveCheckbox = pill.parentElement.querySelector('input[value=live]');
+    if (liveCheckbox && liveCheckbox.checked) {
+      liveCheckbox.checked = false;
+      liveCheckbox.closest('.chan-pill').classList.remove('active');
+      const subRow = document.getElementById(`liveSubChannelRow-${liveCheckbox.closest('.chan-pill').id.split('-').pop()}`);
+      if (subRow) subRow.style.display = 'none';
+    }
+  } else {
+    pill.classList.remove('active');
+  }
+}
+
+function toggleLivePill(cb, id) {
+  const pill = cb.closest('.chan-pill');
+  const subRow = document.getElementById(`liveSubChannelRow-${id}`);
+  const pillsDiv = document.getElementById(`chanPills-${id}`);
+  
+  if (cb.checked) {
+    pill.classList.add('active');
+    if (subRow) subRow.style.display = 'flex';
+    // Deselect all other pills
+    pillsDiv.querySelectorAll('input[type=checkbox]').forEach(input => {
+      if (input.value !== 'live') {
+        input.checked = false;
+        input.closest('.chan-pill').classList.remove('active');
+      }
+    });
+  } else {
+    pill.classList.remove('active');
+    if (subRow) subRow.style.display = 'none';
+  }
+}
+
+function getSelectedChannels(id) {
+  const pills = document.getElementById(`chanPills-${id}`);
+  if (!pills) return null;
+  const checked = [...pills.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+  return checked.length ? checked : null;
+}
+
+async function generateDraft(id) {
+  const btn = document.getElementById(`genBtn-${id}`);
+  if (!btn) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Writing…';
+
+  const channels = getSelectedChannels(id);
+  
+  if (channels && channels.includes('live')) {
+    const channelSelect = document.getElementById(`liveChannel-${id}`);
+    const channel = channelSelect ? channelSelect.value : 'email';
+    
+    try {
+      const res = await fetch(`/api/live-followup/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel })
+      });
+      const data = await res.json();
+      btn.disabled = false;
+      btn.innerHTML = '✨ Generate';
+      
+      if (data.draft) {
+        const key = channel === 'whatsapp' ? 'whatsapp_msg' : channel;
+        const draftData = {
+          to_email: allLeads.find(l => l.id === id)?.email || '',
+          [key]: data.draft,
+          is_live_followup: true,
+          live_followup_channel: channel
+        };
+        drafts[id] = draftData;
+        renderDrafts(id, draftData);
+      } else {
+        alert('Error generating live follow-up.');
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerHTML = '✨ Generate';
+      alert('Network error.');
+    }
+    return;
+  }
+
+  const res = await fetch(`/leads/${id}/generate`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ channels }),
+  });
+  const data = await res.json();
+
+  btn.disabled = false;
+  btn.innerHTML = '✨ Generate';
+
+  if (data.error) { alert('Error: ' + data.error); return; }
+
+  // Merge into existing drafts (so regenerating one channel doesn't wipe others)
+  drafts[id] = { ...(drafts[id] || {}), ...data };
+  renderDrafts(id, drafts[id]);
+}
+
+function renderDrafts(id, data) {
+  const lead = allLeads.find(l => l.id === id);
+  let html = '';
+
+  if (data.is_live_followup) {
+    const channel = data.live_followup_channel;
+    const label = channel === 'email' ? '⚡ EMAIL LIVE FOLLOW-UP' : channel === 'instagram' ? '⚡ INSTAGRAM DM LIVE FOLLOW-UP' : '⚡ WHATSAPP LIVE FOLLOW-UP';
+    const key = channel === 'whatsapp' ? 'whatsapp_msg' : channel;
+    const sublabel = channel === 'email' ? `To: ${data.to_email || '(no email found)'}` : channel === 'instagram' ? `@${lead?.instagram || ''}` : lead?.whatsapp || '';
+    const draftText = data[key];
+    
+    html += msgBlock(id, key, label, sublabel, draftText, true);
+  } else {
+    if (data.email !== undefined) {
+      const fromLine = lead.assigned_sender_email ? ` &nbsp;|&nbsp; From: <span style="color:var(--text);user-select:all">${lead.assigned_sender_email}</span>` : '';
+      html += msgBlock(id, 'email', 'EMAIL', `To: ${data.to_email || '(no email found)'}${fromLine}`, data.email);
+    }
+    if (data.instagram !== undefined) {
+      const igHandle = lead?.instagram ? `@${lead.instagram}` : '(find on Instagram)';
+      html += msgBlock(id, 'instagram', 'INSTAGRAM DM', igHandle, data.instagram);
+    }
+    if (data.whatsapp_msg) {
+      const wp = lead?.whatsapp || '(send via WhatsApp)';
+      html += wpBlock(id, wp, data.whatsapp_msg, data);
+    } else if (lead?.whatsapp) {
+      // No AI message yet — show template rotator immediately with blank content
+      html += wpBlock(id, lead.whatsapp, '', data);
+    }
+
+    if (data.linkedin !== undefined) {
+      html += msgBlock(id, 'linkedin', 'LINKEDIN DM', lead?.linkedin_url || '', data.linkedin);
+    }
+  }
+
+  if (!html) {
+    html = '<div style="color:var(--red);font-size:13px">Generation failed — try again.</div>';
+  }
+
+  document.getElementById(`draftArea-${id}`).innerHTML = html;
+  const sendRow = document.getElementById(`sendRow-${id}`);
+  if (sendRow) sendRow.style.display = 'flex';
+}
+
+const QUICK_SUGGESTIONS = [
+  'Make it shorter',
+  'More casual & friendly',
+  'Add urgency',
+  'Mention their rating',
+  'More specific to their business',
+  'Ask for a quick call',
+  'Offer a free audit',
+  'Suggest a time to chat'
+];
+
+// ── WhatsApp rotating templates ───────────────────────────────────────────
+
+const WP_TEMPLATES = [
+  (n, r, d) => `Hey ${n}! I noticed you're in the Miami Airbnb group. I built a custom CRM dashboard for your business to automate lead generation. Take a look here: ${d}`,
+  (n, r, d) => `${n} — I created a custom automated lead-gen system specifically for you. It scrapes Airbnb hosts and manages outreach. Check it out: ${d}`,
+  (n, r, d) => `Hey! Quick one — I built a free CRM preview for ${n}. No strings attached, just want to show you how you can automate your client acquisition: ${d}`,
+  (n, r, d) => `Hi! Chandan here. I build automation systems for local businesses. Made a custom LeadFlow dashboard for ${n}. See it here: ${d}`,
+  (n, r, d) => `${n} — most businesses your size are manually messaging leads. I built an autopilot system that does it for you. Here is your dashboard: ${d}`,
+  (n, r, d) => `Hey! Built a fast, custom CRM preview for ${n}. I can set this up for you to completely automate your outreach. ${d}`,
+  (n, r, d) => `Quick thought — manual outreach is probably costing you hours. I built this CRM specifically for ${n} to automate the process. Here's a demo: ${d}`,
+  (n, r, d) => `Hi ${n}! Saw you in the Miami FB group and built you a custom LeadFlow CRM dashboard for free — honest feedback welcome. ${d}`,
+];
+
+const wpTemplateIndex = {};
+
+function buildWpMessage(leadId, data) {
+  const lead = allLeads.find(l => l.id === leadId);
+  const name = lead?.name || 'there';
+  const shortName = name.split(' ').slice(0, 2).join(' ');
+  const rating = lead?.google_rating || '';
+  const demo = data?.demo_url || '';
+  const idx = (wpTemplateIndex[leadId] || 0) % WP_TEMPLATES.length;
+  return WP_TEMPLATES[idx](shortName, rating, demo);
+}
+
+function spinWpTemplate(leadId) {
+  wpTemplateIndex[leadId] = ((wpTemplateIndex[leadId] || 0) + 1) % WP_TEMPLATES.length;
+  const data = drafts[leadId] || {};
+  const msg = buildWpMessage(leadId, data);
+  const ta = document.getElementById(`draft-whatsapp-${leadId}`);
+  if (ta) {
+    ta.style.transition = 'opacity 0.12s';
+    ta.style.opacity = '0';
+    setTimeout(() => { ta.value = msg; ta.style.opacity = '1'; }, 120);
+  }
+  if (drafts[leadId]) drafts[leadId].whatsapp_msg = msg;
+  const badge = document.getElementById(`wpIdx-${leadId}`);
+  if (badge) badge.textContent = `${wpTemplateIndex[leadId] + 1}/${WP_TEMPLATES.length}`;
+}
+
+function wpBlock(leadId, phone, content, data) {
+  if (!content) {
+    wpTemplateIndex[leadId] = wpTemplateIndex[leadId] || 0;
+    content = buildWpMessage(leadId, data);
+    if (drafts[leadId]) drafts[leadId].whatsapp_msg = content;
+  }
+  const idx = wpTemplateIndex[leadId] || 0;
+  const suggestions = QUICK_SUGGESTIONS.map(s =>
+    `<button class="sugg-chip" onclick="applyQuick(${leadId},'whatsapp','${s.replace(/'/g, "\\'")}',false,this)">${s}</button>`
+  ).join('');
+
+  return `
+    <div class="msg-block" id="block-${leadId}-whatsapp">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div>
+          <div class="section-label" style="margin:0">WHATSAPP</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:2px">${phone}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span id="wpIdx-${leadId}" style="font-size:10px;color:var(--text-dim);white-space:nowrap">${idx + 1}/${WP_TEMPLATES.length}</span>
+          <button class="copy-btn" style="padding:4px 10px;background:rgba(37,211,102,.12);color:#25D366;border-color:rgba(37,211,102,.3);font-weight:600"
+            onclick="spinWpTemplate(${leadId})">&#8635; Spin</button>
+          <button class="copy-btn" style="padding:4px 10px" onclick="copyText(document.getElementById('draft-whatsapp-${leadId}').value, this)">copy</button>
+        </div>
+      </div>
+      <textarea id="draft-whatsapp-${leadId}" rows="4" style="font-size:13px;line-height:1.65">${content}</textarea>
+
+      <div style="margin-top:8px">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em">Quick edits</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${suggestions}</div>
+        <div style="display:flex;gap:6px">
+          <input id="instr-whatsapp-${leadId}" type="text" placeholder="Custom instruction — e.g. add emoji, mention their rating, make it 1 line…"
+            style="flex:1;font-size:12px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)"
+            onkeydown="if(event.key==='Enter')rewriteMsg(${leadId},'whatsapp',false)">
+          <button class="btn btn-ghost" style="font-size:12px;white-space:nowrap" id="rewriteBtn-whatsapp-${leadId}"
+            onclick="rewriteMsg(${leadId},'whatsapp',false)">✨ AI Rewrite</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+
+function msgBlock(leadId, key, label, sublabel, content, isLiveFollowup = false) {
+  const rows = key === 'email' ? 9 : 4;
+  const suggestions = QUICK_SUGGESTIONS.map(s =>
+    `<button class="sugg-chip" onclick="applyQuick(${leadId},'${key}','${s.replace(/'/g,"\\'")}',${isLiveFollowup ? 'true' : 'false'},this)">${s}</button>`
+  ).join('');
+
+  return `
+    <div class="msg-block" id="block-${leadId}-${key}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div>
+          <div class="section-label" style="margin:0">${label}</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:2px">${sublabel}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="copy-btn" style="padding:4px 10px" onclick="copyText(document.getElementById('draft-${key}-${leadId}').value, this)">copy</button>
+          <button class="copy-btn" style="padding:4px 10px" onclick="regenSingle(${leadId},'${key}',this,${isLiveFollowup})">↺ Regen</button>
+        </div>
+      </div>
+      <textarea id="draft-${key}-${leadId}" rows="${rows}" style="font-size:13px;line-height:1.65">${content}</textarea>
+
+      <!-- AI edit tools -->
+      <div style="margin-top:8px">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em">Quick edits</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${suggestions}</div>
+        <div style="display:flex;gap:6px">
+          <input id="instr-${key}-${leadId}" type="text" placeholder="Custom instruction — e.g. mention their Google rating, make it under 3 lines…"
+            style="flex:1;font-size:12px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text)"
+            onkeydown="if(event.key==='Enter')rewriteMsg(${leadId},'${key}',${isLiveFollowup})">
+          <button class="btn btn-ghost" style="font-size:12px;white-space:nowrap" id="rewriteBtn-${key}-${leadId}"
+            onclick="rewriteMsg(${leadId},'${key}',${isLiveFollowup})">✨ Rewrite</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function regenSingle(leadId, channel, btn, isLiveFollowup = false) {
+  const orig = btn.textContent;
+  btn.textContent = '…'; btn.disabled = true;
+
+  if (isLiveFollowup) {
+    // For live follow-ups, call the live-followup endpoint (no feedback = pure regen)
+    const liveChannel = drafts[leadId]?.live_followup_channel || 'email';
+    try {
+      const res = await fetch(`/api/live-followup/${leadId}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ channel: liveChannel })
+      });
+      const data = await res.json();
+      btn.textContent = orig; btn.disabled = false;
+      if (data.draft) {
+        document.getElementById(`draft-${channel}-${leadId}`).value = data.draft;
+        if (drafts[leadId]) drafts[leadId][channel] = data.draft;
+      } else {
+        alert('Regen failed.');
+      }
+    } catch(e) {
+      btn.textContent = orig; btn.disabled = false;
+      alert('Network error.');
+    }
+    return;
+  }
+
+  const res = await fetch(`/leads/${leadId}/generate`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ channels: [channel] }),
+  });
+  const data = await res.json();
+  btn.textContent = orig; btn.disabled = false;
+  if (data.error) { alert(data.error); return; }
+  const key = channel === 'whatsapp' ? 'whatsapp_msg' : channel;
+  const newText = data[key] || data[channel] || '';
+  if (newText) {
+    document.getElementById(`draft-${channel}-${leadId}`).value = newText;
+    drafts[leadId] = { ...(drafts[leadId] || {}), ...data };
+  }
+}
+
+async function applyQuick(leadId, channel, instruction, isLiveFollowup = false, btn) {
+  document.getElementById(`instr-${channel}-${leadId}`).value = instruction;
+  await rewriteMsg(leadId, channel, isLiveFollowup);
+}
+
+async function rewriteMsg(leadId, channel, isLiveFollowup = false) {
+  const textarea = document.getElementById(`draft-${channel}-${leadId}`);
+  const instrEl  = document.getElementById(`instr-${channel}-${leadId}`);
+  const btn      = document.getElementById(`rewriteBtn-${channel}-${leadId}`);
+  const instruction = instrEl?.value?.trim();
+  if (!instruction) { instrEl?.focus(); return; }
+  if (!textarea) return;
+
+  const origBtn = btn?.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  textarea.style.opacity = '0.4';
+
+  let res, data;
+
+  if (isLiveFollowup) {
+    // For live follow-up, pass instruction as feedback to the live-followup endpoint
+    const liveChannel = drafts[leadId]?.live_followup_channel || 'email';
+    res = await fetch(`/api/live-followup/${leadId}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ channel: liveChannel, feedback: instruction }),
+    });
+    data = await res.json();
+    textarea.style.opacity = '1';
+    if (btn) { btn.disabled = false; btn.textContent = origBtn; }
+    if (!data.draft) { alert(data.error || 'Rewrite failed'); return; }
+    textarea.value = data.draft;
+    if (instrEl) instrEl.value = '';
+    if (drafts[leadId]) drafts[leadId][channel] = data.draft;
+    return;
+  }
+
+  res = await fetch(`/leads/${leadId}/rewrite`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ channel, current_text: textarea.value, instruction }),
+  });
+  data = await res.json();
+
+  textarea.style.opacity = '1';
+  if (btn) { btn.disabled = false; btn.textContent = origBtn; }
+
+  if (data.error) { alert(data.error); return; }
+  textarea.value = data.draft;
+  if (instrEl) instrEl.value = '';
+
+  // Update in-memory cache
+  if (drafts[leadId]) {
+    const cacheKey = channel === 'whatsapp' ? 'whatsapp_msg' : channel;
+    drafts[leadId][cacheKey] = data.draft;
+  }
+}
+
+
+
+async function sendChat(id) {
+  const input = document.getElementById(`chatInput-${id}`);
+  const historyEl = document.getElementById(`chatHistory-${id}`);
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const historyData = JSON.parse(localStorage.getItem(`chatData-${id}`) || '[]');
+  if (historyData.length === 0) historyEl.innerHTML = ''; // clear placeholder
+
+  historyData.push({role: 'user', content: msg});
+  localStorage.setItem(`chatData-${id}`, JSON.stringify(historyData));
+
+  historyEl.innerHTML += `<div style="align-self:flex-end;background:rgba(0,242,254,.1);padding:6px 10px;border-radius:8px;border-bottom-right-radius:2px;max-width:85%;color:var(--text)">${escapeHtml(msg)}</div>`;
+  input.value = '';
+  input.disabled = true;
+
+  const loadId = 'load-' + Date.now();
+  historyEl.innerHTML += `<div id="${loadId}" style="align-self:flex-start;background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:8px;border-bottom-left-radius:2px;max-width:85%;color:var(--text-dim)"><span class="spinner"></span> Thinking...</div>`;
+  historyEl.scrollTop = historyEl.scrollHeight;
+
+  const res = await fetch(`/leads/${id}/chat`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ message: msg, history: historyData.slice(0, -1) }),
+  });
+  const data = await res.json();
+  
+  document.getElementById(loadId)?.remove();
+  input.disabled = false;
+  input.focus();
+
+  if (data.error) {
+    historyEl.innerHTML += `<div style="align-self:flex-start;color:var(--red);font-size:11px">Error: ${escapeHtml(data.error)}</div>`;
+  } else {
+    historyData.push({role: 'ai', content: data.reply});
+    localStorage.setItem(`chatData-${id}`, JSON.stringify(historyData));
+
+    const escapedReply = escapeHtml(data.reply);
+    const formatted = escapedReply.replace(/\r?\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    historyEl.innerHTML += `<div style="align-self:flex-start;background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:8px;border-bottom-left-radius:2px;max-width:85%;line-height:1.5;color:var(--text)">${formatted}</div>`;
+  }
+  historyEl.scrollTop = historyEl.scrollHeight;
+}
+async function sendMessages(id) {
+  const lead = allLeads.find(l => l.id === id);
+  const emailMsg = document.getElementById(`draft-email-${id}`)?.value || '';
+  const igMsg    = document.getElementById(`draft-instagram-${id}`)?.value || '';
+  const liMsg    = document.getElementById(`draft-linkedin-${id}`)?.value || '';
+  const toEmail  = drafts[id]?.to_email || '';
+
+  const res = await fetch(`/leads/${id}/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email_msg: emailMsg, ig_msg: igMsg, li_msg: liMsg, to_email: toEmail }),
+  });
+  const data = await res.json();
+
+  if (data.ok) {
+    // Update status badge on row without removing it
+    const row = document.getElementById(`row-${id}`);
+    if (row) {
+      let badge = row.querySelector('.status-badge');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'status-badge';
+        badge.style.cssText = 'font-size:9px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:4px;white-space:nowrap;background:rgba(0,242,254,.12);color:var(--accent)';
+        row.querySelector('.lead-row-name')?.parentElement?.appendChild(badge);
+      }
+      badge.textContent = 'SENT';
+      row.dataset.status = 'sent';
+      // If currently on a status tab that excludes 'sent', hide this row
+      if (currentFilter !== 'all' && currentFilter !== 'sent') row.style.display = 'none';
+    }
+    // Show brief toast then keep detail panel open
+    const detail = document.getElementById('leadDetail');
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;top:20px;right:20px;background:var(--card);border:1px solid var(--accent);color:var(--accent);padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999';
+    toast.textContent = '✓ Marked as sent';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  } else {
+    alert('Error: ' + (data.error || 'Unknown'));
+  }
+}
+
+async function skipLead(id) {
+  await fetch(`/leads/${id}/skip`, { method: 'POST' });
+  // Remove from list entirely (skipped leads are excluded from the page query)
+  const row = document.getElementById(`row-${id}`);
+  if (row) row.remove();
+  document.getElementById('leadDetail').innerHTML = `<div class="detail-empty"><div style="color:var(--text-dim)">Lead skipped.</div></div>`;
+}
+
+async function deleteLead(id) {
+  if (!confirm('Permanently delete this lead and all its data?')) return;
+  const res = await fetch(`/leads/${id}/delete`, { method: 'POST' });
+  const data = await res.json();
+  if (data.ok) {
+    const row = document.getElementById(`row-${id}`);
+    if (row) row.remove();
+    document.getElementById('leadDetail').innerHTML = `<div class="detail-empty"><div style="color:var(--text-dim)">Lead deleted.</div></div>`;
+  } else {
+    alert('Delete failed');
+  }
+}
+
+const STATUS_COLORS = {
+  new:      '',
+  approved: 'background:rgba(255,200,0,.1);color:var(--yellow)',
+  sent:     'background:rgba(0,242,254,.12);color:var(--accent)',
+  replied:  'background:rgba(40,200,80,.15);color:#4caf50',
+  closed:   'background:rgba(255,77,36,.12);color:var(--orange)',
+  opted_out: 'background:rgba(255,77,109,.15);color:var(--red);border:1px solid rgba(255,77,109,.3)',
+};
+
+async function setLeadStatus(id, status) {
+  await fetch(`/api/leads/${id}/status`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({status}),
+  });
+  const row = document.getElementById(`row-${id}`);
+  if (row) {
+    row.dataset.status = status;
+    let badge = row.querySelector('.status-badge');
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'status-badge';
+      const nameWrap = row.querySelector('[style*="display:flex"]');
+      if (nameWrap) nameWrap.appendChild(badge);
+    }
+    badge.style.cssText = `font-size:9px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:4px;white-space:nowrap;${STATUS_COLORS[status] || ''}`;
+    badge.textContent = status.toUpperCase();
+    if (currentFilter !== 'all' && currentFilter !== status) row.style.display = 'none';
+  }
+  // Brief toast
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:20px;right:20px;background:var(--card);border:1px solid var(--accent);color:var(--accent);padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999';
+  toast.textContent = `✓ Marked as ${status}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2000);
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--accent)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1800);
+  });
+}
+
+async function copyDemoLink(id, btn) {
+  const orig = btn.textContent;
+  btn.textContent = '...';
+  try {
+    const res = await fetch(`/api/demo-url/${id}`);
+    const data = await res.json();
+    if (data.url) {
+      const fullUrl = data.url;
+      await navigator.clipboard.writeText(fullUrl);
+      btn.textContent = 'Copied!';
+      btn.style.color = 'var(--accent)';
+    } else {
+      btn.textContent = 'Error';
+    }
+  } catch (e) {
+    btn.textContent = 'Error';
+  }
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+}
+
+async function generateAuditReport(id, btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Generating... (10s)';
+  try {
+    const res = await fetch(`/api/generate-audit/${id}`, {method: 'POST'});
+    const data = await res.json();
+    if (data.url) {
+      await navigator.clipboard.writeText(data.url);
+      btn.textContent = 'Copied Link!';
+      btn.style.color = 'var(--accent)';
+    } else {
+      btn.textContent = 'Failed';
+    }
+  } catch (e) {
+    btn.textContent = 'Error';
+  }
+  setTimeout(() => { btn.textContent = orig; btn.style.color = 'var(--accent)'; }, 2000);
+}
+
+
+
+async function loadAudit(id, url) {
+  const panel = document.getElementById(`auditPanel-${id}`);
+  panel.innerHTML = '<div style="color:var(--text-dim);font-size:12px">Running audit... (10-20s)</div>';
+
+  const res = await fetch(`/api/audit?url=${encodeURIComponent(url)}`);
+  const data = await res.json();
+  const d = data.direct || {};
+  const ps = data.pagespeed;
+
+  const scoreColor = (s) => s >= 80 ? 'var(--accent)' : s >= 50 ? 'var(--yellow)' : 'var(--red)';
+  const pill = (label, val, color) => val !== null && val !== undefined
+    ? `<div class="audit-pill"><span>${label}</span><b style="color:${color || scoreColor(val)}">${val}</b></div>`
+    : '';
+
+  let html = `<div class="audit-box">`;
+
+  // Direct checks
+  html += `<div class="audit-group-label">Direct Checks</div>
+  <div class="audit-pills">
+    ${pill('HTTPS', d.https ? '✓ Yes' : '✗ No', d.https ? 'var(--accent)' : 'var(--red)')}
+    ${pill('Loads', d.loads ? '✓ Yes' : '✗ No', d.loads ? 'var(--accent)' : 'var(--red)')}
+    ${pill('Speed', d.response_time_s ? d.response_time_s + 's' : '—', d.response_time_s < 2 ? 'var(--accent)' : 'var(--yellow)')}
+    ${pill('Mobile', d.mobile_viewport ? '✓ Yes' : '✗ No', d.mobile_viewport ? 'var(--accent)' : 'var(--red)')}
+    ${pill('Title', d.title ? '✓' : '✗ Missing', d.title ? 'var(--accent)' : 'var(--red)')}
+    ${pill('Meta Desc', d.meta_description ? '✓' : '✗ Missing', d.meta_description ? 'var(--accent)' : 'var(--red)')}
+    ${pill('Content', d.has_content ? '✓ Yes' : '✗ Thin', d.has_content ? 'var(--accent)' : 'var(--red)')}
+    ${d.bot_blocked ? pill('Note', 'Bot-protected', 'var(--yellow)') : ''}
+  </div>`;
+
+  if (d.title) html += `<div style="font-size:11px;color:var(--text-dim);margin-top:6px">Title: <span style="color:var(--text)">${d.title}</span></div>`;
+  if (d.meta_description) html += `<div style="font-size:11px;color:var(--text-dim);margin-top:3px">Description: <span style="color:var(--text)">${d.meta_description}</span></div>`;
+
+  // PageSpeed results
+  if (ps) {
+    html += `<div class="audit-group-label" style="margin-top:14px">Google PageSpeed (Mobile)</div>
+    <div class="audit-pills">
+      ${pill('Performance', ps.performance)}
+      ${pill('SEO', ps.seo)}
+      ${pill('Accessibility', ps.accessibility)}
+      ${pill('Best Practices', ps.best_practices)}
+    </div>
+    <div class="audit-pills" style="margin-top:8px">
+      ${pill('FCP', ps.fcp, 'var(--text)')}
+      ${pill('LCP', ps.lcp, 'var(--text)')}
+      ${pill('CLS', ps.cls, 'var(--text)')}
+      ${pill('TBT', ps.tbt, 'var(--text)')}
+      ${pill('Speed Index', ps.speed_index, 'var(--text)')}
+    </div>`;
+
+    if (ps.opportunities && ps.opportunities.length > 0) {
+      html += `<div class="audit-group-label" style="margin-top:12px">Top Issues to Fix</div>`;
+      ps.opportunities.forEach(o => {
+        html += `<div style="font-size:11px;color:var(--yellow);margin-top:4px">⚠ ${o}</div>`;
+      });
+    }
+  } else {
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-top:10px">PageSpeed data unavailable for this site.</div>`;
+  }
+
+  html += `</div>`;
+  panel.innerHTML = html;
+}
+
+// Populate niche and location dropdowns
+function populateDropdownFilters() {
+  const niches = new Set();
+  const locations = new Set();
+  
+  allLeads.forEach(lead => {
+    if (lead.category) niches.add(lead.category.trim());
+    if (lead.city) {
+      locations.add(lead.city.trim());
+    } else if (lead.country) {
+      locations.add(lead.country.trim());
+    }
+  });
+  
+  const nicheSelect = document.getElementById('filter-niche');
+  if (nicheSelect) {
+    [...niches].sort().forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = n;
+      nicheSelect.appendChild(opt);
+    });
+  }
+  
+  const locSelect = document.getElementById('filter-location');
+  if (locSelect) {
+    [...locations].sort().forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = l;
+      locSelect.appendChild(opt);
+    });
+  }
+}
+
+function toggleAdvancedFilters() {
+  const panel = document.getElementById('advancedFiltersPanel');
+  const icon = document.getElementById('advFiltersToggleIcon');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'flex';
+    icon.textContent = '[-] Collapse';
+  } else {
+    panel.style.display = 'none';
+    icon.textContent = '[+] Expand';
+  }
+}
+
+function resetAdvancedFilters() {
+  document.querySelectorAll('.filter-chip input').forEach(input => {
+    input.checked = false;
+    input.closest('.filter-chip').classList.remove('active');
+  });
+  const nicheSelect = document.getElementById('filter-niche');
+  if (nicheSelect) nicheSelect.value = 'all';
+  const locSelect = document.getElementById('filter-location');
+  if (locSelect) locSelect.value = 'all';
+  applyFilters();
+}
+
+// Setup event listeners for advanced filters
+document.querySelectorAll('.filter-chip input').forEach(input => {
+  input.addEventListener('change', () => {
+    const chip = input.closest('.filter-chip');
+    if (input.checked) {
+      chip.classList.add('active');
+    } else {
+      chip.classList.remove('active');
+    }
+    applyFilters();
+  });
+});
+
+// Auto-select first lead and apply filters
+populateDropdownFilters();
+applyFilters();
+
+const urlParams = new URLSearchParams(window.location.search);
+const idParam = urlParams.get('id');
+if (idParam) {
+  const targetId = parseInt(idParam);
+  // Ensure we don't hide the lead if it's filtered out initially
+  selectLead(targetId);
+  // Scroll to it in the left pane
+  setTimeout(() => {
+    const row = document.getElementById('row-' + targetId);
+    if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+} else if (allLeads.length > 0) {
+  selectLead(allLeads[0].id);
+}
+
+function toggleAddLeadModal() {
+  const modal = document.getElementById('addLeadModal');
+  modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function toggleCampaignSelection(show) {
+  const opts = document.getElementById('manualCampaignOptions');
+  if (opts) {
+    opts.style.display = show ? 'flex' : 'none';
+  }
+}
+
+document.getElementById('manualAddForm').addEventListener('submit', function() {
+  const btn = document.getElementById('submitAddLeadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Scraping website details...';
+});
+</script>
+{% endblock %}

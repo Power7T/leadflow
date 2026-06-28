@@ -3,59 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>{{ lead.name }} | Premium Solar Panel & Energy Solutions</title>
-<meta name="description" content="Welcome to {{ lead.name }}. The leading provider of premium residential solar panel installations, smart home battery storage, and commercial clean energy solutions.">
+<title>{{ lead.name }} | Premium Solar & Smart Energy Storage</title>
+<meta name="description" content="Welcome to {{ lead.name }}. The premier provider of high-efficiency solar panel installations, smart home battery storage, and custom net metering solutions.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 :root{
-  --bg-primary:#0A0F0D;
-  --bg-secondary:#121A16;
-  --bg-tertiary:#192420;
-  --accent-cyan:#00F2FE;
-  --accent-cyan-glow:rgba(0,242,254,0.12);
-  --accent-yellow:#FFD214;
-  --accent-yellow-glow:rgba(255,210,20,0.15);
+  --bg-primary:#050A08;
+  --bg-secondary:#0B1411;
+  --bg-tertiary:#12201B;
+  --accent-cyan:#00E5FF;
+  --accent-cyan-glow:rgba(0,229,255,0.15);
+  --accent-yellow:#EAB308;
+  --accent-yellow-glow:rgba(234,179,8,0.18);
+  --accent-green:#10B981;
   --text-white:#FFFFFF;
-  --text-gray:#A8B5AF;
-  --text-muted:#5E6D66;
-  --glass-bg:rgba(18,26,22,0.92);
-  --glass-border:rgba(0,242,254,0.08);
-  --glass-border-hover:rgba(255,210,20,0.3);
-  --border-radius-sm:4px;
-  --border-radius-md:12px;
-  --border-radius-lg:20px;
-  --shadow-sm:0 4px 16px rgba(0,0,0,0.4);
-  --shadow-md:0 12px 32px rgba(0,0,0,0.6);
-  --shadow-lg:0 24px 64px rgba(0,0,0,0.8);
-  --shadow-yellow:0 0 25px rgba(255,210,20,0.25);
+  --text-gray:#96A7A1;
+  --text-muted:#5E6E69;
+  --glass-bg:rgba(11,20,17,0.95);
+  --glass-border:rgba(0,229,255,0.08);
+  --glass-border-hover:rgba(234,179,8,0.3);
+  --border-radius-sm:8px;
+  --border-radius-md:16px;
+  --border-radius-lg:24px;
+  --shadow-sm:0 4px 12px rgba(5,10,8,0.5);
+  --shadow-md:0 12px 32px rgba(5,10,8,0.7);
+  --shadow-lg:0 24px 64px rgba(5,10,8,0.9);
+  --shadow-yellow:0 0 25px rgba(234,179,8,0.25);
+  --shadow-cyan:0 0 25px rgba(0,229,255,0.25);
   --transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);
   --transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);
   --transition-slow:0.8s cubic-bezier(0.25,1,0.5,1);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Inter',sans-serif;overflow-x:hidden}
-body{overflow-x:hidden;line-height:1.65;cursor:none}
+body{overflow-x:hidden;line-height:1.7;cursor:none}
 ::-webkit-scrollbar{width:8px}
 ::-webkit-scrollbar-track{background:var(--bg-primary)}
 ::-webkit-scrollbar-thumb{background:var(--bg-tertiary);border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:var(--accent-cyan)}
-h1,h2,h3,h4,h5,h6{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;line-height:1.15;color:var(--text-white)}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-yellow)}
+h1,h2,h3,h4,h5,h6{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.03em;line-height:1.15;color:var(--text-white)}
 p{color:var(--text-gray);font-weight:300}
 a{text-decoration:none;color:inherit}
-.text-gradient-yellow{background:linear-gradient(135deg,#FFFFFF 0%,#FFD214 60%,#B89000 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.text-gradient-cyan{background:linear-gradient(135deg,#FFFFFF 0%,#00F2FE 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.text-gradient-yellow{background:linear-gradient(135deg,#FFFFFF 0%,var(--accent-yellow) 60%,#CA8A04 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.text-gradient-cyan{background:linear-gradient(135deg,#FFFFFF 0%,var(--accent-cyan) 60%,#0091EA 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .container{width:100%;max-width:1200px;margin:0 auto;padding:0 2rem}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.95rem 2.2rem;font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1rem;text-decoration:none;border-radius:var(--border-radius-sm);border:1px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
-.btn-primary{background-color:var(--accent-yellow);color:#0A0F0D;box-shadow:var(--shadow-sm);font-weight:900}
-.btn-primary:hover{background:transparent;color:var(--accent-yellow);border-color:var(--accent-yellow);box-shadow:var(--shadow-yellow);transform:translateY(-2px)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.95rem 2.2rem;font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-decoration:none;border-radius:var(--border-radius-sm);border:1px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
+.btn-primary{background-color:var(--accent-yellow);color:#050A08;box-shadow:var(--shadow-sm);font-weight:900}
+.btn-primary:hover{background:transparent;border-color:var(--accent-yellow);color:var(--accent-yellow);box-shadow:var(--shadow-yellow);transform:translateY(-2px)}
 .btn-secondary{background:transparent;border-color:var(--glass-border);color:var(--text-white)}
 .btn-secondary:hover{background:rgba(255,255,255,.03);border-color:var(--accent-cyan);transform:translateY(-2px)}
+
 section{padding:8.5rem 0;position:relative;overflow:hidden}
-.section-tag{font-family:'Outfit',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent-yellow);margin-bottom:1rem;display:inline-block;background:rgba(255,210,20,0.08);padding:4px 14px;border-radius:4px;border:1px solid rgba(255,210,20,0.15)}
+.section-tag{font-family:'Outfit',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent-yellow);margin-bottom:1rem;display:inline-block;background:rgba(234,179,8,0.08);padding:4px 14px;border-radius:4px;border:1px solid rgba(234,179,8,0.15)}
 .section-title{font-size:3.2rem;margin-bottom:1.5rem}
 .section-desc{font-size:1.05rem;max-width:600px;margin-bottom:4rem}
+
 /* REVEAL */
 .reveal{opacity:0;transition:var(--transition-slow)}
 .reveal-slide-up{transform:translateY(40px)}
@@ -66,18 +70,22 @@ section{padding:8.5rem 0;position:relative;overflow:hidden}
 .delay-100{transition-delay:.1s}
 .delay-200{transition-delay:.2s}
 .delay-300{transition-delay:.3s}
+
 /* CURSOR */
 .custom-cursor-dot{position:fixed;width:6px;height:6px;background:var(--accent-yellow);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
 .custom-cursor-ring{position:fixed;width:36px;height:36px;border:1px solid var(--accent-yellow);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.5}
 body.cursor-hover .custom-cursor-dot{width:4px;height:4px;background:#FFF}
 body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;opacity:.3}
 @media(max-width:768px){.custom-cursor-dot,.custom-cursor-ring{display:none}body{cursor:auto}}
+
 /* SPOTLIGHT */
-.spotlight{position:absolute;width:550px;height:550px;background:radial-gradient(circle,var(--accent-yellow-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.3}
+.spotlight{position:absolute;width:550px;height:550px;background:radial-gradient(circle,var(--accent-cyan-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.4}
+
 /* DEMO BANNER */
-.demo-banner{background:var(--accent-yellow);color:#0A0F0D;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
-.demo-banner a{color:#0A0F0D;text-decoration:underline;font-weight:800}
+.demo-banner{background:var(--accent-yellow);color:#050A08;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.demo-banner a{color:#050A08;text-decoration:underline;font-weight:800}
 .demo-banner .orig{font-size:11px;font-weight:400;opacity:.8}
+
 /* NAVBAR */
 .navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;transition:var(--transition-smooth)}
 .navbar.scrolled{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border);box-shadow:var(--shadow-sm)}
@@ -85,7 +93,7 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 .navbar.scrolled .nav-container{height:75px}
 .logo{font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:900;color:var(--text-white);display:flex;align-items:center;gap:.6rem;letter-spacing:-1px}
 .logo span{color:var(--accent-yellow)}
-.logo-icon{width:24px;height:24px;background:linear-gradient(135deg,var(--accent-yellow),var(--accent-cyan));border-radius:4px;position:relative;flex-shrink:0}
+.logo-icon{width:26px;height:26px;background:linear-gradient(135deg,var(--accent-yellow),var(--accent-cyan));border-radius:50%;position:relative;flex-shrink:0}
 .logo-icon::after{content:'';position:absolute;width:6px;height:6px;background:var(--bg-primary);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
 .nav-links{display:flex;gap:2.5rem;list-style:none}
 .nav-links a{color:var(--text-gray);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;transition:var(--transition-fast);position:relative;padding:.5rem 0}
@@ -97,81 +105,123 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 .hamburger.active span:nth-child(1){transform:rotate(-45deg) translate(-5px,5px)}
 .hamburger.active span:nth-child(2){opacity:0}
 .hamburger.active span:nth-child(3){transform:rotate(45deg) translate(-5px,-5px)}
+
 /* HERO */
-.hero{height:100vh;min-height:750px;display:flex;align-items:center;background:linear-gradient(rgba(10,15,13,0.6),rgba(10,15,13,0.92)),url('{{ hero_img }}') center/cover no-repeat;position:relative;padding-top:100px}
-.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(10,15,13,.3) 50%,rgba(10,15,13,.85) 100%);z-index:1}
+.hero{height:100vh;min-height:800px;display:flex;align-items:center;position:relative;padding-top:100px;background:var(--bg-primary)}
+.hero-bg-overlay{position:absolute;inset:0;background:linear-gradient(rgba(5,10,8,0.92),rgba(5,10,8,0.96)),url('{{ hero_img }}') center/cover no-repeat;z-index:1}
 .hero .container{position:relative;z-index:2}
-.hero-content{max-width:850px}
-.hero-tag{background:rgba(255,210,20,.08);border:1px solid rgba(255,210,20,0.2);color:var(--accent-yellow);padding:.4rem 1.2rem;border-radius:4px;font-weight:700;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
-.hero-tag::before{content:'';width:4px;height:4px;background:var(--accent-yellow);border-radius:50%}
-.hero-name{font-size:4.8rem;line-height:1.1;margin-bottom:.5rem;font-weight:900}
-.hero-subtitle-wrapper{overflow:hidden;height:4.2rem;margin-bottom:1.8rem}
-.hero-subtitle-track{animation:slideUpDown 9s cubic-bezier(0.76,0,0.24,1) infinite}
-@keyframes slideUpDown{0%,25%{transform:translateY(0)}33%,58%{transform:translateY(-100%)}66%,91%{transform:translateY(-200%)}100%{transform:translateY(0)}}
-.hero-subtitle-track span{display:block;height:4.2rem;font-size:3.2rem;font-weight:900;line-height:1.3;color:var(--accent-yellow)}
-.hero-desc{font-size:1.05rem;color:var(--text-gray);margin-bottom:3rem;max-width:600px}
+.hero-grid{display:grid;grid-template-columns:1.15fr 0.85fr;gap:4.5rem;align-items:center}
+.hero-content{max-width:650px}
+.hero-tag{background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);color:var(--accent-cyan);padding:.4rem 1.2rem;border-radius:50px;font-weight:700;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
+.hero-tag::before{content:'';width:4px;height:4px;background:var(--accent-cyan);border-radius:50%}
+.hero-name{font-size:4.5rem;line-height:1.05;margin-bottom:1.5rem;font-weight:800}
+.hero-desc{font-size:1.1rem;color:var(--text-gray);margin-bottom:2.5rem}
 .hero-btns{display:flex;gap:1.5rem;flex-wrap:wrap}
+.hero-visual{position:relative;display:flex;justify-content:center;align-items:center}
+.hero-image-frame{width:100%;max-width:440px;aspect-ratio:1.1;border-radius:var(--border-radius-lg);overflow:hidden;border:1px solid var(--glass-border);box-shadow:var(--shadow-lg);position:relative;z-index:2}
+.hero-image-frame img{width:100%;height:100%;object-fit:cover}
+.hero-image-ring{position:absolute;width:115%;height:115%;border:1px dashed var(--accent-cyan);border-radius:50%;opacity:0.25;animation:spin-slow 60s linear infinite;z-index:1}
+@keyframes spin-slow{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.hero-floating-badge{position:absolute;bottom:25px;right:-15px;background:var(--bg-secondary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-md);padding:1rem 1.5rem;box-shadow:var(--shadow-md);z-index:3;display:flex;align-items:center;gap:.8rem}
+.h-badge-icon{font-size:1.5rem;color:var(--accent-yellow)}
+
 /* STATS */
-.stats{padding:0;margin-top:-70px;position:relative;z-index:10}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:2.5rem;box-shadow:var(--shadow-md);position:relative;overflow:hidden}
-.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-yellow),transparent)}
+.stats{padding:0;margin-top:-60px;position:relative;z-index:10}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.5rem;box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-yellow),var(--accent-cyan))}
 .stat-item{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
 .stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--bg-tertiary)}
-.stat-number{font-size:3rem;font-weight:800;line-height:1;margin-bottom:.3rem;color:var(--accent-yellow)}
+.stat-number{font-family:'Outfit',sans-serif;font-size:3rem;font-weight:900;line-height:1;margin-bottom:.3rem;color:var(--text-white)}
 .stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-gray);font-weight:600}
+
 /* ABOUT */
-.about-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:5.5rem;align-items:center}
-.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:3.5rem}
-.about-feature{display:flex;gap:1.2rem}
-.about-feature-icon{width:42px;height:42px;border:1px solid var(--glass-border);background:var(--bg-secondary);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;transition:var(--transition-smooth);color:var(--accent-yellow)}
-.about-feature:hover .about-feature-icon{border-color:var(--accent-yellow);box-shadow:var(--shadow-yellow)}
-.about-feature h4{font-size:1.1rem;margin-bottom:.4rem;font-weight:700;color:var(--text-white)}.about-feature p{font-size:.85rem;line-height:1.6;color:var(--text-gray)}
+.about{background:var(--bg-secondary)}
+.about-grid{display:grid;grid-template-columns:0.95fr 1.05fr;gap:5.5rem;align-items:center}
+.about-content{position:relative}
+.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3.5rem}
+.about-feature{display:flex;gap:1.2rem;flex-direction:column}
+.about-feature-icon{width:42px;height:42px;border:1px solid var(--glass-border);background:var(--bg-tertiary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--accent-yellow);transition:var(--transition-smooth)}
+.about-feature:hover .about-feature-icon{border-color:var(--accent-cyan);box-shadow:var(--shadow-cyan);background:var(--accent-cyan);color:#050A08}
+.about-feature h4{font-size:1.1rem;margin-bottom:.4rem;font-weight:700;color:var(--text-white)}
+.about-feature p{font-size:.85rem;line-height:1.6;color:var(--text-gray)}
 .about-img-wrapper{position:relative;display:flex;justify-content:center;align-items:center}
-.about-image{width:100%;max-width:440px;aspect-ratio:0.85;border-radius:var(--border-radius-sm);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
-.about-img-frame{position:absolute;width:calc(100% - 30px);max-width:440px;aspect-ratio:0.85;border:1px solid var(--accent-yellow);border-radius:var(--border-radius-sm);z-index:1;transform:translate(15px,15px);transition:var(--transition-smooth)}
+.about-image{width:100%;max-width:440px;aspect-ratio:0.85;border-radius:var(--border-radius-md);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
+.about-img-frame{position:absolute;width:calc(100% - 30px);max-width:440px;aspect-ratio:0.85;border:2px solid var(--accent-cyan);border-radius:var(--border-radius-md);z-index:1;transform:translate(15px,15px);transition:var(--transition-smooth)}
 .about-img-wrapper:hover .about-img-frame{transform:translate(8px,8px)}
-.about-badge{position:absolute;bottom:25px;left:-25px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);backdrop-filter:blur(10px);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
-.badge-icon{width:30px;height:30px;border-radius:50%;background:rgba(255,210,20,.1);display:flex;align-items:center;justify-content:center;color:var(--accent-yellow);font-size:0.9rem}
-.about-badge h5{font-size:1.1rem;margin-bottom:.1rem;font-weight:700}.about-badge p{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted)}
-/* SERVICES GRID */
-.programs-section{background:var(--bg-secondary)}
-.programs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}
-.program-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
-.program-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-cyan-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}
-.program-card:hover{transform:translateY(-5px);border-color:var(--accent-yellow);box-shadow:var(--shadow-sm)}.program-card:hover::before{opacity:1}
-.program-icon{width:46px;height:46px;background:var(--bg-secondary);border-radius:4px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.3rem;transition:var(--transition-smooth);color:var(--accent-yellow);position:relative;z-index:1}
-.program-card:hover .program-icon{border-color:#FFF;background:#FFF;color:#0A0F0D}
-.program-card h3{font-size:1.35rem;margin-bottom:.8rem;position:relative;z-index:1;font-weight:700}
-.program-card p{font-size:.88rem;line-height:1.65;margin-bottom:2rem;position:relative;z-index:1;color:var(--text-gray)}
-.program-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:var(--accent-yellow);font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;transition:var(--transition-fast);position:relative;z-index:1}
-.program-card:hover .program-link{color:#FFF}
+.about-badge{position:absolute;bottom:-20px;left:-15px;background:var(--bg-primary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-sm);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
+
+/* INTERACTIVE SAVINGS CALCULATOR */
+.calculator-section{background:var(--bg-primary);position:relative}
+.calc-container{max-width:950px;margin:0 auto;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-lg);padding:4rem;box-shadow:var(--shadow-lg);position:relative;z-index:2}
+.calc-header{text-align:center;margin-bottom:3.5rem}
+.calc-header h3{font-size:2.5rem;margin-bottom:.5rem}
+.calc-header p{color:var(--text-gray)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:flex-start}
+.calc-inputs{display:flex;flex-direction:column;gap:2.5rem}
+.calc-group{display:flex;flex-direction:column;gap:.8rem}
+.calc-label{font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:600;display:flex;justify-content:space-between}
+.calc-label span:last-child{color:var(--accent-yellow)}
+.slider-container{position:relative;display:flex;align-items:center}
+.calc-slider{width:100%;height:6px;background:var(--bg-tertiary);outline:none;border-radius:3px;-webkit-appearance:none}
+.calc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--accent-yellow);border-radius:50%;cursor:pointer;transition:var(--transition-fast);box-shadow:0 0 10px var(--accent-yellow)}
+.calc-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.calc-widget-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.calc-widget-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:1.5rem;text-align:center}
+.calc-widget-card h5{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+.calc-widget-card p{font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:700;color:var(--accent-cyan)}
+
+.calc-outputs{background:var(--bg-tertiary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-md);padding:3rem;display:flex;flex-direction:column;gap:2rem}
+.calc-total-box{display:flex;flex-direction:column;gap:.3rem}
+.calc-total-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted)}
+.calc-total-val{font-family:'Outfit',sans-serif;font-size:2.8rem;font-weight:900;color:var(--accent-yellow);line-height:1}
+.calc-breakdown{border-top:1px solid var(--glass-border);padding-top:1.5rem;display:flex;flex-direction:column;gap:1rem;font-size:.9rem}
+.calc-row{display:flex;justify-content:space-between}
+.calc-row span:last-child{font-weight:600;color:var(--text-white)}
+
+/* SOLUTIONS / SERVICES */
+.services-section{background:var(--bg-secondary)}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}
+.service-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
+.service-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-cyan-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}
+.service-card:hover{transform:translateY(-8px);border-color:var(--accent-cyan);box-shadow:var(--shadow-md)}
+.service-card:hover::before{opacity:1}
+.service-icon{width:50px;height:50px;background:var(--bg-secondary);border-radius:50%;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.4rem;transition:var(--transition-smooth);color:var(--accent-cyan);position:relative;z-index:1}
+.service-card:hover .service-icon{border-color:#FFF;background:#FFF;color:#050A08}
+.service-card h3{font-size:1.35rem;margin-bottom:.8rem;position:relative;z-index:1;font-weight:700}
+.service-card p{font-size:.88rem;line-height:1.65;margin-bottom:2rem;position:relative;z-index:1;color:var(--text-gray)}
+.service-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:var(--accent-cyan);font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;transition:var(--transition-fast);position:relative;z-index:1}
+.service-card:hover .service-link{color:#FFF}
+
 /* TESTIMONIALS */
-.testimonials-section{padding:8.5rem 0;background:var(--bg-secondary)}
+.testimonials-section{padding:8.5rem 0;background:var(--bg-primary)}
 .t-slider-outer{overflow:hidden;margin-top:4rem}
 .t-slider{display:flex;gap:2rem;transition:transform .5s ease;cursor:grab}
 .t-slider.dragging{cursor:grabbing;transition:none}
-.t-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px;box-shadow:var(--shadow-sm)}
+.t-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:3rem 2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px;box-shadow:var(--shadow-sm)}
 .t-stars{color:var(--accent-yellow);font-size:.9rem;margin-bottom:1.2rem;letter-spacing:1.5px}
 .t-card p{font-size:1.02rem;line-height:1.75;margin-bottom:2rem;font-style:italic;color:var(--text-white);font-weight:400}
 .t-author{font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
-.t-author span{display:block;font-family:'Outfit',sans-serif;font-weight:400;font-size:.7rem;color:var(--text-muted);margin-top:.3rem;text-transform:none;letter-spacing:0}
+.t-author span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.7rem;color:var(--text-muted);margin-top:.3rem;text-transform:none;letter-spacing:0}
 .t-controls{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:2.5rem}
-.t-btn{width:42px;height:42px;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--glass-border);color:var(--text-white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:var(--transition-fast)}
-.t-btn:hover{background:#FFF;color:#0A0F0D;border-color:#FFF}
+.t-btn{width:42px;height:42px;border-radius:50%;background:var(--bg-secondary);border:1px solid var(--glass-border);color:var(--text-white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:var(--transition-fast)}
+.t-btn:hover{background:#FFF;color:#050A08;border-color:#FFF}
 .t-dots{display:flex;gap:.6rem}
 .t-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}.t-dot.active{background:var(--accent-yellow);width:16px;border-radius:3px}
+
 /* CTA */
-.cta-section{padding:8.5rem 0}
-.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:6.5rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-md)}
-.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-yellow),transparent)}
-.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:350px;height:350px;background:radial-gradient(circle,var(--accent-yellow-glow),transparent 70%);pointer-events:none}
-.cta-banner h2{font-size:3.4rem;max-width:750px;margin:0 auto 1.5rem;font-weight:800;letter-spacing:-2px}
+.cta-section{padding:8.5rem 0;background:var(--bg-primary)}
+.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-lg);padding:6.5rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-md)}
+.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-yellow),var(--accent-cyan))}
+.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:350px;height:350px;background:radial-gradient(circle,var(--accent-cyan-glow),transparent 70%);pointer-events:none}
+.cta-banner h2{font-size:3.4rem;max-width:750px;margin:0 auto 1.5rem;font-weight:800}
 .cta-banner p{font-size:1.05rem;max-width:550px;margin:0 auto 3rem}
+
 /* CONTACT */
 .contact-section{background:var(--bg-secondary)}
 .cinfo-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:3rem}
 .cinfo-item{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}
 .cinfo-item:hover{border-color:var(--accent-yellow);color:var(--text-white)}
+
 /* FOOTER */
 .footer{background:var(--bg-primary);border-top:1px solid var(--glass-border);padding:6.5rem 0 3rem}
 .footer-grid{display:grid;grid-template-columns:1.20fr .8fr .8fr;gap:4.5rem;margin-bottom:5.5rem}
@@ -179,15 +229,43 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 .footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:24px;height:2px;background:var(--accent-yellow)}
 .footer-about p{font-size:.88rem;margin-top:1.2rem;margin-bottom:2rem;line-height:1.7}
 .social-links{display:flex;gap:1rem}
-.social-btn{width:40px;height:40px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:4px;color:var(--text-white);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;transition:var(--transition-smooth)}
-.social-btn:hover{background:#FFF;color:#0A0F0D;border-color:#FFF;transform:translateY(-2px)}
+.social-btn{width:40px;height:40px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:50%;color:var(--text-white);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;transition:var(--transition-smooth)}
+.social-btn:hover{background:#FFF;color:#050A08;border-color:#FFF;transform:translateY(-2px)}
 .footer-links{list-style:none}.footer-links li{margin-bottom:.9rem}.footer-links a{color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}.footer-links a:hover{color:var(--text-white);padding-left:5px}
 .footer-bottom{border-top:1px solid var(--glass-border);padding-top:3rem;display:flex;justify-content:space-between;align-items:center}
 .footer-bottom p{font-size:.8rem;color:var(--text-muted)}
 .footer-bottom a{color:var(--text-white);font-weight:700}
-@media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3.5rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.programs-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:768px){.hero-name{font-size:3.2rem}.hero-subtitle-track span{font-size:2.4rem}.hero-subtitle-wrapper{height:3rem}.section-title{font-size:2.4rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}}
-@media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+
+/* RESPONSIVE */
+@media(max-width:991px){
+  .hero-grid{grid-template-columns:1fr;gap:3rem;text-align:center}
+  .hero-visual{order:-1}
+  .hero-content{margin:0 auto}
+  .about-grid{grid-template-columns:1fr;gap:3.5rem}
+  .about-img-wrapper{order:-1}
+  .hamburger{display:block}
+  .nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}
+  .nav-links.active{right:0}
+  .nav-actions{margin-right:3rem}
+  .services-grid{grid-template-columns:repeat(2,1fr)}
+  .calc-grid{grid-template-columns:1fr;gap:2.5rem}
+}
+@media(max-width:768px){
+  .hero-name{font-size:3.2rem}
+  .section-title{font-size:2.4rem}
+  .services-grid{grid-template-columns:1fr}
+  .t-card{flex:0 0 calc(100% - 1rem)}
+  .stats-grid{grid-template-columns:repeat(2,1fr);padding:1.5rem}
+  .cta-banner{padding:3.5rem 1.5rem}
+  .cta-banner h2{font-size:2.2rem}
+  .footer-grid{grid-template-columns:1fr;gap:2.5rem}
+  .footer-bottom{flex-direction:column;gap:1rem;text-align:center}
+  .calc-container{padding:2rem 1.5rem}
+  .calc-widget-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -198,16 +276,13 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   {% if lead.website %}
   <span class="orig">Based on <a href="http://{{ lead.website }}" target="_blank" style="color:inherit; text-decoration:underline;">http://www.{{ lead.website }}</a></span>
   {% endif %}
 </div>
 
-<!-- Spotlights -->
-<div class="spotlight" style="top:-100px;left:-150px"></div>
-<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,rgba(0,242,254,0.06),transparent 70%)"></div>
-<div class="spotlight" style="bottom:10%;left:-100px"></div>
+
 
 <!-- Navbar -->
 <nav class="navbar" id="navbar">
@@ -219,11 +294,16 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
     <ul class="nav-links" id="navLinks">
       <li><a href="#home" class="active">Home</a></li>
       <li><a href="#about">About</a></li>
-      <li><a href="#programs">Services</a></li>
+      <li><a href="#savings">Savings Tool</a></li>
+      <li><a href="#services">Solutions</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
     <div class="nav-actions">
-      <a href="#contact" class="btn btn-secondary" style="padding:.5rem 1.5rem;font-size:.75rem">Get Proposal</a>
+      {% if lead.phone %}
+      <a href="tel:{{ lead.phone }}" class="btn btn-primary" style="padding:.5rem 1.5rem;font-size:.75rem">Call Tech team</a>
+      {% else %}
+      <a href="#contact" class="btn btn-primary" style="padding:.5rem 1.5rem;font-size:.75rem">Get Solar Audit</a>
+      {% endif %}
     </div>
     <button class="hamburger" id="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -233,21 +313,39 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 
 <!-- Hero -->
 <section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
+  <div class="hero-bg-overlay"></div>
   <div class="container">
-    <div class="hero-content reveal reveal-slide-up">
-      <div class="hero-tag">&#x2022; Premium Solar & Clean Energy</div>
-      <h1 class="hero-name text-gradient-yellow">{{ lead.name }}</h1>
-      <div class="hero-subtitle-wrapper">
-        <div class="hero-subtitle-track">
-          <span>RESIDENTIAL SOLAR</span>
-          <span>BATTERY STORAGE</span>
-          <span>COMMERCIAL CLEAN POWER</span>
+    <div class="hero-grid">
+      <div class="hero-content reveal reveal-slide-up">
+        <div class="hero-tag">&#x2022; Smart Energy & Smart Storage Solutions</div>
+        <h1 class="hero-name text-gradient-yellow">Own Your Power.<br>Zero Your Bill.</h1>
+        
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
+      <p class="hero-desc">At {{ lead.name }}, we design high-efficiency tier-1 solar panel systems and smart battery backup networks. Protect your home from rate hikes and power outages while creating a clean energy profile.</p>
+        <div class="hero-btns">
+          <a href="#savings" class="btn btn-primary">Calculate Savings</a>
+          <a href="#services" class="btn btn-secondary">Our Systems</a>
         </div>
       </div>
-      <p class="hero-desc">At {{ lead.name }}, we power the future. Specializing in high-efficiency residential solar panels, smart battery storage systems, and commercial energy auditing, our certified arborist-safe roof installers provide seamless setups that pay for themselves.</p>
-      <div class="hero-btns">
-        <a href="#contact" class="btn btn-primary">Free Solar Audit</a>
-        <a href="#programs" class="btn btn-secondary">Explore Systems</a>
+      <div class="hero-visual reveal reveal-slide-left">
+        <div class="hero-image-ring"></div>
+        <div class="hero-image-frame">
+          <img src="{{ hero_img }}" alt="{{ lead.name }} Solar Home" onerror="this.parentElement.style.opacity='0.3'">
+        </div>
+        <div class="hero-floating-badge">
+          <span class="h-badge-icon">☀️</span>
+          <div>
+            <h5 style="font-size:1rem;font-weight:700">98% Efficient</h5>
+            <p style="font-size:.7rem;color:var(--text-muted)">Latest N-Type Silicon cells</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -258,20 +356,20 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
   <div class="container">
     <div class="stats-grid reveal reveal-scale-in">
       <div class="stat-item">
-        <div class="stat-number">0$</div>
-        <div class="stat-label">Down Options</div>
+        <div class="stat-number">0%</div>
+        <div class="stat-label">Down Financing Options</div>
       </div>
       <div class="stat-item">
         <div class="stat-number">25-Yr</div>
-        <div class="stat-label">Power Warranty</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">1,500+</div>
-        <div class="stat-label">Homes Powered</div>
+        <div class="stat-label">Output Warranty</div>
       </div>
       <div class="stat-item">
         <div class="stat-number">100%</div>
-        <div class="stat-label">Tier-1 Equipment</div>
+        <div class="stat-label">Offset Net Metering</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">$0</div>
+        <div class="stat-label">Site Assessments</div>
       </div>
     </div>
   </div>
@@ -281,85 +379,199 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 <section class="about" id="about">
   <div class="container">
     <div class="about-grid">
-      <div class="about-content reveal reveal-slide-right">
+      <div class="about-img-wrapper reveal reveal-slide-right">
+        <div class="about-img-frame"></div>
+        <img src="{{ about_img }}" alt="{{ lead.name }} solar installer" class="about-image" onerror="this.parentElement.style.opacity='0.3'">
+        <div class="about-badge">
+          <span style="font-size:1.5rem">⚡</span>
+          <div><h5 style="font-weight:700;font-size:0.95rem">Grid-Tied Smart</h5><p style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Automatic Failovers</p></div>
+        </div>
+      </div>
+      <div class="about-content reveal reveal-slide-left">
         <span class="section-tag">About the Company</span>
-        <h2 class="section-title">Clean Power Generation<br><span class="text-gradient-yellow">Reduce Utilities</span> &amp; Save</h2>
-        <p class="section-desc">We combine premium Tier-1 solar modules, high-capacity battery solutions, and meticulous local engineering to slash your energy bills permanently.</p>
+        <h2 class="section-title">NABCEP Certified <span class="text-gradient-cyan">Engineering &amp; Care</span></h2>
+        <p class="section-desc">We build premium, custom-designed solar arrays utilizing macro-inverters and certified technicians. Maximize your local sun potential with engineered precision.</p>
         <div class="about-features">
           <div class="about-feature">
             <div class="about-feature-icon">☀️</div>
-            <div><h4>Tier-1 Solar Panels</h4><p>High-efficiency modules offering maximum conversion even on cloudy days.</p></div>
+            <div><h4>Tier-1 Mono Panels</h4><p>High-density solar panels delivering superior output even in shaded or overcast conditions.</p></div>
           </div>
           <div class="about-feature">
             <div class="about-feature-icon">🔋</div>
-            <div><h4>Smart Battery Backups</h4><p>Certified installers for advanced battery backups to keep you secure during blackouts.</p></div>
+            <div><h4>Smart Battery Storage</h4><p>Advanced chemical cell battery cabinets keeping circuits powered through storms.</p></div>
           </div>
           <div class="about-feature">
-            <div class="about-feature-icon">📋</div>
-            <div><h4>Net Metering Setup</h4><p>Complete handling of utility permits to sell excess power back to the grid.</p></div>
+            <div class="about-feature-icon">📈</div>
+            <div><h4>Microinverter Monitoring</h4><p>Real-time app metrics displaying individual panel health and power production.</p></div>
           </div>
           <div class="about-feature">
-            <div class="about-feature-icon">🛡️</div>
-            <div><h4>Complimentary Energy Audit</h4><p>Free comprehensive solar feasibility and shade analysis for your roof.</p></div>
+            <div class="about-feature-icon">🌿</div>
+            <div><h4>Federal Tax Credit (ITC)</h4><p>Fully compliant documentation to claim maximum available clean energy incentives.</p></div>
           </div>
-        </div>
-      </div>
-      <div class="about-img-wrapper reveal reveal-slide-left">
-        <div class="about-img-frame"></div>
-        <img src="{{ about_img }}" alt="{{ lead.name }}" class="about-image" onerror="this.parentElement.style.opacity='0.3'">
-        <div class="about-badge">
-          <div class="badge-icon">✓</div>
-          <div><h5>NABCEP Certified</h5><p>Professional Credentials</p></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Services Grid -->
-<section class="programs-section" id="programs">
+<!-- Interactive Savings & Carbon Calculator -->
+<section class="calculator-section" id="savings">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,rgba(0,229,255,0.06),transparent 70%)"></div>
+  <div class="container">
+    <div class="calc-container reveal reveal-slide-up">
+      <div class="calc-header">
+        <span class="section-tag">Interactive Estimator</span>
+        <h3>Smart Solar Savings Tool</h3>
+        <p>Drag the slider to your average monthly electric bill and see your potential solar impact.</p>
+      </div>
+      
+      <div class="calc-grid">
+        <div class="calc-inputs">
+          <div class="calc-group">
+            <label class="calc-label" for="billSlider">
+              <span>Current Electric Bill</span>
+              <span id="billVal">$220 / mo.</span>
+            </label>
+            <div class="slider-container">
+              <input type="range" id="billSlider" class="calc-slider" min="100" max="600" step="10" value="220">
+            </div>
+          </div>
+          
+          <div class="calc-widget-grid">
+            <div class="calc-widget-card">
+              <h5>Carbon Offset</h5>
+              <p id="co2Val">3.1 Metric Tons</p>
+            </div>
+            <div class="calc-widget-card">
+              <h5>Trees Planted Eq.</h5>
+              <p id="treesVal">51 Trees / yr</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="calc-outputs" style="position:relative;">
+          <!-- Interactive Solar Roof SVG (Aha Moment!) -->
+          <svg viewBox="0 0 200 120" class="solar-svg" style="width:100%; max-width:240px; height:auto; margin:0 auto 1.5rem; display:block;">
+            <defs>
+              <linearGradient id="solarGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#00E5FF" stop-opacity="1" />
+                <stop offset="100%" stop-color="#0083B0" stop-opacity="0.6" />
+              </linearGradient>
+            </defs>
+            
+            <!-- Sky / Sun Background -->
+            <rect width="200" height="120" fill="#070a12" rx="8" />
+            <circle cx="170" cy="30" r="12" fill="#F59E0B" opacity="0.15" id="sunGlow" style="transition: opacity 0.3s ease, r 0.3s ease;" />
+            <circle cx="170" cy="30" r="6" fill="#FBBF24" />
+            
+            <!-- House Outline -->
+            <polygon points="35,85 100,45 165,85" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1.5" />
+            <rect x="45" y="85" width="110" height="30" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1" />
+            
+            <!-- Roof Plane -->
+            <polygon points="30,85 170,85 100,40" fill="#12171E" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1" />
+            
+            <!-- Solar Panels (4 items in a grid) -->
+            <!-- Panel 1 -->
+            <rect id="panel1" x="60" y="62" width="16" height="12" rx="1" fill="#1A202C" stroke="rgba(0, 229, 255, 0.15)" stroke-width="0.75" style="transition: fill 0.3s ease, stroke 0.3s ease;" />
+            <line x1="68" y1="62" x2="68" y2="74" stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.5" style="pointer-events:none;" />
+            <line x1="60" y1="68" x2="76" y2="68" stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.5" style="pointer-events:none;" />
+            
+            <!-- Panel 2 -->
+            <rect id="panel2" x="82" y="62" width="16" height="12" rx="1" fill="#1A202C" stroke="rgba(0, 229, 255, 0.15)" stroke-width="0.75" style="transition: fill 0.3s ease, stroke 0.3s ease;" />
+            <line x1="90" y1="62" x2="90" y2="74" stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.5" style="pointer-events:none;" />
+            <line x1="82" y1="68" x2="98" y2="68" stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.5" style="pointer-events:none;" />
+            
+            <!-- Panel 3 -->
+            <rect id="panel3" x="104" y="62" width="16" height="12" rx="1" fill="#1A202C" stroke="rgba(0, 229, 255, 0.15)" stroke-width="0.75" style="transition: fill 0.3s ease, stroke 0.3s ease;" />
+            <line x1="112" y1="62" x2="112" y2="74" stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.5" style="pointer-events:none;" />
+            <line x1="104" y1="68" x2="120" y2="68" stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.5" style="pointer-events:none;" />
+            
+            <!-- Panel 4 -->
+            <rect id="panel4" x="126" y="62" width="16" height="12" rx="1" fill="#1A202C" stroke="rgba(0, 229, 255, 0.15)" stroke-width="0.75" style="transition: fill 0.3s ease, stroke 0.3s ease;" />
+            <line x1="134" y1="62" x2="134" y2="74" stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.5" style="pointer-events:none;" />
+            <line x1="126" y1="68" x2="142" y2="68" stroke="rgba(255, 255, 255, 0.1)" stroke-width="0.5" style="pointer-events:none;" />
+            
+            <!-- Status Pill overlay -->
+            <rect x="35" y="98" width="130" height="14" fill="rgba(0, 0, 0, 0.5)" rx="4" />
+            <text id="solarStatus" x="100" y="107" text-anchor="middle" fill="#00E5FF" font-family="'Space Grotesk', sans-serif" font-weight="700" font-size="6.5" style="letter-spacing:0.02em;">Offset: 3.1 Tons • 51 Trees</text>
+          </svg>
+
+          <div class="calc-total-box">
+            <span class="calc-total-label">Estimated 25-Year Savings</span>
+            <span class="calc-total-val" id="calcSavings">$48,400</span>
+          </div>
+          
+          <div class="calc-breakdown">
+            <div class="calc-row">
+              <span>New Solar Payment (Financed):</span>
+              <span id="solarPay">$118 / mo.</span>
+            </div>
+            <div class="calc-row">
+              <span>Estimated Monthly Savings:</span>
+              <span id="monthlySavings" style="color:var(--accent-green);">$102 / mo.</span>
+            </div>
+            <div class="calc-row">
+              <span>Estimated Payback Period:</span>
+              <span id="paybackTime">6.5 Years</span>
+            </div>
+            <div class="calc-row" style="margin-top:.8rem; border-top:1px dashed var(--glass-border); padding-top:.8rem">
+              <span style="color:var(--accent-yellow)">Federal Incentive (30%):</span>
+              <span style="color:var(--accent-yellow)" id="itcVal">$5,280 Credit</span>
+            </div>
+          </div>
+          
+          <a href="#contact" class="btn btn-primary" style="width:100%; text-align:center; padding:.8rem">Schedule Free Engineering Layout &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Solutions Grid -->
+<section class="services-section" id="services">
   <div class="container">
     <div style="text-align:center">
-      <span class="section-tag">Our Services</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Premium Clean Energy <span class="text-gradient-yellow">Systems</span></h2>
-      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Discover our customized solar, storage, and home electrification integration services.</p>
+      <span class="section-tag">Energy Solutions</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Premium Solar Implementations</h2>
+      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Certified eco-grid components designed to deliver complete energy resilience and lower utility margins.</p>
     </div>
-    <div class="programs-grid">
-      <div class="program-card reveal reveal-slide-up">
-        <div class="program-icon">🏡</div>
+    <div class="services-grid">
+      <div class="service-card reveal reveal-slide-up">
+        <div class="service-icon">☀️</div>
         <h3>Residential Solar</h3>
-        <p>Custom rooftop panel systems designed to zero out your home electricity bills.</p>
-        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+        <p>Premium microinverter arrays custom engineered to align with your home roof's sun profile.</p>
+        <a href="#contact" class="service-link">View Residential &rarr;</a>
       </div>
-      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
-        <div class="program-icon">🔋</div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="service-icon">🔋</div>
         <h3>Smart Batteries</h3>
-        <p>Home batteries integrated to store daytime solar surplus for night and emergency backup.</p>
-        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+        <p>Automatic transfer switches and battery backup storage to manage outage power and rate periods.</p>
+        <a href="#contact" class="service-link">View Batteries &rarr;</a>
       </div>
-      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
-        <div class="program-icon">🏢</div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="service-icon">🚗</div>
+        <h3>EV Charger Install</h3>
+        <p>High-speed Level 2 electric vehicle charging installations drawing directly from solar arrays.</p>
+        <a href="#contact" class="service-link">Explore Chargers &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up">
+        <div class="service-icon">🏢</div>
         <h3>Commercial Solar</h3>
-        <p>High-yield commercial systems optimized to decrease corporate tax and utility overhead.</p>
-        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+        <p>Custom structural solar layouts, net-metering arrays, and tax incentive management for offices.</p>
+        <a href="#contact" class="service-link">Commercial Systems &rarr;</a>
       </div>
-      <div class="program-card reveal reveal-slide-up">
-        <div class="program-icon">⚡</div>
-        <h3>EV Charger Integration</h3>
-        <p>Fast Level 2 home electric vehicle charging stations powered directly by your solar roof.</p>
-        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="service-icon">🔌</div>
+        <h3>Smart Panels</h3>
+        <p>Replacement sub-panels with app controls to prioritize circuit draws during emergency modes.</p>
+        <a href="#contact" class="service-link">View Smart Panels &rarr;</a>
       </div>
-      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
-        <div class="program-icon">🧼</div>
-        <h3>Solar Maintenance</h3>
-        <p>Professional solar panel cleaning, performance testing, and warranty checkups.</p>
-        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
-      </div>
-      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
-        <div class="program-icon">🔧</div>
-        <h3>Inverter Upgrades</h3>
-        <p>Upgrades to premium smart microinverters to optimize individual panel outputs.</p>
-        <a href="#contact" class="program-link">Get Proposal &rarr;</a>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="service-icon">🗺️</div>
+        <h3>Shade & Utility Audits</h3>
+        <p>Full arborist tree pruning guidelines, solar pathways, and historical electrical billing reviews.</p>
+        <a href="#contact" class="service-link">Book Site Audit &rarr;</a>
       </div>
     </div>
   </div>
@@ -370,28 +582,28 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
   <div class="container">
     <div style="text-align:center">
       <span class="section-tag">Client Reviews</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Superb Savings, <span class="text-gradient-yellow">Five-Star Installs</span></h2>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Real Power Savings</h2>
     </div>
     <div class="t-slider-outer">
       <div class="t-slider" id="tSlider">
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Our monthly electric bill went from $340 to a flat $8 grid connection fee. {{ lead.name }} handled the permits and utility approvals flawlessly. Best investment we've made."</p>
+          <p>"Our monthly bill dropped from $280 to the basic grid connection charge of $12 within a month of activation. Net metering offsets all of our AC usage in the summer."</p>
           <div class="t-author">Marcus G.<span>Homeowner</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Very fast installation. The crew took just one day to install 24 panels and a battery backup. Highly professional engineering team."</p>
-          <div class="t-author">Daniel K.<span>Property Owner</span></div>
+          <p>"During the storm blackouts last winter, our solar battery kicked in immediately. My house was warm and had full power while the neighborhood was dark for three days."</p>
+          <div class="t-author">Daniel K.<span>Property Manager</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"During the summer power outage, our battery backup kicked in automatically within milliseconds. We had lights, AC, and fridge running while the block was dark."</p>
+          <p>"The Level 2 EV charger integration is smooth. Now I drive my car powered literally by the sun on my roof. Excellent engineering and clean installation."</p>
           <div class="t-author">Elena S.<span>Residential Client</span></div>
         </div>
         <div class="t-card">
           <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>"Meticulous energy audit. They showed us exactly where shade fell and optimized panel placement to ensure maximum daily output."</p>
+          <p>"They handled everything—engineering prints, town permits, utility hookups, and tax forms. The customer app showing live output is outstanding."</p>
           <div class="t-author">Robert H.<span>Estate Owner</span></div>
         </div>
       </div>
@@ -408,24 +620,25 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
 <section class="cta-section">
   <div class="container">
     <div class="cta-banner reveal reveal-scale-in">
-      <span class="section-tag">Claim Your Solar Proposal</span>
-      <h2>Claim Your Free Solar Audit & Estimate from<br><span class="text-gradient-yellow">{{ lead.name }}</span> Today</h2>
-      <p>Schedule a quick structural inspection to receive an accurate, custom-tailored clean energy proposal.</p>
-      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Schedule Proposal</a>
+      <span class="section-tag">Claim Your Quote</span>
+      <h2>Claim Your Free Solar Audit &amp; System Layout from<br><span class="text-gradient-yellow">{{ lead.name }}</span> Today</h2>
+      <p>Schedule a certified layout designer. We'll design a customized CAD printout showing maximum panel alignments.</p>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Schedule Solar CAD Layout</a>
     </div>
   </div>
 </section>
 
 <!-- Contact -->
 <section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
   <div class="container" style="text-align:center">
-    <span class="section-tag">Find Us</span>
-    <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-yellow">{{ lead.name }}</span></h2>
-    <p>Schedule a feasibility walkthrough or ask about our clean energy battery storage packages.</p>
+    <span class="section-tag">Get in Touch</span>
+    <h2 class="section-title" style="margin:.5rem auto 1rem">Unlock Clean Energy</h2>
+    <p>Contact us for solar engineering layouts, battery storage specifications, or net metering details.</p>
     <div class="cinfo-grid">
       {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="cinfo-item">📞 Call Us: {{ lead.phone }}</a>{% endif %}
       {% if lead.email %}<a href="mailto:{{ lead.email }}" class="cinfo-item">✉ Email: {{ lead.email }}</a>{% endif %}
-      {% if lead.address %}<div class="cinfo-item">📍 {{ lead.address }}</div>{% endif %}
+      {% if lead.address %}<div class="cinfo-item">📍 Address: {{ lead.address }}</div>{% endif %}
       {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="cinfo-item">📸 @{{ lead.instagram }}</a>{% endif %}
       {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="cinfo-item">🗺 View on Google Maps</a>{% endif %}
     </div>
@@ -441,19 +654,19 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
           <div class="logo-icon"></div>
           {{ lead.name }}
         </a>
-        <p>A trusted clean energy agency specializing in high-efficiency solar panel installations, battery backups, and net metering.</p>
+        <p>NABCEP Certified professional solar systems installer, constructing grid-tied mono arrays, battery failovers, and EV charging setups.</p>
         <div class="social-links">
           {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="social-btn">IG</a>{% endif %}
           {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="social-btn">📍</a>{% endif %}
         </div>
       </div>
       <div class="footer-col">
-        <h4>Quick Links</h4>
+        <h4>Solutions</h4>
         <ul class="footer-links">
-          <li><a href="#home">Home</a></li>
-          <li><a href="#about">About the Company</a></li>
-          <li><a href="#programs">Services</a></li>
-          <li><a href="#contact">Contact Us</a></li>
+          <li><a href="#services">Residential Solar</a></li>
+          <li><a href="#services">Battery Backups</a></li>
+          <li><a href="#services">EV Charging Systems</a></li>
+          <li><a href="#services">Commercial Solar</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -466,8 +679,8 @@ body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;o
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a></p>
-      <p>Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here &rarr;</a></p>
+      <p>&copy; 2026 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this website live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order on Fiverr &rarr;</a></p>
     </div>
   </div>
 </footer>
@@ -478,7 +691,7 @@ const dot=document.getElementById('cursorDot'),ring=document.getElementById('cur
 let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
 (function animRing(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
-document.querySelectorAll('a,button,.program-card,.t-btn').forEach(el=>{
+document.querySelectorAll('a,button,.service-card,.t-btn').forEach(el=>{
   el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
   el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
 });
@@ -502,6 +715,83 @@ navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{hambur
 // Scroll reveal
 const revObs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');revObs.unobserve(e.target)}},{threshold:0.1}));
 document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+// Interactive Savings & CO2 Calculator
+(function(){
+  const slider = document.getElementById('billSlider');
+  const billVal = document.getElementById('billVal');
+  const co2Val = document.getElementById('co2Val');
+  const treesVal = document.getElementById('treesVal');
+  const calcSavings = document.getElementById('calcSavings');
+  const solarPay = document.getElementById('solarPay');
+  const monthlySavings = document.getElementById('monthlySavings');
+  const paybackTime = document.getElementById('paybackTime');
+  const itcVal = document.getElementById('itcVal');
+  
+  const sunGlow = document.getElementById('sunGlow');
+  const panel1 = document.getElementById('panel1');
+  const panel2 = document.getElementById('panel2');
+  const panel3 = document.getElementById('panel3');
+  const panel4 = document.getElementById('panel4');
+  const solarStatus = document.getElementById('solarStatus');
+  
+  function calculate(){
+    const bill = parseInt(slider.value);
+    billVal.textContent = '$' + bill + ' / mo.';
+    
+    // Estimates
+    const savings25 = Math.round(bill * 25 * 12 * 0.73);
+    const co2 = (bill * 0.014).toFixed(1);
+    const trees = Math.round(bill * 0.23);
+    const financedPayment = Math.round(bill * 0.54);
+    const monthlySave = bill - financedPayment;
+    
+    const payback = ( financedPayment > 200 ) ? '5.8 Years' : ( financedPayment > 120 ) ? '6.5 Years' : '7.2 Years';
+    
+    const totalSystemBallpark = bill * 80;
+    const federalIncentive = Math.round(totalSystemBallpark * 0.3);
+    
+    co2Val.textContent = co2 + ' Metric Tons';
+    treesVal.textContent = trees + ' Trees / yr';
+    calcSavings.textContent = '$' + savings25.toLocaleString();
+    solarPay.textContent = '$' + financedPayment + ' / mo.';
+    monthlySavings.textContent = '$' + monthlySave + ' / mo.';
+    paybackTime.textContent = payback;
+    itcVal.textContent = '$' + federalIncentive.toLocaleString() + ' Credit';
+    
+    // Update SVG values dynamically (Aha Moment panels!)
+    if (solarStatus) {
+      solarStatus.textContent = "Offset: " + co2 + " Tons • " + trees + " Trees / yr";
+    }
+    
+    // Animate solar panels count and glowing effect based on bill scale
+    const activePanels = bill <= 180 ? 1 : bill <= 280 ? 2 : bill <= 420 ? 3 : 4;
+    const panels = [panel1, panel2, panel3, panel4];
+    
+    panels.forEach((panel, i) => {
+      if (panel) {
+        if (i < activePanels) {
+          panel.setAttribute('fill', 'url(#solarGlow)');
+          panel.setAttribute('stroke', '#00E5FF');
+        } else {
+          panel.setAttribute('fill', '#1A202C');
+          panel.setAttribute('stroke', 'rgba(0, 229, 255, 0.15)');
+        }
+      }
+    });
+    
+    // Animate sun size based on energy scale
+    if (sunGlow) {
+      const radius = 8 + (bill / 100) * 3; // dynamically scales from 11px to 26px
+      const opacity = 0.08 + (bill / 600) * 0.25;
+      sunGlow.setAttribute('r', radius);
+      sunGlow.setAttribute('opacity', opacity);
+    }
+  }
+  
+  slider.addEventListener('input', calculate);
+  calculate();
+})();
 
 // Testimonials slider
 (function(){

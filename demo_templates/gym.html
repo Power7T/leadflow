@@ -156,6 +156,16 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 @media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.gallery-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.hero-name,.hero-subtitle-track span{font-size:2.8rem}.hero-subtitle-wrapper{height:3.5rem}.section-title{font-size:2.1rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}.gallery-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.hero-name,.hero-subtitle-track span{font-size:2.2rem}.stats-grid{grid-template-columns:1fr 1fr}}
+/* AHA MOMENT INTERACTIVE SECTION */
+.aha-section{padding:5rem 0;position:relative;background:var(--bg-secondary);overflow:hidden}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2rem}
+.aha-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 20px;border-radius:999px;cursor:pointer;font-size:0.85rem;font-weight:600;font-family:inherit;transition:all 0.25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:0 4px 16px rgba(224,90,38,0.3)}
+.aha-svg-wrap{width:100%;max-width:320px}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;margin-top:0.5rem;min-height:2rem}
+@media(max-width:768px){.aha-controls{gap:8px}.aha-btn{font-size:0.75rem;padding:7px 14px}}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:0.8}50%{transform:scale(1.08);opacity:0.4}100%{transform:scale(1);opacity:0.8}}
 </style>
 </head>
 <body>
@@ -167,27 +177,24 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   <span class="orig">Built using custom template</span>
 </div>
 
-<!-- Spotlights -->
-<div class="spotlight" style="top:-100px;left:-150px"></div>
-<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,var(--accent-teal-glow),transparent 70%)"></div>
-<div class="spotlight" style="bottom:10%;left:-100px"></div>
+
 
 <!-- Navbar -->
 <nav class="navbar" id="navbar">
   <div class="container nav-container">
     <a href="#home" class="logo">
       <div class="logo-icon"></div>
-      IRON{'<span>' + logo_p2 + '</span>' if logo_p2 else ''}
+      {{ lead.name.split()[0]|upper if lead.name else 'YOUR GYM' }}{% if lead.name and lead.name.split()|length > 1 %}<span>{{ lead.name.split()[1:]|join(' ')|upper }}</span>{% endif %}
     </a>
     <ul class="nav-links" id="navLinks">
       <li><a href="#home" class="active">Home</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#programs">Programs</a></li>
-      {'<li><a href="#gallery">Gallery</a></li>' if gallery_imgs else ''}
+      
       <li><a href="#contact">Contact</a></li>
     </ul>
     <div class="nav-actions">
@@ -201,6 +208,7 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 
 <!-- Hero -->
 <section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
   <div class="container">
     <div class="hero-content reveal reveal-slide-up">
       <div class="hero-tag">&#x2022; Redefine Your Limits</div>
@@ -212,6 +220,14 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
           <span>TRUE POTENTIAL</span>
         </div>
       </div>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
       <p class="hero-desc">{about_text[:200]}{"…" if len(about_text) > 200 else ""}</p>
       <div class="hero-btns">
         <a href="#contact" class="btn btn-primary">Get Started Today</a>
@@ -288,6 +304,7 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 
 <!-- Programs -->
 <section class="programs-section" id="programs">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,var(--accent-teal-glow),transparent 70%)"></div>
   <div class="container">
     <div style="text-align:center">
       <span class="section-tag">Our Programs</span>
@@ -310,6 +327,53 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
         <h3>Personal Training</h3>
         <p>One-on-one coaching sessions tailored entirely to your body and goals.</p>
         <a href="#contact" class="program-link">Get Started →</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- AHA: Workout Intensity Visualizer -->
+<section class="aha-section" id="workout-visualizer">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Try It Now</span>
+      <h2 class="section-title" style="max-width:600px;margin:.5rem auto 0">Feel the <span class="text-gradient">Intensity</span></h2>
+      <p style="color:var(--text-muted);max-width:480px;margin:0 auto">Select a training level and watch your heart rate respond in real time.</p>
+      <div class="aha-controls">
+        <button class="aha-btn" data-level="0" onclick="gymViz(0)">Recovery</button>
+        <button class="aha-btn" data-level="1" onclick="gymViz(1)">Light</button>
+        <button class="aha-btn active" data-level="2" onclick="gymViz(2)">Moderate</button>
+        <button class="aha-btn" data-level="3" onclick="gymViz(3)">Intense</button>
+        <button class="aha-btn" data-level="4" onclick="gymViz(4)">Beast Mode</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg id="gym-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 0 24px rgba(224,90,38,0.3))">
+          <defs>
+            <radialGradient id="figGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ff6b2b"/>
+              <stop offset="100%" stop-color="#c0390b"/>
+            </radialGradient>
+          </defs>
+          <!-- Heart rate rings -->
+          <circle id="gr1" cx="160" cy="100" r="30" fill="none" stroke="#e05a26" stroke-width="2" opacity="0.7" style="transform-origin:160px 100px;animation:pulse-ring 1.5s ease-in-out infinite"/>
+          <circle id="gr2" cx="160" cy="100" r="50" fill="none" stroke="#e05a26" stroke-width="1.5" opacity="0.5" style="transform-origin:160px 100px;animation:pulse-ring 1.5s ease-in-out infinite 0.2s"/>
+          <circle id="gr3" cx="160" cy="100" r="70" fill="none" stroke="#e05a26" stroke-width="1" opacity="0.3" style="transform-origin:160px 100px;animation:pulse-ring 1.5s ease-in-out infinite 0.4s"/>
+          <circle id="gr4" cx="160" cy="100" r="90" fill="none" stroke="#e05a26" stroke-width="0.8" opacity="0.15" style="transform-origin:160px 100px;animation:pulse-ring 1.5s ease-in-out infinite 0.6s"/>
+          <!-- Silhouette figure -->
+          <!-- Head -->
+          <circle cx="160" cy="62" r="12" fill="#ccc"/>
+          <!-- Body -->
+          <rect x="150" y="75" width="20" height="34" rx="4" fill="#bbb"/>
+          <!-- Arms -->
+          <line x1="150" y1="82" x2="133" y2="100" stroke="#bbb" stroke-width="5" stroke-linecap="round"/>
+          <line x1="170" y1="82" x2="187" y2="100" stroke="#bbb" stroke-width="5" stroke-linecap="round"/>
+          <!-- Legs -->
+          <line x1="155" y1="109" x2="148" y2="138" stroke="#bbb" stroke-width="5" stroke-linecap="round"/>
+          <line x1="165" y1="109" x2="172" y2="138" stroke="#bbb" stroke-width="5" stroke-linecap="round"/>
+          <!-- BPM display -->
+          <text id="gym-bpm" x="160" y="175" text-anchor="middle" fill="#e05a26" font-size="22" font-weight="800" font-family="sans-serif">120 BPM</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="gym-label">Moderate Training</div>
     </div>
   </div>
 </section>
@@ -367,6 +431,7 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
 
 <!-- Contact -->
 <section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
   <div class="container" style="text-align:center">
     <span class="section-tag">Find Us</span>
     <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-orange">{{ lead.name }}</span></h2>
@@ -382,7 +447,7 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
       <div class="footer-col footer-about">
         <a href="#home" class="logo" style="font-size:1.5rem">
           <div class="logo-icon"></div>
-          IRON{'<span>' + logo_p2 + '</span>' if logo_p2 else ''}
+          {{ lead.name.split()[0]|upper if lead.name else 'YOUR GYM' }}{% if lead.name and lead.name.split()|length > 1 %}<span>{{ lead.name.split()[1:]|join(' ')|upper }}</span>{% endif %}
         </a>
         <p>A premier fitness facility committed to building strength, endurance, and an unstoppable mindset in {{ lead.address.split(',')[1] if lead.address and ',' in lead.address else 'your city' }}.</p>
         <div class="social-links">{% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="social-btn">IG</a>{% endif %}{% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="social-btn">📍</a>{% endif %}</div>
@@ -406,8 +471,8 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Chandan Gosavi</a></p>
-      <p>Want this live? <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">Order here &rarr;</a></p>
+      <p>&copy; 2025 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here &rarr;</a></p>
     </div>
   </div>
 </footer>
@@ -479,19 +544,33 @@ document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
   buildDots();
   window.addEventListener('resize',()=>goto(0));
 })();
+(function(){
+  var levels=[
+    {label:'Recovery',bpm:'60 BPM',color:'#4fc3f7',glow:'rgba(79,195,247,0.3)',dur:3,rings:[0.3,0.2,0.1,0.05]},
+    {label:'Light Training',bpm:'90 BPM',color:'#aed581',glow:'rgba(174,213,129,0.3)',dur:2.2,rings:[0.5,0.35,0.2,0.1]},
+    {label:'Moderate Training',bpm:'120 BPM',color:'#e05a26',glow:'rgba(224,90,38,0.3)',dur:1.5,rings:[0.7,0.5,0.3,0.15]},
+    {label:'Intense Training',bpm:'155 BPM',color:'#ff3d00',glow:'rgba(255,61,0,0.35)',dur:0.9,rings:[0.85,0.65,0.45,0.25]},
+    {label:'Beast Mode 🔥',bpm:'190 BPM',color:'#d50000',glow:'rgba(213,0,0,0.5)',dur:0.55,rings:[1,0.8,0.6,0.4]}
+  ];
+  window.gymViz=function(idx){
+    var l=levels[idx];
+    document.querySelectorAll('.aha-btn[data-level]').forEach(function(b){b.classList.toggle('active',parseInt(b.dataset.level)===idx);});
+    var svg=document.getElementById('gym-svg');
+    svg.style.filter='drop-shadow(0 0 28px '+l.glow+')';
+    ['gr1','gr2','gr3','gr4'].forEach(function(id,i){
+      var el=document.getElementById(id);
+      el.setAttribute('stroke',l.color);
+      el.style.opacity=l.rings[i];
+      el.style.animationDuration=l.dur+'s';
+    });
+    document.getElementById('gym-bpm').textContent=l.bpm;
+    document.getElementById('gym-bpm').setAttribute('fill',l.color);
+    document.getElementById('gym-label').textContent=l.label;
+  };
+  gymViz(2);
+})();
 </script>
 
 
 </body>
-</html>"""
-
-
-
-def _services_html(services: list, accent: str) -> str:
-    if not services:
-        return ""
-    cards = ""
-    icons = ["✦", "◈", "⬡", "◉", "▸", "◆"]
-    for i, s in enumerate(services[:6]):
-        icon = icons[i % len(icons)]
-        desc_html = f'<p class="svc-desc">{s["desc"]}</p>' if s["desc"] else ""
+</html>

@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  .ig-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+  .ig-filters { display:flex; gap:8px; flex-wrap:wrap; }
+  .ig-filter-btn {
+    padding:6px 14px; border-radius:20px; border:1px solid var(--border);
+    background:var(--bg-card); color:var(--text-dim); cursor:pointer; font-size:12px;
+    transition:all .15s;
+  }
+  .ig-filter-btn.active, .ig-filter-btn:hover { background:#E1306C; color:#fff; border-color:#E1306C; }
+  .ig-stats { display:flex; gap:16px; }
+  .ig-stat { text-align:center; }
+  .ig-stat .num { font-size:22px; font-weight:700; color:#E1306C; }
+  .ig-stat .lbl { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; }
+
+  .dm-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:16px; }
+
+  .dm-card {
+    background:var(--bg-card); border:1px solid var(--border); border-radius:12px;
+    padding:18px; position:relative; transition:all .2s;
+  }
+  .dm-card:hover { border-color:#E1306C44; box-shadow:0 4px 20px rgba(225,48,108,.12); }
+  .dm-card.sent { opacity:.5; border-color:var(--border); }
+  .dm-card.sent:hover { box-shadow:none; border-color:var(--border); }
+
+  .dm-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+  .dm-biz-name { font-weight:600; font-size:15px; color:var(--text); line-height:1.3; }
+  .dm-category { font-size:11px; color:var(--text-dim); margin-top:2px; text-transform:capitalize; }
+  .dm-score {
+    font-size:13px; font-weight:700; padding:3px 9px; border-radius:20px;
+    background:#E1306C22; color:#E1306C; flex-shrink:0; margin-left:8px;
+  }
+
+  .ig-handle {
+    display:inline-flex; align-items:center; gap:6px;
+    background:#E1306C11; border:1px solid #E1306C33; border-radius:8px;
+    padding:6px 10px; margin-bottom:12px; font-size:13px; font-weight:500; color:#E1306C;
+  }
+  .ig-handle svg { width:14px; height:14px; }
+
+  .dm-preview {
+    font-size:12px; color:var(--text-dim); background:var(--bg); border-radius:8px;
+    padding:10px 12px; border:1px solid var(--border); line-height:1.6;
+    white-space:pre-wrap; word-break:break-word; margin-bottom:12px; max-height:100px;
+    overflow:hidden; position:relative;
+  }
+  .dm-preview::after {
+    content:''; position:absolute; bottom:0; left:0; right:0; height:28px;
+    background:linear-gradient(transparent, var(--bg));
+  }
+
+  .dm-actions { display:flex; gap:8px; }
+  .btn-ig-open {
+    flex:1; padding:9px 0; border-radius:8px; border:none; cursor:pointer;
+    background:linear-gradient(135deg,#E1306C,#F77737); color:#fff;
+    font-weight:600; font-size:13px; display:flex; align-items:center; justify-content:center;
+    gap:6px; text-decoration:none; transition:opacity .15s;
+  }
+  .btn-ig-open:hover { opacity:.88; }
+  .btn-copy-dm {
+    flex:1; padding:9px 0; border-radius:8px; border:1px solid var(--border);
+    cursor:pointer; background:var(--bg); color:var(--text); font-weight:600;
+    font-size:13px; display:flex; align-items:center; justify-content:center;
+    gap:6px; transition:all .15s;
+  }
+  .btn-copy-dm:hover { background:var(--accent); color:#000; border-color:var(--accent); }
+  .btn-copy-dm.copied { background:#10b981; color:#fff; border-color:#10b981; }
+  .btn-mark-dm {
+    padding:9px 12px; border-radius:8px; border:1px solid var(--border);
+    cursor:pointer; background:var(--bg); color:var(--text-dim); font-size:13px;
+    transition:all .15s; display:flex; align-items:center; gap:4px;
+  }
+  .btn-mark-dm:hover { background:#10b98122; color:#10b981; border-color:#10b981; }
+  .dm-card.sent .btn-mark-dm { background:#10b98122; color:#10b981; border-color:#10b981; }
+
+  .sent-badge {
+    position:absolute; top:12px; right:12px; font-size:10px; font-weight:600;
+    background:#10b98122; color:#10b981; border:1px solid #10b98144;
+    border-radius:20px; padding:2px 8px; letter-spacing:.5px;
+    text-transform:uppercase;
+  }
+
+  .empty-state { text-align:center; padding:60px 20px; color:var(--text-dim); }
+  .empty-state .icon { font-size:48px; margin-bottom:12px; }
+
+  .search-box {
+    padding:9px 14px; border-radius:8px; border:1px solid var(--border);
+    background:var(--bg); color:var(--text); font-size:13px; width:220px; outline:none;
+  }
+  .search-box:focus { border-color:#E1306C; }
+
+  .progress-bar-wrap { background:var(--border); border-radius:20px; height:6px; margin-bottom:20px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#E1306C,#F77737); border-radius:20px; transition:width .4s; }
+</style>
+
+<div class="ig-header">
+  <div>
+    <h2 style="margin:0;font-size:20px;display:flex;align-items:center;gap:10px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#E1306C" stroke="none"/></svg>
+      Instagram Manual DM Queue
+    </h2>
+    <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Copy message → open profile → send DM → mark done</div>
+  </div>
+  <div class="ig-stats">
+    <div class="ig-stat"><div class="num" id="stat-total">{{ leads|length }}</div><div class="lbl">Total</div></div>
+    <div class="ig-stat"><div class="num" id="stat-pending" style="color:var(--accent)">{{ leads|selectattr('ig_dm_sent','equalto',0)|list|length }}</div><div class="lbl">Pending</div></div>
+    <div class="ig-stat"><div class="num" id="stat-done" style="color:#10b981">{{ leads|selectattr('ig_dm_sent','equalto',1)|list|length }}</div><div class="lbl">Done</div></div>
+  </div>
+</div>
+
+<!-- Progress bar -->
+{% set total = leads|length %}
+{% set done = leads|selectattr('ig_dm_sent','equalto',1)|list|length %}
+{% if total > 0 %}
+<div class="progress-bar-wrap" title="{{ done }}/{{ total }} DMd">
+  <div class="progress-bar-fill" style="width:{{ (done/total*100)|round|int }}%"></div>
+</div>
+{% endif %}
+
+<!-- Controls -->
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap;">
+  <input type="text" id="ig-search" class="search-box" placeholder="Search name or handle..." oninput="filterCards()">
+  <div class="ig-filters">
+    <button class="ig-filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="ig-filter-btn" onclick="setFilter('pending',this)">Pending</button>
+    <button class="ig-filter-btn" onclick="setFilter('sent',this)">Done ✓</button>
+    <button class="ig-filter-btn" onclick="setFilter('emailed',this)">Emailed</button>
+    <button class="ig-filter-btn" onclick="setFilter('fresh',this)">Fresh Leads</button>
+  </div>
+</div>
+
+<!-- DM Cards Grid -->
+<div class="dm-grid" id="dm-grid">
+{% for lead in leads %}
+<div class="dm-card {% if lead.ig_dm_sent %}sent{% endif %}"
+     id="card-{{ lead.id }}"
+     data-status="{{ lead.status }}"
+     data-sent="{{ lead.ig_dm_sent }}"
+     data-name="{{ lead.name|lower }}"
+     data-handle="{{ lead.instagram|lower }}">
+
+  {% if lead.ig_dm_sent %}
+  <div class="sent-badge">✓ DMd{% if lead.ig_dm_sent_at %} · {{ lead.ig_dm_sent_at[:10] }}{% endif %}</div>
+  {% endif %}
+
+  <div class="dm-card-top">
+    <div>
+      <div class="dm-biz-name">{{ lead.name }}</div>
+      <div class="dm-category">{{ lead.category }} · {{ lead.status }}</div>
+    </div>
+    <div class="dm-score">{{ lead.lead_score }}</div>
+  </div>
+
+  <a href="https://instagram.com/{{ lead.instagram|replace('@','') }}" target="_blank" style="text-decoration:none;">
+    <div class="ig-handle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#E1306C" stroke="none"/></svg>
+      @{{ lead.instagram|replace('@','') }}
+    </div>
+  </a>
+
+  <div class="dm-preview" id="msg-{{ lead.id }}">{{ lead.dm_message }}</div>
+
+  <div class="dm-actions">
+    <a href="https://instagram.com/{{ lead.instagram|replace('@','') }}" target="_blank" class="btn-ig-open">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Open IG
+    </a>
+    <button class="btn-copy-dm" id="copy-{{ lead.id }}" onclick="copyDM({{ lead.id }}, this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Copy DM
+    </button>
+    <button class="btn-mark-dm" id="mark-{{ lead.id }}" onclick="markDMd({{ lead.id }}, this)" title="Mark as DMd">
+      {% if lead.ig_dm_sent %}✓{% else %}○{% endif %}
+    </button>
+  </div>
+</div>
+{% else %}
+<div class="empty-state" style="grid-column:1/-1;">
+  <div class="icon">📭</div>
+  <div style="font-size:16px;font-weight:600;margin-bottom:6px;">No Instagram leads yet</div>
+  <div style="font-size:13px;">Leads with Instagram handles will appear here automatically.</div>
+</div>
+{% endfor %}
+</div>
+
+<script>
+let currentFilter = 'all';
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.ig-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterCards();
+}
+
+function filterCards() {
+  const query = document.getElementById('ig-search').value.toLowerCase();
+  document.querySelectorAll('.dm-card').forEach(card => {
+    const name = card.dataset.name || '';
+    const handle = card.dataset.handle || '';
+    const status = card.dataset.status || '';
+    const sent = card.dataset.sent === '1';
+
+    let show = true;
+    if (query && !name.includes(query) && !handle.includes(query)) show = false;
+    if (currentFilter === 'pending' && sent) show = false;
+    if (currentFilter === 'sent' && !sent) show = false;
+    if (currentFilter === 'emailed' && !['sent','replied'].includes(status)) show = false;
+    if (currentFilter === 'fresh' && !['new','approved'].includes(status)) show = false;
+
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+function copyDM(id, btn) {
+  const msg = document.getElementById('msg-' + id).innerText;
+  navigator.clipboard.writeText(msg).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function markDMd(id, btn) {
+  const card = document.getElementById('card-' + id);
+  const alreadySent = card.dataset.sent === '1';
+  const newVal = alreadySent ? 0 : 1;
+
+  fetch('/ig-manual/mark-dm', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({business_id: id, sent: newVal})
+  }).then(r => r.json()).then(data => {
+    if (data.ok) {
+      card.dataset.sent = String(newVal);
+      if (newVal === 1) {
+        card.classList.add('sent');
+        btn.textContent = '✓';
+        // Add sent badge
+        let badge = card.querySelector('.sent-badge');
+        if (!badge) {
+          badge = document.createElement('div');
+          badge.className = 'sent-badge';
+          card.appendChild(badge);
+        }
+        badge.textContent = '✓ DMd · ' + new Date().toISOString().slice(0,10);
+      } else {
+        card.classList.remove('sent');
+        btn.textContent = '○';
+        const badge = card.querySelector('.sent-badge');
+        if (badge) badge.remove();
+      }
+      updateCounts();
+    }
+  });
+}
+
+function updateCounts() {
+  const all = document.querySelectorAll('.dm-card');
+  const done = Array.from(all).filter(c => c.dataset.sent === '1').length;
+  const total = all.length;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-pending').textContent = total - done;
+  const fill = document.querySelector('.progress-bar-fill');
+  if (fill && total > 0) fill.style.width = Math.round(done/total*100) + '%';
+}
+</script>
+{% endblock %}

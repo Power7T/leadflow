@@ -1,71 +1,712 @@
 {% extends "base.html" %}
-{% block title %} — Dashboard{% endblock %}
+
+{% block title %} — Dashboard & Autopilot{% endblock %}
 
 {% block content %}
-<h1>Dashboard</h1>
-<p class="subtitle">Your outreach pipeline at a glance.</p>
-
-<div class="cards">
-  <div class="card accent">
-    <div class="label">New Leads</div>
-    <div class="value">{{ stats.new }}</div>
-  </div>
-  <div class="card yellow">
-    <div class="label">Approved</div>
-    <div class="value">{{ stats.approved }}</div>
-  </div>
-  <div class="card blue">
-    <div class="label">Sent</div>
-    <div class="value">{{ stats.sent }}</div>
-  </div>
-  <div class="card accent">
-    <div class="label">Replied</div>
-    <div class="value">{{ stats.replied }}</div>
-  </div>
-  <div class="card">
-    <div class="label">Skipped</div>
-    <div class="value" style="color:var(--text-dim)">{{ stats.skipped }}</div>
+<div class="page-header" style="margin-bottom: 24px;">
+  <div class="page-title">
+    <h1>🚀 Command Center</h1>
+    <p>Your high-level metrics and autopilot outreach engine.</p>
   </div>
 </div>
 
-<div class="form-card" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center">
+<!-- Live Stats Row -->
+<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 16px; margin-bottom: 24px;">
+  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: var(--text);">{{ stats.total_scraped }}</div>
+    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Leads Scraped</div>
+  </div>
+  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: var(--accent);">{{ stats.total_sent }}</div>
+    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Outreach Sent</div>
+  </div>
+  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: var(--purple, #a855f7);">{{ stats.total_followups }}</div>
+    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Follow-ups Sent</div>
+  </div>
+  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: var(--blue);">{{ stats.total_opened }}</div>
+    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Emails Opened</div>
+  </div>
+  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: var(--yellow);">{{ stats.total_clicked }}</div>
+    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Links Clicked</div>
+  </div>
+  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: var(--green, #10b981);">{{ stats.total_demo_opened }}</div>
+    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Demo Opened</div>
+  </div>
+  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+    <div style="font-size: 24px; font-weight: bold; color: #00c896;">{{ stats.total_replied }}</div>
+    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Replies Received</div>
+  </div>
+</div>
+
+
+<!-- Main Grid -->
+<div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 24px;">
+  
+  <!-- Left Side: Status, Trigger & Live Terminal -->
   <div>
-    <div style="font-size:15px;font-weight:600;margin-bottom:6px">Ready to find clients?</div>
-    <div style="color:var(--text-dim);font-size:13px">Search any niche, anywhere in the world. LeadFlow finds businesses, scores their websites, and pulls their contact details automatically.</div>
-  </div>
-  <div style="display:flex;gap:10px;justify-content:flex-end">
-    <a href="/find" class="btn btn-primary">🔍 Find Businesses</a>
-    <a href="/leads" class="btn btn-ghost">📋 Review Leads</a>
-  </div>
-</div>
-
-{% if recent %}
-<div style="margin-top:4px">
-  <div style="font-size:13px;color:var(--text-dim);margin-bottom:14px;font-weight:500">RECENT LEADS</div>
-  <div class="leads-grid">
-    {% for lead in recent %}
-    <div class="lead-card">
-      <div>
-        <div class="lead-name">{{ lead.name }}</div>
-        <div class="lead-meta">{{ lead.city }}{% if lead.country %}, {{ lead.country }}{% endif %} · {{ lead.category }}</div>
-        <div class="tags">
-          {% if lead.email %}<span class="tag tag-green">✉ Email</span>{% endif %}
-          {% if lead.instagram %}<span class="tag tag-blue">📸 @{{ lead.instagram }}</span>{% endif %}
-          {% if lead.google_rating %}<span class="tag tag-dim">★ {{ lead.google_rating }}</span>{% endif %}
-          <span class="tag {% if lead.website_score >= 70 %}tag-green{% elif lead.website_score >= 40 %}tag-yellow{% else %}tag-red{% endif %}">
-            Site {{ lead.website_score }}/100
-          </span>
-          <span class="badge badge-{{ lead.status }}">{{ lead.status }}</span>
+    <!-- Status Card -->
+    <div class="form-card" style="margin-bottom: 24px; border-color: {% if cfg.enabled %}#00c896{% else %}var(--border){% endif %};">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <div>
+          <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+            {% if cfg.enabled %}
+              <span class="pulse-dot green" style="width: 12px; height: 12px;"></span>
+              Autopilot is ACTIVE
+            {% else %}
+              <span class="pulse-dot gray" style="width: 12px; height: 12px;"></span>
+              Autopilot is STOPPED
+            {% endif %}
+          </h2>
+          <p style="color: var(--text-dim); margin-top: 6px; font-size: 13px;">
+            {% if cfg.enabled %}
+              Active 24/7. Lead extraction runs every 10 mins. Auto-sending checks queue every 5 mins and staggers sends to arrive during local business hours in each country.
+            {% else %}
+              Outbox queue processing is paused. Automatic triggers are disabled.
+            {% endif %}
+          </p>
+        </div>
+        
+        <!-- Interactive Toggle Switch -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 13px; font-weight: 500; color: var(--text-dim);">Toggle Status:</span>
+          <button id="toggleBtn" onclick="toggleAutopilot()" class="btn {% if cfg.enabled %}btn-ghost{% else %}btn-primary{% endif %}" style="padding: 8px 16px; min-width: 100px;">
+            {% if cfg.enabled %}⏸ Pause{% else %}▶ Start{% endif %}
+          </button>
         </div>
       </div>
-      <div class="lead-actions">
-        {% if lead.status == 'new' %}
-        <a href="/leads" class="btn btn-ghost" style="font-size:12px">Review</a>
+    </div>
+
+    <!-- Live Terminal / Logs -->
+    <div class="form-card" style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 style="margin: 0;">📟 Live Autopilot Logs</h2>
+        <span style="font-size: 11px; background: rgba(0, 200, 150, 0.1); color: #00c896; padding: 3px 8px; border-radius: 12px; font-weight: 500;">
+          🟢 Streaming Live
+        </span>
+      </div>
+      <div id="terminalLog" style="height: 250px; background: #0c0c0e; border: 1px solid #1f1f24; border-radius: 8px; padding: 12px; font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace; font-size: 12px; line-height: 1.5; color: #a9b1d6; overflow-y: auto; white-space: pre-wrap; word-break: break-all;">
+        Initializing logs...
+      </div>
+    </div>
+
+    <!-- Manual Trigger Center -->
+    <div class="form-card">
+      <h2>⚡ Manual Action Center</h2>
+      <p style="color: var(--text-dim); font-size: 13px; margin-bottom: 18px;">
+        Trigger autopilot tasks immediately without waiting for the background scheduler.
+      </p>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div style="padding: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;">
+          <h3 style="margin:0 0 6px 0; font-size: 14px;">🔍 Lead Finder Scraper</h3>
+          <p style="font-size:11px; color:var(--text-dim); margin-bottom:12px;">Rotate niche/location lists to scrape new leads.</p>
+          <button onclick="triggerJob('find', this)" class="btn btn-primary btn-sm" style="width:100%">Run Lead Finder Now</button>
+        </div>
+        
+        <div style="padding: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;">
+          <h3 style="margin:0 0 6px 0; font-size: 14px;">📨 Auto-Send Outreach</h3>
+          <p style="font-size:11px; color:var(--text-dim); margin-bottom:12px;">Deploy custom previews and drafts to leads with score >= 80.</p>
+          <button onclick="triggerJob('send_leads', this)" class="btn btn-primary btn-sm" style="width:100%">Auto-Send Pending Leads</button>
+        </div>
+ 
+        <div style="padding: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;">
+          <h3 style="margin:0 0 6px 0; font-size: 14px;">🔁 Auto-Send Followups</h3>
+          <p style="font-size:11px; color:var(--text-dim); margin-bottom:12px;">Dispatch all follow-ups that are scheduled and pending.</p>
+          <button onclick="triggerJob('send_followups', this)" class="btn btn-primary btn-sm" style="width:100%">Dispatch Follow-ups</button>
+        </div>
+ 
+        <div style="padding: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;">
+          <h3 style="margin:0 0 6px 0; font-size: 14px;">📥 Inbox Reply & Opt-Out Sync</h3>
+          <p style="font-size:11px; color:var(--text-dim); margin-bottom:12px;">Sync your Gmail inbox for replies and stop commands.</p>
+          <button onclick="triggerJob('check_replies', this)" class="btn btn-primary btn-sm" style="width:100%">Sync Inbox Now</button>
+        </div>
+      </div>
+      
+      <!-- Live Action Log Box -->
+      <div id="triggerStatus" style="margin-top: 16px; padding: 12px; background: #111; border: 1px solid #222; border-radius: 6px; font-family: monospace; font-size: 12px; display: none;"></div>
+    </div>
+  </div>
+ 
+  <!-- Right Side: Stats & Config -->
+  <div>
+    <!-- Daily Limit Stats Card -->
+    {% set limit = cfg.max_auto_send | default(10) %}
+    {% set limit = limit if limit > 0 else 10 %}
+    <div class="form-card" style="margin-bottom: 24px;">
+      <h2>📊 Deliverability & Protection</h2>
+      <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 14px;">
+        Spam filter safeguard: Emails are throttled to a dynamically warmed maximum of {{ limit }} sent cold emails per day.
+      </p>
+      
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; margin-bottom: 6px;">
+          <span>Daily Limit Progress</span>
+          <span style="color: {% if sent_today >= limit %}var(--red){% else %}var(--accent){% endif %}; font-weight:600;">{{ sent_today }} / {{ limit }} sent</span>
+        </div>
+        <div class="bp-track" style="height: 8px;">
+          <div class="bp-fill" style="width: {{ [ (sent_today / limit * 100), 100 ] | min }}%; background: {% if sent_today >= limit %}var(--red){% else %}#00c896{% endif %};"></div>
+        </div>
+      </div>
+      
+      <div style="font-size:11px; color: var(--text-dim); line-height: 1.4; background: var(--surface2); padding: 8px 12px; border-radius: 6px; margin-top: 14px;">
+        ℹ️ <strong>Spam Protection:</strong> Once {{ limit }} cold emails are dispatched in a single calendar day, background runs will automatically sleep until tomorrow to preserve your domain health.
+      </div>
+    </div>
+
+    <!-- Next in Queue / Timers -->
+    <div class="form-card" style="margin-bottom: 24px;">
+      <h2>⏳ Upcoming Outreach Schedule</h2>
+      <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 14px;">
+        Queue of leads pending initial outreach or automated follow-ups. Delays are added to simulate human behavior.
+      </p>
+
+      {% if stuck_approved_count and stuck_approved_count > 0 %}
+      <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 16px;">
+        <strong>⚠️ Stuck Leads:</strong> You have {{ stuck_approved_count }} lead(s) in "approved" status with no email address. They will not be sent.
+      </div>
+      {% endif %}
+
+      {% if total_pending_followups and total_pending_followups > 0 %}
+      <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); color: #fbbf24; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 16px;">
+        <strong>⏳ Pending Follow-ups:</strong> {{ total_pending_followups }} follow-up(s) waiting in queue.
+      </div>
+      {% endif %}
+
+      <div style="margin-bottom: 16px;">
+        <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Initial Cold Emails (Next 5)</div>
+        {% if pending_initials %}
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+          {% for p in pending_initials %}
+            <div style="background: var(--surface2); padding: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>{{ p.name }}</strong> ({{ p.email }})<br>
+                <span style="color:var(--text-dim); font-size:11px;">Via: {{ p.assigned_sender_email or "Auto-assigned at send" }}</span>
+              </div>
+              <div style="color: var(--accent); font-weight: 600;">
+                {{ p.scheduled_at }}
+              </div>
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <div style="color: var(--text-dim); font-size: 12px; font-style: italic;">No pending initial emails.</div>
+        {% endif %}
+      </div>
+
+      <div>
+        <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Auto Follow-ups (Next 5)</div>
+        {% if pending_followups %}
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+          {% for f in pending_followups %}
+            <div style="background: var(--surface2); padding: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>{{ f.name }}</strong> ({{ f.email }})<br>
+                <span style="color:var(--text-dim); font-size:11px;">Via: {{ f.assigned_sender_email or "Auto-assigned at send" }}</span>
+              </div>
+              <div style="color: #fbbf24; font-weight: 600;">
+                {{ f.scheduled_for }}
+              </div>
+            </div>
+          {% endfor %}
+          </div>
+        {% else %}
+          <div style="color: var(--text-dim); font-size: 12px; font-style: italic;">No pending follow-ups scheduled.</div>
         {% endif %}
       </div>
     </div>
-    {% endfor %}
+
+    <!-- Active Scheduler Config -->
+    <div class="form-card">
+      <h2>⚙️ Active Search Rotation</h2>
+      <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 14px;">
+        Your daily finder searches these parameters:
+      </p>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+          <span style="color: var(--text-dim);">Target Niches</span>
+          <span style="font-weight: 500;">{{ cfg.niches | default('[]') }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+          <span style="color: var(--text-dim);">Target Cities</span>
+          <span style="font-weight: 500;">{{ cfg.locations | default('[]') }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+          <span style="color: var(--text-dim);">Scrape Limit</span>
+          <span style="font-weight: 500;">{{ cfg.max_per_run | default(20) }} leads/run</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+          <span style="color: var(--text-dim);">Max Site Score</span>
+          <span style="font-weight: 500;">{{ cfg.max_score | default(70) }}/100</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding-bottom: 6px;">
+          <span style="color: var(--text-dim);">Data Source</span>
+          <span style="font-weight: 500; text-transform: capitalize;">{{ cfg.source | default('google_maps') | replace('_', ' ') }}</span>
+        </div>
+      </div>
+      
+      <div style="margin-top: 14px;">
+        <a href="/find" class="btn btn-ghost btn-sm" style="width: 100%; text-align: center;">⚙️ Configure Rotation</a>
+      </div>
+    </div>
   </div>
 </div>
-{% endif %}
+
+<!-- Tabs Row: Sent Outreach Feed vs fresh leads inventory -->
+<div class="form-card" style="margin-bottom: 24px; padding: 20px;">
+  <div style="display: flex; border-bottom: 1px solid var(--border); margin-bottom: 16px; gap: 20px;">
+    <button onclick="switchTab('sentTab', this)" class="tab-btn active" style="font-size: 15px; font-weight: 600; padding-bottom: 10px; background: none; border: none; color: var(--accent); cursor: pointer; border-bottom: 2px solid var(--accent); font-family: inherit;">
+      📨 Outgoing Cold Outreach Feed (Sent)
+    </button>
+    <button onclick="switchTab('foundTab', this)" class="tab-btn" style="font-size: 15px; font-weight: 600; padding-bottom: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-family: inherit;">
+      🔍 Fresh Autopilot Inventory (Found)
+    </button>
+  </div>
+
+  <style>
+  /* Filter chip */
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; font-size: 10px; font-weight: 500; border-radius: 12px;
+    border: 1px solid var(--border); color: var(--text-dim);
+    cursor: pointer; transition: all .15s; user-select: none;
+    margin-bottom: 2px;
+  }
+  .filter-chip input { display: none; }
+  .filter-chip:hover { border-color: var(--accent); color: var(--text); }
+  .filter-chip.active { border-color: var(--accent); background: rgba(0,242,254,.1); color: var(--accent); }
+  .filter-chip.active::before { content: '✓ '; }
+  </style>
+
+  <!-- Filters Bar -->
+  <div style="padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleAutopilotFilters()">
+      <span style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-dim); display:flex; align-items:center; gap:4px">
+        ⚙️ Filter Feed & Inventory
+      </span>
+      <span id="apFiltersToggleIcon" style="font-size:10px; color:var(--text-dim)">[+] Expand Filters</span>
+    </div>
+    
+    <div id="autopilotFiltersPanel" style="display:none; margin-top:10px; flex-direction:column; gap:10px;">
+      <!-- Sent Feed Filters (only visible when sentTab is active) -->
+      <div id="sentFiltersGroup" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Sent Engagement</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <label class="filter-chip" id="ap-chip-opened">
+            <input type="checkbox" id="ap-filter-opened"> 👁️ Opened Email
+          </label>
+          <label class="filter-chip" id="ap-chip-clicked">
+            <input type="checkbox" id="ap-filter-clicked"> 🔗 Clicked Link
+          </label>
+          <label class="filter-chip" id="ap-chip-replied">
+            <input type="checkbox" id="ap-filter-replied"> 💬 Replied
+          </label>
+          <label class="filter-chip" id="ap-chip-demo">
+            <input type="checkbox" id="ap-filter-demo"> 🌐 Demo URL Sent
+          </label>
+        </div>
+      </div>
+
+      <!-- Found Inventory Filters (only visible when foundTab is active) -->
+      <div id="foundFiltersGroup" style="display:none; flex-direction:column; gap:8px;">
+        <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase; font-weight:600;">Inventory Properties</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <label class="filter-chip" id="ap-chip-new">
+            <input type="checkbox" id="ap-filter-new"> Status: New
+          </label>
+          <label class="filter-chip" id="ap-chip-approved">
+            <input type="checkbox" id="ap-filter-approved"> Status: Approved
+          </label>
+          <label class="filter-chip" id="ap-chip-has-email">
+            <input type="checkbox" id="ap-filter-has-email"> Has Email
+          </label>
+          <label class="filter-chip" id="ap-chip-has-ig">
+            <input type="checkbox" id="ap-filter-has-ig"> Has Instagram
+          </label>
+        </div>
+      </div>
+
+      <!-- Niche dropdown (applies to both) -->
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <div style="flex:1; min-width: 150px;">
+          <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px; font-weight:600;">Niche Filter</div>
+          <select id="ap-filter-niche" onchange="applyAutopilotFilters()" style="width:100%; font-size:11px; padding:4px; border-radius:4px; border:1px solid var(--border); background:var(--bg); color:var(--text)">
+            <option value="all">All Niches</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="resetAutopilotFilters()" style="margin-top:14px; font-size:11px; padding:6px 12px; height:24px;">Clear Filters</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Sent Tab -->
+  <div id="sentTab" class="tab-content">
+    {% if not recent_sent %}
+      <div style="text-align: center; padding: 40px; color: var(--text-dim);">
+        <p style="font-size: 32px; margin: 0 0 10px 0;">📨</p>
+        <p style="margin: 0; font-size: 14px;">No automated emails sent yet. Trigger the Auto-Send Outreach job to start.</p>
+      </div>
+    {% else %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border); color: var(--text-dim);">
+              <th style="padding: 10px 8px;">Business Name</th>
+              <th style="padding: 10px 8px;">Niche</th>
+              <th style="padding: 10px 8px;">Contact Email</th>
+              <th style="padding: 10px 8px;">Sent Time</th>
+              <th style="padding: 10px 8px; text-align: center;">Tracking</th>
+              <th style="padding: 10px 8px; text-align: right;">Demo Previews</th>
+<th style="padding: 10px 8px; text-align: right;">Demo Clicks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in recent_sent %}
+              <tr class="sent-row" data-name="{{ s.name }}" data-category="{{ s.category }}" data-email="{{ s.email }}" data-opened="{{ s.opened }}" data-clicked="{{ s.clicked }}" data-replied="{{ s.replied }}" data-demo="{% if s.demo_tunnel_url %}1{% else %}0{% endif %}" style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <td style="padding: 12px 8px; font-weight: 600;">{{ s.name }}</td>
+                <td style="padding: 12px 8px; color: var(--text-dim); text-transform: capitalize;">{{ s.category }}</td>
+                <td style="padding: 12px 8px;"><span class="tag tag-green">✉ {{ s.email }}</span></td>
+                <td style="padding: 12px 8px; font-size: 11px; color: var(--text-dim);">{{ (s.sent_at or '')[:16].replace('T',' ') }}</td>
+                <td style="padding: 12px 8px; text-align: center;">
+                  <div style="display: flex; gap: 4px; justify-content: center;">
+                    {% if s.replied %}
+                      <span style="font-size:10px; background: rgba(0, 200, 150, 0.1); color: #00c896; padding: 2px 6px; border-radius: 4px; font-weight: bold;">💬 Replied</span>
+                    {% elif s.clicked %}
+                      <span style="font-size:10px; background: rgba(255, 200, 0, 0.1); color: var(--yellow); padding: 2px 6px; border-radius: 4px; font-weight: bold;">🔗 Clicked</span>
+                    {% elif s.opened %}
+                      <span style="font-size:10px; background: rgba(0, 242, 254, 0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; font-weight: bold;">👁 Opened</span>
+                    {% else %}
+                      <span style="font-size:10px; background: rgba(255,255,255,0.05); color: var(--text-dim); padding: 2px 6px; border-radius: 4px;">Delivered</span>
+                    {% endif %}
+                  </div>
+                </td>
+                <td style="padding: 12px 8px; text-align: right;">
+                  {% if s.demo_tunnel_url %}
+                    <a href="{{ s.demo_tunnel_url }}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 11px; padding: 4px 8px; text-decoration: none;">View Site ↗</a>
+                  {% else %}
+                    <span style="color: var(--text-dim); font-size: 11px;">Audit Report</span>
+                  {% endif %}
+                </td>
+                <td style="padding: 12px 8px; text-align: right;">
+                  {{ s.clicked }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Found Tab -->
+  <div id="foundTab" class="tab-content" style="display: none;">
+    {% if not recent_found %}
+      <div style="text-align: center; padding: 40px; color: var(--text-dim);">
+        <p style="font-size: 32px; margin: 0 0 10px 0;">🔍</p>
+        <p style="margin: 0; font-size: 14px;">No fresh leads in the database yet. Trigger the Lead Finder Scraper to search.</p>
+      </div>
+    {% else %}
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border); color: var(--text-dim);">
+              <th style="padding: 10px 8px;">Business Name</th>
+              <th style="padding: 10px 8px;">Niche</th>
+              <th style="padding: 10px 8px;">Status</th>
+              <th style="padding: 10px 8px; text-align: center;">Prospect Score</th>
+              <th style="padding: 10px 8px;">Available Channels</th>
+              <th style="padding: 10px 8px; text-align: right;">Found Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in recent_found %}
+              <tr class="found-row" data-name="{{ f.name }}" data-category="{{ f.category }}" data-email="{{ f.email }}" data-instagram="{{ f.instagram }}" data-score="{{ f.lead_score }}" data-status="{{ f.status }}" style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <td style="padding: 12px 8px; font-weight: 600;">{{ f.name }}</td>
+                <td style="padding: 12px 8px; color: var(--text-dim); text-transform: capitalize;">{{ f.category }}</td>
+                <td style="padding: 12px 8px;"><span class="badge badge-{{ f.status }}" style="font-size: 10px; padding: 2px 6px;">{{ f.status }}</span></td>
+                <td style="padding: 12px 8px; text-align: center; font-weight: bold; color: var(--accent);">{{ f.lead_score }}pt</td>
+                <td style="padding: 12px 8px;">
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    {% if f.email %}
+                      <span style="font-size: 10px; background: rgba(0, 200, 150, 0.08); color: #00c896; border: 1px solid rgba(0, 200, 150, 0.2); padding: 1px 5px; border-radius: 3px;">Email</span>
+                    {% endif %}
+                    {% if f.instagram %}
+                      <span style="font-size: 10px; background: rgba(0, 150, 255, 0.08); color: var(--blue); border: 1px solid rgba(0, 150, 255, 0.2); padding: 1px 5px; border-radius: 3px;">Instagram</span>
+                    {% endif %}
+                    {% if not f.email and not f.instagram %}
+                      <span style="color: var(--text-dim); font-size: 11px;">—</span>
+                    {% endif %}
+                  </div>
+                </td>
+                <td style="padding: 12px 8px; text-align: right; font-size: 11px; color: var(--text-dim);">{{ f.found_at[:16].replace('T',' ') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Tab switcher
+function switchTab(tabId, btn) {
+  // Hide all contents
+  document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+  // Show target content
+  document.getElementById(tabId).style.display = 'block';
+  
+  // Show correct filters group
+  const sentFilters = document.getElementById('sentFiltersGroup');
+  const foundFilters = document.getElementById('foundFiltersGroup');
+  if (sentFilters && foundFilters) {
+    if (tabId === 'sentTab') {
+      sentFilters.style.display = 'flex';
+      foundFilters.style.display = 'none';
+    } else {
+      sentFilters.style.display = 'none';
+      foundFilters.style.display = 'flex';
+    }
+  }
+
+  // Reset all buttons styling
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.style.color = 'var(--text-dim)';
+    b.style.borderBottom = 'none';
+    b.classList.remove('active');
+  });
+  
+  // Set current button styling
+  btn.style.color = 'var(--accent)';
+  btn.style.borderBottom = '2px solid var(--accent)';
+  btn.classList.add('active');
+
+  // Re-apply filters for the active tab
+  applyAutopilotFilters();
+}
+
+// Log streaming
+async function fetchLogs() {
+  try {
+    const res = await fetch('/autopilot/logs');
+    const data = await res.json();
+    const term = document.getElementById('terminalLog');
+    if (data.logs) {
+      const isAtBottom = term.scrollHeight - term.clientHeight <= term.scrollTop + 10;
+      
+      // Escape HTML
+      const escaped = data.logs
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+      
+      const lines = escaped.split('\n');
+      const coloredLines = lines.map(line => {
+        let style = "";
+        const lower = line.toLowerCase();
+        if (line.includes('✅') || lower.includes('success') || lower.includes('job succeeded')) {
+          style = "color: #00c896;"; // Green
+        } else if (line.includes('✗') || lower.includes('error') || lower.includes('failed') || lower.includes('exception')) {
+          style = "color: #ff4d4d;"; // Red
+        } else if (lower.includes('skip') || lower.includes('skipped')) {
+          style = "color: var(--text-dim); opacity: 0.65;"; // Gray/dim
+        } else if (line.includes('[ai_writer]') || lower.includes('ai_writer')) {
+          style = "color: #00f2fe;"; // Accent/cyan
+        } else if (lower.includes('warning') || lower.includes('warn')) {
+          style = "color: #ffc400;"; // Yellow
+        } else if (line.includes('[INFO]') || lower.includes('info:')) {
+          style = "color: #a9b1d6; opacity: 0.85;";
+        }
+        return style ? `<span style="${style}">${line}</span>` : `<span>${line}</span>`;
+      });
+
+      term.innerHTML = coloredLines.join('\n');
+      if (isAtBottom) {
+        term.scrollTop = term.scrollHeight;
+      }
+    }
+  } catch (e) {
+    console.error("Failed to fetch autopilot logs", e);
+  }
+}
+
+// Poll logs every 3 seconds
+setInterval(fetchLogs, 3000);
+fetchLogs(); // initial load
+
+async function toggleAutopilot() {
+  const isEnabled = document.getElementById('toggleBtn').textContent.includes('Pause');
+  const btn = document.getElementById('toggleBtn');
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch('/autopilot/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: !isEnabled })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.reload();
+    }
+  } catch (e) {
+    alert('Failed to update autopilot status');
+    btn.disabled = false;
+  }
+}
+
+async function triggerJob(jobId, element) {
+  const statusBox = document.getElementById('triggerStatus');
+  const originalText = element.textContent;
+  element.disabled = true;
+  element.textContent = 'Triggering...';
+  
+  statusBox.style.display = 'block';
+  statusBox.style.color = '#fff';
+  statusBox.textContent = `-> Requesting background trigger for: ${originalText}...`;
+  
+  try {
+    const res = await fetch(`/autopilot/trigger/${jobId}`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      statusBox.style.color = '#00c896';
+      statusBox.textContent = `✓ SUCCESS: ${data.message}\n(Run output is handled in background scheduler logs).`;
+      setTimeout(fetchLogs, 1000); // fetch logs soon to show progress
+    } else {
+      statusBox.style.color = '#ff4d4d';
+      statusBox.textContent = `✗ FAILED: ${data.error}`;
+    }
+  } catch (e) {
+    statusBox.style.color = '#ff4d4d';
+    statusBox.textContent = `✗ REQUEST ERROR: Could not reach leadflow backend.`;
+  }
+  
+  setTimeout(() => {
+    element.disabled = false;
+    element.textContent = originalText;
+  }, 3000);
+}
+
+// --- Autopilot Client-Side Filters ---
+
+function applyAutopilotFilters() {
+  const activeTab = document.querySelector('.tab-btn.active')?.getAttribute('onclick').includes('sentTab') ? 'sent' : 'found';
+  const nicheVal = document.getElementById('ap-filter-niche')?.value || 'all';
+  
+  if (activeTab === 'sent') {
+    const filterOpened = document.getElementById('ap-filter-opened')?.checked;
+    const filterClicked = document.getElementById('ap-filter-clicked')?.checked;
+    const filterReplied = document.getElementById('ap-filter-replied')?.checked;
+    const filterDemo = document.getElementById('ap-filter-demo')?.checked;
+    
+    document.querySelectorAll('.sent-row').forEach(row => {
+      const opened = row.dataset.opened === '1' || row.dataset.opened === 'True';
+      const clicked = row.dataset.clicked === '1' || row.dataset.clicked === 'True';
+      const replied = row.dataset.replied === '1' || row.dataset.replied === 'True';
+      const hasDemo = row.dataset.demo === '1';
+      const category = row.dataset.category || '';
+      
+      let match = true;
+      if (filterOpened && !opened) match = false;
+      if (filterClicked && !clicked) match = false;
+      if (filterReplied && !replied) match = false;
+      if (filterDemo && !hasDemo) match = false;
+      if (nicheVal !== 'all' && category !== nicheVal) match = false;
+      
+      row.style.display = match ? '' : 'none';
+    });
+  } else {
+    const filterNew = document.getElementById('ap-filter-new')?.checked;
+    const filterApproved = document.getElementById('ap-filter-approved')?.checked;
+    const filterHasEmail = document.getElementById('ap-filter-has-email')?.checked;
+    const filterHasIg = document.getElementById('ap-filter-has-ig')?.checked;
+    
+    document.querySelectorAll('.found-row').forEach(row => {
+      const status = row.dataset.status || '';
+      const email = row.dataset.email || '';
+      const instagram = row.dataset.instagram || '';
+      const category = row.dataset.category || '';
+      
+      let match = true;
+      if (filterNew && status !== 'new') match = false;
+      if (filterApproved && status !== 'approved') match = false;
+      if (filterHasEmail && !email) match = false;
+      if (filterHasIg && !instagram) match = false;
+      if (nicheVal !== 'all' && category !== nicheVal) match = false;
+      
+      row.style.display = match ? '' : 'none';
+    });
+  }
+}
+
+function populateAutopilotDropdown() {
+  const niches = new Set();
+  document.querySelectorAll('.sent-row, .found-row').forEach(row => {
+    const cat = row.dataset.category;
+    if (cat) niches.add(cat.trim());
+  });
+  
+  const nicheSelect = document.getElementById('ap-filter-niche');
+  if (nicheSelect) {
+    // Clear dynamic options first (keep 'All Niches')
+    nicheSelect.innerHTML = '<option value="all">All Niches</option>';
+    [...niches].sort().forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = n.charAt(0).toUpperCase() + n.slice(1);
+      nicheSelect.appendChild(opt);
+    });
+  }
+}
+
+function toggleAutopilotFilters() {
+  const panel = document.getElementById('autopilotFiltersPanel');
+  const icon = document.getElementById('apFiltersToggleIcon');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'flex';
+    icon.textContent = '[-] Collapse Filters';
+  } else {
+    panel.style.display = 'none';
+    icon.textContent = '[+] Expand Filters';
+  }
+}
+
+function resetAutopilotFilters() {
+  document.querySelectorAll('.filter-chip input').forEach(input => {
+    if (input.id.startsWith('ap-filter-')) {
+      input.checked = false;
+      input.closest('.filter-chip').classList.remove('active');
+    }
+  });
+  const nicheSelect = document.getElementById('ap-filter-niche');
+  if (nicheSelect) nicheSelect.value = 'all';
+  applyAutopilotFilters();
+}
+
+// Bind event listeners
+document.querySelectorAll('.filter-chip input').forEach(input => {
+  if (input.id.startsWith('ap-filter-')) {
+    input.addEventListener('change', () => {
+      const chip = input.closest('.filter-chip');
+      if (input.checked) {
+        chip.classList.add('active');
+      } else {
+        chip.classList.remove('active');
+      }
+      applyAutopilotFilters();
+    });
+  }
+});
+
+// Run dropdown population
+populateAutopilotDropdown();
+</script>
 {% endblock %}

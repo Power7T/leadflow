@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ lead.name }} | Premium Flooring Installation</title>
+<meta name="description" content="{{ lead.name }} — Hardwood, LVP, tile & carpet installation in {{ lead.city or 'your area' }}. Licensed, insured & backed by a 10-year warranty.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080604;--bg2:#100e09;--bg3:#1a1710;--accent:#C8A96E;--accent-glow:rgba(200,169,110,0.22);--accent-dim:rgba(200,169,110,0.1);--tw:#fff;--tg:#b8a88e;--tm:#5a4e38;--r-sm:8px;--r-md:16px;--r-lg:24px;--trans:0.35s cubic-bezier(0.25,1,0.5,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:var(--bg);color:var(--tw);font-family:'Inter',sans-serif;overflow-x:hidden}
+body{overflow-x:hidden;line-height:1.6}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+h1,h2,h3,h4{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;line-height:1.15}
+p{color:var(--tg);font-weight:400}a{text-decoration:none;color:inherit}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 0;transition:background var(--trans)}
+nav.scrolled{background:rgba(8,6,4,0.94);backdrop-filter:blur(20px);border-bottom:1px solid rgba(200,169,110,0.08)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:'Outfit',sans-serif;font-size:1.3rem;font-weight:800;display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#C8A96E,#8b6914);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:0.875rem;color:var(--tg);transition:color var(--trans)}
+.nav-links a:hover{color:var(--tw)}
+.nav-cta{background:var(--accent);color:#000;padding:10px 22px;border-radius:8px;font-weight:700;font-size:0.875rem;transition:opacity var(--trans),transform var(--trans)}
+.nav-cta:hover{opacity:0.88;transform:translateY(-1px)}
+
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-image:linear-gradient(135deg,rgba(8,6,4,0.96) 0%,rgba(8,6,4,0.5) 60%,rgba(8,6,4,0.88) 100%),url('{{ hero_img }}');background-position:center;background-size:cover;background-repeat:no-repeat}
+.hero-content{position:relative;z-index:2;padding-top:100px;padding-bottom:80px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-dim);border:1px solid rgba(200,169,110,0.3);border-radius:50px;padding:8px 18px;font-size:0.8rem;font-weight:600;color:var(--accent);margin-bottom:28px;text-transform:uppercase;letter-spacing:0.06em}
+.hero h1{font-size:clamp(2.8rem,6vw,5rem);font-weight:900;margin-bottom:24px;max-width:780px}
+.hero h1 .hl{background:linear-gradient(135deg,#C8A96E,#e8c888);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:1.15rem;max-width:560px;margin-bottom:40px}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap}
+.btn-primary{background:var(--accent);color:#000;padding:15px 32px;border-radius:10px;font-weight:800;font-size:1rem;font-family:'Outfit',sans-serif;transition:transform var(--trans),box-shadow var(--trans);display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 35px var(--accent-glow)}
+.btn-ghost{border:1px solid rgba(255,255,255,0.15);color:var(--tw);padding:15px 32px;border-radius:10px;font-weight:600;font-size:1rem;transition:border-color var(--trans),background var(--trans)}
+.btn-ghost:hover{border-color:var(--accent);background:rgba(200,169,110,0.06)}
+.hero-stats{display:flex;gap:40px;margin-top:48px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap}
+.hero-stat .num{font-family:'Outfit',sans-serif;font-size:2rem;font-weight:900}
+.hero-stat .lbl{font-size:0.75rem;color:var(--tm);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px}
+
+.trust-bar{background:var(--bg2);border-top:1px solid rgba(200,169,110,0.07);border-bottom:1px solid rgba(200,169,110,0.07);padding:20px 0}
+.trust-items{display:flex;justify-content:center;gap:48px;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:10px;font-size:0.875rem;font-weight:600;color:var(--tg)}
+
+section{padding:100px 0}
+.section-tag{display:inline-block;background:var(--accent-dim);color:var(--accent);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:6px 16px;border-radius:50px;margin-bottom:16px}
+.section-title{font-size:clamp(2rem,4vw,3rem);margin-bottom:16px}
+.section-sub{font-size:1.05rem;max-width:560px;margin-bottom:60px}
+
+#services{background:var(--bg2)}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.svc-card{background:rgba(26,23,16,0.9);border:1px solid rgba(200,169,110,0.08);border-radius:var(--r-md);padding:32px;transition:border-color var(--trans),transform var(--trans),box-shadow var(--trans)}
+.svc-card:hover{border-color:rgba(200,169,110,0.35);transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+.svc-icon{width:52px;height:52px;background:var(--accent-dim);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:20px}
+.svc-card h3{font-size:1.15rem;margin-bottom:10px;font-family:'Outfit',sans-serif;font-weight:700}
+.svc-card p{font-size:0.9rem;line-height:1.7}
+
+/* COST ESTIMATOR */
+#estimator{background:var(--bg)}
+.est-wrap{background:var(--bg2);border:1px solid rgba(200,169,110,0.12);border-radius:var(--r-lg);padding:48px;max-width:860px;margin:0 auto}
+.est-section-title{font-size:1rem;color:var(--tg);font-weight:600;margin-bottom:16px}
+.room-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:36px}
+.room-btn{background:var(--bg3);border:2px solid rgba(200,169,110,0.1);border-radius:var(--r-md);padding:16px 10px;text-align:center;cursor:pointer;transition:all var(--trans)}
+.room-btn:hover{border-color:rgba(200,169,110,0.3);background:rgba(200,169,110,0.05)}
+.room-btn.active{border-color:var(--accent);background:rgba(200,169,110,0.1)}
+.room-icon{display:block;font-size:1.4rem;margin-bottom:6px}
+.room-name{font-size:0.78rem;font-weight:700;font-family:'Outfit',sans-serif;display:block}
+.room-sqft{font-size:0.7rem;color:var(--tm);margin-top:2px;display:block}
+.mat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:36px}
+.mat-btn{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:2px solid rgba(200,169,110,0.1);border-radius:var(--r-md);padding:18px 20px;cursor:pointer;transition:all var(--trans)}
+.mat-btn:hover{border-color:rgba(200,169,110,0.3)}
+.mat-btn.active{border-color:var(--accent);background:rgba(200,169,110,0.1)}
+.mat-left{display:flex;align-items:center;gap:10px}
+.mat-icon{font-size:1.3rem}
+.mat-name{font-size:0.9rem;font-weight:700;font-family:'Outfit',sans-serif}
+.mat-rate{font-size:0.78rem;color:var(--accent);font-weight:700}
+.cost-result{background:linear-gradient(135deg,rgba(200,169,110,0.1),rgba(200,169,110,0.03));border:1px solid rgba(200,169,110,0.25);border-radius:var(--r-md);padding:36px;text-align:center}
+.cost-breakdown{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+.cost-item .val{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:900;color:var(--tw)}
+.cost-item.total .val{font-size:2rem;color:var(--accent)}
+.cost-item .key{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--tm);margin-top:4px}
+.cost-note{font-size:0.8rem;color:var(--tm);margin-bottom:20px}
+
+#about{background:var(--bg2)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.about-img{border-radius:var(--r-lg);overflow:hidden;aspect-ratio:4/3}
+.about-img img{width:100%;height:100%;object-fit:cover}
+.about-stats{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:32px}
+.astat{background:var(--bg3);border:1px solid rgba(200,169,110,0.08);border-radius:var(--r-md);padding:24px;text-align:center}
+.astat .num{font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:900;color:var(--accent)}
+.astat .lbl{font-size:0.78rem;color:var(--tm);text-transform:uppercase;letter-spacing:0.07em;margin-top:4px}
+
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+.testi-card{background:var(--bg2);border:1px solid rgba(255,255,255,0.05);border-radius:var(--r-md);padding:32px;transition:transform var(--trans),border-color var(--trans)}
+.testi-card:hover{transform:translateY(-4px);border-color:rgba(200,169,110,0.2)}
+.stars{color:var(--accent);font-size:1.1rem;margin-bottom:16px}
+.testi-card p{font-size:0.95rem;font-style:italic;line-height:1.8;margin-bottom:20px}
+.testi-card .author{font-weight:700;font-size:0.875rem;color:var(--tw)}
+
+#contact{background:var(--bg2)}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+.contact-info{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.cinfo{display:flex;align-items:flex-start;gap:14px;padding:18px;background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:var(--r-sm)}
+.cinfo-icon{font-size:1.3rem;flex-shrink:0}
+.cinfo-text h4{font-size:0.875rem;font-weight:700;margin-bottom:2px}
+.cinfo-text p{font-size:0.875rem}
+.contact-cta-box{background:linear-gradient(135deg,rgba(200,169,110,0.1),rgba(200,169,110,0.03));border:1px solid rgba(200,169,110,0.2);border-radius:var(--r-lg);padding:48px;text-align:center}
+.contact-cta-box h3{font-size:1.6rem;margin-bottom:12px}
+.contact-cta-box p{margin-bottom:28px}
+
+footer{background:var(--bg);border-top:1px solid rgba(255,255,255,0.04);padding:40px 0;text-align:center}
+footer p{font-size:0.875rem;color:var(--tm)}
+footer a{color:var(--accent)}
+
+.fade-up{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease}
+.fade-up.visible{opacity:1;transform:none}
+
+@media(max-width:768px){
+  .room-grid{grid-template-columns:repeat(2,1fr)}
+  .mat-grid{grid-template-columns:1fr}
+  .cost-breakdown{grid-template-columns:1fr}
+  .about-grid,.contact-grid{grid-template-columns:1fr}
+  .about-img{display:none}
+  .nav-links{display:none}
+  .hero h1{font-size:2.5rem}
+  .est-wrap{padding:24px 16px}
+}
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="container nav-inner">
+    <div class="nav-logo">
+      <div class="logo-icon">🪵</div>
+      <span>{{ lead.name }}</span>
+    </div>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#estimator">Cost Estimator</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a href="#contact" class="nav-cta">Free Quote</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container hero-content">
+    <div class="hero-badge">🪵 Premium Flooring Specialists</div>
+    <h1>Premium Floors. <span class="hl">Lasting Impressions.</span></h1>
+    <p>Hardwood, LVP, tile, and carpet installed with expert precision in {{ lead.city or 'your area' }}. Family-owned, fully licensed, and backed by a 10-year installation warranty.</p>
+    <div class="hero-btns">
+      <a href="#estimator" class="btn-primary">🪵 Estimate My Project</a>
+      <a href="#contact" class="btn-ghost">Get Free Quote →</a>
+    </div>
+    <div class="hero-stats">
+      {% if lead.google_rating %}<div class="hero-stat"><div class="num">{{ lead.google_rating }}★</div><div class="lbl">Google Rating</div></div>{% endif %}
+      {% if lead.google_reviews %}<div class="hero-stat"><div class="num">{{ lead.google_reviews }}</div><div class="lbl">Reviews</div></div>{% endif %}
+      <div class="hero-stat"><div class="num">1,200+</div><div class="lbl">Rooms Installed</div></div>
+      <div class="hero-stat"><div class="num">10yr</div><div class="lbl">Warranty</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="container trust-items">
+    <div class="trust-item"><span>🪵</span><span>1,200+ Rooms Installed</span></div>
+    <div class="trust-item"><span>✅</span><span>Licensed & Insured</span></div>
+    <div class="trust-item"><span>🛡️</span><span>10-Year Warranty</span></div>
+    <div class="trust-item"><span>👨‍👩‍👦</span><span>Family Owned Since 2008</span></div>
+    <div class="trust-item"><span>📋</span><span>Free Estimates</span></div>
+  </div>
+</div>
+
+<section id="services">
+  <div class="container">
+    <span class="section-tag">Services</span>
+    <h2 class="section-title">Flooring Services We Offer</h2>
+    <p class="section-sub">From hardwood refinishing to full commercial installations — we handle every project with precision, speed, and lasting craftsmanship.</p>
+    <div class="services-grid">
+      <div class="svc-card fade-up"><div class="svc-icon">🪵</div><h3>Hardwood Floor Installation</h3><p>Solid and engineered hardwood in every species, stain, and finish. Expert installation with proper subfloor preparation and acclimation for long-lasting results.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">💧</div><h3>Luxury Vinyl Plank (LVP)</h3><p>100% waterproof, durable, and realistic-looking LVP for kitchens, bathrooms, and basements. The most popular flooring choice for modern homes.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🏛️</div><h3>Tile & Stone Installation</h3><p>Porcelain, ceramic, natural stone, and large-format tile installed to perfection. Kitchens, bathrooms, entryways — done with precision leveling and tight grout lines.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🛋️</div><h3>Carpet & Area Rugs</h3><p>Plush, textured, and performance carpets for bedrooms, offices, and basements. Expert power stretching installation for a lifetime of smooth, wrinkle-free results.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">✨</div><h3>Floor Refinishing & Restoration</h3><p>Bring worn, scratched hardwood floors back to life. Sand, stain, and finish to look better than new — at a fraction of replacement cost.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🏢</div><h3>Commercial Flooring</h3><p>High-traffic solutions for offices, retail, restaurants, and multi-unit properties. LVT, commercial carpet, polished concrete, and epoxy floor systems.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="estimator">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:48px">
+      <span class="section-tag">Free Tool</span>
+      <h2 class="section-title">Project Cost Estimator</h2>
+      <p style="max-width:500px;margin:0 auto">Select your room and flooring type to get an instant ballpark cost estimate. Takes 10 seconds.</p>
+    </div>
+    <div class="est-wrap">
+      <div class="est-section-title">Select Your Room</div>
+      <div class="room-grid">
+        <div class="room-btn active" onclick="selectRoom(this,400)" data-sqft="400"><span class="room-icon">🛋️</span><span class="room-name">Living Room</span><span class="room-sqft">~400 sq ft</span></div>
+        <div class="room-btn" onclick="selectRoom(this,250)" data-sqft="250"><span class="room-icon">🛏️</span><span class="room-name">Master Bedroom</span><span class="room-sqft">~250 sq ft</span></div>
+        <div class="room-btn" onclick="selectRoom(this,180)" data-sqft="180"><span class="room-icon">🍳</span><span class="room-name">Kitchen</span><span class="room-sqft">~180 sq ft</span></div>
+        <div class="room-btn" onclick="selectRoom(this,100)" data-sqft="100"><span class="room-icon">🚪</span><span class="room-name">Hallway</span><span class="room-sqft">~100 sq ft</span></div>
+        <div class="room-btn" onclick="selectRoom(this,600)" data-sqft="600"><span class="room-icon">🏠</span><span class="room-name">Basement</span><span class="room-sqft">~600 sq ft</span></div>
+        <div class="room-btn" onclick="selectRoom(this,1400)" data-sqft="1400"><span class="room-icon">🏡</span><span class="room-name">Full Home</span><span class="room-sqft">~1,400 sq ft</span></div>
+      </div>
+      <div class="est-section-title">Select Your Flooring Material</div>
+      <div class="mat-grid">
+        <div class="mat-btn active" onclick="selectMat(this,12)" data-rate="12"><div class="mat-left"><span class="mat-icon">🪵</span><span class="mat-name">Hardwood</span></div><span class="mat-rate">~$12/sq ft</span></div>
+        <div class="mat-btn" onclick="selectMat(this,6)" data-rate="6"><div class="mat-left"><span class="mat-icon">💧</span><span class="mat-name">Luxury Vinyl Plank</span></div><span class="mat-rate">~$6/sq ft</span></div>
+        <div class="mat-btn" onclick="selectMat(this,9)" data-rate="9"><div class="mat-left"><span class="mat-icon">🏛️</span><span class="mat-name">Tile & Stone</span></div><span class="mat-rate">~$9/sq ft</span></div>
+        <div class="mat-btn" onclick="selectMat(this,5)" data-rate="5"><div class="mat-left"><span class="mat-icon">🛋️</span><span class="mat-name">Carpet</span></div><span class="mat-rate">~$5/sq ft</span></div>
+      </div>
+      <div class="cost-result">
+        <div class="cost-breakdown">
+          <div class="cost-item"><div class="val" id="costMaterial">$4,800</div><div class="key">Materials</div></div>
+          <div class="cost-item"><div class="val" id="costLabor">$1,920</div><div class="key">Labor (est.)</div></div>
+          <div class="cost-item total"><div class="val" id="costTotal">$6,720</div><div class="key">Total Estimate</div></div>
+        </div>
+        <div class="cost-note">Estimate for 400 sq ft · Hardwood · Labor ~40% of materials. Final quote after free in-home measurement.</div>
+        <a href="#contact" class="btn-primary">Get My Exact Free Quote →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div>
+        <span class="section-tag">About Us</span>
+        <h2 class="section-title">{{ lead.city or 'Locally' }}-Trusted Flooring Experts</h2>
+        <p style="margin-bottom:16px">{{ lead.name }} has been transforming homes in {{ lead.city or 'our community' }} since 2008. As a family-owned business, we treat every project with the care we'd give our own home — and we back every installation with a 10-year warranty.</p>
+        <p>Our crews are factory-trained, punctual, and meticulous. We leave your home cleaner than we found it and won't call the job done until you're completely happy.</p>
+        <div class="about-stats">
+          <div class="astat"><div class="num">1,200+</div><div class="lbl">Rooms Installed</div></div>
+          <div class="astat"><div class="num">15+</div><div class="lbl">Years Experience</div></div>
+          <div class="astat"><div class="num">10yr</div><div class="lbl">Install Warranty</div></div>
+          <div class="astat"><div class="num">Family</div><div class="lbl">Owned & Operated</div></div>
+        </div>
+      </div>
+      <div class="about-img"><img src="{{ about_img }}" alt="{{ lead.name }}" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" style="background:var(--bg2)">
+  <div class="container">
+    <span class="section-tag">Reviews</span>
+    <h2 class="section-title" style="margin-bottom:48px">Homeowners Love Their New Floors</h2>
+    <div class="testi-grid">
+      <div class="testi-card fade-up">
+        <div class="stars">★★★★★</div>
+        <p>"Had hardwood installed throughout our entire main floor. The crew was on time, respectful of our belongings, and the finish is flawless. Looks like it's been there forever in the best way."</p>
+        <div class="author">— Kim & Robert Ashby</div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="stars">★★★★★</div>
+        <p>"Got LVP installed in our basement — completely waterproof and it looks like real wood. The team was done in one day and cleaned up completely. Absolutely worth it."</p>
+        <div class="author">— Marcus Lee</div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="stars">★★★★★</div>
+        <p>"They refinished our original 1960s oak floors and they look absolutely stunning. I cried when I saw the result. Like getting a brand new home without moving. Incredible work."</p>
+        <div class="author">— Dorothy Simmons</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <span class="section-tag">Contact</span>
+        <h2 class="section-title">Ready for New Floors?</h2>
+        <p style="margin-bottom:32px">Free in-home estimates with no obligation. We measure, advise on materials, and provide a detailed written quote — same day. Serving {{ lead.city or 'your area' }}.</p>
+        <div class="contact-info">
+          {% if lead.phone %}<div class="cinfo"><div class="cinfo-icon">📞</div><div class="cinfo-text"><h4>Phone</h4><p>{{ lead.phone }}</p></div></div>{% endif %}
+          <div class="cinfo"><div class="cinfo-icon">📍</div><div class="cinfo-text"><h4>Address</h4><p>{{ lead.address or lead.city or 'Contact us for showroom location' }}</p></div></div>
+          <div class="cinfo"><div class="cinfo-icon">⏰</div><div class="cinfo-text"><h4>Showroom Hours</h4><p>Mon–Fri 8am–6pm · Sat 9am–4pm</p></div></div>
+        </div>
+      </div>
+      <div class="contact-cta-box">
+        <h3>Get Your Free In-Home Estimate</h3>
+        <p>We'll come to you, measure every room, show you samples, and give you an exact written quote — completely free and with no pressure.</p>
+        {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="btn-primary" style="margin-bottom:16px;display:inline-flex">📞 Call {{ lead.phone }}</a><br>{% endif %}
+        <a href="#estimator" class="btn-ghost" style="display:inline-flex;margin-top:12px">🪵 Try Cost Estimator</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p style="margin-bottom:8px">© 2026 {{ lead.name }}. All rights reserved.</p>
+    <p>Website concept by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a> · Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here →</a></p>
+  </div>
+</footer>
+
+<img src="/api/track.png?bid={{ lead.id }}" style="display:none;width:0;height:0" alt="tracker" />
+
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>50)});
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.12});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+let sqft=400, rate=12, animFrame;
+
+function selectRoom(el,s){
+  document.querySelectorAll('.room-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');sqft=s;updateCost();
+}
+function selectMat(el,r){
+  document.querySelectorAll('.mat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');rate=r;updateCost();
+}
+
+function updateCost(){
+  const mat=sqft*rate;
+  const labor=Math.round(mat*0.4);
+  const total=mat+labor;
+  animCounter('costMaterial',mat,'$');
+  animCounter('costLabor',labor,'$');
+  animCounter('costTotal',total,'$');
+  document.querySelector('.cost-note').textContent=
+    `Estimate for ${sqft.toLocaleString()} sq ft · ${document.querySelector('.mat-btn.active .mat-name').textContent} · Labor included. Final quote after free in-home measurement.`;
+}
+
+function animCounter(id,target,prefix){
+  const el=document.getElementById(id);
+  const start=parseInt(el.textContent.replace(/[^0-9]/g,''))||0;
+  const diff=target-start;
+  const dur=500;
+  const begin=performance.now();
+  function step(now){
+    const t=Math.min((now-begin)/dur,1);
+    const ease=1-Math.pow(1-t,3);
+    el.textContent=prefix+Math.round(start+diff*ease).toLocaleString();
+    if(t<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+</script>
+</body>
+</html>

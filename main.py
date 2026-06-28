@@ -114,7 +114,7 @@ def review_lead(lead: dict) -> str:
     if action == "r":
         update_business_status(lead["id"], "replied")
         console.print("\n[bold green]Marked as replied![/]")
-        return "approved"
+        return "replied"  # fix #9: was "approved" — wrong return confused review loop
 
     # Approve — generate messages
     console.print("\n[dim]Generating personalized messages...[/]")
@@ -149,8 +149,10 @@ def review_lead(lead: dict) -> str:
         if send_now:
             try:
                 subject, body = parse_subject_body(drafts["email"])
-                send_email(lead["email"], subject, body, business_id=lead["id"])
-                mark_sent(lead["id"], "email")
+                import uuid
+                tracking_id = str(uuid.uuid4())
+                send_email(lead["email"], subject, body, tracking_id, lead.get("demo_tunnel_url") or "", business_id=lead["id"])
+                mark_sent(lead["id"], "email", is_autopilot=False, subject_used=subject, tracking_id=tracking_id)
                 console.print("[green]Email sent.[/]")
             except Exception as e:
                 console.print(f"[red]Send failed: {e}[/]")

@@ -440,6 +440,19 @@ section {
     top: 0;
   }
 }
+/* AHA MOMENT */
+.aha-section{padding:5rem 0;position:relative;overflow:hidden;background:#050810}
+.aha-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(180,150,60,0.07) 0%,transparent 70%);pointer-events:none}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.aha-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:.5rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#aaa;padding:9px 22px;border-radius:4px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit;transition:all .25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent,#b8975a);border-color:var(--accent,#b8975a);color:#000;box-shadow:0 4px 16px rgba(184,151,90,0.35)}
+.aha-slider-row{display:flex;flex-direction:column;gap:1rem;width:100%;max-width:380px;margin:0 auto}
+.aha-slider-label{display:flex;justify-content:space-between;font-size:.85rem;color:#aaa;margin-bottom:2px}
+.aha-slider{width:100%;accent-color:var(--accent,#b8975a)}
+.aha-svg-wrap{width:100%;max-width:300px;margin:0 auto}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;min-height:2rem;margin-top:.25rem}
+.aha-sub{font-size:.85rem;color:#718096;margin-top:.25rem}
 </style>
 </head>
 <body>
@@ -447,7 +460,7 @@ section {
 <!-- Demo banner -->
 <div class="demo-banner">
   ✨ FREE demo built for {{ lead.name }} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank">hire me to take it live &rarr;</a>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
   <span class="orig">Built using luxury real estate template</span>
 </div>
 
@@ -472,6 +485,14 @@ section {
   <div class="container">
     <div class="hero-content">
       <h1 class="hero-title">Exclusive Properties. Exquisite Lifestyles.</h1>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
       <p class="hero-desc">Discover outstanding luxury homes and premium estates tailored to your desires with {{ lead.name }}. Exceptional service, absolute discretion.</p>
       
       <!-- Static Search Bar UI -->
@@ -553,6 +574,72 @@ section {
   </div>
 </section>
 
+<!-- Property Value Estimator Aha Moment -->
+<section class="aha-section" id="value-estimator">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Live Estimator</span>
+      <h2 class="section-title">What's Your Property Worth?</h2>
+      <p style="max-width:500px;color:#718096">Adjust the sliders below to see a live value estimate. Our agents specialize in maximizing your return.</p>
+      <div class="aha-slider-row">
+        <div>
+          <div class="aha-slider-label"><span>Bedrooms</span><span id="re-beds">3 bed</span></div>
+          <input type="range" class="aha-slider" id="reBedsSlider" min="1" max="6" value="3">
+        </div>
+        <div>
+          <div class="aha-slider-label"><span>Square Footage</span><span id="re-sqft">1,800 sqft</span></div>
+          <input type="range" class="aha-slider" id="reSqftSlider" min="600" max="6000" step="100" value="1800">
+        </div>
+        <div>
+          <div class="aha-slider-label"><span>Condition</span><span id="re-cond">Good</span></div>
+          <input type="range" class="aha-slider" id="reCondSlider" min="1" max="3" value="2">
+        </div>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg viewBox="0 0 300 180" style="width:100%;height:auto">
+          <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#050810"/><stop offset="100%" stop-color="#0c1428"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="180" fill="url(#skyGrad)" rx="8"/>
+          <!-- Stars -->
+          <circle cx="30" cy="20" r="1" fill="#fff" opacity="0.4"/><circle cx="80" cy="14" r="1.2" fill="#fff" opacity="0.5"/>
+          <circle cx="200" cy="22" r="1" fill="#fff" opacity="0.3"/><circle cx="260" cy="10" r="1.5" fill="#fff" opacity="0.6"/>
+          <!-- Moon -->
+          <circle cx="250" cy="30" r="14" fill="#b8975a" opacity="0.18"/>
+          <circle cx="258" cy="26" r="10" fill="#050810"/>
+          <!-- Ground -->
+          <rect x="0" y="148" width="300" height="32" fill="#0a1020" rx="0"/>
+          <!-- House body -->
+          <rect id="re-house" x="60" y="90" width="180" height="60" fill="#101830" stroke="rgba(184,151,90,0.2)" stroke-width="1" rx="3" style="transition:fill .4s ease"/>
+          <!-- Roof -->
+          <polygon id="re-roof" points="45,90 255,90 150,35" fill="#0d1525" stroke="rgba(184,151,90,0.35)" stroke-width="1.5" style="transition:fill .4s ease,points .4s ease"/>
+          <!-- Chimney -->
+          <rect id="re-chimney" x="190" y="40" width="14" height="25" fill="#0d1525" style="display:none"/>
+          <!-- Door -->
+          <rect x="135" y="115" width="30" height="35" rx="2" fill="#070e1a" stroke="rgba(184,151,90,0.3)" stroke-width="1"/>
+          <circle cx="162" cy="132" r="2" fill="#b8975a"/>
+          <!-- Windows -->
+          <rect id="re-win1" x="75" y="105" width="32" height="24" rx="3" fill="#1a2a1a" stroke="rgba(184,151,90,0.2)" stroke-width="1" style="transition:fill .4s ease"/>
+          <rect id="re-win2" x="193" y="105" width="32" height="24" rx="3" fill="#1a2a1a" stroke="rgba(184,151,90,0.2)" stroke-width="1" style="transition:fill .4s ease"/>
+          <!-- Window crosses -->
+          <line x1="91" y1="105" x2="91" y2="129" stroke="rgba(184,151,90,0.15)" stroke-width="1"/>
+          <line x1="75" y1="117" x2="107" y2="117" stroke="rgba(184,151,90,0.15)" stroke-width="1"/>
+          <line x1="209" y1="105" x2="209" y2="129" stroke="rgba(184,151,90,0.15)" stroke-width="1"/>
+          <line x1="193" y1="117" x2="225" y2="117" stroke="rgba(184,151,90,0.15)" stroke-width="1"/>
+          <!-- Value badge -->
+          <rect x="65" y="155" width="170" height="20" rx="4" fill="rgba(184,151,90,0.12)" stroke="rgba(184,151,90,0.3)" stroke-width="1"/>
+          <text id="re-price" x="150" y="169" text-anchor="middle" fill="#b8975a" font-family="sans-serif" font-size="11" font-weight="700">Est. Value: $420,000</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="re-label">3 Bed · 1,800 sqft · Good Condition</div>
+      <div class="aha-sub">Speak to an agent for your free professional valuation</div>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Get Free Valuation →</a>
+    </div>
+  </div>
+</section>
+
 <!-- Testimonials -->
 <section class="testimonials">
   <div class="container">
@@ -619,12 +706,12 @@ section {
 <footer class="footer">
   <div class="container">
     <p>&copy; 2026 {{ lead.name }}. All rights reserved.</p>
-    <p class="footer-text">Luxury Real Estate website concept designed by <a href="https://www.fiverr.com/sellers/chandangosavi/" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
+    <p class="footer-text">Luxury Real Estate website concept designed by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
   </div>
 </footer>
 
 <!-- Tracking Pixel -->
-<img src="/api/track.png?bid={{ lead.id }}" style="display:none;width:0;height:0" />
+
 
 <script>
 window.addEventListener('scroll', function() {
@@ -635,6 +722,48 @@ window.addEventListener('scroll', function() {
     navbar.classList.remove('scrolled');
   }
 });
+// Property Value Estimator Aha Moment
+(function(){
+  const bedsSlider = document.getElementById('reBedsSlider');
+  const sqftSlider = document.getElementById('reSqftSlider');
+  const condSlider = document.getElementById('reCondSlider');
+  const bedsLabel = document.getElementById('re-beds');
+  const sqftLabel = document.getElementById('re-sqft');
+  const condLabel = document.getElementById('re-cond');
+  const priceEl = document.getElementById('re-price');
+  const mainLabel = document.getElementById('re-label');
+  const houseEl = document.getElementById('re-house');
+  const win1 = document.getElementById('re-win1');
+  const win2 = document.getElementById('re-win2');
+  const roofEl = document.getElementById('re-roof');
+  const chimney = document.getElementById('re-chimney');
+  const condLabels = ['Fair','Good','Excellent'];
+  const condMults = [0.85, 1.0, 1.18];
+  const condFills = ['#101020','#101830','#0a1a2a'];
+  const condWin = ['#1a1a0a','#1a2a1a','#1a2a3a'];
+  const condRoof = ['#0d1020','#0d1525','#0a1a28'];
+
+  function update(){
+    const beds = parseInt(bedsSlider.value);
+    const sqft = parseInt(sqftSlider.value);
+    const cond = parseInt(condSlider.value) - 1;
+    bedsLabel.textContent = beds + ' bed';
+    sqftLabel.textContent = sqft.toLocaleString() + ' sqft';
+    condLabel.textContent = condLabels[cond];
+    const basePrice = sqft * 200 * condMults[cond] + beds * 18000;
+    priceEl.textContent = 'Est. Value: $' + Math.round(basePrice / 1000) * 1000 .toLocaleString();
+    mainLabel.textContent = beds + ' Bed \u00b7 ' + sqft.toLocaleString() + ' sqft \u00b7 ' + condLabels[cond];
+    houseEl.setAttribute('fill', condFills[cond]);
+    win1.setAttribute('fill', condWin[cond]);
+    win2.setAttribute('fill', condWin[cond]);
+    roofEl.setAttribute('fill', condRoof[cond]);
+    chimney.style.display = beds >= 4 ? 'block' : 'none';
+  }
+  bedsSlider.addEventListener('input', update);
+  sqftSlider.addEventListener('input', update);
+  condSlider.addEventListener('input', update);
+  update();
+})();
 </script>
 </body>
 </html>
