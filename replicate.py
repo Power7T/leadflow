@@ -83,6 +83,7 @@ def run_replication():
         "total_replied": conn.execute("SELECT COUNT(*) FROM outreach WHERE replied=1").fetchone()[0],
         "total_opened": conn.execute("SELECT COUNT(*) FROM outreach WHERE opened=1").fetchone()[0],
         "total_clicked": conn.execute("SELECT COUNT(*) FROM outreach WHERE clicked=1").fetchone()[0],
+        "total_demo_opened": conn.execute("SELECT COUNT(*) FROM businesses WHERE demo_viewed=1").fetchone()[0],
     }
     
     pending_init_rows = conn.execute("""
@@ -354,8 +355,8 @@ def run_replication():
         }
       })();
       function lfLogin() {
-        var u = document.getElementById("lf-user").value;
-        var p = document.getElementById("lf-pass").value;
+        var u = document.getElementById("lf-user").value.trim().toLowerCase();
+        var p = document.getElementById("lf-pass").value.trim();
         if ((u === "chandan" && p === "Supergo12@") || (u === "parmeet" && p === "parmeet")) {
           localStorage.setItem("lf_user", u);
           localStorage.setItem("lf_pass", p);
