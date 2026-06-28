@@ -64,3 +64,15 @@ Thumbs.db
 # ── Node (wrangler) ─────────────────────────────────────────────────────────
 node_modules/
 .wrangler/
+
+# Telegram session files
+*.session
+*.session-journal
+
+# Database backups
+*.db.bak*
+leadflow*.bak*
+
+# Scratch one-off scripts
+scratch/
+
