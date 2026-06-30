@@ -24,9 +24,19 @@ LeadFlow is an autonomous, end-to-end outbound sales and lead generation system 
   - **Barbershops & Salons** — Vintage burgundy grooming portfolio
   - **Real Estate** — Navy and gold luxury properties
 - **Central Template Manager:** Enable/disable specific templates dynamically from the dashboard.
-- **GitHub Pages Auto-Deployment:** Deploys generated prospect demo sites to GitHub Pages via the GitHub Contents API and logs the live URL.
+- **Cloudflare Edge Rendering (Zero Latency):** Demos are rendered instantly on the Cloudflare Edge network. Data is synced to Cloudflare KV, meaning demos load globally in milliseconds with zero server load on the local machine.
 
-### 4. Smart Multi-Model Copywriter & Key Rotation Pool
+
+### 4. Cloudflare Worker Telegram Bot & Mobile Outreach
+- **IG DM & WhatsApp Modes:** Swipe through generated outreach directly from your phone on Telegram. Tap buttons to view demo, copy DM text, open WhatsApp, or mark as sent.
+- **Auto-Sync & Tracking:** Click tracking (via NTFY push notifications) and `/replied` command tracking immediately sync to the Cloudflare KV store and propagate down to the local database.
+- **Serverless Webhook:** The Telegram bot runs 100% on Cloudflare Workers, ensuring 99.99% uptime and zero local API polling overhead.
+
+### 5. High-Availability (HA) Firestick + Mac Split-Brain
+- **Offloaded Background Jobs:** Heavy scraping, AI generation, and scheduling run 24/7 on an Android Firestick via Termux to save Mac battery and resources.
+- **Cloudflare KV Sync:** The Mac and Firestick never talk directly; they both sync their state, stats, and queues (like `ig_done_queue` and `wa_done_queue`) via Cloudflare KV, creating a resilient split-brain architecture.
+
+### 6. Smart Multi-Model Copywriter & Key Rotation Pool
 - **5-Tier Fallback Chain:** Directs prompt requests through a self-healing chain of AI services:
   `agy CLI → Gemini REST API → OpenAI → Claude → Offline Templates`
 - **Gemini API Key Rotation Pool:**
@@ -40,17 +50,17 @@ LeadFlow is an autonomous, end-to-end outbound sales and lead generation system 
   - All 6 model slots are configurable from the Settings page without touching code.
 - **Offline Template Fallback:** Provides pre-written copy variants for all outreach contexts (initial, follow-ups, audits, no-website, live follow-ups) if all APIs are offline.
 
-### 5. Interactive Kanban Pipeline & CRM
+### 7. Interactive Kanban Pipeline & CRM
 - **Pipeline Stages:** Manage leads through a visual drag-and-drop pipeline: *New → Generated → Sent → Opened → Demo Viewed → Replied → Approved → Converted*.
 - **Interaction Logging:** Tracks real-time events like email opens, demo site visits, and replies.
 - **Opt-Out Blacklisting:** Automatically detects opt-out replies ("stop", "unsubscribe") via IMAP sync, marks leads as opted-out, cancels all pending follow-ups, and disables all communication controls for that lead.
 
-### 6. Campaign Analytics & A/B Testing
+### 8. Campaign Analytics & A/B Testing
 - **Conversion Funnel:** Visualizes transition rates from discovery to conversion.
 - **A/B Subject Line Performance:** Logs which subject line was used per send and computes per-subject open rates to surface top performers.
 - **Performance Matrices:** Breaks down outreach performance by city and business category.
 
-### 7. Settings & Configuration
+### 9. Settings & Configuration
 - **In-Dashboard `.env` Editor:** All API keys, SMTP credentials, model selections, and URLs are editable directly from the web UI — no terminal required.
 - **Show/Hide Secrets Toggle:** One-click checkbox to reveal or mask all password fields simultaneously.
 - **API Key Validator:** Test each Gemini key individually from the settings page with real-time status badges.
@@ -67,9 +77,9 @@ LeadFlow is an autonomous, end-to-end outbound sales and lead generation system 
 | Frontend | HTML5, Vanilla CSS, JavaScript (ES6) |
 | Automation | APScheduler |
 | AI / LLM | Google Antigravity SDK (`agy` CLI) & Gemini REST API |
-| Email | Gmail SMTP + IMAP (App Password) |
-| Deployment | Cloudflare Tunnel (local), GitHub Pages (demos) |
-| Process Management | macOS LaunchAgent (`com.leadflow.app.plist`) |
+| Outreach | Gmail (SMTP/IMAP) + Telegram UI (IG DM / WA Mode) |
+| Deployment | Cloudflare Workers (Bot & Demos), Cloudflare KV (State Sync) |
+| Process Management | macOS LaunchAgent + Firestick Termux (24/7 Headless) |
 
 ---
 
