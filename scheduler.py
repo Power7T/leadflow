@@ -733,6 +733,37 @@ def is_primary_active() -> bool:
 
 
 @require_internet
+
+def job_process_ig_regens():
+    import os, json, sqlite3, requests
+    from ai_writer import write_instagram_dm
+    from database import get_conn
+    public_url = os.getenv("CF_WORKER_URL", "https://leadflow-relay.chandango12.workers.dev")
+    headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN", "fallback-secret")}
+    try:
+        res = requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_regen_queue"}, timeout=10)
+        q = json.loads(res.json().get("value", "[]") or "[]")
+        if not q: return
+        
+        conn = get_conn()
+        for bid in q:
+            # Generate new draft
+            r = conn.execute("SELECT b.id, b.name, b.category, b.website, b.website_score, b.gap, b.competitor_deficit, b.pitch_type, b.lead_score, con.instagram, b.google_rating, b.google_reviews FROM businesses b JOIN contacts con ON con.business_id = b.id WHERE b.id = ?", (bid,)).fetchone()
+            if not r: continue
+            biz = {"id": r[0], "name": r[1], "category": r[2], "website": r[3], "website_score": r[4], "gap": r[5], "competitor_deficit": r[6], "pitch_type": r[7], "lead_score": r[8], "instagram": r[9], "google_rating": r[10], "google_reviews": r[11]}
+            draft = write_instagram_dm(biz)
+            conn.execute("UPDATE outreach SET draft = ?, status = 'draft' WHERE business_id = ? AND channel = 'instagram'", (draft, bid))
+        conn.commit()
+        
+        # Clear queue
+        requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_regen_queue", "value": "[]"}, timeout=10)
+        
+        # Push new KV instantly
+        job_push_bot_kv()
+        log.info(f"[Scheduler] Processed {len(q)} IG regens")
+    except Exception as e:
+        log.error(f"[Scheduler] Failed to process regens: {e}")
+
 def job_push_bot_kv():
     """
     Push live stats and pending drafts to Cloudflare KV so the Telegram bot webhook
@@ -822,11 +853,29 @@ def job_push_bot_kv():
                 for item in ig_done:
                     bid = item.get("business_id")
                     if bid:
-                        conn.execute("UPDATE businesses SET ig_dm_sent=1, ig_dm_sent_at=datetime('now') WHERE id=?", (bid,))
+                        conn.execute("UPDATE businesses SET ig_dm_sent=1, ig_dm_sent_at=datetime('now'), status='sent' WHERE id=?", (bid,))
+                        conn.execute("UPDATE outreach SET status='sent', sent_at=datetime('now') WHERE business_id=? AND channel='instagram'", (bid,))
                 if ig_done:
                     conn.commit()
                     requests.post(f"{public_url}/api/kv", headers=headers,
                                   json={"key": "bot:ig_done_queue", "value": "[]"}, timeout=10)
+            except Exception:
+                pass
+
+
+        # Process WA done queue
+        wa_done_raw = requests.get(f"{public_url}/api/kv?key=bot:wa_done_queue", headers=headers, timeout=10)
+        if wa_done_raw.status_code == 200:
+            try:
+                wa_done = json.loads(wa_done_raw.json().get("value", "[]") or "[]")
+                for item in wa_done:
+                    bid = item.get("business_id")
+                    if bid:
+                        conn.execute("UPDATE businesses SET wa_dm_sent=1, wa_dm_sent_at=datetime('now'), status='sent' WHERE id=?", (bid,))
+                        conn.execute("UPDATE outreach SET status='sent', sent_at=datetime('now') WHERE business_id=? AND channel='whatsapp'", (bid,))
+                if wa_done:
+                    conn.commit()
+                    requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:wa_done_queue", "value": "[]"}, timeout=10)
             except Exception:
                 pass
 
@@ -847,6 +896,26 @@ def job_push_bot_kv():
         ig_leads = [dict(r) for r in ig_rows]
         requests.post(f"{public_url}/api/kv", headers=headers,
                       json={"key": "bot:ig_leads", "value": json.dumps(ig_leads)}, timeout=10)
+
+        # Push Tier 1 & 2 WA leads
+        wa_rows = conn.execute("""
+            SELECT b.id as business_id, b.name as business_name, b.category, b.city, b.tier,
+                   b.demo_tunnel_url as demo_url, b.phone, b.website,
+                   (SELECT draft FROM outreach WHERE business_id = b.id AND channel = 'whatsapp' AND status = 'draft' LIMIT 1) as ai_draft,
+                   con.phone as phone_number
+            FROM businesses b
+            JOIN contacts con ON con.business_id = b.id
+            WHERE b.tier IN (1,2)
+              AND (b.wa_dm_sent IS NULL OR b.wa_dm_sent = 0)
+              AND b.status NOT IN ('opted_out','skipped','closed')
+              AND EXISTS (SELECT 1 FROM outreach WHERE business_id = b.id AND channel = 'whatsapp' AND status = 'draft')
+            ORDER BY b.tier ASC, b.lead_score DESC
+            LIMIT 100
+        """).fetchall()
+        wa_leads = [dict(r) for r in wa_rows]
+        requests.post(f"{public_url}/api/kv", headers=headers,
+                      json={"key": "bot:wa_leads", "value": json.dumps(wa_leads)}, timeout=10)
+
 
         conn.close()
         log.info("[Bot KV] Pushed stats, %d drafts, %d IG leads to Cloudflare KV", len(drafts), len(ig_leads))
@@ -1704,6 +1773,7 @@ def start_scheduler():
     # Cloudflare Worker event sync: pull tracking events from online worker buffer
     scheduler.add_job(job_sync_worker_events,   "interval", minutes=5,  id="sync_worker_events",   next_run_time=now_utc, replace_existing=True)
     # Bot KV sync: push live stats + drafts to Cloudflare KV for Telegram bot webhook
+    scheduler.add_job(job_process_ig_regens, "interval", minutes=1, id="process_ig_regens", next_run_time=now_utc, replace_existing=True)
     scheduler.add_job(job_push_bot_kv,          "interval", minutes=5,  id="bot_kv_sync",          next_run_time=now_utc, replace_existing=True)
     # Database replication: sync SQLite changes bi-directionally via Cloudflare KV
     scheduler.add_job(job_replicate_database,   "interval", minutes=2,  id="replicate_database",   next_run_time=now_utc, replace_existing=True)
@@ -1728,6 +1798,8 @@ def start_scheduler():
     scheduler.add_job(job_daily_recap, "cron", hour=18, minute=0, id="daily_recap", replace_existing=True)
     # AI IG Draft Generation: Firestick churns these out in the background automatically (runs every 4 hours)
     import generate_ig_drafts
+    import generate_wa_drafts
+    scheduler.add_job(generate_wa_drafts.generate_drafts, "interval", hours=4, id="generate_wa_drafts", next_run_time=now_utc, replace_existing=True)
     scheduler.add_job(generate_ig_drafts.generate_drafts, "interval", hours=4, id="generate_ig_drafts", next_run_time=now_utc, replace_existing=True)
 
     if not scheduler.running:

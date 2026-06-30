@@ -798,12 +798,27 @@ export default {
 
     // ── Demo Rendering Route (GET /demo/:slug) ──────────────────────────────────
     if (url.pathname.startsWith("/demo/")) {
-      const slug = url.pathname.substring(6); // remove "/demo/"
+      let slug = url.pathname.substring(6); // remove "/demo/"
       if (!slug) {
         return new Response("Missing Slug", { status: 400 });
       }
 
-      const rawData = await env.LEADFLOW_KV.get(`demo:data:${slug}`);
+      // If the URL is pretty (e.g., "the-garage-chicago-gym-99"), extract the ID from the end
+      let lookupKey = slug;
+      if (slug.includes('-')) {
+         const parts = slug.split('-');
+         const lastPart = parts[parts.length - 1];
+         if (!isNaN(lastPart)) {
+             lookupKey = lastPart;
+         }
+      }
+
+      let rawData = await env.LEADFLOW_KV.get(`demo:data:${lookupKey}`);
+      // Fallback in case they used the exact slug
+      if (!rawData) {
+          rawData = await env.LEADFLOW_KV.get(`demo:data:${slug}`);
+      }
+      
       if (!rawData) {
         return new Response("Demo Not Found", { status: 404 });
       }
@@ -819,6 +834,19 @@ export default {
       const templateContent = await env.LEADFLOW_KV.get(`demo:template:${templateId}`);
       if (!templateContent) {
         return new Response(`Template ${templateId} Not Found`, { status: 404 });
+      }
+
+      // Check if it's a real user or a link preview bot (Telegram/IG/WA)
+      const utm = url.searchParams.get("utm");
+      if (utm === "ig" || utm === "wa") {
+         const ua = (request.headers.get("user-agent") || "").toLowerCase();
+         const isBot = ua.includes("bot") || ua.includes("telegram") || ua.includes("instagram") || ua.includes("facebook") || ua.includes("whatsapp") || ua.includes("preview") || ua.includes("crawler") || ua.includes("spider") || ua.includes("slurp");
+         
+         if (!isBot) {
+            const bizName = payload.business?.name || "A business";
+            const icon = utm === "wa" ? "📱" : "📸";
+            await notifyNtfy(`${icon} ${utm.toUpperCase()} Prospect Clicked: ${bizName} just opened their custom demo!`, env, `Leadflow ${utm.toUpperCase()} Click`);
+         }
       }
 
       try {
@@ -954,6 +982,23 @@ export default {
       return new Response(JSON.stringify({ success: true, current_leader: device, message: "Leadership claimed/renewed successfully" }), {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
       });
+    }
+
+    // ── Generic KV Write API (/api/kv) ─────────────────────────────────────────
+    // Used by scheduler to push bot:stats, bot:drafts etc. to KV
+    if (url.pathname === "/api/kv" && method === "POST") {
+      const headerToken = request.headers.get("X-Secret-Token") || url.searchParams.get("token");
+      const configuredToken = env.SECRET_TOKEN || SECRET_TOKEN;
+      if (headerToken !== configuredToken) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+      const body = await request.json().catch(() => ({}));
+      const { key, value } = body;
+      if (!key || value === undefined) {
+        return new Response(JSON.stringify({ error: "key and value required" }), { status: 400, headers: { "Content-Type": "application/json" } });
+      }
+      await env.LEADFLOW_KV.put(key, typeof value === "string" ? value : JSON.stringify(value));
+      return new Response(JSON.stringify({ ok: true, key }), { headers: { "Content-Type": "application/json" } });
     }
 
     // ── Database Sync/Replication API ───────────────────────────────────────────
@@ -1123,6 +1168,603 @@ export default {
           "Access-Control-Allow-Origin": "*"
         }
       });
+    }
+
+    // ── 5. Telegram Bot Webhook (/bot/webhook) ───────────────────────────────────
+    // Set the webhook once with:
+    //   curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://leadflow-relay.chandango12.workers.dev/bot/webhook"
+    if (url.pathname === "/bot/webhook" && method === "POST") {
+      const BOT_TOKEN = env.TELEGRAM_BOT_TOKEN;
+      const ALLOWED_USER = parseInt(env.TELEGRAM_USER_ID || "0", 10);
+
+      if (!BOT_TOKEN || !ALLOWED_USER) {
+        return new Response("Bot not configured", { status: 503 });
+      }
+
+      async function tgSend(method, payload) {
+        const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        return r.json();
+      }
+
+      async function sendMenu(chatId, editMsgId = null) {
+        const statsRaw = await env.LEADFLOW_KV.get("bot:stats");
+        const stats = statsRaw ? JSON.parse(statsRaw) : {};
+        const autopilot = stats.autopilot_active ? "🟢 ACTIVE" : "🔴 STOPPED";
+        const text = `⚡️ *LEADFLOW™ ADVANCED CONSOLE*\n━━━━━━━━━━━━━━━━━━\n🟢 *Status:* System Operational\n🤖 *Autopilot:* ${autopilot}\n📡 *Relay:* Cloudflare Edge\n\nSelect an option:`;
+        const reply_markup = { inline_keyboard: [
+          [{ text: "📊 Stats", callback_data: "stats" }, { text: "🚀 Autopilot", callback_data: "trigger" }],
+          [{ text: "📝 Pending Drafts", callback_data: "drafts" }, { text: "⚙️ System Status", callback_data: "status" }],
+          [{ text: "📸 IG DM Mode", callback_data: "ig_dm_0" }, { text: "📱 WA Mode", callback_data: "wa_dm_0" }]
+        ]};
+        if (editMsgId) {
+          return tgSend("editMessageText", { chat_id: chatId, message_id: editMsgId, text, parse_mode: "Markdown", reply_markup });
+        }
+        return tgSend("sendMessage", { chat_id: chatId, text, parse_mode: "Markdown", reply_markup });
+      }
+
+
+      const IG_DM_TEMPLATES = {
+        medspa:        "Hey {{name}}. Came across {{biz}} and love your page. I build digital infrastructure for medspas and put together a custom mockup for you. It's designed specifically to convert your profile traffic into high-ticket bookings. View it here:\n{{demo}}",
+        interiordesign:"Hey {{name}}. Love the portfolio at {{biz}}. I build conversion systems for interior designers and put together a custom mockup for you. It's built to capture more high-value project leads. You can view it here:\n{{demo}}",
+        orthodontist:  "Hey {{name}}. Came across {{biz}}—great practice. I build lead-gen infrastructure for orthodontists and put together a custom mockup for you. It's optimized to drive more consultation requests. View it here:\n{{demo}}",
+        dentist:       "Hey {{name}}. Came across {{biz}} and love what you're doing. I build conversion systems for dental clinics and put together a custom mockup for you. It's designed to bring in more high-ticket patients. Check it out:\n{{demo}}",
+        gym:           "Hey {{name}}. Came across {{biz}}—great facility. I build digital infrastructure for fitness studios and put together a custom mockup for you. It's built specifically to capture leads and drive trial memberships. View it here:\n{{demo}}",
+        restaurant:    "Hey {{name}}. Love what you're doing at {{biz}}. I build conversion-focused sites for hospitality and put together a custom mockup for you. It's designed to streamline reservations and online orders. Check it out:\n{{demo}}",
+        barbershop:    "Hey {{name}}. Came across {{biz}} and love the aesthetic. I build digital infrastructure for premium shops and put together a custom mockup for you. It's designed to drive more walk-ins and bookings. View it here:\n{{demo}}",
+        realestate:    "Hey {{name}}. Came across {{biz}}—great listings. I build conversion infrastructure for top agents and put together a custom mockup for you. It's designed specifically to capture buyer/seller leads. You can view it here:\n{{demo}}",
+        lawyer:        "Hey {{name}}. Came across {{biz}} and respect your practice. I build digital infrastructure for law firms and put together a custom mockup for you. It's designed to build trust and capture more consultation leads. View it here:\n{{demo}}",
+        accountant:    "Hey {{name}}. Came across {{biz}}. I build conversion systems for accounting firms and put together a custom mockup for you. It's designed to capture more high-value B2B leads. View it here:\n{{demo}}",
+        detailing:     "Hey {{name}}. Came across {{biz}} and love your work. I build digital infrastructure for premium detailers and put together a custom mockup for you. It's built to drive more high-ticket bookings. Check it out:\n{{demo}}",
+        remodeler:     "Hey {{name}}. Love the projects at {{biz}}. I build conversion systems for remodelers and put together a custom mockup for you. It's designed to capture more qualified quote requests. View it here:\n{{demo}}",
+        flooring:      "Hey {{name}}. Came across {{biz}}. I build digital infrastructure for contractors and put together a custom mockup for you. It's designed to showcase your work and capture quote requests. View it here:\n{{demo}}",
+        solar:         "Hey {{name}}. Came across {{biz}}—great work. I build conversion systems for solar companies and put together a custom mockup for you. It's optimized to capture exclusive consultation leads. View it here:\n{{demo}}",
+        roofing:       "Hey {{name}}. Came across {{biz}}. I build digital infrastructure for roofers and put together a custom mockup for you. It's designed to capture more high-ticket quote requests. Check it out:\n{{demo}}",
+        chiropractor:  "Hey {{name}}. Came across {{biz}}—great practice. I build conversion systems for chiropractors and put together a custom mockup for you. It's designed to drive more new patient bookings. View it here:\n{{demo}}",
+        default:       "Hey {{name}}. Came across {{biz}} and love what you're doing. I build conversion-focused websites and put together a custom mockup for you. It's designed specifically to capture more leads for your business. View it here:\n{{demo}}"
+      };
+
+      const IG_PRICING = {
+        medspa:        "$800 – $2,000 + $149/mo",
+        interiordesign:"$800 – $2,000 + $149/mo",
+        orthodontist:  "$1,000 – $2,500 + $199/mo",
+        dentist:       "$800 – $2,000 + $149/mo",
+        gym:           "$500 – $1,200 + $99/mo",
+        restaurant:    "$400 – $900 + $79/mo",
+        barbershop:    "$300 – $700 + $59/mo",
+        realestate:    "$500 – $1,500 + $99/mo",
+        lawyer:        "$1,000 – $3,000 + $199/mo",
+        accountant:    "$800 – $2,000 + $149/mo",
+        detailing:     "$300 – $700 + $59/mo",
+        remodeler:     "$500 – $1,200 + $99/mo",
+        flooring:      "$400 – $900 + $79/mo",
+        solar:         "$600 – $1,500 + $99/mo",
+        roofing:       "$500 – $1,200 + $99/mo",
+        chiropractor:  "$500 – $1,000 + $99/mo",
+        default:       "$400 – $1,000 + $79/mo"
+      };
+
+      function getPricing(category) {
+        const cat = (category || "").toLowerCase().replace(/\s+/g, "");
+        for (const [key, val] of Object.entries(IG_PRICING)) {
+          if (cat.includes(key)) return val;
+        }
+        return IG_PRICING.default;
+      }
+
+      function buildDmMessage(biz) {
+        const cat = (biz.category || "").toLowerCase().replace(/\s+/g, "");
+        let tmpl = IG_DM_TEMPLATES.default;
+        for (const [key, val] of Object.entries(IG_DM_TEMPLATES)) {
+          if (cat.includes(key)) { tmpl = val; break; }
+        }
+        
+        let words = (biz.business_name || biz.name || "there").trim().split(/\s+/).filter(w => w.length > 0);
+        let firstName = "there";
+        if (words.length > 0) {
+            let skipWords = ["the", "a", "an", "dr", "dr.", "mr", "mr.", "ms", "ms.", "mrs", "mrs."];
+            let firstWord = words[0];
+            if (skipWords.includes(firstWord.toLowerCase()) && words.length > 1) {
+                firstName = words[1];
+            } else {
+                firstName = firstWord;
+            }
+        }
+        if (firstName !== "there") {
+           firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+        }
+
+        return tmpl
+          .replace(/{{name}}/g, firstName)
+          .replace(/{{biz}}/g, biz.business_name || biz.name || "your business")
+          .replace(/{{demo}}/g, biz.demo_url || "");
+      }
+
+      async function sendIgDm(chatId, msgId, offset = 0) {
+        const leadsRaw = await env.LEADFLOW_KV.get("bot:ig_leads");
+        const leads = leadsRaw ? JSON.parse(leadsRaw) : [];
+        if (!leads.length) {
+          return tgSend("editMessageText", { chat_id: chatId, message_id: msgId,
+            text: "📸 *No Tier 1/2 businesses available for IG DM right now.*\n\nAll done or not yet synced from Firestick.",
+            parse_mode: "Markdown",
+            reply_markup: { inline_keyboard: [[{ text: "🔙 Main Menu", callback_data: "menu" }]] }
+          });
+        }
+
+        const idx = offset % leads.length;
+        const b = leads[idx];
+        const tierBadge  = b.tier === 1 ? "🔥 Tier 1" : "🥈 Tier 2";
+        const pricing    = getPricing(b.category);
+        const bizName    = b.business_name || b.name || "";
+        let igUrl = "";
+        if (b.instagram_handle) {
+          // If we have their exact handle, clean it up and link directly
+          let handle = b.instagram_handle.replace('@', '').replace('https://instagram.com/', '').replace('https://www.instagram.com/', '').split('/')[0];
+          igUrl = `https://www.instagram.com/${handle}`;
+        } else {
+          // Fallback to searching their business name
+          igUrl = `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(bizName)}`;
+        }
+        
+        // Generate a beautiful SEO-friendly link combining their name and ID
+        const slugifiedName = bizName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const demoUrl = b.demo_url || `https://leadflow-relay.chandango12.workers.dev/demo/${slugifiedName ? slugifiedName + '-' : ''}${b.business_id || b.id}`;
+        const prospectDemoUrl = demoUrl.includes('?') ? `${demoUrl}&utm=ig` : `${demoUrl}?utm=ig`;
+        
+        let dmMsg = "";
+        if (b.ai_draft && b.ai_draft.length > 10) {
+          // If the AI generated a hyper-personalized draft, use it (append demo link if missing)
+          dmMsg = b.ai_draft;
+          if (!dmMsg.includes(demoUrl) && !dmMsg.includes(prospectDemoUrl)) {
+             dmMsg += `\n\nDemo: ${prospectDemoUrl}`;
+          } else {
+             // Replace the clean url with the tracked url inside the AI draft
+             dmMsg = dmMsg.replace(demoUrl, prospectDemoUrl);
+          }
+        } else {
+          // Fallback to professional static template
+          dmMsg = buildDmMessage({ ...b, demo_url: prospectDemoUrl });
+        }
+
+        // Card — pricing at top, DM in code block (long-press to copy on mobile)
+        const text = (
+          `📸 <b>IG DM OUTREACH — ${idx+1} of ${leads.length}</b>\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `${tierBadge}  |  📂 <b>${(b.category || "").toUpperCase()}</b>\n` +
+          `🏢 <b>${bizName}</b>\n` +
+          `📍 ${b.city || ""}\n` +
+          `📱 <b>Instagram:</b> <a href="${igUrl}">${igUrl}</a>\n\n` +
+          `💰 <b>Suggested Charge:</b> <code>${pricing}</code>\n\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `💬 <b>DM Message</b> <i>(Tap below to copy instantly)</i>:\n\n` +
+          `<code>${dmMsg}</code>`
+        );
+
+        const reply_markup = { inline_keyboard: [
+          // URL buttons — tap to open directly, no callback needed
+          [
+            { text: "🔗 View Demo",      url: demoUrl }
+          ],
+          [
+            { text: "✅ DM Sent",  callback_data: `ig_done_${b.business_id || b.id}` },
+            { text: "❌ Skip",     callback_data: `ig_skip_${b.business_id || b.id}` },
+            { text: "⏭️ Next",    callback_data: `ig_dm_${idx + 1}` }
+          ],
+          [
+            { text: "🔄 Regenerate", callback_data: `ig_regen_${b.business_id || b.id}_${idx}` },
+            { text: "🔙 Main Menu", callback_data: "menu" }
+          ]
+        ]};
+
+
+        return tgSend("editMessageText", { chat_id: chatId, message_id: msgId,
+          text: text.slice(0, 4000), parse_mode: "HTML", reply_markup });
+      }
+      // ── End IG DM Mode ────────────────────────────────────────────────────────
+
+      
+
+async function sendWaDm(chatId, msgId, offset = 0) {
+        const leadsRaw = await env.LEADFLOW_KV.get("bot:wa_leads");
+        const leads = leadsRaw ? JSON.parse(leadsRaw) : [];
+        if (!leads.length) {
+          return tgSend("editMessageText", { chat_id: chatId, message_id: msgId,
+            text: "📸 *No Tier 1/2 businesses available for WA Mode right now.*\n\nAll done or not yet synced from Firestick.",
+            parse_mode: "Markdown",
+            reply_markup: { inline_keyboard: [[{ text: "🔙 Main Menu", callback_data: "menu" }]] }
+          });
+        }
+
+        const idx = offset % leads.length;
+        const b = leads[idx];
+        const tierBadge  = b.tier === 1 ? "🔥 Tier 1" : "🥈 Tier 2";
+        const pricing    = getPricing(b.category);
+        const bizName    = b.business_name || b.name || "";
+        let igUrl = "";
+        if (b.instagram_handle) {
+          // If we have their exact handle, clean it up and link directly
+          let handle = b.instagram_handle.replace('@', '').replace('https://instagram.com/', '').replace('https://www.instagram.com/', '').split('/')[0];
+          igUrl = `https://www.instagram.com/${handle}`;
+        } else {
+          // Fallback to searching their business name
+          igUrl = `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(bizName)}`;
+        }
+        
+        // Generate a beautiful SEO-friendly link combining their name and ID
+        const slugifiedName = bizName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const demoUrl = b.demo_url || `https://leadflow-relay.chandango12.workers.dev/demo/${slugifiedName ? slugifiedName + '-' : ''}${b.business_id || b.id}`;
+        const prospectDemoUrl = demoUrl.includes('?') ? `${demoUrl}&utm=ig` : `${demoUrl}?utm=ig`;
+        
+        let dmMsg = "";
+        if (b.ai_draft && b.ai_draft.length > 10) {
+          // If the AI generated a hyper-personalized draft, use it (append demo link if missing)
+          dmMsg = b.ai_draft;
+          if (!dmMsg.includes(demoUrl) && !dmMsg.includes(prospectDemoUrl)) {
+             dmMsg += `\n\nDemo: ${prospectDemoUrl}`;
+          } else {
+             // Replace the clean url with the tracked url inside the AI draft
+             dmMsg = dmMsg.replace(demoUrl, prospectDemoUrl);
+          }
+        } else {
+          // Fallback to professional static template
+          dmMsg = buildDmMessage({ ...b, demo_url: prospectDemoUrl });
+        }
+
+        // Card — pricing at top, DM in code block (long-press to copy on mobile)
+        const text = (
+          `📸 <b>WA Mode OUTREACH — ${idx+1} of ${leads.length}</b>\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `${tierBadge}  |  📂 <b>${(b.category || "").toUpperCase()}</b>\n` +
+          `🏢 <b>${bizName}</b>\n` +
+          `📍 ${b.city || ""}\n` +
+          `📱 <b>Instagram:</b> <a href="${igUrl}">${igUrl}</a>\n\n` +
+          `💰 <b>Suggested Charge:</b> <code>${pricing}</code>\n\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `💬 <b>DM Message</b> <i>(Tap below to copy instantly)</i>:\n\n` +
+          `<code>${dmMsg}</code>`
+        );
+
+        const reply_markup = { inline_keyboard: [
+          // URL buttons — tap to open directly, no callback needed
+          [
+            { text: "🔗 View Demo",      url: demoUrl }
+          ],
+          [
+            { text: "✅ WA Sent",  callback_data: `wa_done_${b.business_id || b.id}` },
+            { text: "❌ Skip",     callback_data: `wa_skip_${b.business_id || b.id}` },
+            { text: "⏭️ Next",    callback_data: `wa_dm_${idx + 1}` }
+          ],
+          [
+            { text: "🔄 Regenerate", callback_data: `wa_regen_${b.business_id || b.id}_${idx}` },
+            { text: "💬 Open WhatsApp", url: `https://wa.me/${(b.phone_number || b.phone || "").replace(/[^0-9]/g, '')}` }
+          ],
+          [{ text: "🔙 Main Menu", callback_data: "menu" }]]};
+
+
+        return tgSend("editMessageText", { chat_id: chatId, message_id: msgId,
+          text: text.slice(0, 4000), parse_mode: "HTML", reply_markup });
+      }
+      // ── End WA Mode Mode ────────────────────────────────────────────────────────
+
+      async function sendStats(chatId, msgId) {
+        const statsRaw = await env.LEADFLOW_KV.get("bot:stats");
+        const s = statsRaw ? JSON.parse(statsRaw) : {};
+        const text = (
+          `📊 *LEADFLOW LIVE METRICS*\n━━━━━━━━━━━━━━━━━━\n` +
+          `📥 *New Backlog:*  \`${(s.new||0).toLocaleString()}\` leads\n` +
+          `✅ *Approved:*     \`${(s.approved||0).toLocaleString()}\` leads\n` +
+          `🚀 *Sent:*         \`${(s.sent||0).toLocaleString()}\` emails\n` +
+          `💬 *Replied:*      \`${(s.replied||0).toLocaleString()}\` contacts\n` +
+          `⏭️ *Skipped:*      \`${(s.skipped||0).toLocaleString()}\` leads\n` +
+          `💼 *Closed:*       \`${(s.closed||0).toLocaleString()}\` deals\n` +
+          `🚫 *Opted Out:*    \`${(s.opted_out||0).toLocaleString()}\` leads\n\n` +
+          `🤖 *Autopilot:* \`${s.autopilot_active ? 'ENABLED' : 'DISABLED'}\``
+        );
+        const reply_markup = { inline_keyboard: [[{ text: "🔙 Main Menu", callback_data: "menu" }]] };
+        return tgSend("editMessageText", { chat_id: chatId, message_id: msgId, text, parse_mode: "Markdown", reply_markup });
+      }
+
+      async function sendDrafts(chatId, msgId, offset = 0) {
+        const draftsRaw = await env.LEADFLOW_KV.get("bot:drafts");
+        const drafts = draftsRaw ? JSON.parse(draftsRaw) : [];
+        if (!drafts.length) {
+          return tgSend("editMessageText", { chat_id: chatId, message_id: msgId,
+            text: "📝 *No pending drafts right now.*",
+            parse_mode: "Markdown",
+            reply_markup: { inline_keyboard: [[{ text: "🔙 Main Menu", callback_data: "menu" }]] }
+          });
+        }
+        const idx = offset % drafts.length;
+        const d = drafts[idx];
+        const demoUrl = `https://leadflow-relay.chandango12.workers.dev/demo/${d.slug || d.business_id}`;
+        const text = (
+          `📝 *DRAFT REVIEW (${idx+1}/${drafts.length})*\n━━━━━━━━━━━━━━━━━━\n` +
+          `🏢 *Target:* \`${d.business_name}\` (ID: \`${d.business_id}\`)\n` +
+          `📡 *Channel:* \`${(d.channel||"email").toUpperCase()}\`\n` +
+          `📧 *Recipient:* \`${d.contact_email || "N/A"}\`\n` +
+          `🔗 *Demo:* ${demoUrl}\n\n` +
+          `📨 *Subject:* ${d.subject || "N/A"}\n\n*Body:*\n${(d.body || d.draft || "").slice(0, 800)}`
+        );
+        const reply_markup = { inline_keyboard: [
+          [
+            { text: "✅ Approve Send", callback_data: `approve_${d.draft_id}` },
+            { text: "❌ Skip", callback_data: `skip_${d.business_id}` },
+            { text: "⏭️ Next", callback_data: `drafts_${idx+1}` }
+          ],
+          [{ text: "🔙 Main Menu", callback_data: "menu" }]
+        ]};
+        return tgSend("editMessageText", { chat_id: chatId, message_id: msgId,
+          text: text.slice(0, 4000), parse_mode: "Markdown", reply_markup });
+      }
+
+      async function handleApprove(chatId, msgId, draftId) {
+        // Mark draft as approved in KV queue for Firestick to pick up
+        const queueRaw = await env.LEADFLOW_KV.get("bot:send_queue") || "[]";
+        const queue = JSON.parse(queueRaw);
+        queue.push({ draft_id: parseInt(draftId), approved_at: new Date().toISOString() });
+        await env.LEADFLOW_KV.put("bot:send_queue", JSON.stringify(queue));
+        // Remove from drafts list
+        const draftsRaw = await env.LEADFLOW_KV.get("bot:drafts");
+        const drafts = draftsRaw ? JSON.parse(draftsRaw) : [];
+        const updated = drafts.filter(d => String(d.draft_id) !== String(draftId));
+        await env.LEADFLOW_KV.put("bot:drafts", JSON.stringify(updated));
+        await tgSend("answerCallbackQuery", { callback_query_id: "", text: "✅ Queued for sending!" });
+        return sendDrafts(chatId, msgId, 0);
+      }
+
+      async function handleSkip(chatId, msgId, bid) {
+        // Mark as skipped in KV for Firestick to sync
+        const skipRaw = await env.LEADFLOW_KV.get("bot:skip_queue") || "[]";
+        const skipQueue = JSON.parse(skipRaw);
+        skipQueue.push({ business_id: parseInt(bid), skipped_at: new Date().toISOString() });
+        await env.LEADFLOW_KV.put("bot:skip_queue", JSON.stringify(skipQueue));
+        // Remove from drafts
+        const draftsRaw = await env.LEADFLOW_KV.get("bot:drafts");
+        const drafts = draftsRaw ? JSON.parse(draftsRaw) : [];
+        const updated = drafts.filter(d => String(d.business_id) !== String(bid));
+        await env.LEADFLOW_KV.put("bot:drafts", JSON.stringify(updated));
+        return sendDrafts(chatId, msgId, 0);
+      }
+
+      async function sendStatus(chatId, msgId) {
+        const fsHb = await env.LEADFLOW_KV.get("heartbeat:firestick");
+        const macHb = await env.LEADFLOW_KV.get("heartbeat:mac");
+        const now = Date.now();
+        const fsAge = fsHb ? Math.round((now - parseInt(fsHb)) / 1000) : null;
+        const macAge = macHb ? Math.round((now - parseInt(macHb)) / 1000) : null;
+        const fsStatus = fsAge !== null ? (fsAge < 120 ? `🟢 ONLINE (${fsAge}s ago)` : `🔴 OFFLINE (${fsAge}s ago)`) : "❓ Unknown";
+        const macStatus = macAge !== null ? (macAge < 120 ? `🟢 ONLINE (${macAge}s ago)` : `🔴 OFFLINE (${macAge}s ago)`) : "❓ Unknown";
+        const leaderRaw = await env.LEADFLOW_KV.get("leader:current");
+        const leader = leaderRaw ? JSON.parse(leaderRaw) : {};
+        const text = (
+          `⚙️ *SYSTEM STATUS*\n━━━━━━━━━━━━━━━━━━\n` +
+          `🔥 *Firestick:* ${fsStatus}\n` +
+          `🖥️ *Mac:*       ${macStatus}\n` +
+          `👑 *Active Leader:* \`${leader.device || "unknown"}\`\n` +
+          `🌐 *Cloudflare Worker:* 🟢 ONLINE`
+        );
+        return tgSend("editMessageText", { chat_id: chatId, message_id: msgId,
+          text, parse_mode: "Markdown",
+          reply_markup: { inline_keyboard: [[{ text: "🔙 Main Menu", callback_data: "menu" }]] }
+        });
+      }
+
+      let update;
+      try { update = await request.json(); } catch { return new Response("OK"); }
+
+      // Handle Messages
+      if (update.message) {
+        const msg = update.message;
+        const chatId = msg.chat.id;
+        const userId = msg.from.id;
+        if (userId !== ALLOWED_USER) return new Response("OK");
+
+        const text = msg.text || "";
+
+        if (text === "/start" || text === "/menu") {
+          await sendMenu(chatId);
+        } else if (text.startsWith("/replied ")) {
+          const query = text.replace("/replied ", "").trim();
+          const leadsRaw = await env.LEADFLOW_KV.get("bot:leads_index");
+          const leads = leadsRaw ? JSON.parse(leadsRaw) : [];
+          const match = leads.find(l => l.name && l.name.toLowerCase().includes(query.toLowerCase()));
+          
+          if (!match) {
+            await tgSend("sendMessage", { chat_id: chatId, text: `❌ Could not find any lead matching \`${query}\``, parse_mode: "Markdown" });
+          } else {
+            // Update stats
+            const statsRaw = await env.LEADFLOW_KV.get("bot:stats");
+            const stats = statsRaw ? JSON.parse(statsRaw) : {};
+            stats.replied = (stats.replied || 0) + 1;
+            await env.LEADFLOW_KV.put("bot:stats", JSON.stringify(stats));
+            
+            // Queue for scheduler to sync to SQLite
+            const queueRaw = await env.LEADFLOW_KV.get("bot:replied_queue") || "[]";
+            const queue = JSON.parse(queueRaw);
+            queue.push({ business_id: parseInt(match.id), replied_at: new Date().toISOString() });
+            await env.LEADFLOW_KV.put("bot:replied_queue", JSON.stringify(queue));
+            
+            await tgSend("sendMessage", { chat_id: chatId, text: `✅ *Success!* Marked \`${match.name}\` as Replied!`, parse_mode: "Markdown" });
+          }
+        } else if (text.startsWith("/search ")) {
+          const query = text.replace("/search ", "").trim();
+          const leadsRaw = await env.LEADFLOW_KV.get("bot:leads_index");
+          const leads = leadsRaw ? JSON.parse(leadsRaw) : [];
+          const matches = leads.filter(l => l.name && l.name.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
+          if (!matches.length) {
+            await tgSend("sendMessage", { chat_id: chatId, text: `🔍 No results for \`${query}\``, parse_mode: "Markdown" });
+          } else {
+            let res = `🔍 *Results for '${query}':*\n\n`;
+            for (const l of matches) {
+              res += `• *${l.name}* (ID: ${l.id})\n  Category: ${l.category || "N/A"}\n  Status: \`${l.status}\`\n\n`;
+            }
+            await tgSend("sendMessage", { chat_id: chatId, text: res.slice(0, 4000), parse_mode: "Markdown" });
+          }
+        }
+        return new Response("OK");
+      }
+
+      // Handle Callback Queries (button clicks)
+      if (update.callback_query) {
+        const cb = update.callback_query;
+        const chatId = cb.message.chat.id;
+        const msgId = cb.message.message_id;
+        const userId = cb.from.id;
+        const data = cb.data;
+
+        await tgSend("answerCallbackQuery", { callback_query_id: cb.id });
+
+        if (userId !== ALLOWED_USER) return new Response("OK");
+
+        if (data === "menu") { await sendMenu(chatId, msgId); }
+        else if (data === "stats") { await sendStats(chatId, msgId); }
+        else if (data === "status") { await sendStatus(chatId, msgId); }
+        else if (data === "drafts" || data.startsWith("drafts_")) {
+          const offset = data.startsWith("drafts_") ? parseInt(data.split("_")[1]) : 0;
+          await sendDrafts(chatId, msgId, offset);
+        }
+        else if (data.startsWith("ig_dm_")) {
+          const offset = parseInt(data.split("_")[2]) || 0;
+          await tgSend("answerCallbackQuery", { callback_query_id: update.callback_query.id });
+          await sendIgDm(chatId, msgId, offset);
+        }
+        else if (data.startsWith("ig_regen_")) {
+          const parts = data.split("_");
+          const bid = parseInt(parts[2]);
+          const idx = parseInt(parts[3] || 0);
+          
+          const regenRaw = await env.LEADFLOW_KV.get("bot:ig_regen_queue") || "[]";
+          const regenQ = JSON.parse(regenRaw);
+          if (!regenQ.includes(bid)) {
+            regenQ.push(bid);
+            await env.LEADFLOW_KV.put("bot:ig_regen_queue", JSON.stringify(regenQ));
+          }
+          await tgSend("answerCallbackQuery", { callback_query_id: update.callback_query.id, text: "🔄 Draft regeneration queued! The AI will rewrite it in a few seconds." });
+        }
+        else if (data.startsWith("ig_done_")) {
+          const bid = data.split("_")[2];
+          // Mark DM'd in KV queue
+          const doneRaw = await env.LEADFLOW_KV.get("bot:ig_done_queue") || "[]";
+          const doneQ = JSON.parse(doneRaw);
+          doneQ.push({ business_id: parseInt(bid), done_at: new Date().toISOString() });
+          await env.LEADFLOW_KV.put("bot:ig_done_queue", JSON.stringify(doneQ));
+          // Remove from ig_leads
+          const leadsRaw = await env.LEADFLOW_KV.get("bot:ig_leads");
+          const leads = leadsRaw ? JSON.parse(leadsRaw) : [];
+          const updated = leads.filter(l => String(l.business_id || l.id) !== String(bid));
+          await env.LEADFLOW_KV.put("bot:ig_leads", JSON.stringify(updated));
+          await tgSend("answerCallbackQuery", { callback_query_id: cb.id, text: "✅ Marked as DM'd!" });
+          await sendIgDm(chatId, msgId, 0);
+        }
+        
+        else if (data.startsWith("wa_dm_")) {
+          const offset = parseInt(data.split("_")[2]) || 0;
+          await tgSend("answerCallbackQuery", { callback_query_id: update.callback_query.id });
+          await sendWaDm(chatId, msgId, offset);
+        }
+        else if (data.startsWith("wa_regen_")) {
+          const parts = data.split("_");
+          const bid = parseInt(parts[2]);
+          const idx = parseInt(parts[3] || 0);
+          const regenRaw = await env.LEADFLOW_KV.get("bot:wa_regen_queue") || "[]";
+          const regenQ = JSON.parse(regenRaw);
+          if (!regenQ.includes(bid)) {
+            regenQ.push(bid);
+            await env.LEADFLOW_KV.put("bot:wa_regen_queue", JSON.stringify(regenQ));
+          }
+          await tgSend("answerCallbackQuery", { callback_query_id: update.callback_query.id, text: "🔄 WA Draft regeneration queued!" });
+        }
+        else if (data.startsWith("wa_done_")) {
+          const bid = data.split("_")[2];
+          const doneRaw = await env.LEADFLOW_KV.get("bot:wa_done_queue") || "[]";
+          const doneQ = JSON.parse(doneRaw);
+          doneQ.push({ business_id: parseInt(bid), done_at: new Date().toISOString() });
+          await env.LEADFLOW_KV.put("bot:wa_done_queue", JSON.stringify(doneQ));
+          const leadsRaw = await env.LEADFLOW_KV.get("bot:wa_leads");
+          const leads = leadsRaw ? JSON.parse(leadsRaw) : [];
+          const updated = leads.filter(l => String(l.business_id || l.id) !== String(bid));
+          await env.LEADFLOW_KV.put("bot:wa_leads", JSON.stringify(updated));
+          await tgSend("answerCallbackQuery", { callback_query_id: update.callback_query.id, text: "✅ Marked as WA Sent!" });
+          await sendWaDm(chatId, msgId, 0);
+        }
+        else if (data.startsWith("wa_skip_")) {
+          const bid = data.split("_")[2];
+          const leadsRaw = await env.LEADFLOW_KV.get("bot:wa_leads");
+          const leads = leadsRaw ? JSON.parse(leadsRaw) : [];
+          const updated = leads.filter(l => String(l.business_id || l.id) !== String(bid));
+          await env.LEADFLOW_KV.put("bot:wa_leads", JSON.stringify(updated));
+          await tgSend("answerCallbackQuery", { callback_query_id: update.callback_query.id, text: "⏭️ Skipped" });
+          await sendWaDm(chatId, msgId, 0);
+        }
+
+        else if (data.startsWith("ig_skip_")) {
+          const bid = data.split("_")[2];
+          const leadsRaw = await env.LEADFLOW_KV.get("bot:ig_leads");
+          const leads = leadsRaw ? JSON.parse(leadsRaw) : [];
+          const updated = leads.filter(l => String(l.business_id || l.id) !== String(bid));
+          await env.LEADFLOW_KV.put("bot:ig_leads", JSON.stringify(updated));
+          await tgSend("answerCallbackQuery", { callback_query_id: cb.id, text: "⏭️ Skipped" });
+          await sendIgDm(chatId, msgId, 0);
+        }
+        else if (data.startsWith("ig_copy_")) {
+          const idx = parseInt(data.split("_")[2]) || 0;
+          const leadsRaw = await env.LEADFLOW_KV.get("bot:ig_leads");
+          const leads = leadsRaw ? JSON.parse(leadsRaw) : [];
+          const b = leads[idx % leads.length];
+          if (b) {
+            const demoUrl = b.demo_url || `https://leadflow-relay.chandango12.workers.dev/demo/${b.business_id || b.id}`;
+            const dmMsg = buildDmMessage({ ...b, demo_url: demoUrl });
+            await tgSend("answerCallbackQuery", { callback_query_id: cb.id });
+            await tgSend("sendMessage", { chat_id: chatId, text: dmMsg }); // Plain text = easy long-press copy
+          }
+        }
+        else if (data === "trigger") {
+          await tgSend("editMessageText", { chat_id: chatId, message_id: msgId,
+            text: "🚀 *AUTOPILOT SCHEDULER*\n━━━━━━━━━━━━━━━━━━\nSelect action:",
+            parse_mode: "Markdown",
+            reply_markup: { inline_keyboard: [
+              [{ text: "📧 Trigger Send Batch", callback_data: "trig_send" }, { text: "🔍 Trigger Find Leads", callback_data: "trig_find" }],
+              [{ text: "🔙 Main Menu", callback_data: "menu" }]
+            ]}
+          });
+        }
+        else if (data === "trig_send" || data === "trig_find") {
+          const job = data === "trig_send" ? "send_leads" : "find_leads";
+          await env.LEADFLOW_KV.put("bot:trigger_job", JSON.stringify({ job, triggered_at: new Date().toISOString() }));
+          await tgSend("editMessageText", { chat_id: chatId, message_id: msgId,
+            text: `✅ *Job Queued:* \`${job}\`\nFirestick will pick this up on next scheduler cycle.`,
+            parse_mode: "Markdown",
+            reply_markup: { inline_keyboard: [[{ text: "🔙 Main Menu", callback_data: "menu" }]] }
+          });
+        }
+        else if (data.startsWith("approve_")) {
+          await handleApprove(chatId, msgId, data.split("_")[1]);
+        }
+        else if (data.startsWith("skip_")) {
+          await handleSkip(chatId, msgId, data.split("_")[1]);
+        }
+
+        return new Response("OK");
+      }
+
+      return new Response("OK");
+    }
+
+    // ── Bot Webhook Registration Helper (/bot/register) ─────────────────────────
+    if (url.pathname === "/bot/register" && method === "GET") {
+      const headerToken = request.headers.get("X-Secret-Token") || url.searchParams.get("token");
+      if (headerToken !== (env.SECRET_TOKEN || SECRET_TOKEN)) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+      const BOT_TOKEN = env.TELEGRAM_BOT_TOKEN;
+      if (!BOT_TOKEN) return new Response("TELEGRAM_BOT_TOKEN not set", { status: 503 });
+      const workerUrl = `${url.origin}/bot/webhook`;
+      const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${encodeURIComponent(workerUrl)}`);
+      const result = await r.json();
+      return new Response(JSON.stringify(result, null, 2), { headers: { "Content-Type": "application/json" } });
     }
 
     // Fallback: Status page
