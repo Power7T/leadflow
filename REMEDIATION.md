@@ -102,3 +102,10 @@ This document records all audits, bug fixes, performance optimizations, security
 - **IG & WhatsApp Mode:** Implemented carousel-style swiping UI for IG DM and WA outreach directly inside Telegram with "Tap to Copy" HTML blocks and deep-linked WhatsApp URLs.
 - **Auto-Sync Tracker:** Added a `/replied [name]` command to instantly mark leads as replied via KV, which the Mac scheduler then permanently writes to SQLite to stop further pitches.
 - **HTML Escape Sanitization:** Implemented `escapeHtml()` across the worker to parse business names containing special characters (`&`, `<`) so they do not trigger Telegram 400 Bad Request errors when editing UI menus.
+
+### 12. Cross-System Resilience & Third-Party Integrations
+- **Cloudflare KV Queue Synchronization:** Fully tested and audited the `scheduler.py` sync engine. It successfully fetches `ig_done_queue`, `wa_done_queue`, and `replied_queue` from the Cloudflare Edge and writes back to SQLite, maintaining a decoupled but globally consistent state.
+- **Claude & OpenAI Integration Expansion:** Audited the `ai_writer.py` fallback chain. It accurately routes through Gemini API → OpenAI (fallback) → Claude Sonnet 4.6 (via `agy` CLI for complex logic) before finally falling back to offline templates if all network calls fail.
+- **NTFY Click Tracking Validation:** Successfully audited NTFY push tracking. Click webhooks from the Cloudflare Edge trigger instant push alerts without Telegram preview bots generating false positives.
+- **Sales Conversion Links:** Verified `BOOKING_URL` and `STRIPE_PAYMENT_LINK` injection in the `.env`. They successfully parse and insert into follow-up sequences.
+- **Disaster Recovery Auditing:** Created the `SECRETS_BACKUP` infrastructure. Verified that all critical states (IPs, env vars, Webhook tokens, KV Bindings) are fully snapshotable and restorable without git contamination.
