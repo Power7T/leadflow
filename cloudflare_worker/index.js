@@ -1247,6 +1247,11 @@ export default {
         default:       "$400 – $1,000 + $79/mo"
       };
 
+      
+      function escapeHtml(text) {
+        return (text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
       function getPricing(category) {
         const cat = (category || "").toLowerCase().replace(/\s+/g, "");
         for (const [key, val] of Object.entries(IG_PRICING)) {
@@ -1334,13 +1339,13 @@ export default {
           `📸 <b>IG DM OUTREACH — ${idx+1} of ${leads.length}</b>\n` +
           `━━━━━━━━━━━━━━━━━━\n` +
           `${tierBadge}  |  📂 <b>${(b.category || "").toUpperCase()}</b>\n` +
-          `🏢 <b>${bizName}</b>\n` +
+          `🏢 <b>${escapeHtml(bizName)}</b>\n` +
           `📍 ${b.city || ""}\n` +
           `📱 <b>Instagram:</b> <a href="${igUrl}">${igUrl}</a>\n\n` +
           `💰 <b>Suggested Charge:</b> <code>${pricing}</code>\n\n` +
           `━━━━━━━━━━━━━━━━━━\n` +
           `💬 <b>DM Message</b> <i>(Tap below to copy instantly)</i>:\n\n` +
-          `<code>${dmMsg}</code>`
+          `<code>${escapeHtml(dmMsg)}</code>`
         );
 
         const reply_markup = { inline_keyboard: [
@@ -1418,13 +1423,13 @@ async function sendWaDm(chatId, msgId, offset = 0) {
           `📸 <b>WA Mode OUTREACH — ${idx+1} of ${leads.length}</b>\n` +
           `━━━━━━━━━━━━━━━━━━\n` +
           `${tierBadge}  |  📂 <b>${(b.category || "").toUpperCase()}</b>\n` +
-          `🏢 <b>${bizName}</b>\n` +
+          `🏢 <b>${escapeHtml(bizName)}</b>\n` +
           `📍 ${b.city || ""}\n` +
           `📱 <b>Instagram:</b> <a href="${igUrl}">${igUrl}</a>\n\n` +
           `💰 <b>Suggested Charge:</b> <code>${pricing}</code>\n\n` +
           `━━━━━━━━━━━━━━━━━━\n` +
           `💬 <b>DM Message</b> <i>(Tap below to copy instantly)</i>:\n\n` +
-          `<code>${dmMsg}</code>`
+          `<code>${escapeHtml(dmMsg)}</code>`
         );
 
         const reply_markup = { inline_keyboard: [
