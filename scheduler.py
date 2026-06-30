@@ -684,32 +684,51 @@ def job_replicate_dashboard_static():
 
 
 def is_primary_active() -> bool:
-    """Check if the primary device (Firestick) heartbeat is alive on Cloudflare."""
+    """Check if we are NOT the active leader.
+    
+    If this device claims leadership successfully, it is the leader, so we return False (execute the job).
+    If another active device holds leadership, we return True (skip).
+    """
     import os, requests, time
-    role = os.getenv("LEADFLOW_DEVICE_ROLE", "backup")
-    if role == "primary":
-        return False
-        
+    
+    device_name = os.getenv("LEADFLOW_DEVICE_NAME", "")
+    if not device_name:
+        import sys
+        if sys.platform == "darwin":
+            device_name = "mac"
+        else:
+            device_name = "firestick"
+
     public_url = os.getenv("LEADFLOW_PUBLIC_URL", "")
-    token = os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37")
+    token = os.getenv("LEADFLOW_SECRET_TOKEN", os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37"))
+    
     if not public_url:
-        return False
-        
+        # If offline/isolated, default to executing on firestick, skipping on mac
+        return device_name != "firestick"
+
     try:
-        r = requests.get(
-            f"{public_url}/api/heartbeat?device=primary",
-            params={"token": token},
+        r = requests.post(
+            f"{public_url}/api/leadership/claim?device={device_name}",
+            headers={"X-Secret-Token": token},
             timeout=5
         )
         if r.status_code == 200:
             data = r.json()
-            last_ts = data.get("timestamp", 0)
-            if last_ts > 0:
-                age_minutes = (time.time() * 1000 - last_ts) / 1000 / 60
-                return age_minutes < 15.0
-    except:
-        pass
-    return False
+            is_leader = data.get("success", False)
+            if is_leader:
+                # We successfully claimed/renewed leadership
+                return False
+            else:
+                # Another active device holds leadership
+                return True
+    except Exception as e:
+        log.warning(f"[Scheduler] Failed to claim leadership: {e}")
+        # On connection failure:
+        # - Firestick is always the primary hardware, so default to executing (return False)
+        # - Mac should default to skipping (return True)
+        return device_name != "firestick"
+
+    return True
 
 
 @require_internet
@@ -1574,7 +1593,10 @@ def start_scheduler():
     # WhatsApp: Twilio or digest — check every 60 min
     scheduler.add_job(job_auto_send_whatsapp, "interval", minutes=60, id="auto_send_whatsapp", next_run_time=now_utc, replace_existing=True)
     # Dashboard Replication: Static compiler replica on GitHub/Cloudflare Pages — runs every 15 min
-    scheduler.add_job(job_replicate_dashboard_static, "interval", minutes=15, id="replicate_dashboard_static", next_run_time=now_utc, replace_existing=True)
+    # Delay first run by 5 minutes so server is ready before wrangler blocks the process
+    from datetime import timedelta
+    replicate_first_run = now_utc + timedelta(minutes=5)
+    scheduler.add_job(job_replicate_dashboard_static, "interval", minutes=15, id="replicate_dashboard_static", next_run_time=replicate_first_run, replace_existing=True)
     # Bounce verification pipeline: checks new leads using burner account every 10 min
     scheduler.add_job(job_check_bounces, "interval", minutes=10, id="bounce_verification", next_run_time=now_utc, replace_existing=True)
     # Daily performance recap alert: runs every day at 6 PM (18:00) local time

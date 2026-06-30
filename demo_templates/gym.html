@@ -228,7 +228,7 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
         <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
       </div>
       {% endif %}
-      <p class="hero-desc">{about_text[:200]}{"…" if len(about_text) > 200 else ""}</p>
+      <p class="hero-desc">{% if scraped and scraped.about_text %}{{ scraped.about_text }}{% else %}We are committed to helping every member achieve their health and performance goals.{% endif %}</p>
       <div class="hero-btns">
         <a href="#contact" class="btn btn-primary">Get Started Today</a>
         <a href="#programs" class="btn btn-secondary">Explore Programs</a>
@@ -271,7 +271,7 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
         <p class="section-desc">{{ lead.name }} is a premier fitness facility committed to helping every member achieve their health and performance goals. Whether you're a beginner or an elite athlete, our coaches and equipment are here to support your journey.</p>
         <div class="about-features">
           <div class="about-feature">
-            <div class="about-feature-icon">\U0001f3cb️</div>
+            <div class="about-feature-icon">🏋️</div>
             <div><h4>Elite Equipment</h4><p>State-of-the-art machines and free weights for every level.</p></div>
           </div>
           <div class="about-feature">
@@ -279,11 +279,11 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
             <div><h4>Flexible Hours</h4><p>Open early mornings, late nights &amp; weekends.</p></div>
           </div>
           <div class="about-feature">
-            <div class="about-feature-icon">\U0001f465</div>
+            <div class="about-feature-icon">👥</div>
             <div><h4>Expert Coaches</h4><p>Certified trainers to guide every step of your journey.</p></div>
           </div>
           <div class="about-feature">
-            <div class="about-feature-icon">\U0001f4aa</div>
+            <div class="about-feature-icon">💪</div>
             <div><h4>Real Results</h4><p>Proven programs built around your goals, not ours.</p></div>
           </div>
         </div>
@@ -436,7 +436,16 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
     <span class="section-tag">Find Us</span>
     <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-orange">{{ lead.name }}</span></h2>
     <p>We'd love to hear from you. Walk in, call, or message us anytime.</p>
-    <div class="cinfo-grid">{contact_items or '<div class="cinfo-item">\U0001f4ec Contact us today</div>'}</div>
+    <div class="cinfo-grid">
+      {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="cinfo-item">📞 {{ lead.phone }}</a>{% endif %}
+      {% if lead.email %}<a href="mailto:{{ lead.email }}" class="cinfo-item">✉️ {{ lead.email }}</a>{% endif %}
+      {% if lead.address %}<div class="cinfo-item">📍 {{ lead.address }}</div>{% endif %}
+      {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="cinfo-item">📸 @{{ lead.instagram }}</a>{% endif %}
+      {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="cinfo-item">🗺️ View on Google Maps</a>{% endif %}
+      {% if not lead.phone and not lead.email and not lead.address and not lead.instagram and not lead.maps_url %}
+        <div class="cinfo-item">📬 Contact us today</div>
+      {% endif %}
+    </div>
   </div>
 </section>
 
@@ -464,9 +473,9 @@ body.cursor-hover .custom-cursor-ring{width:60px;height:60px;border-color:var(--
       <div class="footer-col">
         <h4>Contact</h4>
         <ul class="footer-links">
-          {f'<li>{phone}</li>' if phone else ''}
-          {f'<li>{email}</li>' if email else ''}
-          {f'<li>{address}</li>' if address else ''}
+          {% if lead.phone %}<li>{{ lead.phone }}</li>{% endif %}
+          {% if lead.email %}<li>{{ lead.email }}</li>{% endif %}
+          {% if lead.address %}<li>{{ lead.address }}</li>{% endif %}
         </ul>
       </div>
     </div>

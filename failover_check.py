@@ -11,10 +11,10 @@ TOKEN = os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37")
 
 def check_mac_heartbeat():
     try:
-        r = requests.get(f"{PUBLIC_URL}/api/heartbeat", params={"token": TOKEN}, timeout=5)
+        r = requests.get(f"{PUBLIC_URL}/api/leadership", params={"token": TOKEN}, timeout=5)
         if r.status_code == 200:
             data = r.json()
-            last_ts = data.get("timestamp", 0)
+            last_ts = data.get("heartbeats", {}).get("mac", 0)
             if last_ts > 0:
                 age_minutes = (time.time() * 1000 - last_ts) / 1000 / 60
                 return age_minutes

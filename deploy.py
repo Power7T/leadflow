@@ -49,12 +49,9 @@ def get_cf_pages_config() -> str:
 
 
 def demo_url_for(bid: int, name: str) -> str:
-    import os, shutil
-    if os.getenv("USE_CLOUDFLARE_PAGES") == "true" and shutil.which("npx"):
-        project = get_cf_pages_config()
-        return f"https://{project}.pages.dev/{slug_for(bid, name)}.html"
-    user, repo = get_pages_config()
-    return f"https://{user}.github.io/{repo}/{slug_for(bid, name)}.html"
+    import os
+    public_url = os.getenv("LEADFLOW_PUBLIC_URL", "https://leadflow-relay.chandango12.workers.dev")
+    return f"{public_url}/demo/{slug_for(bid, name)}"
 
 
 def public_base() -> str:
@@ -137,49 +134,121 @@ def get_cf_env() -> dict:
 
 
 def deploy_demo(bid: int, name: str, html: str) -> dict:
-    """Write and publish one demo. Returns {ok, url, error}."""
-    import os, shutil
-    filename = f"{slug_for(bid, name)}.html"
-    
-    # Try Cloudflare Pages first if configured AND wrangler/npx is available
-    if os.getenv("USE_CLOUDFLARE_PAGES") == "true" and shutil.which("npx"):
-        url = demo_url_for(bid, name)
-        try:
-            # Write file locally to demos directory
-            DEMOS_DIR.mkdir(exist_ok=True)
-            (DEMOS_DIR / filename).write_text(html, encoding="utf-8")
-            
-            project = get_cf_pages_config()
-            
-            def run_cf_deploy():
-                try:
-                    subprocess.run(
-                        ["npx", "wrangler", "pages", "deploy", str(DEMOS_DIR), f"--project-name={project}"],
-                        env=get_cf_env(), capture_output=True, text=True, timeout=90
-                    )
-                except Exception as e:
-                    print(f"[deploy] Cloudflare Pages background deploy failed: {e}")
-                    
-            import threading
-            threading.Thread(target=run_cf_deploy, daemon=True).start()
-            return {"ok": True, "url": url, "error": ""}
-        except Exception as e:
-            print(f"[deploy] Cloudflare Pages setup error, attempting fallback: {e}")
+    """Publish the demo JSON data to the Cloudflare Worker to serve dynamically."""
+    import os
+    import json
+    import requests
+    import sqlite3
+    from demo_generator import _scrape_site
 
-    # Fallback/Default: GitHub Pages Deployment via API (works on Firestick without node/git CLI)
-    if os.getenv("GITHUB_TOKEN"):
+    # 1. Fetch the business details from database
+    db_path = os.path.join(os.path.dirname(__file__), "leadflow.db")
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    row = conn.execute(
+        "SELECT id, name, category, address, city, phone, website, website_score, google_rating, google_reviews, template_id, pitch_type FROM businesses WHERE id=?",
+        (bid,)
+    ).fetchone()
+    
+    if not row:
+        conn.close()
+        return {"ok": False, "error": f"Business ID {bid} not found in database"}
+        
+    biz = dict(row)
+    conn.close()
+
+    # 2. Determine template
+    from pathlib import Path
+    demo_templates_dir = Path(os.path.dirname(__file__)) / "demo_templates"
+    
+    config_path = demo_templates_dir / "config.json"
+    templates_list = []
+    if config_path.exists():
         try:
-            from github_deploy import push_demo_to_github
-            gh_url = push_demo_to_github(filename, html)
-            if gh_url:
-                return {"ok": True, "url": gh_url, "error": ""}
-        except Exception as e:
-            print(f"[deploy] GitHub API deployment failed, falling back to git CLI: {e}")
-            
-    # Fallback to local git CLI if GITHUB_TOKEN API call fails or is unconfigured
-    url = demo_url_for(bid, name)
-    res = _publish(filename, html)
-    return {"ok": res["ok"], "url": url, "error": res["error"]}
+            config_data = json.loads(config_path.read_text(encoding="utf-8"))
+            templates_list = config_data.get("templates", [])
+        except Exception:
+            pass
+
+    def get_template(category, biz_name, assigned_tpl):
+        if assigned_tpl and assigned_tpl.endswith(".html"):
+            return assigned_tpl
+        cat_lower = (category or "").lower()
+        name_lower = (biz_name or "").lower()
+        for tpl in templates_list:
+            if not tpl.get("enabled", True):
+                continue
+            tpl_file = tpl.get("file")
+            if not tpl_file:
+                continue
+            niches = tpl.get("niches", [])
+            if any(n in cat_lower or n in name_lower for n in niches):
+                return tpl_file
+        return "dentist.html"
+
+    tpl = get_template(biz["category"], biz["name"], biz["template_id"])
+
+    # 3. Choose stock images
+    hero_img = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1400"
+    about_img = "https://images.unsplash.com/photo-1521737711867-e3b904737c88?w=600"
+    
+    if tpl == "gym.html":
+        hero_img = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1400"
+        about_img = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600"
+    elif tpl == "restaurant.html":
+        hero_img = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400"
+        about_img = "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=600"
+    elif tpl == "chiropractor.html":
+        hero_img = "https://power7t.github.io/leadflow-demos/chiro-hero.jpg"
+        about_img = "https://power7t.github.io/leadflow-demos/chiro-about.jpg"
+    elif tpl == "medspa.html":
+        hero_img = "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1400"
+        about_img = "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600"
+    elif tpl == "barbershop.html":
+        hero_img = "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1400"
+        about_img = "https://images.unsplash.com/photo-1593702295094-aec22597af65?w=600"
+    elif tpl == "realestate.html":
+        hero_img = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1400"
+        about_img = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600"
+    elif tpl == "hvac.html":
+        hero_img = "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400"
+        about_img = "https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?w=600"
+    elif tpl == "lawyer.html":
+        hero_img = "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400"
+        about_img = "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600"
+
+    # 4. Scrape the website on-the-fly to populate scraped fields
+    website = biz.get("website", "")
+    scraped_data = _scrape_site(website) if website else {}
+
+    # 5. Build payload
+    payload = {
+        "business": biz,
+        "website_data": scraped_data,
+        "template_id": tpl,
+        "hero_img": hero_img,
+        "about_img": about_img
+    }
+
+    # 6. Upload payload to Worker
+    public_url = os.getenv("LEADFLOW_PUBLIC_URL", "https://leadflow-relay.chandango12.workers.dev")
+    secret_token = os.getenv("LEADFLOW_SECRET_TOKEN", "lf_sec_9e21808ccce4d37")
+    slug = slug_for(bid, name)
+    url = f"{public_url}/demo/{slug}"
+    
+    try:
+        r = requests.post(
+            f"{public_url}/api/demo?slug={slug}",
+            headers={"X-Secret-Token": secret_token, "Content-Type": "application/json"},
+            json=payload,
+            timeout=15
+        )
+        if r.status_code == 200:
+            return {"ok": True, "url": url, "error": ""}
+        else:
+            return {"ok": False, "error": f"Cloudflare API error: {r.status_code} - {r.text}"}
+    except Exception as e:
+        return {"ok": False, "error": f"Failed to upload data to Cloudflare: {e}"}
 
 
 def deploy_raw(filename: str, html: str) -> dict:

@@ -281,7 +281,7 @@ def ctx(request: Request, page: str, **extra):
 @app.get("/find", response_class=HTMLResponse)
 def find_page(request: Request):
     cfg = _get_scheduler_cfg()
-    return templates.TemplateResponse("find.html", ctx(request, "find", sched=cfg))
+    return templates.TemplateResponse(request, "find.html", ctx(request, "find", sched=cfg))
 
 
 # ── Dashboard & Autopilot ──────────────────────────────────────────────────
@@ -481,7 +481,7 @@ async def autopilot_trigger(job_id: str, background_tasks: BackgroundTasks):
 def settings_page(request: Request):
     from dotenv import dotenv_values
     env = dotenv_values(".env")
-    return templates.TemplateResponse("settings.html", ctx(request, "settings", env=env))
+    return templates.TemplateResponse(request, "settings.html", ctx(request, "settings", env=env))
 
 @app.post("/settings/save")
 async def settings_save(request: Request):
@@ -821,7 +821,7 @@ def miami_group_page(request: Request):
             l["interactions"] = json.loads(l.get("interactions_json") or "[]")
         except:
             l["interactions"] = []
-    return templates.TemplateResponse("miami_group.html", ctx(request, "miami", leads=leads))
+    return templates.TemplateResponse(request, "miami_group.html", ctx(request, "miami", leads=leads))
 
 
 @app.post("/saas-leads/add")
@@ -989,7 +989,7 @@ def leads_page(request: Request):
             l["interactions"] = json.loads(l.get("interactions_json") or "[]")
         except:
             l["interactions"] = []
-    return templates.TemplateResponse("leads.html", ctx(request, "leads", leads=leads))
+    return templates.TemplateResponse(request, "leads.html", ctx(request, "leads", leads=leads))
     
 @app.get("/saas-leads", response_class=HTMLResponse)
 def saas_leads_page(request: Request):
@@ -1001,7 +1001,7 @@ def saas_leads_page(request: Request):
             l["interactions"] = json.loads(l.get("interactions_json") or "[]")
         except:
             l["interactions"] = []
-    return templates.TemplateResponse("saas_leads.html", ctx(request, "saas_leads", leads=saas_leads))
+    return templates.TemplateResponse(request, "saas_leads.html", ctx(request, "saas_leads", leads=saas_leads))
 
 
 @app.get("/instagram-reach", response_class=HTMLResponse)
@@ -1014,7 +1014,7 @@ def instagram_reach_page(request: Request):
             l["interactions"] = json.loads(l.get("interactions_json") or "[]")
         except:
             l["interactions"] = []
-    return templates.TemplateResponse("instagram_reach.html", ctx(request, "instagram_reach", leads=ig_leads))
+    return templates.TemplateResponse(request, "instagram_reach.html", ctx(request, "instagram_reach", leads=ig_leads))
 
 
 # ── Instagram Manual DM Queue ──────────────────────────────────────────────
@@ -1057,7 +1057,7 @@ def ig_manual_page(request: Request):
         lead["ig_dm_sent"] = lead.get("ig_dm_sent") or 0
         leads.append(lead)
 
-    return templates.TemplateResponse("ig_manual.html", ctx(request, "ig_manual", leads=leads))
+    return templates.TemplateResponse(request, "ig_manual.html", ctx(request, "ig_manual", leads=leads))
 
 
 @app.post("/ig-manual/mark-dm")
@@ -1085,6 +1085,7 @@ async def ig_mark_dm(request: Request):
     return JSONResponse({"ok": True})
 
 
+@app.get("/test-leads", response_class=HTMLResponse)
 def test_leads_page(request: Request):
     from database import get_test_leads
     leads = get_test_leads()
@@ -1094,7 +1095,7 @@ def test_leads_page(request: Request):
             l["interactions"] = json.loads(l.get("interactions_json") or "[]")
         except:
             l["interactions"] = []
-    return templates.TemplateResponse("test_leads.html", ctx(request, "test_leads", leads=leads))
+    return templates.TemplateResponse(request, "test_leads.html", ctx(request, "test_leads", leads=leads))
 
 
 @app.post("/test-leads/run")
@@ -1678,7 +1679,7 @@ def demos_page(request: Request):
                          or (DEMOS_DIR / f"{b['id']}.html").exists())
         businesses.append(b)
     demo_base = _get_demo_base_url()
-    return templates.TemplateResponse("demos.html", ctx(request, "demos", businesses=businesses, demo_base=demo_base, avail_templates=avail_templates))
+    return templates.TemplateResponse(request, "demos.html", ctx(request, "demos", businesses=businesses, demo_base=demo_base, avail_templates=avail_templates))
 
 
 @app.get("/demos/{bid}/build/stream")
@@ -2230,7 +2231,7 @@ def sent_page(request: Request):
     """).fetchall()
     conn.close()
     leads = [dict(r) for r in rows]
-    return templates.TemplateResponse("sent.html", ctx(request, "sent", leads=leads))
+    return templates.TemplateResponse(request, "sent.html", ctx(request, "sent", leads=leads))
 
 
 @app.post("/sent/{bid}/replied")
@@ -2247,7 +2248,7 @@ def followups_page(request: Request):
     fus = get_all_follow_ups()
     for f in fus:
         f["is_due"] = (f.get("scheduled_for") or "") <= now and f["status"] == "pending"
-    return templates.TemplateResponse("followups.html", ctx(request, "followups", followups=fus))
+    return templates.TemplateResponse(request, "followups.html", ctx(request, "followups", followups=fus))
 
 
 @app.post("/followups/{fid}/send")
@@ -2301,7 +2302,7 @@ def kanban_page(request: Request):
         elif s == "closed":
             s = "converted"
         by_status.setdefault(s, []).append(lead)
-    return templates.TemplateResponse("kanban.html", ctx(request, "kanban", leads_by_status=by_status))
+    return templates.TemplateResponse(request, "kanban.html", ctx(request, "kanban", leads_by_status=by_status))
 
 
 @app.post("/kanban/{bid}/move")
@@ -2321,7 +2322,7 @@ async def kanban_move(bid: int, request: Request):
 @app.get("/analytics", response_class=HTMLResponse)
 def analytics_page(request: Request):
     a = get_analytics()
-    return templates.TemplateResponse("analytics.html", ctx(request, "analytics", a=a))
+    return templates.TemplateResponse(request, "analytics.html", ctx(request, "analytics", a=a))
 
 
 @app.get("/demos/templates")
@@ -2446,7 +2447,7 @@ def analytics_ab_subjects():
 
 @app.get("/ab-test", response_class=HTMLResponse)
 def ab_test_page(request: Request):
-    return templates.TemplateResponse("ab_test.html", ctx(request, "ab_test"))
+    return templates.TemplateResponse(request, "ab_test.html", ctx(request, "ab_test"))
 
 
 @app.get("/api/ab-test")
@@ -2532,7 +2533,7 @@ os.makedirs(DEMO_TEMPLATES_DIR, exist_ok=True)
 
 @app.get("/templates")
 async def templates_page(request: Request):
-    return templates.TemplateResponse("templates.html", ctx(request, "templates"))
+    return templates.TemplateResponse(request, "templates.html", ctx(request, "templates"))
 
 @app.get("/api/templates")
 async def api_list_templates():
@@ -3356,4 +3357,4 @@ async def refresh_tunnels(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=8765, reload=False)
+    uvicorn.run("server:app", host="0.0.0.0", port=8765, reload=False, workers=1, timeout_keep_alive=30)

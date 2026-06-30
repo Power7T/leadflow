@@ -73,6 +73,24 @@ body {
   -webkit-text-fill-color: var(--text-dim);
 }
 
+.nav {
+  flex: 1;
+  overflow-y: auto;
+}
+.nav::-webkit-scrollbar {
+  width: 4px;
+}
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+.nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 .nav a {
   display: flex;
   align-items: center;
