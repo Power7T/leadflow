@@ -71,7 +71,7 @@ def push_local_changes():
             f"{public_url}/api/sync",
             json={"transactions": transactions},
             headers={"X-Secret-Token": token},
-            timeout=10
+            timeout=35
         )
         if r.status_code == 200:
             # Mark as synced
@@ -133,7 +133,7 @@ def pull_remote_changes():
         r = requests.get(
             f"{public_url}/api/sync",
             params={"since": last_seq, "token": token},
-            timeout=10
+            timeout=35
         )
         if r.status_code == 200:
             data = r.json()

@@ -2224,7 +2224,7 @@ def sent_page(request: Request):
                MAX(o.sent_at) as sent_at
         FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
-        LEFT JOIN outreach o ON o.business_id = b.id AND o.channel = 'email' AND o.status = 'sent'
+        LEFT JOIN outreach o ON o.business_id = b.id AND o.status = 'sent'
         WHERE b.status IN ('sent','replied','closed')
         GROUP BY b.id
         ORDER BY b.found_at DESC
