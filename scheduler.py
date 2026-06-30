@@ -731,6 +731,129 @@ def is_primary_active() -> bool:
     return True
 
 
+
+@require_internet
+def job_push_bot_kv():
+    """
+    Push live stats and pending drafts to Cloudflare KV so the Telegram bot webhook
+    can serve them instantly without needing the Firestick to be online.
+    Runs every 5 minutes.
+    """
+    import os, json, requests
+    public_url = os.getenv("LEADFLOW_PUBLIC_URL", "")
+    token = os.getenv("LEADFLOW_SECRET_TOKEN", os.getenv("SECRET_TOKEN", ""))
+    if not public_url or not token:
+        return
+    headers = {"X-Secret-Token": token, "Content-Type": "application/json"}
+
+    try:
+        from database import get_conn
+        conn = get_conn()
+
+        # Build stats
+        stats = {}
+        for status in ("new", "approved", "sent", "replied", "skipped", "closed", "opted_out"):
+            stats[status] = conn.execute("SELECT COUNT(*) FROM businesses WHERE status=?", (status,)).fetchone()[0]
+        cfg_row = conn.execute("SELECT enabled FROM scheduler_config LIMIT 1").fetchone()
+        stats["autopilot_active"] = bool(cfg_row["enabled"]) if cfg_row else False
+
+        requests.post(f"{public_url}/api/kv", headers=headers,
+                      json={"key": "bot:stats", "value": json.dumps(stats)}, timeout=10)
+
+        # Build drafts list
+        rows = conn.execute("""
+            SELECT o.id as draft_id, o.business_id, o.channel, o.draft,
+                   b.name as business_name, c.email as contact_email
+            FROM outreach o
+            JOIN businesses b ON o.business_id = b.id
+            LEFT JOIN contacts c ON c.business_id = b.id
+            WHERE o.status = 'draft' AND b.status IN ('new','approved')
+            ORDER BY o.id ASC LIMIT 20
+        """).fetchall()
+        drafts = []
+        for row in rows:
+            d = dict(row)
+            if d.get("draft"):
+                lines = d["draft"].split("\n")
+                d["subject"] = lines[0].replace("Subject:", "").strip() if lines else ""
+                d["body"] = "\n".join(lines[1:]).strip()
+            drafts.append(d)
+
+        requests.post(f"{public_url}/api/kv", headers=headers,
+                      json={"key": "bot:drafts", "value": json.dumps(drafts)}, timeout=10)
+
+        # Also process any send_queue or skip_queue from the bot
+        send_q_raw = requests.get(f"{public_url}/api/kv?key=bot:send_queue", headers=headers, timeout=10)
+        skip_q_raw = requests.get(f"{public_url}/api/kv?key=bot:skip_queue", headers=headers, timeout=10)
+
+        if send_q_raw.status_code == 200:
+            try:
+                send_queue = json.loads(send_q_raw.json().get("value", "[]") or "[]")
+                for item in send_queue:
+                    did = item.get("draft_id")
+                    if did:
+                        conn.execute("UPDATE outreach SET status='approved' WHERE id=?", (did,))
+                if send_queue:
+                    conn.commit()
+                    requests.post(f"{public_url}/api/kv", headers=headers,
+                                  json={"key": "bot:send_queue", "value": "[]"}, timeout=10)
+            except Exception:
+                pass
+
+        if skip_q_raw.status_code == 200:
+            try:
+                skip_queue = json.loads(skip_q_raw.json().get("value", "[]") or "[]")
+                for item in skip_queue:
+                    bid = item.get("business_id")
+                    if bid:
+                        conn.execute("UPDATE businesses SET status='skipped' WHERE id=?", (bid,))
+                if skip_queue:
+                    conn.commit()
+                    requests.post(f"{public_url}/api/kv", headers=headers,
+                                  json={"key": "bot:skip_queue", "value": "[]"}, timeout=10)
+            except Exception:
+                pass
+
+        # Process ig_done_queue — mark businesses as ig_dm_sent in local DB
+        ig_done_raw = requests.get(f"{public_url}/api/kv?key=bot:ig_done_queue", headers=headers, timeout=10)
+        if ig_done_raw.status_code == 200:
+            try:
+                ig_done = json.loads(ig_done_raw.json().get("value", "[]") or "[]")
+                for item in ig_done:
+                    bid = item.get("business_id")
+                    if bid:
+                        conn.execute("UPDATE businesses SET ig_dm_sent=1, ig_dm_sent_at=datetime('now') WHERE id=?", (bid,))
+                if ig_done:
+                    conn.commit()
+                    requests.post(f"{public_url}/api/kv", headers=headers,
+                                  json={"key": "bot:ig_done_queue", "value": "[]"}, timeout=10)
+            except Exception:
+                pass
+
+        # Push Tier 1 & 2 IG leads (not yet DM'd, limit 100 per push, Tier 1 first)
+        ig_rows = conn.execute("""
+            SELECT b.id as business_id, b.name as business_name, b.category, b.city, b.tier,
+                   b.demo_tunnel_url as demo_url, b.phone, b.website,
+                   (SELECT draft FROM outreach WHERE business_id = b.id AND channel = 'instagram' AND status = 'draft' LIMIT 1) as ai_draft,
+                   (SELECT instagram FROM contacts WHERE business_id = b.id LIMIT 1) as instagram_handle
+            FROM businesses b
+            WHERE b.tier IN (1,2)
+              AND (b.ig_dm_sent IS NULL OR b.ig_dm_sent = 0)
+              AND b.status NOT IN ('opted_out','skipped','closed')
+              AND EXISTS (SELECT 1 FROM outreach WHERE business_id = b.id AND channel = 'instagram' AND status = 'draft')
+            ORDER BY b.tier ASC, b.lead_score DESC
+            LIMIT 100
+        """).fetchall()
+        ig_leads = [dict(r) for r in ig_rows]
+        requests.post(f"{public_url}/api/kv", headers=headers,
+                      json={"key": "bot:ig_leads", "value": json.dumps(ig_leads)}, timeout=10)
+
+        conn.close()
+        log.info("[Bot KV] Pushed stats, %d drafts, %d IG leads to Cloudflare KV", len(drafts), len(ig_leads))
+    except Exception as e:
+        log.warning("[Bot KV] Push failed: %s", e)
+
+
 @require_internet
 def job_sync_worker_events():
     """
@@ -1096,7 +1219,7 @@ def job_auto_send_leads():
                     # Get the draft and subject options
                     conn2 = get_conn()
                     try:
-                        draft_row = conn2.execute("SELECT draft, subject_options FROM outreach WHERE business_id=? AND channel='email'", (lead["id"],)).fetchone()
+                        draft_row = conn2.execute("SELECT draft, subject_options FROM outreach WHERE business_id=? AND channel='email' AND channel != 'instagram'", (lead["id"],)).fetchone()
                         draft_text = draft_row["draft"] if draft_row else ""
                         if draft_row and draft_row["subject_options"]:
                             try:
@@ -1580,6 +1703,8 @@ def start_scheduler():
     scheduler.add_job(job_sync_beacon,          "interval", minutes=5,  id="sync_beacon",          next_run_time=now_utc, replace_existing=True)
     # Cloudflare Worker event sync: pull tracking events from online worker buffer
     scheduler.add_job(job_sync_worker_events,   "interval", minutes=5,  id="sync_worker_events",   next_run_time=now_utc, replace_existing=True)
+    # Bot KV sync: push live stats + drafts to Cloudflare KV for Telegram bot webhook
+    scheduler.add_job(job_push_bot_kv,          "interval", minutes=5,  id="bot_kv_sync",          next_run_time=now_utc, replace_existing=True)
     # Database replication: sync SQLite changes bi-directionally via Cloudflare KV
     scheduler.add_job(job_replicate_database,   "interval", minutes=2,  id="replicate_database",   next_run_time=now_utc, replace_existing=True)
     # Opened-lead follow-ups: highest priority, fires every 5 min (was 30 min)
@@ -1601,6 +1726,9 @@ def start_scheduler():
     scheduler.add_job(job_check_bounces, "interval", minutes=10, id="bounce_verification", next_run_time=now_utc, replace_existing=True)
     # Daily performance recap alert: runs every day at 6 PM (18:00) local time
     scheduler.add_job(job_daily_recap, "cron", hour=18, minute=0, id="daily_recap", replace_existing=True)
+    # AI IG Draft Generation: Firestick churns these out in the background automatically (runs every 4 hours)
+    import generate_ig_drafts
+    scheduler.add_job(generate_ig_drafts.generate_drafts, "interval", hours=4, id="generate_ig_drafts", next_run_time=now_utc, replace_existing=True)
 
     if not scheduler.running:
         scheduler.start()

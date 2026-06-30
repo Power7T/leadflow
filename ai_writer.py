@@ -409,6 +409,7 @@ def _run_template(prompt: str) -> str:
     """Extract key details from the prompt and fill a proven template.
     This is the last-resort fallback — it never fails.
     """
+    import re
     # Extract business name
     name_m = re.search(r"Business:\s*(.+)", prompt)
     name   = name_m.group(1).strip() if name_m else "your business"
@@ -728,7 +729,7 @@ def _run(prompt: str, attempts: int = 2, sys_ctx: str = None) -> str:
     # ── Tier 1: agy profiles round-robin ──
     print("[ai_writer] Trying Tier 1: agy profile rotation")
     out = _run_agy_profiles(prompt, sys_ctx=sys_ctx)
-    if out:
+    if out and "Authentication required" not in out and "Waiting for authentication" not in out:
         return out
 
     # ── Tier 2: Gemini REST ──
@@ -913,10 +914,12 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
 Offer: {offer}
 {demo_part}
 
-Write a punchy, curiosity-inducing Instagram DM under 50 words.
-Hook them with a compliment, mention the opportunity they are missing (like local searches). Be friendly, NOT aggressive.
-You MUST explicitly mention their business name, but use a shortened conversational version if it is too long.
-No hashtags. End with a confident statement. Ready to send."""
+Write a highly professional, expert-level Instagram DM (under 50 words).
+Do NOT use emojis (or strictly 1 max). Do NOT sound desperate, noob-like, or use words like "no catch" or "free".
+Position yourself as a digital infrastructure expert who builds high-converting systems for their specific industry.
+You MUST reference a SPECIFIC real detail from the context above (e.g., their {business.get('google_reviews', '0')} Google reviews, their specific service, or their website load speed).
+State exactly what the custom mockup is designed to do (e.g., capture high-ticket leads, increase consultation requests, etc.) based on their category.
+You MUST explicitly mention their business name. Ready to send."""
     return _run(prompt)
 
 
