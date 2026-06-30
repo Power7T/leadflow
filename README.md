@@ -162,3 +162,20 @@ This prevents abandoning a key on a single transient 503/quota blip.
 
 ## Disclaimer
 This project is built for autonomous lead generation. Always ensure compliance with local anti-spam laws (CAN-SPAM, GDPR) when automating outreach.
+
+---
+
+## Disaster Recovery & Backups
+
+To ensure you can restore the system to a fully functional state if you move to a new machine or experience data loss, LeadFlow supports local master backups.
+
+A file named `SECRETS_BACKUP_YYYY_MM_DD.txt` can be generated to securely snapshot:
+- All `.env` API keys (Gemini, Maps, OpenAI, GitHub)
+- `wrangler.toml` bindings and Telegram Tokens
+- Internal Webhook Shared Secrets (`SECRET_TOKEN`)
+- NTFY push notification topics
+- Firestick IP and ADB connection commands
+
+**Note:** This file is explicitly ignored in `.gitignore`. **NEVER commit your backup files to version control.**
+
+**To Restore:** Simply copy the values from your backup text file into a new `.env` and `cloudflare_worker/wrangler.toml` file, run `npx wrangler deploy`, and launch `server.py`.
