@@ -86,3 +86,19 @@ This document records all audits, bug fixes, performance optimizations, security
 
 *Last updated: June 18, 2026*
 
+
+---
+
+## ✅ Phase 4 — High Availability Cloudflare Migration (June 30 - July 1, 2026)
+
+### 10. Edge Demo Rendering & HA Data Sync
+- **Cloudflare Edge Rendering:** Demos are no longer deployed to GitHub Pages via local git pushes. Instead, a Cloudflare Worker dynamically renders demos on the edge using data and HTML templates stored in Cloudflare KV. This provides zero local latency and infinite scale.
+- **Firestick Headless Offloading:** The heavy lifting (Maps scraping, AI draft generation, WhatsApp link gen) is entirely offloaded to an Android Firestick running Termux 24/7. It writes generated outreach items directly to Cloudflare KV.
+- **Mac Local Scheduler Sync:** The local Mac no longer handles Telegram polling or demo serving. Its `scheduler.py` acts purely as a background worker that fetches state from Cloudflare KV (`ig_done_queue`, `wa_done_queue`, click events) and syncs it back to the local SQLite databases.
+- **Push Notification Upgrade:** All click tracking and live notifications were migrated from Telegram to NTFY.sh push notifications to completely eliminate false-positive link clicks caused by web crawler preview bots.
+
+### 11. Edge Telegram Bot & IG/WA Outreach
+- **Worker Webhook Bot:** The local Python polling bot was replaced with a Cloudflare Worker Webhook bot for 100% uptime and 0ms latency.
+- **IG & WhatsApp Mode:** Implemented carousel-style swiping UI for IG DM and WA outreach directly inside Telegram with "Tap to Copy" HTML blocks and deep-linked WhatsApp URLs.
+- **Auto-Sync Tracker:** Added a `/replied [name]` command to instantly mark leads as replied via KV, which the Mac scheduler then permanently writes to SQLite to stop further pitches.
+- **HTML Escape Sanitization:** Implemented `escapeHtml()` across the worker to parse business names containing special characters (`&`, `<`) so they do not trigger Telegram 400 Bad Request errors when editing UI menus.
