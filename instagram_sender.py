@@ -115,12 +115,18 @@ def get_ui_coords(text_matches: list) -> tuple:
     return None
 
 def type_text(text: str):
-    """Types text via ADB, replacing spaces with %s to prevent command breaking."""
-    # Strip newlines because ADB input text does not support multiline strings easily and can crash the shell command
+    """Types text via ADB, replacing spaces with %s and bypassing all shell escaping via base64."""
+    import base64
     text = text.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
-    # Special characters like quotes need escaping in ADB shell
-    safe_text = text.replace(' ', '%s').replace('"', '\\"').replace("'", "\\'")
-    adb(f'shell input text "{safe_text}"')
+    # Convert unicode em-dashes that break ADB to standard hyphens
+    text = text.replace('—', ' - ').replace('–', '-')
+    
+    # Base64 encode the string to bypass ALL bash escaping bugs with single quotes
+    b64_text = base64.b64encode(text.encode('utf-8')).decode()
+    
+    # Run a tiny python script on the firestick that decodes the b64 and inputs it
+    script = f"import base64, os; text=base64.b64decode('{b64_text}').decode(); safe=text.replace(' ', '%s'); os.system('input text \\\"' + safe + '\\\"')"
+    adb(f'shell "run-as com.termux /data/data/com.termux/files/usr/bin/python -c \\"{script}\\""')
 
 # ── Main send function ───────────────────────────────────────────────────────
 
