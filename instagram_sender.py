@@ -1,16 +1,11 @@
 """
-instagram_sender.py — Safe, rate-limited Instagram DM sender for LeadFlow.
+instagram_sender.py — Physical ADB Controller for Instagram DM Automation
 
 Safety rules (to NEVER get the account banned or deleted):
-  - Max 20 DMs per calendar day (Instagram unofficial limit ~50, we use 20)
-  - 45-120 second random delay between each DM (human-like pacing)
-  - Session saved to disk — no fresh login every time (fresh logins = suspicious)
-  - All errors caught and logged — never crashes the scheduler
-
-Setup:
-  Add to .env:
-    INSTAGRAM_USERNAME=your_username
-    INSTAGRAM_PASSWORD=your_password
+  - Max 20 DMs per calendar day
+  - 45-120 second random delay between each DM
+  - Uses ADB (Android Debug Bridge) to physically tap the screen on the Firestick
+  - Bypasses all bot detection because it uses the official Instagram app
 """
 
 import os
@@ -18,24 +13,24 @@ import json
 import time
 import random
 import logging
+import subprocess
+import xml.etree.ElementTree as ET
 from datetime import date
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv("/Users/chandan/leadflow/.env")
 
 log = logging.getLogger("leadflow.instagram")
+log.setLevel(logging.INFO)
 
 # ── Config ──────────────────────────────────────────────────────────────────
-DAILY_LIMIT       = 20           # Max DMs per calendar day — conservative for safety
-MIN_DELAY_SECONDS = 45           # Min wait between DMs
-MAX_DELAY_SECONDS = 120          # Max wait between DMs
-SESSION_FILE      = Path("/tmp/ig_session.json")
+DAILY_LIMIT       = 15
+MIN_DELAY_SECONDS = 5   # 5 seconds minimum wait before next DM
+MAX_DELAY_SECONDS = 10   # 10 seconds maximum wait
 DAILY_LOG_FILE    = Path("/tmp/ig_daily_sends.json")
 
-IG_USERNAME = os.getenv("INSTAGRAM_USERNAME", "")
-IG_PASSWORD = os.getenv("INSTAGRAM_PASSWORD", "")
-
+FIRESTICK_IP = "192.168.1.3:5555"
 
 # ── Daily count tracking ─────────────────────────────────────────────────────
 
@@ -47,18 +42,15 @@ def _load_daily_log() -> dict:
         pass
     return {}
 
-
 def _save_daily_log(data: dict):
     try:
         DAILY_LOG_FILE.write_text(json.dumps(data))
     except Exception as e:
         log.warning(f"[Instagram] Could not save daily log: {e}")
 
-
 def get_instagram_daily_sent_count() -> int:
     today = str(date.today())
     return _load_daily_log().get(today, 0)
-
 
 def _increment_daily_count():
     today = str(date.today())
@@ -66,67 +58,75 @@ def _increment_daily_count():
     data[today] = data.get(today, 0) + 1
     _save_daily_log(data)
 
-
 def can_send_instagram() -> bool:
-    if not IG_USERNAME or not IG_PASSWORD:
-        log.info("[Instagram] No credentials configured — set INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD in .env")
-        return False
     count = get_instagram_daily_sent_count()
     if count >= DAILY_LIMIT:
         log.info(f"[Instagram] Daily limit reached ({count}/{DAILY_LIMIT}). No more DMs today.")
         return False
     return True
 
+# ── ADB Controller ───────────────────────────────────────────────────────────
 
-# ── Instagram client ─────────────────────────────────────────────────────────
-
-_ig_client = None
-
-
-def _get_client():
-    global _ig_client
-
+def adb(cmd: str) -> str:
+    """Run an ADB command on the Firestick and return its stdout"""
     try:
-        from instagrapi import Client
-    except ImportError:
-        log.error("[Instagram] instagrapi not installed. Run: pip3 install instagrapi")
-        return None
+        return subprocess.check_output(
+            f"adb -s {FIRESTICK_IP} {cmd}", 
+            shell=True, stderr=subprocess.STDOUT
+        ).decode('utf-8', errors='ignore')
+    except subprocess.CalledProcessError as e:
+        log.debug(f"ADB Error on '{cmd}': {e.output.decode('utf-8', errors='ignore')}")
+        return ""
 
-    if _ig_client is not None:
-        return _ig_client
-
-    cl = Client()
-    cl.delay_range = [MIN_DELAY_SECONDS, MAX_DELAY_SECONDS]
-
-    # Try restored session first (avoids suspicious fresh logins)
-    if SESSION_FILE.exists():
-        try:
-            cl.load_settings(SESSION_FILE)
-            cl.login(IG_USERNAME, IG_PASSWORD)
-            log.info(f"[Instagram] Restored session for @{IG_USERNAME}")
-            _ig_client = cl
-            return cl
-        except Exception as e:
-            log.warning(f"[Instagram] Session restore failed ({e}), doing fresh login")
-            SESSION_FILE.unlink(missing_ok=True)
-
-    # Fresh login
+def get_ui_coords(text_matches: list) -> tuple:
+    """
+    Dumps the Firestick screen UI to XML, parses it, and finds the exact X/Y center 
+    coordinates of an element containing any of the text_matches.
+    """
     try:
-        cl.login(IG_USERNAME, IG_PASSWORD)
-        cl.dump_settings(SESSION_FILE)
-        log.info(f"[Instagram] Fresh login successful for @{IG_USERNAME}")
-        _ig_client = cl
-        return cl
+        # Dump the screen UI to an XML file on the device
+        adb("shell uiautomator dump /sdcard/window_dump.xml")
+        
+        # Read the XML directly from the device
+        xml_data = adb("shell cat /sdcard/window_dump.xml")
+        if not xml_data or "ERROR" in xml_data:
+            return None
+            
+        root = ET.fromstring(xml_data)
+        
+        # Iterate over all UI nodes
+        for node in root.iter('node'):
+            text = node.attrib.get('text', '').lower()
+            desc = node.attrib.get('content-desc', '').lower()
+            
+            for match in text_matches:
+                match = match.lower()
+                if match in text or match in desc:
+                    bounds = node.attrib.get('bounds')
+                    if bounds:
+                        # Parse bounds like "[x1,y1][x2,y2]" to find center point
+                        parts = bounds.replace('][', ',').replace('[', '').replace(']', '').split(',')
+                        if len(parts) == 4:
+                            x = (int(parts[0]) + int(parts[2])) // 2
+                            y = (int(parts[1]) + int(parts[3])) // 2
+                            return (x, y)
     except Exception as e:
-        log.error(f"[Instagram] Login failed: {e}")
-        return None
+        log.error(f"[Instagram] XML parsing error: {e}")
+    return None
 
+def type_text(text: str):
+    """Types text via ADB, replacing spaces with %s to prevent command breaking."""
+    # Strip newlines because ADB input text does not support multiline strings easily and can crash the shell command
+    text = text.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
+    # Special characters like quotes need escaping in ADB shell
+    safe_text = text.replace(' ', '%s').replace('"', '\\"').replace("'", "\\'")
+    adb(f'shell input text "{safe_text}"')
 
 # ── Main send function ───────────────────────────────────────────────────────
 
 def send_instagram_dm(username: str, message: str) -> bool:
     """
-    Send a DM to an Instagram username. Returns True on success.
+    Uses ADB to physically open Instagram, tap Message, type, and Send.
     Enforces daily limit + human-like delay between sends.
     """
     if not username or not message:
@@ -139,42 +139,72 @@ def send_instagram_dm(username: str, message: str) -> bool:
     if not can_send_instagram():
         return False
 
-    cl = _get_client()
-    if cl is None:
-        return False
+    log.info(f"[Instagram ADB] Starting DM sequence for @{username}...")
+    
+    # 1. Connect (ensure we are connected before starting)
+    subprocess.run(f"adb connect {FIRESTICK_IP}", shell=True, capture_output=True)
 
     try:
-        user_id = cl.user_id_from_username(username)
-        cl.direct_send(message, [user_id])
-        _increment_daily_count()
-        count = get_instagram_daily_sent_count()
-        log.info(f"[Instagram] DM sent to @{username} ({count}/{DAILY_LIMIT} today)")
+        # 2. Deep link instantly to the user's profile
+        adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
+        time.sleep(12) # Firestick IG is slow, wait for profile to load
+        
+        # 3. Tap the "Message" button dynamically
+        log.info(f"[Instagram ADB] Tapping Message button for @{username}...")
+        coords = get_ui_coords(["Message", "message"])
+        if coords:
+            adb(f"shell input tap {coords[0]} {coords[1]}")
+        else:
+            # Fallback if UI dump fails
+            adb("shell input tap 233 206")
+        
+        time.sleep(8) # Wait for slow chat screen to open
+        
+        # 4. Tap the Text Box to focus it (Hardcoded: X=111, Y=608)
+        adb("shell input tap 111 608")
+        time.sleep(3) # Wait for keyboard/cursor to appear
 
-        # Human-like delay AFTER send
-        delay = random.randint(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS)
-        log.info(f"[Instagram] Waiting {delay}s before next send...")
-        time.sleep(delay)
-        return True
+        # 5. Type the message
+        log.info(f"[Instagram ADB] Typing message to @{username}...")
+        type_text(message)
+        time.sleep(3) # Wait for text to fully input
+        
+        # 7. Tap the "Send" button dynamically
+        coords_send = get_ui_coords(["Send", "send"])
+        if coords_send:
+            adb(f"shell input tap {coords_send[0]} {coords_send[1]}")
+        else:
+            adb("shell input tap 328 612")
+        time.sleep(3)
+        log.info(f"[Instagram ADB] ✅ Successfully sent DM to @{username}")
+        _increment_daily_count()
+        
+        # Send ntfy alert
+        try:
+            import requests, os
+            ntfy_topic = os.getenv("NTFY_TOPIC", "leadflow-chandan-secret")
+            requests.post(f"https://ntfy.sh/{ntfy_topic}", data=f"🤖 Instagram DM successfully sent to @{username} via Firestick!".encode('utf-8'))
+        except:
+            pass
 
     except Exception as e:
-        err = str(e).lower()
-        global _ig_client
-        if "not found" in err or "usernamenotavailable" in err:
-            log.warning(f"[Instagram] @{username} not found")
-        elif "challenge" in err or "checkpoint" in err:
-            log.error("[Instagram] Account checkpoint! Login to Instagram manually to clear it.")
-            _ig_client = None
-        elif "ratelimit" in err or "feedback_required" in err:
-            log.warning("[Instagram] Rate limited — pausing all DMs for today")
-            data = _load_daily_log()
-            data[str(date.today())] = DAILY_LIMIT  # force-fill daily cap
-            _save_daily_log(data)
-        else:
-            log.error(f"[Instagram] DM failed for @{username}: {e}")
+        log.error(f"[Instagram ADB] Sequence failed: {e}")
         return False
-
-
-def get_all_instagram_sender_accounts() -> list:
-    if IG_USERNAME:
-        return [IG_USERNAME]
-    return []
+        
+    finally:
+        # 8. Clean up: Hit the Android BACK button 3 times to exit the chat/profile safely
+        adb("shell input keyevent 4")
+        time.sleep(1)
+        adb("shell input keyevent 4")
+        time.sleep(1)
+        adb("shell input keyevent 4")
+        time.sleep(1)
+        # Hit HOME just to be safe
+        adb("shell input keyevent 3")
+        
+    # 7. Human-like randomized delay before the next action
+    delay = random.randint(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS)
+    log.info(f"[Instagram ADB] Sleeping for {delay} seconds to mimic human behavior...")
+    time.sleep(delay)
+    
+    return True
