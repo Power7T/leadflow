@@ -994,11 +994,32 @@ export default {
       }
       const body = await request.json().catch(() => ({}));
       const { key, value } = body;
-      if (!key || value === undefined) {
-        return new Response(JSON.stringify({ error: "key and value required" }), { status: 400, headers: { "Content-Type": "application/json" } });
+      if (!key) {
+        return new Response(JSON.stringify({ error: "key required" }), { status: 400, headers: { "Content-Type": "application/json" } });
       }
-      await env.LEADFLOW_KV.put(key, typeof value === "string" ? value : JSON.stringify(value));
-      return new Response(JSON.stringify({ ok: true, key }), { headers: { "Content-Type": "application/json" } });
+      try {
+        if (value === undefined) {
+           const kvValue = await env.LEADFLOW_KV.get(key);
+           return new Response(JSON.stringify({ key, value: kvValue }), { headers: { "Content-Type": "application/json" } });
+        }
+        await env.LEADFLOW_KV.put(key, typeof value === "string" ? value : JSON.stringify(value));
+        return new Response(JSON.stringify({ ok: true, key }), { headers: { "Content-Type": "application/json" } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message, stack: e.stack }), { status: 500, headers: { "Content-Type": "application/json" } });
+      }
+    }
+
+    // ── Generic KV Read API (/api/kv GET) ──────────────────────────────────
+    if (url.pathname === "/api/kv" && method === "GET") {
+      const headerToken = request.headers.get("X-Secret-Token") || url.searchParams.get("token");
+      const configuredToken = env.SECRET_TOKEN || SECRET_TOKEN;
+      if (headerToken !== configuredToken) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+      const key = url.searchParams.get("key");
+      if (!key) return new Response(JSON.stringify({ error: "key required" }), { status: 400 });
+      const value = await env.LEADFLOW_KV.get(key);
+      return new Response(JSON.stringify({ key, value }), { headers: { "Content-Type": "application/json" } });
     }
 
     // ── Database Sync/Replication API ───────────────────────────────────────────

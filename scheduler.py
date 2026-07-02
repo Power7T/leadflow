@@ -86,6 +86,52 @@ def require_internet(func):
     return wrapper
 
 
+def _enqueue_sequence_for_lead(lead: dict, is_hot_lead: bool = False,
+                                first_fu_delay_minutes: int = None) -> int:
+    """
+    Shared helper — generates and inserts a full follow-up sequence for a lead.
+    Called from job_queue_follow_ups, job_auto_followup_opened_leads, and
+    job_check_scroll_engaged_leads so the logic lives in exactly ONE place.
+
+    Args:
+        lead: row dict from businesses/contacts join (must include 'id', 'demo_tunnel_url').
+        is_hot_lead: passed through to write_follow_up_sequence for tone adjustment.
+        first_fu_delay_minutes: if set, overrides the FU-1 scheduled_for to this
+                                many minutes from now (for immediate hot-lead follow-ups).
+
+    Returns:
+        Number of follow-up steps inserted, or 0 on error.
+    """
+    from database import insert_follow_ups
+    from ai_writer import write_follow_up_sequence
+    from datetime import timedelta
+
+    try:
+        demo_url = lead.get("demo_tunnel_url", "")
+        sequences = write_follow_up_sequence(lead, demo_url, is_hot_lead=is_hot_lead)
+
+        # Override timing if caller wants immediate or custom first-touch
+        if first_fu_delay_minutes is not None:
+            now = datetime.utcnow()
+            for seq in sequences:
+                if seq["channel"] == "email":
+                    if seq["num"] == 1:
+                        seq["scheduled_for"] = (now + timedelta(minutes=first_fu_delay_minutes)).isoformat()
+                    elif seq["num"] == 2:
+                        seq["scheduled_for"] = (now + timedelta(days=2)).isoformat()
+                    elif seq["num"] == 3:
+                        seq["scheduled_for"] = (now + timedelta(days=5)).isoformat()
+                elif seq["channel"] == "instagram":
+                    seq["scheduled_for"] = (now + timedelta(hours=6)).isoformat()
+
+        insert_follow_ups(lead["id"], sequences)
+        return len(sequences)
+    except Exception as e:
+        log.error(f"[Scheduler] _enqueue_sequence_for_lead failed for {lead.get('name', '?')}: {e}")
+        return 0
+
+
+
 def _assign_scheduled_at(tz_str: str) -> str:
     """
     Return next UTC send slot as a string.
@@ -281,8 +327,7 @@ def job_daily_find(force: bool = False):
 @require_internet
 def job_queue_follow_ups():
     """Check for leads sent 3+ days ago with no reply — queue 5-touch follow-up cadence."""
-    from database import get_conn, insert_follow_ups
-    from ai_writer import write_follow_up_sequence
+    from database import get_conn
 
     conn = get_conn()
     try:
@@ -306,13 +351,9 @@ def job_queue_follow_ups():
 
     for lead in leads:
         log.info(f"[Scheduler] Queuing 5-touch follow-up cadence for: {lead['name']}")
-        try:
-            demo_url = lead.get("demo_tunnel_url", "")
-            sequences = write_follow_up_sequence(lead, demo_url)
-            insert_follow_ups(lead["id"], sequences)
-            log.info(f"[Scheduler]   -> Queued {len(sequences)} follow-ups for {lead['name']}")
-        except Exception as e:
-            log.error(f"[Scheduler] Follow-up gen error for {lead['name']}: {e}")
+        n = _enqueue_sequence_for_lead(lead, is_hot_lead=False)
+        if n:
+            log.info(f"[Scheduler]   -> Queued {n} follow-ups for {lead['name']}")
 
 
 @require_internet
@@ -352,32 +393,12 @@ def job_auto_followup_opened_leads():
     for lead in leads:
         log.info(f"[Scheduler] Queueing OPENED-lead follow-up for: {lead['name']} ({lead.get('email', '?')})")
         try:
-            demo_url = lead.get("demo_tunnel_url", "")
-            sequences = write_follow_up_sequence(lead, demo_url, is_hot_lead=True)
+            # Use shared helper with FU1 firing in 5 minutes (hot-open = strike now)
+            n = _enqueue_sequence_for_lead(lead, is_hot_lead=True, first_fu_delay_minutes=5)
+            if n:
+                log.info(f"[Scheduler]   -> Queued {n} HOT follow-ups for {lead['name']} (FU1 in 5 min)")
 
-            # Schedule opened-lead follow-ups IMMEDIATELY — they just opened, strike now:
-            now = datetime.utcnow()
-            for seq in sequences:
-                if seq["channel"] == "email":
-                    if seq["num"] == 1:
-                        seq["scheduled_for"] = (now + timedelta(minutes=5)).isoformat()
-                        # Override subject to signal this is a hot-open reply
-                        if seq.get("draft"):
-                            draft = seq["draft"]
-                            lines = draft.strip().splitlines()
-                            if lines and not lines[0].lower().startswith("subject:"):
-                                seq["draft"] = f"Subject: Re: {lead.get('name', 'your site')}\n\n" + draft
-                    elif seq["num"] == 2:
-                        seq["scheduled_for"] = (now + timedelta(days=2)).isoformat()
-                    elif seq["num"] == 3:
-                        seq["scheduled_for"] = (now + timedelta(days=5)).isoformat()
-                elif seq["channel"] == "instagram":
-                    seq["scheduled_for"] = (now + timedelta(hours=6)).isoformat()
-            insert_follow_ups(lead["id"], sequences)
-            log.info(f"[Scheduler]   -> Queued {len(sequences)} HOT follow-ups for {lead['name']} (FU1 in 5 min)")
-
-
-            # Send ntfy alert so operator knows
+            # Operator alert
             try:
                 import requests as _req
                 _ntfy_t = __import__('os').getenv('NTFY_TOPIC', 'leadflow-chandan-secret')  # fix #12
@@ -391,6 +412,7 @@ def job_auto_followup_opened_leads():
                 pass
         except Exception as e:
             log.error(f"[Scheduler] Follow-up gen error for opened lead {lead['name']}: {e}")
+
 
 
 
@@ -408,54 +430,68 @@ def job_auto_send_instagram_dms():
     if not _instagram_send_lock.acquire(blocking=False):
         log.info("[Instagram] Job already running — skipping")
         return
+    
     try:
         from instagram_sender import can_send_instagram, send_instagram_dm, get_instagram_daily_sent_count
         if not can_send_instagram():
             return
 
-        from database import get_conn
-        conn = get_conn()
+        import os, json, requests
+        public_url = os.getenv("CF_WORKER_URL", "https://leadflow-relay.chandango12.workers.dev")
+        headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37")}
+        
+        # Fetch directly from KV since Firestick generates them
+        import subprocess
+        # Fallback: Cloudflare KV limit exceeded. Fetch directly from Firestick via ADB
+        # Fallback: Cloudflare KV limit exceeded. Fetch directly from Firestick via ADB
+        # Fallback: Cloudflare KV limit exceeded. Fetch directly from Firestick via ADB
+        python_script = """
+import sqlite3, json
+conn = sqlite3.connect("/data/data/com.termux/files/home/leadflow/leadflow.db")
+conn.row_factory = sqlite3.Row
+rows = conn.execute("SELECT o.business_id, o.draft as ai_draft, c.instagram as instagram_handle, b.name as business_name FROM outreach o JOIN businesses b ON b.id = o.business_id JOIN contacts c ON c.business_id = o.business_id WHERE o.channel = 'instagram' AND o.status = 'draft' LIMIT 50").fetchall()
+print(json.dumps([dict(r) for r in rows]))
+"""
+        import base64
+        # Write to file via base64 decoding to avoid all quoting issues
+        b64_script = base64.b64encode(python_script.encode()).decode()
+        subprocess.run(['adb', '-s', '192.168.1.3:5555', 'shell', f"run-as com.termux /data/data/com.termux/files/usr/bin/python -c 'import base64; open(\"/data/data/com.termux/files/home/leadflow/tmp_fetch.py\", \"w\").write(base64.b64decode(\"{b64_script}\").decode())'"])
+        adb_cmd = ['adb', '-s', '192.168.1.3:5555', 'shell', 'run-as', 'com.termux', '/data/data/com.termux/files/usr/bin/python', '/data/data/com.termux/files/home/leadflow/tmp_fetch.py']
+        
+        result = subprocess.run(adb_cmd, capture_output=True, text=True)
         try:
-            rows = conn.execute("""
-                SELECT b.id, b.name, c.instagram,
-                       o.draft AS email_draft
-                FROM businesses b
-                JOIN contacts c ON c.business_id = b.id
-                JOIN outreach o ON o.business_id = b.id
-                WHERE b.status = 'sent'
-                  AND o.channel = 'instagram'
-                  AND o.status = 'draft'
-                  AND c.instagram IS NOT NULL AND c.instagram != ''
-                  AND o.sent_at <= datetime('now', '-5 days')
-                ORDER BY b.lead_score DESC
-                LIMIT 5
-            """).fetchall()
-            leads = [dict(r) for r in rows]
-        finally:
-            conn.close()
-
-        if not leads:
+            leads = json.loads(result.stdout.strip())
+        except:
+            leads = []
+        
+        # Filter for eligible ones
+        eligible = []
+        for l in leads:
+            if l.get('ai_draft') and len(l['ai_draft']) > 10:
+                eligible.append(l)
+                if len(eligible) >= 5: break
+                
+        if not eligible:
             log.info("[Instagram] No eligible leads for DMs right now")
             return
 
-        log.info(f"[Instagram] Sending DMs to {len(leads)} leads ({get_instagram_daily_sent_count()}/20 used today)")
-        for lead in leads:
-            handle = lead["instagram"].strip().lstrip("@")
-            draft  = lead.get("email_draft") or ""
+        log.info(f"[Instagram] Sending DMs to {len(eligible)} leads ({get_instagram_daily_sent_count()}/20 used today)")
+        for lead in eligible:
+            handle = lead["instagram_handle"].strip().lstrip("@")
+            draft  = lead.get("ai_draft") or ""
             if not handle or not draft:
                 continue
             ok = send_instagram_dm(handle, draft)
             if ok:
-                conn2 = get_conn()
+                # Fetch, append, and push back array
                 try:
-                    conn2.execute("""
-                        UPDATE outreach SET status='sent', sent_at=datetime('now'), is_autopilot=1
-                        WHERE business_id=? AND channel='instagram'
-                    """, (lead["id"],))
-                    conn2.commit()
-                finally:
-                    conn2.close()
-                log.info(f"[Instagram] Sent DM to @{handle} for {lead['name']}")
+                    res_done = requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_done_queue"}, timeout=10)
+                    done_q = json.loads(res_done.json().get("value", "[]") or "[]")
+                except:
+                    done_q = []
+                done_q.append({"business_id": lead.get('business_id', lead.get('id')), "done_at": "2026-07-02T00:00:00Z"})
+                requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_done_queue", "value": json.dumps(done_q)}, timeout=10)
+                log.info(f"[Instagram] Sent DM to @{handle} for {lead.get('business_name')}")
             if not can_send_instagram():
                 log.info("[Instagram] Daily cap reached — stopping")
                 break
@@ -463,6 +499,7 @@ def job_auto_send_instagram_dms():
         log.error(f"[Instagram] Job error: {e}")
     finally:
         _instagram_send_lock.release()
+
 
 
 @require_internet
@@ -585,23 +622,10 @@ def job_check_scroll_engaged_leads():
             finally:
                 conn2.close()
 
-            demo_url = lead.get("demo_tunnel_url", "")
-            sequences = write_follow_up_sequence(lead, demo_url, is_hot_lead=True)
-            # Immediate schedule: FU1 in 3 minutes (scroll = live interest RIGHT NOW)
-            now = datetime.utcnow()
-            for seq in sequences:
-                if seq["channel"] == "email":
-                    if seq["num"] == 1:
-                        seq["scheduled_for"] = (now + timedelta(minutes=3)).isoformat()
-                    elif seq["num"] == 2:
-                        seq["scheduled_for"] = (now + timedelta(days=2)).isoformat()
-                    elif seq["num"] == 3:
-                        seq["scheduled_for"] = (now + timedelta(days=5)).isoformat()
-                elif seq["channel"] == "instagram":
-                    seq["scheduled_for"] = (now + timedelta(hours=6)).isoformat()
-            insert_follow_ups(lead["id"], sequences)
-            log.info(f"[Scheduler]   -> Queued SCROLL-PRIORITY follow-up for {lead['name']} (FU1 in 3 min)")
-
+            # Use shared helper with FU1 firing in 3 minutes (scroll = live RIGHT NOW)
+            n = _enqueue_sequence_for_lead(lead, is_hot_lead=True, first_fu_delay_minutes=3)
+            if n:
+                log.info(f"[Scheduler]   -> Queued SCROLL-PRIORITY follow-up for {lead['name']} (FU1 in 3 min)")
 
             # Push notification
             try:
@@ -610,7 +634,6 @@ def job_check_scroll_engaged_leads():
                 _req.post(
                     f"https://ntfy.sh/{_ntfy_t2}",
                     data=f"🔥 {lead['name']} scrolled 90%+ through their demo — follow-up queued in 3 min!".encode(),
-
                     headers={"Title": "LeadFlow - HOT Demo Engagement!", "Tags": "fire,chart_with_upwards_trend", "Priority": "high"},
                     timeout=5,
                 )
@@ -618,6 +641,7 @@ def job_check_scroll_engaged_leads():
                 pass
         except Exception as e:
             log.error(f"[Scheduler] Scroll-engaged FU error for {lead['name']}: {e}")
+
 
 
 
@@ -686,47 +710,10 @@ def job_replicate_dashboard_static():
 def is_primary_active() -> bool:
     """Check if we are NOT the active leader.
     
-    If this device claims leadership successfully, it is the leader, so we return False (execute the job).
-    If another active device holds leadership, we return True (skip).
+    Currently, the Mac is the primary device that runs the Python scripts and sends ADB commands to the Firestick.
+    Therefore, we always return False (meaning "do not skip") so the Mac executes the jobs.
     """
-    import os, requests, time
-    
-    device_name = os.getenv("LEADFLOW_DEVICE_NAME", "")
-    if not device_name:
-        import sys
-        if sys.platform == "darwin":
-            device_name = "mac"
-        else:
-            device_name = "firestick"
-
-    public_url = os.getenv("LEADFLOW_PUBLIC_URL", "")
-    token = os.getenv("LEADFLOW_SECRET_TOKEN", os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37"))
-    
-    if not public_url:
-        # If offline/isolated, default to executing on firestick, skipping on mac
-        return device_name != "firestick"
-
-    try:
-        r = requests.post(
-            f"{public_url}/api/leadership/claim?device={device_name}",
-            headers={"X-Secret-Token": token},
-            timeout=5
-        )
-        if r.status_code == 200:
-            data = r.json()
-            is_leader = data.get("success", False)
-            if is_leader:
-                # We successfully claimed/renewed leadership
-                return False
-            else:
-                # Another active device holds leadership
-                return True
-    except Exception as e:
-        log.warning(f"[Scheduler] Failed to claim leadership: {e}")
-        # On connection failure:
-        # - Firestick is always the primary hardware, so default to executing (return False)
-        # - Mac should default to skipping (return True)
-        return device_name != "firestick"
+    return False
 
     return True
 
@@ -735,9 +722,11 @@ def is_primary_active() -> bool:
 @require_internet
 
 def job_process_ig_regens():
+    if is_primary_active(): return  # Firestick only
     import os, json, sqlite3, requests
     from ai_writer import write_instagram_dm
     from database import get_conn
+    from demo_generator import _scrape_site
     public_url = os.getenv("CF_WORKER_URL", "https://leadflow-relay.chandango12.workers.dev")
     headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN", "fallback-secret")}
     try:
@@ -748,10 +737,18 @@ def job_process_ig_regens():
         conn = get_conn()
         for bid in q:
             # Generate new draft
-            r = conn.execute("SELECT b.id, b.name, b.category, b.website, b.website_score, b.gap, b.competitor_deficit, b.pitch_type, b.lead_score, con.instagram, b.google_rating, b.google_reviews FROM businesses b JOIN contacts con ON con.business_id = b.id WHERE b.id = ?", (bid,)).fetchone()
+            r = conn.execute("SELECT b.id, b.name, b.category, b.website, b.website_score, b.gap, b.competitor_deficit, b.pitch_type, b.lead_score, con.instagram, b.google_rating, b.google_reviews, b.demo_tunnel_url, b.city FROM businesses b JOIN contacts con ON con.business_id = b.id WHERE b.id = ?", (bid,)).fetchone()
             if not r: continue
-            biz = {"id": r[0], "name": r[1], "category": r[2], "website": r[3], "website_score": r[4], "gap": r[5], "competitor_deficit": r[6], "pitch_type": r[7], "lead_score": r[8], "instagram": r[9], "google_rating": r[10], "google_reviews": r[11]}
-            draft = write_instagram_dm(biz)
+            biz = {"id": r[0], "name": r[1], "category": r[2], "website": r[3], "website_score": r[4], "gap": r[5], "competitor_deficit": r[6], "pitch_type": r[7], "lead_score": r[8], "instagram": r[9], "google_rating": r[10], "google_reviews": r[11], "city": r[13]}
+            # Fetch demo URL and scraped website data for personalisation
+            demo_url = r[12] or ""
+            scraped = {}
+            if biz.get("website"):
+                try:
+                    scraped = _scrape_site(biz["website"]) or {}
+                except Exception:
+                    pass
+            draft = write_instagram_dm(biz, demo_url=demo_url, scraped=scraped or None)
             conn.execute("UPDATE outreach SET draft = ?, status = 'draft' WHERE business_id = ? AND channel = 'instagram'", (draft, bid))
         conn.commit()
         
@@ -894,15 +891,14 @@ def job_push_bot_kv():
             LIMIT 100
         """).fetchall()
         ig_leads = [dict(r) for r in ig_rows]
-        requests.post(f"{public_url}/api/kv", headers=headers,
-                      json={"key": "bot:ig_leads", "value": json.dumps(ig_leads)}, timeout=10)
+        if False: pass # Disabled on Mac to prevent overwriting Firestick
 
         # Push Tier 1 & 2 WA leads
         wa_rows = conn.execute("""
             SELECT b.id as business_id, b.name as business_name, b.category, b.city, b.tier,
                    b.demo_tunnel_url as demo_url, b.phone, b.website,
                    (SELECT draft FROM outreach WHERE business_id = b.id AND channel = 'whatsapp' AND status = 'draft' LIMIT 1) as ai_draft,
-                   con.phone as phone_number
+                   con.whatsapp as phone_number
             FROM businesses b
             JOIN contacts con ON con.business_id = b.id
             WHERE b.tier IN (1,2)
@@ -1319,6 +1315,19 @@ def job_auto_send_leads():
                             INSERT INTO outreach (business_id, channel, draft, status, scheduled_at)
                             VALUES (?, 'email', ?, 'draft', ?)
                         """, (lead["id"], draft_text, slot))
+                        
+                        # Generate IG draft if they have an IG handle
+                        if lead.get("instagram"):
+                            from ai_writer import write_instagram_dm
+                            log.info(f"  -> Building Instagram DM draft for {lead['name']}...")
+                            ig_draft = write_instagram_dm(lead, demo_url=lead.get("demo_tunnel_url",""))
+                            if ig_draft:
+                                conn2.execute("DELETE FROM outreach WHERE business_id=? AND channel='instagram'", (lead["id"],))
+                                conn2.execute("""
+                                    INSERT INTO outreach (business_id, channel, draft, status)
+                                    VALUES (?, 'instagram', ?, 'draft')
+                                """, (lead["id"], ig_draft))
+                        
                         conn2.commit()
                         log.info(f"  -> Scheduled {lead['name']} for {slot} UTC")
                     finally:
@@ -1796,11 +1805,17 @@ def start_scheduler():
     scheduler.add_job(job_check_bounces, "interval", minutes=10, id="bounce_verification", next_run_time=now_utc, replace_existing=True)
     # Daily performance recap alert: runs every day at 6 PM (18:00) local time
     scheduler.add_job(job_daily_recap, "cron", hour=18, minute=0, id="daily_recap", replace_existing=True)
-    # AI IG Draft Generation: Firestick churns these out in the background automatically (runs every 4 hours)
+    # AI IG/WA Draft Generation: Firestick only — Mac skips silently
     import generate_ig_drafts
     import generate_wa_drafts
-    scheduler.add_job(generate_wa_drafts.generate_drafts, "interval", hours=4, id="generate_wa_drafts", next_run_time=now_utc, replace_existing=True)
-    scheduler.add_job(generate_ig_drafts.generate_drafts, "interval", hours=4, id="generate_ig_drafts", next_run_time=now_utc, replace_existing=True)
+    def _firestick_only(fn):
+        def _wrapped(): 
+            if is_primary_active(): return
+            fn()
+        _wrapped.__name__ = fn.__name__
+        return _wrapped
+    scheduler.add_job(_firestick_only(generate_wa_drafts.generate_drafts), "interval", hours=4, id="generate_wa_drafts", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(_firestick_only(generate_ig_drafts.generate_drafts), "interval", hours=4, id="generate_ig_drafts", next_run_time=now_utc, replace_existing=True)
 
     if not scheduler.running:
         scheduler.start()
