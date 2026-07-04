@@ -148,6 +148,28 @@ def type_text(text: str):
 
 # ── Main send function ───────────────────────────────────────────────────────
 
+def unlock_screen():
+    """Wake up and unlock the Vivo phone reliably."""
+    # Wake screen
+    adb("shell input keyevent 224")
+    time.sleep(1)
+    
+    # Check if still on lock screen
+    focus = adb("shell dumpsys window | grep mCurrentFocus")
+    if "StatusBar" in focus or "Keyguard" in focus or "keyguard" in focus:
+        log.info("Phone is locked, swiping to unlock...")
+        # Swipe up from center-bottom to center to unlock
+        adb("shell input swipe 360 1200 360 400 300")
+        time.sleep(2)
+        # Check again
+        focus = adb("shell dumpsys window | grep mCurrentFocus")
+        if "StatusBar" in focus or "Keyguard" in focus:
+            log.warning("Still locked after swipe, trying again...")
+            adb("shell input swipe 360 1200 360 400 300")
+            time.sleep(2)
+    else:
+        log.info("Phone already unlocked.")
+
 def send_instagram_dm(username: str, message: str) -> bool:
     """
     Uses ADB to physically open Instagram, tap Message, type, and Send.
@@ -169,48 +191,57 @@ def send_instagram_dm(username: str, message: str) -> bool:
     subprocess.run(f"adb connect {FIRESTICK_IP}", shell=True, capture_output=True)
 
     try:
-        # 2. Deep link instantly to the user's profile
+        # 2. Wake up & unlock screen
+        unlock_screen()
+
+        # 3. Deep link instantly to the user's profile
+        log.info(f"Opening @{username} profile on Instagram...")
         adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
-        time.sleep(12) # Firestick IG is slow, wait for profile to load
+        time.sleep(6) # Wait for profile to load
         
-        # 3. Tap the "Message" button dynamically
-        log.info(f"[Instagram ADB] Tapping Message button for @{username}...")
+        # 4. Tap the "Message" button dynamically
+        log.info(f"Searching for Message button...")
         coords = get_ui_coords(["Message", "message"])
         if coords:
+            log.info(f"Tapping Message button at {coords}")
             adb(f"shell input tap {coords[0]} {coords[1]}")
         else:
-            # Fallback if UI dump fails
-            adb("shell input tap 233 206")
+            log.error("Could not find Message button in the UI hierarchy. Aborting.")
+            return False
         
-        time.sleep(8) # Wait for slow chat screen to open
+        time.sleep(6) # Wait for slow chat screen to open
         
-        # 4. Tap the Text Box to focus it dynamically
-        # Note: Instagram uses a unicode ellipsis '…' not three periods '...'
-        coords_input = get_ui_coords(["Message…", "message…", "Message...", "message..."])
+        # 5. Tap the Text Box to focus it dynamically
+        log.info("Searching for message input box...")
+        coords_input = get_ui_coords(["Message...", "message...", "Message", "Add a message", "Message…", "message…"])
         if coords_input:
+            log.info(f"Tapping message input at {coords_input}")
             adb(f"shell input tap {coords_input[0]} {coords_input[1]}")
+            time.sleep(1)
         else:
-            # Do NOT tap a hardcoded fallback here. If the chat opens, the box is usually auto-focused.
-            # A blind fallback tap here will hit the chat history and close the keyboard!
-            log.warning("[Instagram ADB] Could not dynamically find text box. Praying it is auto-focused.")
-        time.sleep(3) # Wait for keyboard/cursor to appear
+            log.warning("Could not find text input box — hoping it is auto-focused")
+        time.sleep(2)
 
-        # 5. Type the message
-        log.info(f"[Instagram ADB] Typing message to @{username}...")
-        type_text(message)
-        time.sleep(3) # Wait for text to fully input
+        # 6. Type the message
+        log.info(f"Typing message to @{username}...")
+        encoded = message.replace(' ', '%s')
+        adb(f'shell input text "{encoded}"')
+        time.sleep(2)
         
-        # 6. Press the hardware BACK button to dismiss the hovering keyboard
+        # 7. Press the hardware BACK button to dismiss the hovering keyboard
         adb("shell input keyevent 4")
         time.sleep(2)
         
-        # 7. Tap the "Send" button dynamically
+        # 8. Tap the "Send" button dynamically
+        log.info("Searching for Send button...")
         coords_send = get_ui_coords(["Send", "send"])
         if coords_send:
+            log.info(f"Tapping Send at {coords_send}")
             adb(f"shell input tap {coords_send[0]} {coords_send[1]}")
         else:
-            adb("shell input tap 328 612")
-        time.sleep(3)
+            log.warning("Send button not found — trying Enter key as fallback")
+            adb("shell input keyevent 66")
+        time.sleep(2)
         
         log.info(f"[Instagram ADB] ✅ Successfully TYPED and SENT DM to @{username}")
         _increment_daily_count()
@@ -219,15 +250,10 @@ def send_instagram_dm(username: str, message: str) -> bool:
         log.error(f"[Instagram ADB] Sequence failed: {e}")
         return False
         
-    finally:
-        pass
-        # 8. Clean up: Directly kill the app to reset state
-        # adb("shell am force-stop com.instagram.android")
-        # time.sleep(2)
-        
-    # 7. Human-like randomized delay before the next action
+    # Randomized delay before the next action
     delay = random.randint(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS)
     log.info(f"[Instagram ADB] Sleeping for {delay} seconds to mimic human behavior...")
     time.sleep(delay)
     
     return True
+
