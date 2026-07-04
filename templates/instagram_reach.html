@@ -620,10 +620,23 @@ function applyFilters() {
     if (campaignMatch && advancedMatch) {
       totalCampaignLeads++;
       const s = row.dataset.status || 'new';
-      statusCounts[s] = (statusCounts[s] || 0) + 1;
+      if (s === 'sent') {
+        if (lead && (lead.ig_dm_sent === 1 || lead.ig_dm_sent === true)) {
+          statusCounts['sent'] = (statusCounts['sent'] || 0) + 1;
+        }
+      } else {
+        statusCounts[s] = (statusCounts[s] || 0) + 1;
+      }
     }
     
-    const statusMatch = (currentFilter === 'all' || row.dataset.status === currentFilter);
+    let statusMatch = false;
+    if (currentFilter === 'all') {
+      statusMatch = true;
+    } else if (currentFilter === 'sent') {
+      statusMatch = lead && (lead.ig_dm_sent === 1 || lead.ig_dm_sent === true);
+    } else {
+      statusMatch = (row.dataset.status === currentFilter);
+    }
     const show = statusMatch && campaignMatch && advancedMatch;
     row.style.display = show ? '' : 'none';
     if (show) shown++;
