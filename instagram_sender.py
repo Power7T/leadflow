@@ -76,7 +76,18 @@ def can_send_instagram() -> bool:
 # ── ADB Controller ───────────────────────────────────────────────────────────
 
 def adb(cmd: str) -> str:
-    """Run an ADB command on the Firestick and return its stdout"""
+    """Run an ADB command on the device and return its stdout"""
+    global FIRESTICK_IP
+    try:
+        _ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
+        _ip_file_local = Path(__file__).parent / ".vivo_ip"
+        if _ip_file_home.exists():
+            FIRESTICK_IP = _ip_file_home.read_text().strip()
+        elif _ip_file_local.exists():
+            FIRESTICK_IP = _ip_file_local.read_text().strip()
+    except Exception:
+        pass
+        
     try:
         return subprocess.check_output(
             f"adb -s {FIRESTICK_IP} {cmd}", 
