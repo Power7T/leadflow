@@ -439,27 +439,66 @@ def job_auto_send_instagram_dms():
         public_url = os.getenv("CF_WORKER_URL", "https://leadflow-relay.chandango12.workers.dev")
         headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37")}
         
-        # Fetch directly from the local Mac database since we shifted generation here
+        # Fetch directly from the local Mac database
         import sqlite3
-        from database import get_conn
+        from database import get_conn, is_optimal_send_time, detect_timezone
+        from zoneinfo import ZoneInfo
+        from datetime import datetime
+        
         conn = get_conn()
         conn.row_factory = sqlite3.Row
-        rows = conn.execute("SELECT o.business_id, o.draft as ai_draft, c.instagram as instagram_handle, b.name as business_name FROM outreach o JOIN businesses b ON b.id = o.business_id JOIN contacts c ON c.business_id = o.business_id WHERE o.channel = 'instagram' AND o.status = 'draft' AND b.demo_tunnel_url IS NOT NULL AND b.demo_tunnel_url != '' GROUP BY o.business_id LIMIT 50").fetchall()
+        # Scan a larger pool of 200 candidates to filter and sort by local time suitability
+        rows = conn.execute("""
+            SELECT o.business_id, o.draft as ai_draft, c.instagram as instagram_handle, 
+                   b.name as business_name, b.timezone, b.city, b.country 
+            FROM outreach o 
+            JOIN businesses b ON b.id = o.business_id 
+            JOIN contacts c ON c.business_id = o.business_id 
+            WHERE o.channel = 'instagram' AND o.status = 'draft' 
+              AND b.demo_tunnel_url IS NOT NULL AND b.demo_tunnel_url != '' 
+            GROUP BY o.business_id 
+            LIMIT 200
+        """).fetchall()
         leads = [dict(r) for r in rows]
         conn.close()
         
-        # Filter for eligible ones
+        # Filter for eligible ones within local timezone awake hours (8 AM - 9 PM)
         eligible = []
         for l in leads:
             if l.get('ai_draft') and len(l['ai_draft']) > 10:
-                eligible.append(l)
-                if len(eligible) >= 5: break
+                tz = l.get("timezone") or detect_timezone(l.get("city", ""), l.get("country", ""))
+                if not l.get("timezone"):
+                    try:
+                        conn_tz = get_conn()
+                        conn_tz.execute("UPDATE businesses SET timezone=? WHERE id=?", (tz, l["business_id"]))
+                        conn_tz.commit()
+                        conn_tz.close()
+                    except: pass
+                
+                # Verify they are currently within their local awake window
+                if is_optimal_send_time(tz, window_start=8, window_end=21, preferred_days=[0,1,2,3,4,5,6]):
+                    # Priority score: leads closest to 12 PM (midday) local time get prioritized
+                    try:
+                        now_local = datetime.now(ZoneInfo(tz))
+                        priority = -abs(now_local.hour - 12)
+                    except:
+                        priority = -12  # fallback
+                    l['priority'] = priority
+                    l['timezone_resolved'] = tz
+                    eligible.append(l)
+        
+        # Sort so that leads closest to active midday climb up the ladder
+        eligible.sort(key=lambda x: x.get('priority', -12), reverse=True)
+        
+        # Take the top 5 to send in this hour interval
+        eligible = eligible[:5]
                 
         if not eligible:
-            log.info("[Instagram] No eligible leads for DMs right now")
+            log.info("[Instagram] No eligible leads within local awake hours (8 AM - 9 PM) right now")
             return
 
         log.info(f"[Instagram] Sending DMs to {len(eligible)} leads ({get_instagram_daily_sent_count()}/20 used today)")
+
         for lead in eligible:
             handle = lead["instagram_handle"].strip().lstrip("@")
             draft  = lead.get("ai_draft") or ""
