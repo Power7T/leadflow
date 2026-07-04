@@ -86,6 +86,54 @@ This document records all audits, bug fixes, performance optimizations, security
 
 *Last updated: June 18, 2026*
 
+---
+
+## ✅ Phase 4 — GTM Loop, Scoring Upgrades & Code Quality (June 28 – July 1, 2026)
+
+### 10. GTM Traction Loop Integration (June 27–28, 2026)
+- **Narrative Shift (`ai_writer.py`):** All outreach prompts rewritten to position LeadFlow as a *"Mobile Performance & Booking Specialist"* solving the "Mobile Conversion Gap". Initial email is shorter, outcome-focused, and demo-centric.
+- **4-Step Follow-up Sequence (`ai_writer.py` — `write_follow_up_sequence`):** Restructured to deliver: Step 1 (Initial Hook), Step 2 (Mobile Scorecard, +2d), Step 3 (Case Study Proof, +5d), Step 4 (Irresistible Value Stack, +8d).
+- **Scheduler Dispatch (`scheduler.py`):** Follow-up jobs now enforce the 4-step sequence with business-hours timezone checks per send slot.
+- `gtm_traction_loop_plan.md` marked obsolete (all 5 steps implemented).
+
+### 11. Intent Signal Upgrades (`scorer.py`)
+- **Booking System Detection:** 15+ booking platform markers (Calendly, Vagaro, Booksy, etc.) — service businesses WITHOUT a booking system get `+4` intent score since our demo can fill that gap.
+- **Hiring Signal Detection:** Businesses actively posting jobs (Indeed, Glassdoor, etc.) get `+4` — signals active budget and an engaged decision-maker.
+- **Double-Pain Bonus:** Leads running paid ads (`has_google_ads=1`) AND scoring under 50 on PageSpeed get `+6` — they're burning ad money on a broken site (maximum urgency).
+- `intent_score` cap raised from **20 → 30** to accommodate new signals without breaking existing score math.
+
+### 12. SMTP Retry with Exponential Backoff (`sender.py`)
+- Added `_SMTP_MAX_RETRIES=3` and `_SMTP_RETRY_DELAYS=[2, 4]` (seconds) config constants.
+- Transient errors (`SMTPServerDisconnected`, `SMTPConnectError`, `SMTPTemporaryFailure`, `ConnectionResetError`, `OSError`) now retry automatically instead of silently failing the campaign.
+- Non-retryable errors (auth failure, invalid recipient) still raise immediately.
+
+### 13. Enrichment Feedback Logging (`extractor.py`)
+- `hunter_enrich()` and `apollo_enrich()` now return structured dicts with `{'source', 'error'}` keys instead of bare strings/empty dicts that swallowed all failures.
+- `extract_contacts()` now logs `INFO` on enrichment success and `WARNING` on failure via `leadflow.extractor` logger — visible in `server.log`.
+- Silently-skipped failures (no API key configured) are separated from real errors.
+
+### 14. Follow-up Sequence Deduplication (`scheduler.py`)
+- Extracted `_enqueue_sequence_for_lead(lead, is_hot_lead, first_fu_delay_minutes)` shared helper.
+- All 3 callers (`job_queue_follow_ups`, `job_auto_followup_opened_leads`, `job_check_scroll_engaged_leads`) now call the helper — logic lives in exactly one place.
+- `first_fu_delay_minutes` parameter controls FU-1 timing: `None` = default sequence timing, `5` = hot-open (fire in 5 min), `3` = scroll-engaged (fire in 3 min).
+
+### 15. Dynamic Lead Re-Scoring (`server.py`)
+- **Email Open (`/track/open/{tracking_id}`):** `lead_score += 5` on every open, capped at 100. Opens now move leads up in the send queue automatically.
+- **Demo View (`/api/track.png`):** `lead_score += 10` on first demo view (combined with `demo_viewed=1` flag). A lead that opens AND views their demo rises +15 total in priority.
+
+### 16. Cloudflare KV Config in Settings (`templates/settings.html`)
+- Added **☁️ Cloudflare KV & Worker Secrets** section with 3 new fields:
+  - `CF_ACCOUNT_ID` — Cloudflare account identifier
+  - `CF_API_TOKEN` — API token with Workers KV Edit permission
+  - `CF_KV_NAMESPACE_ID` — KV namespace ID for leads/demo sync
+- All 3 fields are saved to `.env` via the existing `/settings/save` endpoint — no more manual `wrangler.toml` edits needed.
+
+### 17. Codebase Cleanup
+- **29 stale scripts archived:** All `fix_*.py` and `patch_*.py` one-off scripts moved to `_archive/` folder (not deleted — preserved for reference).
+- Root directory reduced from ~70 files to ~41 active Python files.
+
+*Last updated: July 1, 2026*
+
 
 ---
 

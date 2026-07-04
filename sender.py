@@ -5,8 +5,10 @@ Deliverability guards (cold sending will land in spam without these):
 - List-Unsubscribe + one-click header (Gmail/Yahoo bulk-sender requirement)
 - physical postal address + opt-out in the footer (CAN-SPAM)
 - a suppression list so we never re-email someone who opted out
+- 3-attempt retry with exponential backoff on transient SMTP errors
 """
 import os
+import time
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -15,6 +17,10 @@ from dotenv import load_dotenv
 from tracker import inject_tracking_into_email
 
 load_dotenv()
+
+# Retry config — tune here if needed
+_SMTP_MAX_RETRIES = 3
+_SMTP_RETRY_DELAYS = [2, 4]  # seconds between attempt 1→2, 2→3
 
 SUPPRESS_FILE = os.path.join(os.path.dirname(__file__), "suppressed.txt")
 
@@ -168,7 +174,8 @@ def send_email(to_email: str, subject: str, body: str,
         html = f"<html><body>{plain_body.replace(chr(10), '<br>')}</body></html>"
     msg.attach(MIMEText(html, "html"))
 
-    try:
+    def _do_send():
+        """Inner function that performs the actual SMTP connection and send."""
         if smtp_server is not None:
             smtp_server.sendmail(sender_email, to_email, msg.as_string())
         else:
@@ -177,7 +184,7 @@ def send_email(to_email: str, subject: str, body: str,
                 smtp_port = int(os.getenv("SMTP_PORT", "465"))
             except ValueError:
                 smtp_port = 465
-            
+
             if smtp_port == 465:
                 with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
                     server.login(sender_email, sender_password)
@@ -188,37 +195,58 @@ def send_email(to_email: str, subject: str, body: str,
                     server.login(sender_email, sender_password)
                     server.sendmail(sender_email, to_email, msg.as_string())
 
-        # Update database with generated message_id
-        if business_id:
-            conn = get_conn()
-            try:
-                if parent_message_id:
-                    # Update message_id for the most recent pending/sending follow-up
-                    conn.execute("""
-                        UPDATE follow_ups 
-                        SET message_id=? 
-                        WHERE id = (
-                            SELECT id FROM follow_ups 
-                            WHERE business_id=? AND status='pending' 
-                            ORDER BY sequence_num ASC LIMIT 1
-                        )
-                    """, (msg_id, business_id))
-                else:
-                    # Update message_id for the initial email
-                    conn.execute("""
-                        UPDATE outreach 
-                        SET message_id=? 
-                        WHERE business_id=? AND channel='email'
-                    """, (msg_id, business_id))
-                conn.commit()
-            except Exception:
-                pass
-            finally:
-                conn.close()
+    # ── Retry loop with exponential backoff ───────────────────────────
+    last_exc = None
+    for attempt in range(_SMTP_MAX_RETRIES):
+        try:
+            _do_send()
+            last_exc = None
+            break  # success
+        except (smtplib.SMTPServerDisconnected, smtplib.SMTPConnectError,
+                smtplib.SMTPTemporaryFailure, ConnectionResetError, OSError) as e:
+            # Transient network/server error — wait then retry
+            last_exc = e
+            if attempt < len(_SMTP_RETRY_DELAYS):
+                time.sleep(_SMTP_RETRY_DELAYS[attempt])
+        except Exception as e:
+            # Non-retryable error (auth failure, bad recipient, etc.)
+            raise RuntimeError(f"Failed to send email: {e}")
 
-        return True
-    except Exception as e:
-        raise RuntimeError(f"Failed to send email: {e}")
+    if last_exc is not None:
+        raise RuntimeError(
+            f"Failed to send email after {_SMTP_MAX_RETRIES} attempts: {last_exc}"
+        )
+
+    # Update database with generated message_id
+    if business_id:
+        conn = get_conn()
+        try:
+            if parent_message_id:
+                # Update message_id for the most recent pending/sending follow-up
+                conn.execute("""
+                    UPDATE follow_ups 
+                    SET message_id=? 
+                    WHERE id = (
+                        SELECT id FROM follow_ups 
+                        WHERE business_id=? AND status='pending' 
+                        ORDER BY sequence_num ASC LIMIT 1
+                    )
+                """, (msg_id, business_id))
+            else:
+                # Update message_id for the initial email
+                conn.execute("""
+                    UPDATE outreach 
+                    SET message_id=? 
+                    WHERE business_id=? AND channel='email'
+                """, (msg_id, business_id))
+            conn.commit()
+        except Exception:
+            pass
+        finally:
+            conn.close()
+
+    return True
+
 
 
 def parse_subject_body(draft: str) -> tuple[str, str]:

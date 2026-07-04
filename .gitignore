@@ -76,3 +76,6 @@ leadflow*.bak*
 # Scratch one-off scripts
 scratch/
 
+
+# Backup Secrets
+SECRETS_BACKUP*

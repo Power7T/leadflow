@@ -423,10 +423,9 @@ _whatsapp_send_lock  = threading.Lock()
 @require_internet
 def job_auto_send_instagram_dms():
     """
-    Hourly: find leads where email was sent 5+ days ago with no reply
-    and they have an Instagram handle. Send up to 5 DMs per run.
-    Respects the 20/day safety cap in instagram_sender.py.
+    PAUSED BY USER REQUEST
     """
+    
     if not _instagram_send_lock.acquire(blocking=False):
         log.info("[Instagram] Job already running — skipping")
         return
@@ -440,29 +439,14 @@ def job_auto_send_instagram_dms():
         public_url = os.getenv("CF_WORKER_URL", "https://leadflow-relay.chandango12.workers.dev")
         headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37")}
         
-        # Fetch directly from KV since Firestick generates them
-        import subprocess
-        # Fallback: Cloudflare KV limit exceeded. Fetch directly from Firestick via ADB
-        # Fallback: Cloudflare KV limit exceeded. Fetch directly from Firestick via ADB
-        # Fallback: Cloudflare KV limit exceeded. Fetch directly from Firestick via ADB
-        python_script = """
-import sqlite3, json
-conn = sqlite3.connect("/data/data/com.termux/files/home/leadflow/leadflow.db")
-conn.row_factory = sqlite3.Row
-rows = conn.execute("SELECT o.business_id, o.draft as ai_draft, c.instagram as instagram_handle, b.name as business_name FROM outreach o JOIN businesses b ON b.id = o.business_id JOIN contacts c ON c.business_id = o.business_id WHERE o.channel = 'instagram' AND o.status = 'draft' LIMIT 50").fetchall()
-print(json.dumps([dict(r) for r in rows]))
-"""
-        import base64
-        # Write to file via base64 decoding to avoid all quoting issues
-        b64_script = base64.b64encode(python_script.encode()).decode()
-        subprocess.run(['adb', '-s', '192.168.1.3:5555', 'shell', f"run-as com.termux /data/data/com.termux/files/usr/bin/python -c 'import base64; open(\"/data/data/com.termux/files/home/leadflow/tmp_fetch.py\", \"w\").write(base64.b64decode(\"{b64_script}\").decode())'"])
-        adb_cmd = ['adb', '-s', '192.168.1.3:5555', 'shell', 'run-as', 'com.termux', '/data/data/com.termux/files/usr/bin/python', '/data/data/com.termux/files/home/leadflow/tmp_fetch.py']
-        
-        result = subprocess.run(adb_cmd, capture_output=True, text=True)
-        try:
-            leads = json.loads(result.stdout.strip())
-        except:
-            leads = []
+        # Fetch directly from the local Mac database since we shifted generation here
+        import sqlite3
+        from database import get_conn
+        conn = get_conn()
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("SELECT o.business_id, o.draft as ai_draft, c.instagram as instagram_handle, b.name as business_name FROM outreach o JOIN businesses b ON b.id = o.business_id JOIN contacts c ON c.business_id = o.business_id WHERE o.channel = 'instagram' AND o.status = 'draft' AND b.demo_tunnel_url IS NOT NULL AND b.demo_tunnel_url != '' GROUP BY o.business_id LIMIT 50").fetchall()
+        leads = [dict(r) for r in rows]
+        conn.close()
         
         # Filter for eligible ones
         eligible = []
@@ -483,14 +467,28 @@ print(json.dumps([dict(r) for r in rows]))
                 continue
             ok = send_instagram_dm(handle, draft)
             if ok:
-                # Fetch, append, and push back array
+                # Update SQLite database status immediately
+                try:
+                    conn_update = get_conn()
+                    conn_update.execute("UPDATE outreach SET status='sent', sent_at=datetime('now','localtime') WHERE business_id=? AND channel='instagram'", (lead.get('business_id'),))
+                    conn_update.execute("UPDATE businesses SET ig_dm_sent=1, ig_dm_sent_at=datetime('now','localtime'), status='sent' WHERE id=?", (lead.get('business_id'),))
+                    conn_update.commit()
+                    conn_update.close()
+                    log.info(f"[Instagram] Updated local SQLite database status for @{handle} to sent")
+                except Exception as db_err:
+                    log.error(f"[Instagram] Local SQLite status update failed: {db_err}")
+
+                # Fetch, append, and push back array (non-blocking fallback)
                 try:
                     res_done = requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_done_queue"}, timeout=10)
                     done_q = json.loads(res_done.json().get("value", "[]") or "[]")
                 except:
                     done_q = []
                 done_q.append({"business_id": lead.get('business_id', lead.get('id')), "done_at": "2026-07-02T00:00:00Z"})
-                requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_done_queue", "value": json.dumps(done_q)}, timeout=10)
+                try:
+                    requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_done_queue", "value": json.dumps(done_q)}, timeout=10)
+                except Exception as kv_err:
+                    log.warning(f"[Instagram] Non-blocking Cloudflare KV sync failure: {kv_err}")
                 log.info(f"[Instagram] Sent DM to @{handle} for {lead.get('business_name')}")
             if not can_send_instagram():
                 log.info("[Instagram] Daily cap reached — stopping")
@@ -686,15 +684,19 @@ def job_sync_beacon():
 @require_internet
 def job_replicate_database():
     """
-    Bi-directional database replication via Cloudflare KV.
-    Runs every 2 minutes.
+    Bi-directional database replication via Cloudflare KV + LAN failsafe.
+    Runs every 2 minutes. LAN sync to Firestick acts as hard backup in case
+    Cloudflare journal missed any inserts (new leads, contacts, outreach etc).
     """
     try:
         from sync_engine import run_sync_cycle
-        run_sync_cycle()
-        log.info("[Scheduler] Database replication cycle completed.")
+        # Pass Firestick IP as LAN peer for failsafe full-DB sync
+        lan_peers = ["192.168.1.3"]
+        run_sync_cycle(lan_peers=lan_peers)
+        log.info("[Scheduler] Database replication cycle completed (Cloudflare + LAN).")
     except Exception as e:
         log.error(f"[Scheduler] Database replication error: {e}")
+
 
 
 def job_replicate_dashboard_static():

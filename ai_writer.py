@@ -128,18 +128,18 @@ def get_system_context(business: dict) -> str:
     has_website = bool(business.get("website"))
     
     if pitch_type == "leadflow_saas":
-        role = "an Automation & Lead Generation Specialist"
-        golden = "\"Hey [Mike/there], I'm Chandan—an Automation & Lead Generation Specialist. [Business Name] has awesome [X]★ reviews, but you're missing out on a lot of leads by not having an automated CRM and follow-up system. I built this custom automated lead-gen demo to show you what's possible: [link]. Check it out and let me know what you think.\""
+        role = "a developer who builds lead-gen systems"
+        golden = "\"Hey [Mike/there], I'm Chandan. [Business Name] has awesome [X]★ reviews, but you're missing out on a lot of leads by not having an automated CRM and follow-up system. I built this custom automated lead-gen demo to show you what's possible: [link]. Check it out and let me know what you think.\""
     elif not has_website:
-        role = "an Elite Web Developer"
-        golden = "\"Hey [Mike/there], I'm Chandan—an Elite Web Developer. [Business Name] has awesome [X]★ reviews, but without a website, you're missing out on local members searching online. I built this custom demo to show you what's possible: [link]. Check it out and let me know what you think.\""
+        role = "a web developer"
+        golden = "\"Hey [Mike/there], I'm Chandan. [Business Name] has awesome [X]★ reviews, but without a website, you're missing out on local members searching online. I built this custom demo to show you what's possible: [link]. Check it out and let me know what you think.\""
     else:
-        role = "a Web Development & Optimization Specialist"
+        role = "a developer"
         gap_text = business.get("gap", "")
         import re
         m = re.search(r"—\s*(.*)", gap_text)
         issue = m.group(1).strip() if m else "your website could be converting far more visitors into paying customers"
-        golden = f"\"Hey [Mike/there], I'm Chandan—a Web Development & Optimization Specialist. [Business Name] has awesome [X]★ reviews, but I noticed {issue}. I built this custom optimized demo to show you what's possible: [link]. Check it out and let me know what you think.\""
+        golden = f"\"Hey [Mike/there], I'm Chandan. [Business Name] has awesome [X]★ reviews, but I noticed {issue}. I built this custom optimized demo to show you what's possible: [link]. Check it out and let me know what you think.\""
     
 
     return f"""You are a highly persuasive, world-class outbound sales copywriter for Chandan Gosavi, {role}.
@@ -635,7 +635,7 @@ def _run_template(prompt: str) -> str:
         role = "an Automation & Lead Generation Specialist"
         pain = "you're missing out on a lot of leads by not having an automated CRM and follow-up system"
     elif not has_website:
-        role = "an Elite Web Developer"
+        role = "a tech automation specialist"
         pain = "without a website, you're missing out on local members searching online"
     else:
         role = "a Web Development & Optimization Specialist"
@@ -744,9 +744,9 @@ def _run(prompt: str, attempts: int = 2, sys_ctx: str = None) -> str:
     if out:
         return out
 
-    # ── Tier 4: Smart template (never fails) ──
-    print("[ai_writer] All AI tiers exhausted — using smart template fallback")
-    return _run_template(prompt)
+    # ── Tier 4: Abort (No Generic Fallback) ──
+    print("[ai_writer] All AI tiers exhausted. Aborting to avoid sending a generic message.")
+    return ""
 
 
 
@@ -892,11 +892,13 @@ Offer: {offer}{booking_part}
 PERSONALIZED OPENING LINE (use this exact sentence to open the email body — do NOT change it):
 "{first_line}"
 
-Write a highly-converting cold email under 100 words.
-Subject line on first line, blank line, then body.
-Start with the personalized opening line above, then gently point out the missing revenue opportunity.
-You MUST explicitly mention their business name, but use a shortened conversational version if it is too long.
-End with a confident statement. Ready to send — no placeholders."""
+CRITICAL RULES:
+1. Subject line must be: "Quick audit idea for {business.get('name', 'your business')}?" or "{business.get('city', 'Local')} {business.get('category', 'business')} / {business.get('name', 'your business')}"
+2. Subject line on the FIRST line, followed by a blank line, then the body.
+3. Start the body EXACTLY with the personalized opening line above.
+4. Keep the entire body under 60 words.
+5. Do NOT introduce yourself. Never say "I'm Chandan", "I build websites", or "I specialize in". Lead directly with the diagnostic observations.
+6. End with a confident, non-salesy statement. Ready to send — no placeholders."""
     raw = _run(prompt)
     # Apply spintax to any {A|B} variations the AI may have added
     return _spintax(raw) if raw else raw
@@ -910,16 +912,29 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
         demo_part = f"IMPORTANT: Do NOT mention a demo link. Instead invite them to message you on Fiverr ({FIVERR_URL}) to see a custom demo."
         offer = _pitch_context(business.get('pitch_type', ''), "")
 
+    # Determine the psychological hook based on their data
+    if not business.get('website') or business.get('website') == 'NONE':
+        if int(business.get('google_reviews', 0)) > 20:
+            hook_strategy = "HOOK: Point out they have amazing Google reviews, but because they have NO website linked, they are bleeding high-ticket leads who try to click through from Maps to learn more."
+        else:
+            hook_strategy = "HOOK: Point out that not having a website is costing them trust and local search traffic, making them lose customers to local competitors."
+    elif int(business.get('website_score', 100)) < 60:
+        hook_strategy = "HOOK: Use the 'Broken Thing' approach. Inform them their current website is loading very slowly or has technical flaws that are secretly leaking mobile traffic and losing them money."
+    else:
+        hook_strategy = "HOOK: Point out that while their business looks great, their digital infrastructure could be optimized to capture significantly more high-ticket leads."
+
     prompt = f"""{_business_context(business, scraped)}
 Offer: {offer}
 {demo_part}
 
 Write a highly professional, expert-level Instagram DM (under 50 words).
-Do NOT use emojis (or strictly 1 max). Do NOT sound desperate, noob-like, or use words like "no catch" or "free".
-Position yourself as a digital infrastructure expert who builds high-converting systems for their specific industry.
-You MUST reference a SPECIFIC real detail from the context above (e.g., their {business.get('google_reviews', '0')} Google reviews, their specific service, or their website load speed).
-State exactly what the custom mockup is designed to do (e.g., capture high-ticket leads, increase consultation requests, etc.) based on their category.
-You MUST explicitly mention their business name. Ready to send."""
+CRITICAL RULES:
+1. The message MUST be HYPER-PERSONALIZED to their exact business. Reference their specific niche, city, or a highly specific detail.
+2. Do NOT introduce yourself. Never say "I'm Chandan" or "I build websites". Lead directly with the value or the technical audit problem.
+3. Do NOT use emojis (or strictly 1 max). Do NOT sound desperate or use words like "no catch" or "free".
+4. {hook_strategy}
+5. You MUST reference their {business.get('google_reviews', '0')} Google reviews, their specific service, or their lack of a website.
+6. You MUST explicitly mention their exact business name. Make it feel 100% bespoke. Ready to send."""
     return _run(prompt)
 
 
@@ -936,10 +951,12 @@ LinkedIn: {business.get('linkedin_name','')}
 Offer: {offer}
 {demo_part}
 
-Write a professional LinkedIn DM under 70 words.
-Reference a specific real detail about the business.
-You MUST explicitly mention their business name, but use a shortened conversational version if it is too long.
-End with a confident statement. Ready to send."""
+Write a professional LinkedIn DM under 50 words.
+CRITICAL RULES:
+1. Do NOT introduce yourself. Do not say "I'm Chandan", "I build websites", etc. Start directly with the observation.
+2. Reference a specific real detail about the business.
+3. You MUST explicitly mention their business name.
+4. End with a confident, non-salesy statement. Ready to send."""
     return _run(prompt)
 
 
@@ -955,10 +972,12 @@ def write_whatsapp_dm(business: dict, demo_url: str = "", scraped: dict | None =
 Offer: {offer}
 {demo_part}
 
-Write a WhatsApp message under 50 words.
-Be direct but conversational and friendly. Highlight a missed opportunity constructively, make them curious.
-You MUST explicitly mention their business name, but use a shortened conversational version if it is too long.
-No formal greetings. End with a confident statement. Ready to send."""
+Write a WhatsApp message under 45 words.
+CRITICAL RULES:
+1. Do NOT introduce yourself. Do not say "I'm Chandan", "I build websites", etc.
+2. Be direct but conversational and friendly. Highlight a missed opportunity constructively, make them curious.
+3. You MUST explicitly mention their business name.
+4. No formal greetings. End with a confident, short statement. Ready to send."""
     return _run(prompt)
 
 

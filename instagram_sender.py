@@ -25,12 +25,20 @@ log = logging.getLogger("leadflow.instagram")
 log.setLevel(logging.INFO)
 
 # ── Config ──────────────────────────────────────────────────────────────────
-DAILY_LIMIT       = 15
+DAILY_LIMIT       = 20
 MIN_DELAY_SECONDS = 5   # 5 seconds minimum wait before next DM
 MAX_DELAY_SECONDS = 10   # 10 seconds maximum wait
 DAILY_LOG_FILE    = Path("/tmp/ig_daily_sends.json")
 
-FIRESTICK_IP = "192.168.1.3:5555"
+# Dynamically resolve device IP (checks user home, script directory, or defaults to 192.168.1.7:5555)
+_ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
+_ip_file_local = Path(__file__).parent / ".vivo_ip"
+if _ip_file_home.exists():
+    FIRESTICK_IP = _ip_file_home.read_text().strip()
+elif _ip_file_local.exists():
+    FIRESTICK_IP = _ip_file_local.read_text().strip()
+else:
+    FIRESTICK_IP = "192.168.1.7:5555"
 
 # ── Daily count tracking ─────────────────────────────────────────────────────
 
@@ -96,12 +104,13 @@ def get_ui_coords(text_matches: list) -> tuple:
         
         # Iterate over all UI nodes
         for node in root.iter('node'):
-            text = node.attrib.get('text', '').lower()
-            desc = node.attrib.get('content-desc', '').lower()
+            text = node.attrib.get('text', '').strip().lower()
+            desc = node.attrib.get('content-desc', '').strip().lower()
             
             for match in text_matches:
                 match = match.lower()
-                if match in text or match in desc:
+                # Strict exact matching to avoid clicking posts containing the word "message"
+                if match == text or match == desc:
                     bounds = node.attrib.get('bounds')
                     if bounds:
                         # Parse bounds like "[x1,y1][x2,y2]" to find center point
@@ -116,15 +125,26 @@ def get_ui_coords(text_matches: list) -> tuple:
 
 def type_text(text: str):
     """Types text via ADB as the shell user, stripping crashing characters."""
+    # Replace unicode stars with text representation
+    text = text.replace('★', ' star')
+    
     # Strip newlines and convert crashing unicode em-dashes
     text = text.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
     text = text.replace('—', ' - ').replace('–', '-')
     
-    # Escape quotes and spaces for the adb shell input command
-    safe_text = text.replace(' ', '%s').replace('"', '\\"').replace("'", "\\'")
+    # Android shell often cuts strings at apostrophes (e.g. "I'm"), so we just delete all quotes completely
+    text = text.replace('"', '').replace("'", "")
+    
+    # Strip any remaining non-ASCII characters to prevent Android command crashes
+    text = text.encode('ascii', errors='ignore').decode('ascii')
+    
+    # We tunnel the string through base64 to completely bypass bash interpreter crash loops on characters like & and <
+    import base64
+    b64_text = base64.b64encode(text.encode('utf-8')).decode('utf-8')
     
     # Must execute directly via adb shell so we have input injection permissions
-    adb(f'shell input text "{safe_text}"')
+    # We echo the base64, decode it, replace spaces with %s, and pass it to input text
+    adb(f"shell \"input text \\\"$(echo {b64_text} | base64 -d | sed 's/ /%s/g')\\\"\"")
 
 # ── Main send function ───────────────────────────────────────────────────────
 
@@ -164,14 +184,25 @@ def send_instagram_dm(username: str, message: str) -> bool:
         
         time.sleep(8) # Wait for slow chat screen to open
         
-        # 4. Tap the Text Box to focus it (Hardcoded: X=111, Y=608)
-        adb("shell input tap 111 608")
+        # 4. Tap the Text Box to focus it dynamically
+        # Note: Instagram uses a unicode ellipsis '…' not three periods '...'
+        coords_input = get_ui_coords(["Message…", "message…", "Message...", "message..."])
+        if coords_input:
+            adb(f"shell input tap {coords_input[0]} {coords_input[1]}")
+        else:
+            # Do NOT tap a hardcoded fallback here. If the chat opens, the box is usually auto-focused.
+            # A blind fallback tap here will hit the chat history and close the keyboard!
+            log.warning("[Instagram ADB] Could not dynamically find text box. Praying it is auto-focused.")
         time.sleep(3) # Wait for keyboard/cursor to appear
 
         # 5. Type the message
         log.info(f"[Instagram ADB] Typing message to @{username}...")
         type_text(message)
         time.sleep(3) # Wait for text to fully input
+        
+        # 6. Press the hardware BACK button to dismiss the hovering keyboard
+        adb("shell input keyevent 4")
+        time.sleep(2)
         
         # 7. Tap the "Send" button dynamically
         coords_send = get_ui_coords(["Send", "send"])
@@ -180,31 +211,19 @@ def send_instagram_dm(username: str, message: str) -> bool:
         else:
             adb("shell input tap 328 612")
         time.sleep(3)
-        log.info(f"[Instagram ADB] ✅ Successfully sent DM to @{username}")
-        _increment_daily_count()
         
-        # Send ntfy alert
-        try:
-            import requests, os
-            ntfy_topic = os.getenv("NTFY_TOPIC", "leadflow-chandan-secret")
-            requests.post(f"https://ntfy.sh/{ntfy_topic}", data=f"🤖 Instagram DM successfully sent to @{username} via Firestick!".encode('utf-8'))
-        except:
-            pass
+        log.info(f"[Instagram ADB] ✅ Successfully TYPED and SENT DM to @{username}")
+        _increment_daily_count()
 
     except Exception as e:
         log.error(f"[Instagram ADB] Sequence failed: {e}")
         return False
         
     finally:
-        # 8. Clean up: Hit the Android BACK button 3 times to exit the chat/profile safely
-        adb("shell input keyevent 4")
-        time.sleep(1)
-        adb("shell input keyevent 4")
-        time.sleep(1)
-        adb("shell input keyevent 4")
-        time.sleep(1)
-        # Hit HOME just to be safe
-        adb("shell input keyevent 3")
+        pass
+        # 8. Clean up: Directly kill the app to reset state
+        # adb("shell am force-stop com.instagram.android")
+        # time.sleep(2)
         
     # 7. Human-like randomized delay before the next action
     delay = random.randint(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS)

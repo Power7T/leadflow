@@ -388,6 +388,14 @@ def insert_business(data: dict) -> int:
     conn.commit()
     bid = cur.lastrowid
     conn.close()
+    # Sync new business to all nodes
+    try:
+        from sync_engine import log_sync_action
+        sync_payload = dict(bind_data)
+        sync_payload["id"] = bid
+        log_sync_action("insert_business", {"business": sync_payload})
+    except Exception:
+        pass
     return bid
 
 
@@ -412,6 +420,12 @@ def insert_contacts(business_id: int, contacts: dict):
     ))
     conn.commit()
     conn.close()
+    # Sync contacts to all nodes
+    try:
+        from sync_engine import log_sync_action
+        log_sync_action("insert_contact", {"business_id": business_id, "contacts": contacts})
+    except Exception:
+        pass
 
 
 def get_leads(status: str = "new") -> list:
@@ -592,6 +606,15 @@ def insert_outreach(business_id: int, channel: str, draft: str, subject_options:
         """, (business_id, channel, draft, draft, subject_options, tracking_id))
     conn.commit()
     conn.close()
+    # Sync outreach draft to all nodes
+    try:
+        from sync_engine import log_sync_action
+        log_sync_action("insert_outreach", {
+            "business_id": business_id, "channel": channel,
+            "draft": draft, "subject_options": subject_options, "tracking_id": tracking_id
+        })
+    except Exception:
+        pass
     return tracking_id
 
 
@@ -718,6 +741,12 @@ def insert_follow_ups(business_id: int, sequences: list[dict]):
         except Exception:
             pass
     conn.commit()
+    # Sync follow-ups to all nodes
+    try:
+        from sync_engine import log_sync_action
+        log_sync_action("insert_followups", {"business_id": business_id, "sequences": sequences})
+    except Exception:
+        pass
     conn.close()
 
 

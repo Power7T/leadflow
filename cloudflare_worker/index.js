@@ -921,12 +921,14 @@ export default {
       const currentLeader = await env.LEADFLOW_KV.get("leadership:current_leader") || "";
       const heartbeatMac = await env.LEADFLOW_KV.get("heartbeat:mac") || "0";
       const heartbeatFirestick = await env.LEADFLOW_KV.get("heartbeat:firestick") || "0";
+      const heartbeatPhone = await env.LEADFLOW_KV.get("heartbeat:phone") || "0";
 
       return new Response(JSON.stringify({
         current_leader: currentLeader,
         heartbeats: {
           mac: parseInt(heartbeatMac),
-          firestick: parseInt(heartbeatFirestick)
+          firestick: parseInt(heartbeatFirestick),
+          phone: parseInt(heartbeatPhone)
         }
       }), {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
@@ -945,8 +947,8 @@ export default {
         return new Response("Method Not Allowed", { status: 405 });
       }
 
-      const device = url.searchParams.get("device"); // 'mac' or 'firestick'
-      if (!device || (device !== "mac" && device !== "firestick")) {
+      const device = url.searchParams.get("device"); // 'mac', 'firestick', or 'phone'
+      if (!device || (device !== "mac" && device !== "firestick" && device !== "phone")) {
         return new Response("Invalid Device", { status: 400 });
       }
 
@@ -966,8 +968,8 @@ export default {
         }
       }
 
-      // Preemption: Firestick (Primary) can preempt Mac (Backup) instantly
-      const isPreemption = (device === "firestick" && currentLeader === "mac");
+      // Preemption: Firestick/Phone (Primary) can preempt Mac (Backup) instantly
+      const isPreemption = ((device === "firestick" || device === "phone") && currentLeader === "mac");
 
       if (leaderActive && currentLeader !== device && !isPreemption) {
         // Current leader is active and is not this device, claim rejected
@@ -1557,17 +1559,21 @@ async function sendWaDm(chatId, msgId, offset = 0) {
 
       async function sendStatus(chatId, msgId) {
         const fsHb = await env.LEADFLOW_KV.get("heartbeat:firestick");
+        const phoneHb = await env.LEADFLOW_KV.get("heartbeat:phone");
         const macHb = await env.LEADFLOW_KV.get("heartbeat:mac");
         const now = Date.now();
         const fsAge = fsHb ? Math.round((now - parseInt(fsHb)) / 1000) : null;
+        const phoneAge = phoneHb ? Math.round((now - parseInt(phoneHb)) / 1000) : null;
         const macAge = macHb ? Math.round((now - parseInt(macHb)) / 1000) : null;
         const fsStatus = fsAge !== null ? (fsAge < 120 ? `🟢 ONLINE (${fsAge}s ago)` : `🔴 OFFLINE (${fsAge}s ago)`) : "❓ Unknown";
+        const phoneStatus = phoneAge !== null ? (phoneAge < 120 ? `🟢 ONLINE (${phoneAge}s ago)` : `🔴 OFFLINE (${phoneAge}s ago)`) : "❓ Unknown";
         const macStatus = macAge !== null ? (macAge < 120 ? `🟢 ONLINE (${macAge}s ago)` : `🔴 OFFLINE (${macAge}s ago)`) : "❓ Unknown";
         const leaderRaw = await env.LEADFLOW_KV.get("leader:current");
         const leader = leaderRaw ? JSON.parse(leaderRaw) : {};
         const text = (
           `⚙️ *SYSTEM STATUS*\n━━━━━━━━━━━━━━━━━━\n` +
           `🔥 *Firestick:* ${fsStatus}\n` +
+          `📱 *Vivo Phone:* ${phoneStatus}\n` +
           `🖥️ *Mac:*       ${macStatus}\n` +
           `👑 *Active Leader:* \`${leader.device || "unknown"}\`\n` +
           `🌐 *Cloudflare Worker:* 🟢 ONLINE`

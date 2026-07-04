@@ -246,94 +246,119 @@ def google_search_contacts(business_name: str, location: str) -> dict:
     return contacts
 
 
-def hunter_enrich(domain: str) -> str:
-    import os, requests
+def hunter_enrich(domain: str) -> dict:
+    """
+    Enrich a domain via Hunter.io.
+    Returns {'email': str, 'source': 'hunter', 'error': None} on success,
+    or {'email': '', 'source': 'hunter', 'error': str} on failure/skip.
+    """
+    import os, requests as _req
     api_key = os.getenv("HUNTER_API_KEY")
-    if not api_key or not domain: return ""
+    if not api_key or not domain:
+        return {'email': '', 'source': 'hunter', 'error': 'no_key' if not api_key else 'no_domain'}
     try:
         url = f"https://api.hunter.io/v2/domain-search?domain={domain}&api_key={api_key}"
-        res = requests.get(url, timeout=4).json()
+        res = _req.get(url, timeout=6).json()
         if "data" in res and res["data"].get("emails"):
-            return res["data"]["emails"][0].get("value", "")
-    except Exception:
-        pass
-    return ""
+            email = res["data"]["emails"][0].get("value", "")
+            return {'email': email, 'source': 'hunter', 'error': None}
+        # API returned but no emails found
+        return {'email': '', 'source': 'hunter', 'error': 'no_emails_found'}
+    except Exception as e:
+        return {'email': '', 'source': 'hunter', 'error': str(e)}
+
 
 def apollo_enrich(domain: str) -> dict:
-    import os, requests
+    """
+    Enrich a domain via Apollo.io.
+    Returns a dict with apollo_email, apollo_person_name, source, error keys.
+    """
+    import os, requests as _req
     api_key = os.getenv("APOLLO_API_KEY")
-    if not api_key or not domain: return {}
+    if not api_key or not domain:
+        return {'apollo_email': '', 'apollo_person_name': '', 'source': 'apollo',
+                'error': 'no_key' if not api_key else 'no_domain'}
     try:
         url = "https://api.apollo.io/v1/organizations/enrich"
         headers = {"Cache-Control": "no-cache", "Content-Type": "application/json"}
         data = {"api_key": api_key, "domain": domain}
-        res = requests.post(url, headers=headers, json=data, timeout=4).json()
+        res = _req.post(url, headers=headers, json=data, timeout=6).json()
         org = res.get("organization", {})
-        
+
         # Also try to find a person
         p_url = "https://api.apollo.io/v1/people/search"
         p_data = {"api_key": api_key, "q_organization_domains": domain, "page": 1}
-        p_res = requests.post(p_url, headers=headers, json=p_data, timeout=4).json()
+        p_res = _req.post(p_url, headers=headers, json=p_data, timeout=6).json()
         person_name = ""
         person_email = ""
         if p_res.get("people"):
             person = p_res["people"][0]
             person_name = person.get("name", "")
             person_email = person.get("email", "")
-            
+
         return {
             "apollo_email": person_email or org.get("primary_email", ""),
-            "apollo_person_name": person_name
+            "apollo_person_name": person_name,
+            "source": "apollo",
+            "error": None,
         }
-    except Exception:
-        pass
-    return {}
+    except Exception as e:
+        return {'apollo_email': '', 'apollo_person_name': '', 'source': 'apollo', 'error': str(e)}
+
 
 def extract_contacts(website: str, business_name: str, location: str) -> dict:
     """
     Full contact extraction pipeline:
     1. Scrape website
     2. Fallback to Google search for missing fields
-    3. Deep enrichment via Hunter/Apollo APIs
+    3. Deep enrichment via Hunter/Apollo APIs (with outcome logging)
     """
+    import logging, urllib.parse
+    _log = logging.getLogger("leadflow.extractor")
+
     contacts = extract_from_website(website)
 
     # Fill gaps with Google search
-    # To conserve the 2,500 free Serper API limit, we only trigger the search fallback 
-    # if we are entirely missing the primary outreach method (email). We no longer burn 
+    # To conserve the 2,500 free Serper API limit, we only trigger the search fallback
+    # if we are entirely missing the primary outreach method (email). We no longer burn
     # a query just to find an Instagram account if we already successfully found an email.
     if not contacts.get("email"):
         fallback = google_search_contacts(business_name, location)
         for key, val in fallback.items():
             contacts.setdefault(key, val)
-            
-    # Deep Enrichment
+
+    # Deep Enrichment — with structured logging so we know what happened
     if website:
-        import urllib.parse
         domain = urllib.parse.urlparse(website).netloc.replace("www.", "")
-        
-        hunter_email = hunter_enrich(domain)
-        if hunter_email:
-            cleaned_hunter = _clean_email(hunter_email)
-            if cleaned_hunter:
-                contacts["hunter_email"] = cleaned_hunter
-                contacts.setdefault("email", cleaned_hunter)
-            
-        apollo_data = apollo_enrich(domain)
-        if apollo_data:
-            contacts.update(apollo_data)
-            ap_email = apollo_data.get("apollo_email")
+
+        # Hunter enrichment
+        hunter_result = hunter_enrich(domain)
+        if hunter_result['error'] is None:
+            cleaned = _clean_email(hunter_result['email'])
+            if cleaned:
+                contacts['hunter_email'] = cleaned
+                contacts.setdefault('email', cleaned)
+                _log.info(f"[Enrichment] Hunter found email for {domain}: {cleaned}")
+            else:
+                _log.info(f"[Enrichment] Hunter returned unclean email for {domain}")
+        elif hunter_result['error'] not in ('no_key', 'no_domain'):
+            _log.warning(f"[Enrichment] Hunter failed for {domain}: {hunter_result['error']}")
+
+        # Apollo enrichment
+        apollo_result = apollo_enrich(domain)
+        if apollo_result['error'] is None:
+            ap_email = _clean_email(apollo_result.get('apollo_email', ''))
             if ap_email:
-                cleaned_ap = _clean_email(ap_email)
-                if cleaned_ap:
-                    contacts["apollo_email"] = cleaned_ap
-                    contacts.setdefault("email", cleaned_ap)
-            # If Apollo person name is returned, use it for owner_name
-            p_name = apollo_data.get("apollo_person_name")
+                contacts['apollo_email'] = ap_email
+                contacts.setdefault('email', ap_email)
+                _log.info(f"[Enrichment] Apollo found email for {domain}: {ap_email}")
+            p_name = apollo_result.get('apollo_person_name', '')
             if p_name:
                 parts = p_name.split()
                 if parts:
-                    contacts["owner_name"] = parts[0].capitalize()
+                    contacts['owner_name'] = parts[0].capitalize()
+        elif apollo_result['error'] not in ('no_key', 'no_domain'):
+            _log.warning(f"[Enrichment] Apollo failed for {domain}: {apollo_result['error']}")
 
     # Final sanity check: ensure main email is fully clean/validated
     if contacts.get("email"):
@@ -342,6 +367,7 @@ def extract_contacts(website: str, business_name: str, location: str) -> dict:
             contacts["email"] = None
 
     return contacts
+
 
 
 def scrape_instagram_profile(url_or_handle: str) -> dict:

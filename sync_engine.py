@@ -43,10 +43,10 @@ def push_local_changes():
     conn = get_conn()
     rows = conn.execute("SELECT id, action, payload FROM sync_journal WHERE synced=0 ORDER BY id ASC").fetchall()
     conn.close()
-    
+
     if not rows:
         return
-        
+
     transactions = []
     for r_id, action, payload in rows:
         try:
@@ -56,16 +56,16 @@ def push_local_changes():
                 "local_id": r_id
             })
         except: pass
-        
+
     if not transactions:
         return
-        
+
     public_url = os.getenv("LEADFLOW_PUBLIC_URL", "")
     token = os.getenv("LEADFLOW_SECRET_TOKEN", os.getenv("SECRET_TOKEN", ""))
-    
+
     if not public_url or not token:
         return
-        
+
     try:
         r = requests.post(
             f"{public_url}/api/sync",
@@ -74,7 +74,6 @@ def push_local_changes():
             timeout=35
         )
         if r.status_code == 200:
-            # Mark as synced
             synced_ids = [t["local_id"] for t in transactions]
             conn = get_conn()
             placeholders = ",".join("?" for _ in synced_ids)
@@ -100,18 +99,78 @@ def apply_sync_transaction(conn, action, payload):
     elif action == "insert_business":
         b = payload.get("business")
         if b:
-            # Check for existing before inserting
             exist = conn.execute("SELECT id FROM businesses WHERE name=?", (b.get("name"),)).fetchone()
             if not exist:
-                cols = ", ".join(b.keys())
-                placeholders = ", ".join("?" for _ in b)
-                vals = list(b.values())
+                # Strip id so the DB auto-assigns one to avoid PK conflicts between nodes
+                b_insert = {k: v for k, v in b.items() if k != "id"}
+                cols = ", ".join(b_insert.keys())
+                placeholders = ", ".join("?" for _ in b_insert)
+                vals = list(b_insert.values())
                 conn.execute(f"INSERT INTO businesses ({cols}) VALUES ({placeholders})", vals)
+
+    elif action == "insert_contact":
+        business_id = payload.get("business_id")
+        c = payload.get("contacts", {})
+        if business_id and c:
+            conn.execute("""
+                INSERT OR REPLACE INTO contacts
+                (business_id, email, instagram, facebook, linkedin_url, linkedin_name, whatsapp,
+                 hunter_email, apollo_email, apollo_person_name, owner_name)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                business_id,
+                c.get("email"), c.get("instagram"), c.get("facebook"),
+                c.get("linkedin_url"), c.get("linkedin_name"), c.get("whatsapp"),
+                c.get("hunter_email"), c.get("apollo_email"),
+                c.get("apollo_person_name"), c.get("owner_name")
+            ))
+
+    elif action == "insert_outreach":
+        business_id = payload.get("business_id")
+        channel = payload.get("channel")
+        draft = payload.get("draft", "")
+        subject_options = payload.get("subject_options", "")
+        tracking_id = payload.get("tracking_id")
+        if business_id and channel and tracking_id:
+            exist = conn.execute("SELECT id FROM outreach WHERE tracking_id=?", (tracking_id,)).fetchone()
+            if not exist:
+                conn.execute("""
+                    INSERT INTO outreach
+                    (business_id, channel, draft, final_message, subject_options, status, tracking_id)
+                    VALUES (?, ?, ?, ?, ?, 'draft', ?)
+                """, (business_id, channel, draft, draft, subject_options, tracking_id))
+
+    elif action == "insert_followups":
+        business_id = payload.get("business_id")
+        sequences = payload.get("sequences", [])
+        if business_id and sequences:
+            for seq in sequences:
+                conn.execute("""
+                    INSERT OR IGNORE INTO follow_ups
+                    (business_id, sequence_num, channel, draft, scheduled_for)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (business_id, seq.get("num"), seq.get("channel"),
+                      seq.get("draft"), seq.get("scheduled_for")))
+
     elif action == "increment_demo_viewed":
         conn.execute(
             "UPDATE businesses SET demo_viewed = COALESCE(demo_viewed, 0) + 1 WHERE id=?",
             (payload["business_id"],)
         )
+    elif action == "update_ig_settings":
+        status = payload.get("status")
+        daily_limit = payload.get("daily_limit")
+        if status is not None and daily_limit is not None:
+            exist = conn.execute("SELECT id FROM ig_settings WHERE id=1").fetchone()
+            if not exist:
+                from datetime import datetime
+                today = datetime.now().strftime("%Y-%m-%d")
+                conn.execute(
+                    "INSERT INTO ig_settings (id, status, daily_limit, sent_today, last_reset_date) VALUES (1, ?, ?, 0, ?)",
+                    (status, daily_limit, today)
+                )
+            else:
+                conn.execute("UPDATE ig_settings SET status=?, daily_limit=? WHERE id=1", (status, daily_limit))
     elif action == "insert_deal":
         d = payload.get("deal")
         if d:
@@ -124,10 +183,10 @@ def pull_remote_changes():
     """Pull new changes from Cloudflare and apply them locally in a single transaction."""
     public_url = os.getenv("LEADFLOW_PUBLIC_URL", "")
     token = os.getenv("LEADFLOW_SECRET_TOKEN", os.getenv("SECRET_TOKEN", ""))
-    
+
     if not public_url or not token:
         return
-        
+
     last_seq = get_last_sync_seq()
     try:
         r = requests.get(
@@ -138,7 +197,7 @@ def pull_remote_changes():
         if r.status_code == 200:
             data = r.json()
             transactions = data.get("transactions", [])
-            
+
             if transactions:
                 conn = get_conn()
                 try:
@@ -148,8 +207,11 @@ def pull_remote_changes():
                         payload = tx.get("payload", {})
                         apply_sync_transaction(conn, action, payload)
                         last_seq = tx.get("seq")
-                    
-                    conn.execute("INSERT OR REPLACE INTO sync_state (key, val) VALUES ('last_sync_seq', ?)", (last_seq,))
+
+                    conn.execute(
+                        "INSERT OR REPLACE INTO sync_state (key, val) VALUES ('last_sync_seq', ?)",
+                        (last_seq,)
+                    )
                     conn.commit()
                     log.info(f"Successfully pulled and applied {len(transactions)} changes from Cloudflare.")
                 except Exception as db_err:
@@ -160,7 +222,82 @@ def pull_remote_changes():
     except Exception as e:
         log.error(f"Failed to pull changes from Cloudflare: {e}")
 
-def run_sync_cycle():
-    """Run full push/pull sync cycle."""
+def lan_sync_to_peer(peer_ip: str, peer_adb_port: int = 5555, mac_ip: str = None, http_port: int = 9997):
+    """
+    Hard failsafe: sync the full DB to a peer device over LAN.
+    Uses SQL dump served over HTTP + Python urllib on the peer (corruption-free).
+    Only syncs if local DB has more data than the peer.
+    """
+    import subprocess, threading, http.server, tempfile, os
+
+    try:
+        # Check peer DB size via ADB
+        result = subprocess.run(
+            ["adb", "-s", f"{peer_ip}:{peer_adb_port}", "shell",
+             "run-as com.termux python3 -c \"import sqlite3; c=sqlite3.connect('/data/data/com.termux/files/home/leadflow/leadflow.db'); print(c.execute('SELECT COUNT(*) FROM businesses').fetchone()[0]); c.close()\""],
+            capture_output=True, text=True, timeout=15
+        )
+        peer_count = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
+        local_conn = sqlite3.connect(DB_PATH)
+        local_count = local_conn.execute("SELECT COUNT(*) FROM businesses").fetchone()[0]
+        local_conn.close()
+
+        if local_count <= peer_count:
+            log.info(f"LAN sync: peer is up to date ({peer_count} businesses >= {local_count}), skipping.")
+            return
+
+        log.info(f"LAN sync: local has {local_count} businesses vs peer {peer_count}, syncing...")
+
+        # Dump local DB as SQL into a temp directory
+        dump_dir = tempfile.mkdtemp()
+        dump_path = os.path.join(dump_dir, "leadflow_dump.sql")
+        conn = sqlite3.connect(DB_PATH)
+        with open(dump_path, "w") as f:
+            for line in conn.iterdump():
+                f.write(line + "\n")
+        conn.close()
+
+        # Auto-detect Mac IP if not provided
+        if not mac_ip:
+            r = subprocess.run(["ipconfig", "getifaddr", "en0"], capture_output=True, text=True)
+            mac_ip = r.stdout.strip() or "192.168.1.5"
+
+        # Serve the SQL dump via a temporary HTTP server
+        handler = http.server.SimpleHTTPRequestHandler
+        handler.log_message = lambda *a: None  # silence logs
+        import socketserver
+        httpd = socketserver.TCPServer(("", http_port), lambda *a, **kw: handler(*a, directory=dump_dir, **kw))
+        t = threading.Thread(target=httpd.handle_request)
+        t.start()
+
+        # Have the peer download and restore it
+        restore_cmd = (
+            f"import urllib.request, sqlite3, os; "
+            f"db=\\\"/data/data/com.termux/files/home/leadflow/leadflow.db\\\"; "
+            f"sql=\\\"/data/data/com.termux/files/home/leadflow/restore.sql\\\"; "
+            f"urllib.request.urlretrieve(\\\"http://{mac_ip}:{http_port}/leadflow_dump.sql\\\", sql); "
+            f"os.remove(db) if os.path.exists(db) else None; "
+            f"c=sqlite3.connect(db); c.executescript(open(sql).read()); c.close(); "
+            f"os.remove(sql); print('LAN sync restore done')"
+        )
+        subprocess.run(
+            ["adb", "-s", f"{peer_ip}:{peer_adb_port}", "shell",
+             f"run-as com.termux /data/data/com.termux/files/usr/bin/python3 -c \"{restore_cmd}\""],
+            capture_output=True, timeout=120
+        )
+        httpd.server_close()
+        os.remove(dump_path)
+        os.rmdir(dump_dir)
+        log.info(f"LAN sync to {peer_ip} complete.")
+
+    except Exception as e:
+        log.warning(f"LAN sync to {peer_ip} failed (non-critical): {e}")
+
+
+def run_sync_cycle(lan_peers: list = None):
+    """Run full push/pull Cloudflare sync, then LAN failsafe sync to any local peers."""
     push_local_changes()
     pull_remote_changes()
+    if lan_peers:
+        for peer_ip in lan_peers:
+            lan_sync_to_peer(peer_ip)

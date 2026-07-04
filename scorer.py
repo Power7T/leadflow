@@ -123,10 +123,19 @@ def score_lead(business: dict, contacts: dict) -> int:
 def detect_intent_signals(business: dict, html_content: str = '') -> dict:
     """
     Analyse raw HTML from a business website to detect intent signals.
-    Returns a dict with keys: has_google_ads, social_active, intent_score.
+    Returns a dict with keys: has_google_ads, social_active, intent_score,
+    has_booking_system, is_hiring.
+
+    intent_score is capped at 30 (raised from 20) to give the new signals weight.
     """
     html_lower = html_content.lower()
-    result = {'has_google_ads': 0, 'social_active': 0, 'intent_score': 0}
+    result = {
+        'has_google_ads': 0,
+        'social_active': 0,
+        'intent_score': 0,
+        'has_booking_system': 0,
+        'is_hiring': 0,
+    }
 
     # ── Google Ads / Tag Manager / DoubleClick detection ────────────────
     google_ads_markers = [
@@ -167,7 +176,30 @@ def detect_intent_signals(business: dict, html_content: str = '') -> dict:
     if social_count >= 1:
         result['social_active'] = 1
 
-    # ── Intent score (0-20) ───────────────────────────────────────────
+    # ── Booking system detection ──────────────────────────────────────
+    # A service business WITHOUT a booking system = clear gap our demo can fill.
+    # One WITH a booking system already has some digital maturity.
+    booking_markers = [
+        'calendly.com', 'acuityscheduling.com', 'booksy.com', 'vagaro.com',
+        'mindbodyonline.com', 'setmore.com', 'square.site', 'squareup.com/appointments',
+        'zocdoc.com', 'opentable.com', 'reservations', 'online booking', 'book now',
+        'schedule appointment', 'book an appointment', 'book a table',
+        'appointmentthing.com', 'simplybook.me', 'fresha.com', 'glofox.com', 'pike13.com'
+    ]
+    has_booking_system = any(marker in html_lower for marker in booking_markers)
+    result['has_booking_system'] = 1 if has_booking_system else 0
+
+    # ── Hiring / job listing detection ────────────────────────────────
+    # A business actively hiring = growing, has budget, decision-maker is active.
+    hiring_markers = [
+        'join our team', 'we are hiring', "we're hiring", 'careers', '/careers',
+        'job opening', 'open positions', 'apply now', 'indeed.com', 'glassdoor.com',
+        'ziprecruiter.com', 'workable.com', 'greenhouse.io'
+    ]
+    is_hiring = any(marker in html_lower for marker in hiring_markers)
+    result['is_hiring'] = 1 if is_hiring else 0
+
+    # ── Intent score (0–30) ───────────────────────────────────────────
     intent = 0
     if result['has_google_ads']:
         intent += 8
@@ -179,6 +211,28 @@ def detect_intent_signals(business: dict, html_content: str = '') -> dict:
         intent += 2
     if social_count >= 4:
         intent += 2
-    result['intent_score'] = min(intent, 20)
+
+    # Double-pain bonus: paying for ads but site is slow/broken
+    # = maximum urgency — they're losing real money right now
+    site_score = business.get('website_score', 0)
+    if result['has_google_ads'] and site_score and site_score < 50:
+        intent += 6
+
+    # Service niche with no booking system = easy upsell (demo shows one)
+    if not has_booking_system:
+        category = (business.get('category') or '').lower()
+        biz_name = (business.get('name') or '').lower()
+        service_niches = {
+            'gym', 'fitness', 'salon', 'barber', 'spa', 'clinic',
+            'dentist', 'chiro', 'physio', 'restaurant', 'cafe', 'diner'
+        }
+        if any(kw in category or kw in biz_name for kw in service_niches):
+            intent += 4
+
+    # Hiring businesses have active budget and a decision-maker paying attention
+    if is_hiring:
+        intent += 4
+
+    result['intent_score'] = min(intent, 30)
 
     return result

@@ -475,6 +475,84 @@ async def autopilot_trigger(job_id: str, background_tasks: BackgroundTasks):
     return JSONResponse({"ok": True, "message": f"{label} triggered successfully in the background."})
 
 
+@app.get("/api/ig-settings")
+def get_ig_settings():
+    from database import get_conn
+    from datetime import datetime
+    try:
+        conn = get_conn()
+        row = conn.execute("SELECT status, daily_limit, sent_today, last_reset_date FROM ig_settings WHERE id=1").fetchone()
+        conn.close()
+        
+        if not row:
+            return JSONResponse({"daily_limit": 10, "sent_today": 0, "is_running": False})
+            
+        status, daily_limit, sent_today, last_reset_date = row
+        is_running = (status == "running")
+        
+        # Reset if new day
+        today = datetime.now().strftime("%Y-%m-%d")
+        if last_reset_date != today:
+            sent_today = 0
+            
+        return JSONResponse({"daily_limit": daily_limit, "sent_today": sent_today, "is_running": is_running})
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.post("/api/ig-settings")
+async def update_ig_settings(request: Request):
+    from database import get_conn
+    from datetime import datetime
+    try:
+        data = await request.json()
+        conn = get_conn()
+        row = conn.execute("SELECT status, daily_limit, sent_today, last_reset_date FROM ig_settings WHERE id=1").fetchone()
+        
+        if not row:
+            status, daily_limit, sent_today, last_reset_date = "stopped", 10, 0, datetime.now().strftime("%Y-%m-%d")
+            conn.execute("INSERT INTO ig_settings (id, status, daily_limit, sent_today, last_reset_date) VALUES (1, ?, ?, ?, ?)", (status, daily_limit, sent_today, last_reset_date))
+        else:
+            status, daily_limit, sent_today, last_reset_date = row
+
+        if 'daily_limit' in data:
+            daily_limit = int(data['daily_limit'])
+        if 'is_running' in data:
+            status = "running" if data['is_running'] else "stopped"
+            
+        # Optional: trigger a sync log here if sync_engine logs locally, but sync_engine looks at sync_journal
+        # We will update sync_engine.py to sync this.
+        
+        conn.execute("UPDATE ig_settings SET status=?, daily_limit=? WHERE id=1", (status, daily_limit))
+        
+        # Log to sync_journal so it goes to Cloudflare
+        from sync_engine import log_sync_action
+        payload = {"status": status, "daily_limit": daily_limit}
+        log_sync_action("update_ig_settings", payload)
+        
+        conn.commit()
+        conn.close()
+        
+        return JSONResponse({"success": True, "settings": {"daily_limit": daily_limit, "is_running": (status == "running"), "sent_today": sent_today}})
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.get("/api/ig-logs")
+def get_ig_logs():
+    import os
+    log_path = "/Users/chandan/leadflow_worker/autopilot.log"
+    if not os.path.exists(log_path):
+        return JSONResponse({"logs": "Log file not found. Autopilot hasn't started yet."})
+    
+    try:
+        # Read the last 200 lines to prevent massive payloads
+        with open(log_path, "r") as f:
+            lines = f.readlines()
+            tail = "".join(lines[-200:])
+        return JSONResponse({"logs": tail})
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 # ── Settings ───────────────────────────────────────────────────────────────
 
 @app.get("/settings", response_class=HTMLResponse)
@@ -1006,14 +1084,62 @@ def saas_leads_page(request: Request):
 
 @app.get("/instagram-reach", response_class=HTMLResponse)
 def instagram_reach_page(request: Request):
+    import pytz
+    from datetime import datetime
+    
+    # Simple city-to-timezone mapper
+    def get_tz_for_city(city):
+        city = (city or "").lower()
+        if any(c in city for c in ["los angeles", "san diego", "san jose", "san francisco", "seattle", "portland", "las vegas", "fresno", "sacramento", "oakland", "bakersfield", "stockton", "riverside", "santa ana", "irvine"]):
+            return pytz.timezone("US/Pacific")
+        if any(c in city for c in ["denver", "phoenix", "albuquerque", "tucson", "colorado springs", "aurora"]):
+            return pytz.timezone("US/Mountain")
+        if any(c in city for c in ["chicago", "houston", "san antonio", "fort worth", "dallas", "austin", "indianapolis", "nashville", "milwaukee", "kansas city", "minneapolis", "wichita", "new orleans"]):
+            return pytz.timezone("US/Central")
+        if any(c in city for c in ["honolulu"]):
+            return pytz.timezone("Pacific/Honolulu")
+        # Default to Eastern for US/UK general
+        return pytz.timezone("US/Eastern")
+
     all_leads = get_all_active_leads()
-    ig_leads = [l for l in all_leads if l.get("pitch_type") == "instagram_reach" or l.get("source") == "instagram_reach"]
+    ig_leads = [l for l in all_leads if l.get("pitch_type") == "instagram_reach" or l.get("source") == "instagram_reach" or (l.get("instagram") and str(l.get("instagram")).strip())]
     import json
     for l in ig_leads:
         try:
             l["interactions"] = json.loads(l.get("interactions_json") or "[]")
         except:
             l["interactions"] = []
+            
+        # Calculate Potential Charge based on Tier
+        cat = (l.get("category") or "").lower()
+        tier1 = ["roof", "hvac", "solar", "lawyer", "attorney", "med spa", "medspa", "remodel", "dentist", "orthodont"]
+        tier2 = ["plumb", "electric", "gym", "fitness", "accountant", "cpa", "real estate", "chiro", "landscap", "tree"]
+        
+        if any(t in cat for t in tier1):
+            l["potential_charge"] = "$3,500 - $5,000+"
+        elif any(t in cat for t in tier2):
+            l["potential_charge"] = "$1,500 - $2,500"
+        else:
+            l["potential_charge"] = "$149/mo (Subscription)"
+            
+        # Calculate Local Time and Business Hours
+        tz = get_tz_for_city(l.get("city"))
+        local_time = datetime.now(tz)
+        l["local_time_str"] = local_time.strftime("%I:%M %p").lstrip("0")
+        
+        hour = local_time.hour
+        is_weekend = local_time.weekday() >= 5
+        if not is_weekend and 9 <= hour < 18:
+            l["schedule_status"] = "🟢 Ready (Live)"
+        else:
+            if is_weekend:
+                l["schedule_status"] = "🕒 Sched: Mon 9 AM"
+            else:
+                if hour < 9:
+                    l["schedule_status"] = "🕒 Sched: Today 9 AM"
+                else:
+                    l["schedule_status"] = "🕒 Sched: Tmrw 9 AM"
+            
     return templates.TemplateResponse(request, "instagram_reach.html", ctx(request, "instagram_reach", leads=ig_leads))
 
 
@@ -1026,7 +1152,7 @@ def ig_manual_page(request: Request):
         rows = conn.execute("""
             SELECT b.id, b.name, b.category, b.lead_score, b.status,
                    b.demo_tunnel_url, b.ig_dm_sent, b.ig_dm_sent_at,
-                   c.instagram
+                   b.city, b.google_rating, b.google_reviews, b.website, c.instagram
             FROM businesses b
             JOIN contacts c ON c.business_id = b.id
             WHERE c.instagram IS NOT NULL AND c.instagram != ''
@@ -1048,11 +1174,34 @@ def ig_manual_page(request: Request):
             demo = f"https://power7t.github.io/leadflow-demos/{safe_slug}.html"
 
         # Build DM message
+        city = lead.get("city", "")
+        city_text = f" in {city}" if city else ""
+        
+        rating = lead.get("google_rating")
+        reviews = lead.get("google_reviews")
+        
+        if rating and reviews and float(rating) >= 4.0:
+            review_text = f"an amazing {rating} rating across {reviews} reviews here{city_text}"
+        else:
+            review_text = f"amazing reviews here{city_text}"
+            
+        # Clean up the business name for a more natural greeting (e.g. "Kinitro Fitness - Gym" -> "Kinitro Fitness")
+        clean_name = name.split(' - ')[0].strip() if ' - ' in name else name.strip()
+        
+        # Check if they have a website
+        has_website = bool(lead.get("website") and str(lead.get("website")).strip())
+        
+        if has_website:
+            pitch_line = f"but I noticed your current website could use some modern optimization to help convert more traffic. "
+        else:
+            pitch_line = f"but don't have a modern website listed on your profile. "
+            
         lead["dm_message"] = (
-            f"Hey {name.split()[0]} 👋\n\n"
-            f"I built a free custom website preview for {name} — thought you'd find it useful!\n\n"
+            f"Hey {clean_name}! Love your profile page.\n\n"
+            f"I noticed you have {review_text} {pitch_line}"
+            f"I actually designed a quick, modern 1-page website mockup for you:\n\n"
             f"Check it out here: {demo}\n\n"
-            f"No strings attached, just wanted to show you what's possible. Let me know what you think! 🚀"
+            f"Let me know what you think!"
         )
         lead["ig_dm_sent"] = lead.get("ig_dm_sent") or 0
         leads.append(lead)
@@ -2224,7 +2373,7 @@ def sent_page(request: Request):
                MAX(o.sent_at) as sent_at
         FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
-        LEFT JOIN outreach o ON o.business_id = b.id AND o.status = 'sent'
+        LEFT JOIN outreach o ON o.business_id = b.id AND o.channel = 'email' AND o.status = 'sent'
         WHERE b.status IN ('sent','replied','closed')
         GROUP BY b.id
         ORDER BY b.found_at DESC
@@ -3357,4 +3506,4 @@ async def refresh_tunnels(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=8765, reload=False, workers=1, timeout_keep_alive=30)
+    uvicorn.run("server:app", host="127.0.0.1", port=8765, reload=False, workers=1, timeout_keep_alive=30)

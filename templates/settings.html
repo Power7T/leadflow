@@ -172,6 +172,29 @@
       </div>
     </div>
 
+    <!-- Cloudflare KV & Worker Secrets -->
+    <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
+      <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">☁️ Cloudflare KV &amp; Worker Secrets</h3>
+      <p style="color:var(--text-dim);font-size:12px;margin-bottom:14px;">
+        Set these to avoid editing <code>wrangler.toml</code> manually. Used by the KV sync engine and demo worker.
+      </p>
+      <div style="margin-bottom: 12px">
+        <label>Cloudflare Account ID</label>
+        <input type="text" id="CF_ACCOUNT_ID" value="{{ env.CF_ACCOUNT_ID }}" placeholder="Your Cloudflare account ID" style="width: 100%; margin: 0;">
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>Cloudflare API Token</label>
+        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+          <input type="password" id="CF_API_TOKEN" value="{{ env.CF_API_TOKEN }}" placeholder="API token with Workers KV Edit permission" style="width: 100%; padding-right: 40px; margin: 0;">
+          <button type="button" onclick="toggleField('CF_API_TOKEN', this)" style="position: absolute; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10;">👁️</button>
+        </div>
+      </div>
+      <div style="margin-bottom: 12px">
+        <label>KV Namespace ID (for leads &amp; demo sync)</label>
+        <input type="text" id="CF_KV_NAMESPACE_ID" value="{{ env.CF_KV_NAMESPACE_ID }}" placeholder="KV namespace ID from Cloudflare dashboard" style="width: 100%; margin: 0;">
+      </div>
+    </div>
+
     <!-- Telegram Control Bot & Failover Config -->
     <div style="border-top: 1px solid var(--border); margin: 20px 0; padding-top: 20px;">
       <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px;">🤖 Telegram Control Bot & Failover</h3>
@@ -415,6 +438,9 @@ document.getElementById('envForm').addEventListener('submit', (e) => {
     USE_CLOUDFLARE_PAGES: document.getElementById('USE_CLOUDFLARE_PAGES').checked ? 'true' : 'false',
     CLOUDFLARE_PAGES_PROJECT: document.getElementById('CLOUDFLARE_PAGES_PROJECT').value,
     NTFY_TOPIC: document.getElementById('NTFY_TOPIC').value,
+    CF_ACCOUNT_ID: document.getElementById('CF_ACCOUNT_ID').value,
+    CF_API_TOKEN: document.getElementById('CF_API_TOKEN').value,
+    CF_KV_NAMESPACE_ID: document.getElementById('CF_KV_NAMESPACE_ID').value,
     TELEGRAM_CONTROL_BOT_TOKEN: document.getElementById('TELEGRAM_CONTROL_BOT_TOKEN').value,
     TELEGRAM_CONTROL_USER_ID: document.getElementById('TELEGRAM_CONTROL_USER_ID').value,
     LEADFLOW_DEVICE_ROLE: document.getElementById('LEADFLOW_DEVICE_ROLE').value,

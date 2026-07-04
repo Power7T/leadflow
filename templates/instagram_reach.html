@@ -2,9 +2,82 @@
 {% block title %} — Instagram Reach{% endblock %}
 
 {% block content %}
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+<div class="page-header" style="margin-bottom: 24px;">
+  <div class="page-title">
+    <h1>🚀 Instagram Reach & Autopilot</h1>
+    <p>Manage Instagram leads and configure your automated DM sender.</p>
+  </div>
+</div>
+
+<!-- Instagram Autopilot Dashboard Panel -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+  
+  <!-- Left Side: Status & Controls -->
+  <div class="form-card" style="border-color: var(--accent);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
+      <div>
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;" id="igApStatusTitle">
+          <span class="pulse-dot gray" id="igApDot" style="width: 12px; height: 12px;"></span>
+          IG Autopilot is <span id="igApStatusText">LOADING</span>
+        </h2>
+        <p style="color: var(--text-dim); margin-top: 6px; font-size: 13px;">
+          Runs 24/7 in the background from your local machine. Automatically messages prospects during their local awake hours (8 AM - 9 PM) to maximize open rates.
+        </p>
+      </div>
+      
+      <!-- Interactive Toggle Switch -->
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 13px; font-weight: 500; color: var(--text-dim);">Status:</span>
+        <button id="igToggleBtn" onclick="toggleIgAutopilot()" class="btn btn-primary" style="padding: 8px 16px; min-width: 100px;">
+          Loading...
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Stats & Limits -->
+  <div class="form-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h2 style="margin: 0;">📊 Deliverability & Protection</h2>
+      <button class="btn btn-ghost btn-sm" onclick="saveAutopilotSettings()" id="saveApBtn">Save Changes</button>
+    </div>
+    <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 14px;">
+      Set your maximum daily DM limit to protect your Instagram account from spam blocks.
+    </p>
+    
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+      <span style="font-size: 13px; font-weight: 500;">Daily DM Limit:</span>
+      <input type="number" id="apDailyLimit" style="width: 80px; padding: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; outline: none; text-align: center;" value="10">
+    </div>
+
+    <div style="margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; margin-bottom: 6px;">
+        <span>Today's Progress</span>
+        <span style="color: var(--accent); font-weight:600;"><span id="apSentToday">0</span> / <span id="apTarget">10</span> sent</span>
+      </div>
+      <div class="bp-track" style="height: 8px;">
+        <div class="bp-fill" id="apProgressBar" style="width: 0%; background: var(--accent);"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Terminal / Logs -->
+<div class="form-card" style="margin-bottom: 24px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <h2 style="margin: 0;">📟 Live Autopilot Logs</h2>
+    <span style="font-size: 11px; background: rgba(0, 200, 150, 0.1); color: #00c896; padding: 3px 8px; border-radius: 12px; font-weight: 500;">
+      🟢 Streaming Live
+    </span>
+  </div>
+  <div id="igTerminalLog" style="height: 250px; background: #0c0c0e; border: 1px solid #1f1f24; border-radius: 8px; padding: 12px; font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace; font-size: 12px; line-height: 1.5; color: #a9b1d6; overflow-y: auto; white-space: pre-wrap; word-break: break-all;">
+    Initializing logs...
+  </div>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
   <div style="display:flex; align-items:center; gap:12px;">
-    <h1 style="margin:0">Instagram Reach</h1>
+    <h2 style="margin:0; font-size: 18px;">Instagram Leads Database</h2>
     <button class="btn btn-primary" onclick="toggleAddIgLeadsModal()" style="padding: 4px 10px; font-size: 12px;">➕ Paste Instagram Leads</button>
   </div>
   <div style="display:flex;gap:4px;flex-wrap:wrap" id="statusTabs">
@@ -47,6 +120,8 @@
   </div>
 </div>
 
+<!-- (Modal removed as it is now integrated into the page header) -->
+
 {% if not leads %}
 <div class="empty">
   <div class="icon">📭</div>
@@ -79,7 +154,7 @@
           <div style="font-size:9px; color:var(--text-dim); text-transform:uppercase; margin-bottom:4px; font-weight:600;">Engagement</div>
           <div style="display:flex; flex-wrap:wrap; gap:6px;">
             <label class="filter-chip" id="chip-opened">
-              <input type="checkbox" id="filter-opened"> 👁️ Opened Email
+              <input type="checkbox" id="filter-opened"> 👁️ Opened DM
             </label>
             <label class="filter-chip" id="chip-clicked">
               <input type="checkbox" id="filter-clicked"> 🔗 Clicked Link
@@ -88,7 +163,7 @@
               <input type="checkbox" id="filter-demo"> 🌐 Demo Viewed
             </label>
             <label class="filter-chip" id="chip-replied">
-              <input type="checkbox" id="filter-replied"> 💬 Replied
+              <input type="checkbox" id="filter-replied"> 💬 Replied to DM
             </label>
           </div>
         </div>
@@ -179,6 +254,21 @@
       <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
         <!-- Campaign Niche Tag -->
         <span class="tag-campaign" style="font-size:9px; padding:1px 5px; border-radius:4px; background:rgba(217,70,239,0.15); color:#d946ef; border:1px solid rgba(217,70,239,0.25);">Instagram Reach</span>
+        
+        <!-- Potential Charge Badge -->
+        {% if lead.potential_charge %}
+          <span style="font-size:9px; font-weight:700; padding:1px 6px; border-radius:4px; background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);">💰 {{ lead.potential_charge }}</span>
+        {% endif %}
+        
+        <!-- Schedule / Local Time Badge -->
+        {% if lead.schedule_status %}
+          <span style="font-size:9px; font-weight:700; padding:1px 6px; border-radius:4px; background:var(--bg-secondary); color:var(--text); border:1px solid var(--border);" title="Local Time: {{ lead.local_time_str }}">{{ lead.schedule_status }} ({{ lead.local_time_str }})</span>
+        {% endif %}
+        
+        <!-- Explicit DM Sent Badge -->
+        {% if lead.ig_dm_sent %}
+          <span style="font-size:9px; font-weight:700; letter-spacing:.04em; padding:1px 6px; border-radius:4px; background:rgba(0,242,254,0.15); color:var(--accent); border:1px solid rgba(0,242,254,0.3);">✓ DM SENT</span>
+        {% endif %}
 
         <!-- Demo viewed badge -->
         {% if lead.demo_viewed %}
@@ -338,6 +428,120 @@ function filterCampaign(campaign, btn) {
   btn.classList.add('active');
   applyFilters();
 }
+
+let isIgApRunning = false;
+
+function loadIgSettings() {
+  fetch('/api/ig-settings')
+    .then(r => r.json())
+    .then(d => {
+      isIgApRunning = d.is_running !== false;
+      document.getElementById('apDailyLimit').value = d.daily_limit || 10;
+      document.getElementById('apSentToday').textContent = d.sent_today || 0;
+      document.getElementById('apTarget').textContent = d.daily_limit || 10;
+      
+      const pct = Math.min(((d.sent_today || 0) / (d.daily_limit || 10)) * 100, 100);
+      document.getElementById('apProgressBar').style.width = pct + '%';
+      
+      updateApUI();
+    });
+}
+
+function updateApUI() {
+  const dot = document.getElementById('igApDot');
+  const txt = document.getElementById('igApStatusText');
+  const btn = document.getElementById('igToggleBtn');
+  
+  if (isIgApRunning) {
+    dot.className = "pulse-dot green";
+    txt.textContent = "ACTIVE";
+    btn.className = "btn btn-ghost";
+    btn.innerHTML = "⏸ Pause";
+  } else {
+    dot.className = "pulse-dot gray";
+    txt.textContent = "STOPPED";
+    btn.className = "btn btn-primary";
+    btn.innerHTML = "▶ Start";
+  }
+}
+
+function toggleIgAutopilot() {
+  isIgApRunning = !isIgApRunning;
+  updateApUI();
+  saveAutopilotSettings(true);
+}
+
+function saveAutopilotSettings(silent = false) {
+  const btn = document.getElementById('saveApBtn');
+  if (!silent) btn.textContent = 'Saving...';
+  
+  const payload = {
+    daily_limit: parseInt(document.getElementById('apDailyLimit').value),
+    is_running: isIgApRunning
+  };
+  
+  fetch('/api/ig-settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json()).then(d => {
+    document.getElementById('apTarget').textContent = d.settings.daily_limit;
+    
+    const pct = Math.min(((d.settings.sent_today || 0) / (d.settings.daily_limit || 10)) * 100, 100);
+    document.getElementById('apProgressBar').style.width = pct + '%';
+
+    if (!silent) {
+      btn.textContent = 'Saved!';
+      setTimeout(() => { btn.textContent = 'Save Changes'; }, 1000);
+    }
+  });
+}
+
+// Load settings on page start
+loadIgSettings();
+
+async function fetchIgLogs() {
+  try {
+    const res = await fetch('/api/ig-logs');
+    const data = await res.json();
+    const term = document.getElementById('igTerminalLog');
+    if (data.logs) {
+      const isAtBottom = term.scrollHeight - term.clientHeight <= term.scrollTop + 10;
+      
+      const escaped = data.logs
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+      
+      const lines = escaped.split('\n');
+      const coloredLines = lines.map(line => {
+        let style = "";
+        const lower = line.toLowerCase();
+        if (lower.includes('error') || lower.includes('failed') || lower.includes('exception')) {
+          style = "color: #ff4d4d;"; // Red
+        } else if (lower.includes('warning') || lower.includes('warn')) {
+          style = "color: #ffc400;"; // Yellow
+        } else if (line.includes('[INFO]') || lower.includes('info')) {
+          style = "color: #a9b1d6; opacity: 0.85;"; // Dim
+        }
+        return style ? `<span style="${style}">${line}</span>` : `<span>${line}</span>`;
+      });
+
+      term.innerHTML = coloredLines.join('\n');
+      if (isAtBottom) {
+        term.scrollTop = term.scrollHeight;
+      }
+    }
+  } catch (e) {
+    console.error("Failed to fetch IG logs", e);
+  }
+}
+
+// Poll logs every 3 seconds
+setInterval(fetchIgLogs, 3000);
+fetchIgLogs(); // initial load
 
 function applyFilters() {
   let shown = 0;
