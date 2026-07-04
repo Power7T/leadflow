@@ -283,7 +283,13 @@
             {% elif lead.status == 'closed' %}background:rgba(255,77,36,.12);color:var(--orange);border:1px solid rgba(255,77,36,.2)
             {% elif lead.status == 'approved' %}background:rgba(255,200,0,.1);color:var(--yellow);border:1px solid rgba(255,200,0,.2)
             {% elif lead.status == 'opted_out' %}background:rgba(255,77,109,.15);color:var(--red);border:1px solid rgba(255,77,109,.3)
-            {% endif %}">{{ lead.status | upper }}</span>
+            {% endif %}">
+            {% if lead.status == 'sent' %}
+              {% if lead.email_sent_at %}MAILED{% else %}SENT DM{% endif %}
+            {% else %}
+              {{ lead.status | upper }}
+            {% endif %}
+          </span>
         {% endif %}
       </div>
 
@@ -1412,7 +1418,11 @@ async function setLeadStatus(id, status) {
       if (nameWrap) nameWrap.appendChild(badge);
     }
     badge.style.cssText = `font-size:9px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:4px;white-space:nowrap;${STATUS_COLORS[status] || ''}`;
-    badge.textContent = status.toUpperCase();
+    if (status === 'sent') {
+      badge.textContent = lead.email_sent_at ? 'MAILED' : 'SENT DM';
+    } else {
+      badge.textContent = status.toUpperCase();
+    }
     if (currentFilter !== 'all' && currentFilter !== status) row.style.display = 'none';
   }
   // Brief toast
