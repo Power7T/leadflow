@@ -499,6 +499,31 @@ def get_ig_settings():
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
+@app.get("/api/ig-countdown")
+def get_ig_countdown():
+    import scheduler
+    from datetime import datetime, timezone
+    from database import get_conn
+    try:
+        conn = get_conn()
+        row = conn.execute("SELECT status FROM ig_settings WHERE id=1").fetchone()
+        conn.close()
+        is_running = row and row[0] == "running"
+        
+        if not is_running:
+            return JSONResponse({"is_running": False, "seconds_left": None})
+            
+        job = scheduler.scheduler.get_job("auto_send_instagram")
+        if job and job.next_run_time:
+            now = datetime.now(timezone.utc)
+            delta = job.next_run_time - now
+            seconds_left = max(0, int(delta.total_seconds()))
+            return JSONResponse({"is_running": True, "seconds_left": seconds_left})
+        else:
+            return JSONResponse({"is_running": True, "seconds_left": None})
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
 @app.post("/api/ig-settings")
 async def update_ig_settings(request: Request):
     from database import get_conn

@@ -19,6 +19,9 @@
         <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;" id="igApStatusTitle">
           <span class="pulse-dot gray" id="igApDot" style="width: 12px; height: 12px;"></span>
           IG Autopilot is <span id="igApStatusText">LOADING</span>
+          <span id="igCountdownContainer" style="font-size: 11px; margin-left: 8px; padding: 2px 8px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-dim); font-weight: normal; display: none; align-items: center; gap: 6px;">
+            ⏱️ Next send in: <span id="igCountdownText" style="color: var(--accent); font-weight: bold; font-family: monospace;">--:--</span>
+          </span>
         </h2>
         <p style="color: var(--text-dim); margin-top: 6px; font-size: 13px;">
           Runs 24/7 in the background from your local machine. Automatically messages prospects during their local awake hours (8 AM - 9 PM) to maximize open rates.
@@ -1647,6 +1650,61 @@ if (idParam) {
 } else if (allLeads.length > 0) {
   selectLead(allLeads[0].id);
 }
+
+let countdownSecondsLeft = null;
+
+function fetchIgCountdown() {
+  fetch('/api/ig-countdown')
+    .then(r => r.json())
+    .then(d => {
+      const container = document.getElementById('igCountdownContainer');
+      if (d.is_running && d.seconds_left !== null && d.seconds_left !== undefined) {
+        countdownSecondsLeft = d.seconds_left;
+        if (container) container.style.display = 'inline-flex';
+        renderCountdownText();
+      } else {
+        countdownSecondsLeft = null;
+        if (container) container.style.display = 'none';
+      }
+    }).catch(() => {
+      countdownSecondsLeft = null;
+      const container = document.getElementById('igCountdownContainer');
+      if (container) container.style.display = 'none';
+    });
+}
+
+function renderCountdownText() {
+  const el = document.getElementById('igCountdownText');
+  if (!el || countdownSecondsLeft === null) return;
+  
+  if (countdownSecondsLeft <= 0) {
+    el.textContent = "Sending...";
+    return;
+  }
+  
+  const h = Math.floor(countdownSecondsLeft / 3600);
+  const m = Math.floor((countdownSecondsLeft % 3600) / 60);
+  const s = countdownSecondsLeft % 60;
+  
+  let text = '';
+  if (h > 0) {
+    text += `${h}h `;
+  }
+  text += `${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
+  el.textContent = text;
+}
+
+// Tick down the countdown timer locally every second
+setInterval(() => {
+  if (countdownSecondsLeft !== null && countdownSecondsLeft > 0) {
+    countdownSecondsLeft--;
+    renderCountdownText();
+  }
+}, 1000);
+
+// Poll server next run time every 15 seconds
+setInterval(fetchIgCountdown, 15000);
+fetchIgCountdown(); // Initial call
 
 function toggleAddIgLeadsModal() {
   const m = document.getElementById('addIgLeadsModal');

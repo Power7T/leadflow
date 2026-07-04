@@ -431,6 +431,20 @@ def job_auto_send_instagram_dms():
         return
     
     try:
+        from database import get_conn
+        conn_status = get_conn()
+        try:
+            status_row = conn_status.execute("SELECT status FROM ig_settings WHERE id=1").fetchone()
+            is_running = status_row and status_row["status"] == "running"
+        except Exception:
+            is_running = False
+        finally:
+            conn_status.close()
+            
+        if not is_running:
+            log.info("[Instagram] Autopilot is paused/stopped in settings — skipping sending")
+            return
+
         from instagram_sender import can_send_instagram, send_instagram_dm, get_instagram_daily_sent_count
         if not can_send_instagram():
             return
