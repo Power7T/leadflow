@@ -4,8 +4,8 @@ import time
 from demo_generator import _scrape_site
 
 def generate_drafts():
-    conn = sqlite3.connect('leadflow.db')
-    conn.row_factory = sqlite3.Row
+    from database import get_conn
+    conn = get_conn()
     c = conn.cursor()
     # Fetch high ticket leads with IG handles that DON'T already have an IG draft
     c.execute("""
@@ -51,7 +51,7 @@ def generate_drafts():
         print(f"Draft saved: {draft}\n")
         time.sleep(4.5)
         conn.commit()
-
+    conn.close()
     print("Done!")
 
 if __name__ == '__main__':
