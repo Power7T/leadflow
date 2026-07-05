@@ -1098,7 +1098,7 @@ CRITICAL RULES:
         not raw
         or any(p.lower() in (raw or "").lower() for p in _bad_phrases)
         or len((raw or "").strip()) < 15
-        or (demo_url and demo_url not in raw)
+        or (demo_url and demo_url not in raw and not (is_tier_1 and variant in ["B", "D"]))
     )
     if _is_bad:
         name = (business.get("name") or "").strip()
@@ -1110,27 +1110,29 @@ CRITICAL RULES:
         score = business.get("website_score") or 0
         has_website = bool(business.get("website") and str(business.get("website")).strip())
 
+        has_link = demo_url and not (is_tier_1 and variant in ["B", "D"])
+
         if not has_website:
             raw = (
                 f"Hey {clean_name}, noticed you have "
                 + (f"an impressive {rating}★ across {reviews:,} reviews{city_text}" if (rating and reviews) else f"great reviews{city_text}")
                 + " but no website — you're likely losing leads to competitors who have one. "
-                + "Let me know what you think. "
-                + (f"I put together a quick demo to show what's possible: {demo_url}" if demo_url else f"Check my Fiverr to see a custom demo: {FIVERR_URL}")
+                + ("Would it be okay if I send over a custom design mockup I made for you to pass along to the owner?" if not has_link else
+                   f"I put together a quick demo to show what's possible: {demo_url}")
             )
         elif score and int(score) < 75:
             raw = (
                 f"Hey {clean_name}, your website is currently at {score}/100 on mobile — "
                 f"that means local leads{city_text} are bouncing before the page even loads. "
-                f"Let me know what you think. "
-                + (f"I built a faster version to show the difference: {demo_url}" if demo_url else f"Check my Fiverr to see a faster version: {FIVERR_URL}")
+                + ("Would it be okay if I send a quick mockup showing how we speed it up?" if not has_link else
+                   f"Let me know what you think. I built a faster version to show the difference: {demo_url}")
             )
         else:
             raw = (
                 f"Hey {clean_name}, "
                 + (f"your {rating}★ from {reviews:,} reviews{city_text} is impressive — but the website could be converting far more of those searchers into booked clients. " if (rating and reviews) else f"the website{city_text} could be pulling in significantly more high-ticket leads. ")
-                + "Let me know what you think. "
-                + (f"I put together a quick optimized demo: {demo_url}" if demo_url else f"Check my Fiverr to see a custom demo: {FIVERR_URL}")
+                + ("Would it be okay if I send over a quick layout mockup I put together to show how we increase conversions?" if not has_link else
+                   f"Let me know what you think. I put together a quick optimized demo: {demo_url}")
             )
 
     return raw
