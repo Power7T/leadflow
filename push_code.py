@@ -35,6 +35,9 @@ files_to_push = [
     "database.py", 
     "sender.py", 
     "ig_reply_responder.py",
+    "server.py",
+    "demo_generator.py",
+    "demo_templates/config.json",
     ".vivo_ip"
 ]
 
@@ -48,7 +51,9 @@ for f in files_to_push:
         continue
     print(f"Pushing {f}...")
     # Directly stream file content into the Termux private directory via shell stdin redirection
-    cmd = f"adb -s {device_ip} shell \"run-as com.termux sh -c 'cat > /data/data/com.termux/files/home/leadflow/{f}'\" < {local_path}"
+    dir_part = os.path.dirname(f)
+    mkdir_cmd = f"mkdir -p /data/data/com.termux/files/home/leadflow/{dir_part} && " if dir_part else ""
+    cmd = f"adb -s {device_ip} shell \"run-as com.termux sh -c '{mkdir_cmd}cat > /data/data/com.termux/files/home/leadflow/{f}'\" < {local_path}"
     subprocess.run(cmd, shell=True)
 
 
