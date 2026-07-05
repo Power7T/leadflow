@@ -45,7 +45,7 @@
              {% if lead.instagram %}<span title="Instagram" style="color:#00f2fe;font-size:12px">📸</span>{% endif %}
              {% if lead.whatsapp %}<span title="WhatsApp" style="color:#25d366;font-size:12px">💬</span>{% endif %}
            </div>
-           {% set score = lead.website_score | default(0) %}
+           {% set score = lead.website_score or 0 %}
            {% if not lead.website or score < 30 %}
              <span class="badge-hot" style="font-size:8px;padding:1px 4px">HOT 🔥</span>
            {% elif score < 55 %}
