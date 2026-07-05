@@ -1177,7 +1177,8 @@ def ig_manual_page(request: Request):
         rows = conn.execute("""
             SELECT b.id, b.name, b.category, b.lead_score, b.status,
                    b.demo_tunnel_url, b.ig_dm_sent, b.ig_dm_sent_at,
-                   b.city, b.google_rating, b.google_reviews, b.website, c.instagram
+                   b.city, b.google_rating, b.google_reviews, b.website,
+                   b.website_score, c.instagram
             FROM businesses b
             JOIN contacts c ON c.business_id = b.id
             WHERE c.instagram IS NOT NULL AND c.instagram != ''
@@ -1189,45 +1190,69 @@ def ig_manual_page(request: Request):
     leads = []
     for r in rows:
         lead = dict(r)
-        handle = (lead.get("instagram") or "").strip().lstrip("@")
-        name   = lead.get("name", "")
-        demo   = lead.get("demo_tunnel_url") or ""
+        name         = lead.get("name", "")
+        demo         = lead.get("demo_tunnel_url") or ""
+        city         = lead.get("city", "")
+        rating       = lead.get("google_rating")
+        reviews      = lead.get("google_reviews")
+        has_website  = bool(lead.get("website") and str(lead.get("website")).strip())
+        website_score = lead.get("website_score") or 0
 
-        # Build demo link — use tunnel URL if available, else GitHub Pages demo
+        # Build demo link — use tunnel URL if available, else GitHub Pages slug
         if not demo or not demo.startswith("http"):
             safe_slug = "".join(c if c.isalnum() or c in "-_" else "-" for c in name.lower()).strip("-")
             demo = f"https://power7t.github.io/leadflow-demos/{safe_slug}.html"
 
-        # Build DM message
-        city = lead.get("city", "")
-        city_text = f" in {city}" if city else ""
-        
-        rating = lead.get("google_rating")
-        reviews = lead.get("google_reviews")
-        
-        if rating and reviews and float(rating) >= 4.0:
-            review_text = f"an amazing {rating} rating across {reviews} reviews here{city_text}"
+        # Clean the business name (strip everything after " - ")
+        clean_name = name.split(" - ")[0].strip() if " - " in name else name.strip()
+        city_text  = f" in {city}" if city else ""
+
+        # ── Step 1: Try to use the AI-generated draft already in the outreach table ──
+        dm_from_db = ""
+        try:
+            _c = get_conn()
+            _row = _c.execute(
+                "SELECT draft FROM outreach WHERE business_id=? AND channel='instagram' AND draft!='' ORDER BY id DESC LIMIT 1",
+                (lead["id"],)
+            ).fetchone()
+            _c.close()
+            if _row and _row["draft"]:
+                dm_from_db = _row["draft"].strip()
+        except Exception:
+            pass
+
+        if dm_from_db:
+            # Use the existing AI-generated, personalized draft — best option
+            lead["dm_message"] = dm_from_db
+
         else:
-            review_text = f"amazing reviews here{city_text}"
-            
-        # Clean up the business name for a more natural greeting (e.g. "Kinitro Fitness - Gym" -> "Kinitro Fitness")
-        clean_name = name.split(' - ')[0].strip() if ' - ' in name else name.strip()
-        
-        # Check if they have a website
-        has_website = bool(lead.get("website") and str(lead.get("website")).strip())
-        
-        if has_website:
-            pitch_line = f"but I noticed your current website could use some modern optimization to help convert more traffic. "
-        else:
-            pitch_line = f"but don't have a modern website listed on your profile. "
-            
-        lead["dm_message"] = (
-            f"Hey {clean_name}! Love your profile page.\n\n"
-            f"I noticed you have {review_text} {pitch_line}"
-            f"I actually designed a quick, modern 1-page website mockup for you:\n\n"
-            f"Check it out here: {demo}\n\n"
-            f"Let me know what you think!"
-        )
+            # ── Step 2: Build a proper professional message (NO "Love your profile page") ──
+            if not has_website:
+                pitch_line = (
+                    "noticed you have "
+                    + (f"an impressive {rating}★ rating across {int(reviews):,} reviews{city_text}" if (rating and reviews) else f"great reviews{city_text}")
+                    + ", but no website — you're likely losing leads to competitors who have one."
+                )
+                demo_line = f"I put together a quick demo to show what's possible: {demo}"
+            elif website_score and int(website_score) < 75:
+                pitch_line = (
+                    f"your website is scoring {website_score}/100 on mobile — "
+                    f"that's likely causing local leads{city_text} to bounce before the page even loads."
+                )
+                demo_line = f"I built a faster, optimized demo to show the fix: {demo}"
+            else:
+                pitch_line = (
+                    (f"your {rating}★ from {int(reviews):,} reviews{city_text} is impressive" if (rating and reviews) else f"your reviews{city_text} are solid")
+                    + ", but the website could be capturing more high-ticket leads."
+                )
+                demo_line = f"I built a quick optimized demo to show the difference: {demo}"
+
+            lead["dm_message"] = (
+                f"Hey {clean_name}, {pitch_line} "
+                f"Let me know what you think.\n\n"
+                f"{demo_line}"
+            )
+
         lead["ig_dm_sent"] = lead.get("ig_dm_sent") or 0
         leads.append(lead)
 

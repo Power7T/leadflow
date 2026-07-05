@@ -202,6 +202,7 @@ def init_db():
         ("ig_dm_sent_at",      "TEXT"),
         ("tier",               "INTEGER DEFAULT 0"),
         ("ig_dm_variant",      "TEXT"),
+        ("ig_link_delivered",  "INTEGER DEFAULT 0"),
         ("wa_dm_sent",         "INTEGER DEFAULT 0"),
         ("wa_dm_sent_at",      "TEXT"),
     ]:

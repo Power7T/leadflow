@@ -1,0 +1,4 @@
+{
+  "tier1": ["highvalue1", "highvalue2", "highvalue3"],
+  "tier2": ["midvalue1", "midvalue2", "midvalue3"]
+}

@@ -91,8 +91,11 @@ def adb(cmd: str) -> str:
     try:
         return subprocess.check_output(
             f"adb -s {FIRESTICK_IP} {cmd}", 
-            shell=True, stderr=subprocess.STDOUT
+            shell=True, stderr=subprocess.STDOUT, timeout=15
         ).decode('utf-8', errors='ignore')
+    except subprocess.TimeoutExpired:
+        log.warning(f"ADB command timed out: {cmd}")
+        return ""
     except subprocess.CalledProcessError as e:
         log.debug(f"ADB Error on '{cmd}': {e.output.decode('utf-8', errors='ignore')}")
         return ""
@@ -235,8 +238,7 @@ def send_instagram_dm(username: str, message: str) -> bool:
 
         # 6. Type the message
         log.info(f"Typing message to @{username}...")
-        encoded = message.replace(' ', '%s')
-        adb(f'shell input text "{encoded}"')
+        type_text(message)
         time.sleep(2)
         
         # 7. Press the hardware BACK button to dismiss the hovering keyboard

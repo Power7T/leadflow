@@ -300,6 +300,7 @@ def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = Fals
     reviews   = business.get("google_reviews")
     website   = business.get("website", "")
     maps_url  = business.get("maps_url", "")
+    category  = business.get("category", "")
 
     # Split name for logo two-tone styling
     parts   = name.strip().split()

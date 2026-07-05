@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %} — A/B Tests{% endblock %}
+
+{% block content %}
+<h1>A/B Test Campaigns</h1>
+<p class="subtitle">Real-time split test experiments comparing email outreach variations.</p>
+
+<!-- Overview Metrics Cards -->
+<div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:24px">
+  <div class="card blue">
+    <div class="label">Variant A (Control)</div>
+    <div class="value" id="stats-var-a-pct">0%</div>
+    <div style="font-size:12px;color:var(--text-dim);margin-top:6px">
+      Open Rate: <span id="stats-var-a-open">0</span> | Replies: <span id="stats-var-a-reply">0</span>
+    </div>
+  </div>
+  <div class="card accent">
+    <div class="label">Variant B (Challenger)</div>
+    <div class="value" id="stats-var-b-pct">0%</div>
+    <div style="font-size:12px;color:var(--text-dim);margin-top:6px">
+      Open Rate: <span id="stats-var-b-open">0</span> | Replies: <span id="stats-var-b-reply">0</span>
+    </div>
+  </div>
+  <div class="card" style="border-color:rgba(0,200,150,0.3)">
+    <div class="label">Total Experiments Run</div>
+    <div class="value" style="color:var(--accent)" id="total-experiments-count">0</div>
+    <div style="font-size:12px;color:var(--text-dim);margin-top:6px">Active split tests</div>
+  </div>
+</div>
+
+<!-- Comparison Chart/Bars -->
+<div class="form-card" style="margin-bottom:24px">
+  <h2 style="font-size:15px;margin-bottom:18px">Variant Performance Comparison</h2>
+  
+  <div style="margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+      <span>Demo Views (Variant A)</span>
+      <strong id="bar-demo-a-val">0</strong>
+    </div>
+    <div class="stat-bar" style="height:12px"><div id="bar-demo-a" class="stat-bar-fill" style="width:0%;background:var(--blue)"></div></div>
+  </div>
+
+  <div style="margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+      <span>Demo Views (Variant B)</span>
+      <strong id="bar-demo-b-val">0</strong>
+    </div>
+    <div class="stat-bar" style="height:12px"><div id="bar-demo-b" class="stat-bar-fill" style="width:0%;background:var(--accent)"></div></div>
+  </div>
+
+  <div style="margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+      <span>Total Replies (Variant A)</span>
+      <strong id="bar-reply-a-val">0</strong>
+    </div>
+    <div class="stat-bar" style="height:12px"><div id="bar-reply-a" class="stat-bar-fill" style="width:0%;background:var(--blue)"></div></div>
+  </div>
+
+  <div style="margin-bottom:6px">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+      <span>Total Replies (Variant B)</span>
+      <strong id="bar-reply-b-val">0</strong>
+    </div>
+    <div class="stat-bar" style="height:12px"><div id="bar-reply-b" class="stat-bar-fill" style="width:0%;background:var(--accent)"></div></div>
+  </div>
+</div>
+
+<!-- Detailed Experiments List -->
+<div class="form-card">
+  <h2 style="font-size:15px;margin-bottom:16px">Split Test History</h2>
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;color:var(--text-dim)">
+          <th style="padding:10px 8px">Business Name</th>
+          <th style="padding:10px 8px">Niche</th>
+          <th style="padding:10px 8px">Variant A (Control)</th>
+          <th style="padding:10px 8px">Variant B (Challenger)</th>
+          <th style="padding:10px 8px;text-align:center">Opens (A/B)</th>
+          <th style="padding:10px 8px;text-align:center">Winner</th>
+          <th style="padding:10px 8px;text-align:right">Created At</th>
+        </tr>
+      </thead>
+      <tbody id="experiments-table-body">
+        <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-dim)">Loading experiments data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadABTestData() {
+  try {
+    const res = await fetch('/api/ab-test');
+    const data = await res.json();
+    
+    // 1. Calculate Aggregate A vs B percentages
+    let totalSentA = 0, totalSentB = 0;
+    let totalOpenA = 0, totalOpenB = 0;
+    let totalWinsA = 0, totalWinsB = 0;
+
+    data.aggregate.forEach(agg => {
+      totalSentA += agg.sent_a || 0;
+      totalSentB += agg.sent_b || 0;
+      totalOpenA += agg.opens_a || 0;
+      totalOpenB += agg.opens_b || 0;
+      totalWinsA += agg.wins_a || 0;
+      totalWinsB += agg.wins_b || 0;
+    });
+
+    const openRateA = totalSentA > 0 ? Math.round((totalOpenA / totalSentA) * 100) : 0;
+    const openRateB = totalSentB > 0 ? Math.round((totalOpenB / totalSentB) * 100) : 0;
+
+    document.getElementById('stats-var-a-pct').textContent = openRateA + '%';
+    document.getElementById('stats-var-a-open').textContent = totalOpenA + '/' + totalSentA;
+    document.getElementById('stats-var-a-reply').textContent = data.totals.reply_a || 0;
+
+    document.getElementById('stats-var-b-pct').textContent = openRateB + '%';
+    document.getElementById('stats-var-b-open').textContent = totalOpenB + '/' + totalSentB;
+    document.getElementById('stats-var-b-reply').textContent = data.totals.reply_b || 0;
+
+    document.getElementById('total-experiments-count').textContent = data.rows.length;
+
+    // 2. Render comparison bars
+    const maxDemos = Math.max(data.totals.demo_a, data.totals.demo_b, 1);
+    const maxReplies = Math.max(data.totals.reply_a, data.totals.reply_b, 1);
+
+    document.getElementById('bar-demo-a-val').textContent = data.totals.demo_a;
+    document.getElementById('bar-demo-a').style.width = Math.round((data.totals.demo_a / maxDemos) * 100) + '%';
+    document.getElementById('bar-demo-b-val').textContent = data.totals.demo_b;
+    document.getElementById('bar-demo-b').style.width = Math.round((data.totals.demo_b / maxDemos) * 100) + '%';
+
+    document.getElementById('bar-reply-a-val').textContent = data.totals.reply_a;
+    document.getElementById('bar-reply-a').style.width = Math.round((data.totals.reply_a / maxReplies) * 100) + '%';
+    document.getElementById('bar-reply-b-val').textContent = data.totals.reply_b;
+    document.getElementById('bar-reply-b').style.width = Math.round((data.totals.reply_b / maxReplies) * 100) + '%';
+
+    // 3. Render table rows
+    const tbody = document.getElementById('experiments-table-body');
+    if (data.rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-dim)">No A/B tests recorded yet.</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = '';
+    data.rows.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid rgba(255,255,255,0.04)';
+      
+      const winnerLabel = row.winner === 'A' ? '<span class="status-badge" style="background:rgba(58,134,240,0.15);color:var(--blue)">Variant A</span>' :
+                          row.winner === 'B' ? '<span class="status-badge" style="background:rgba(0,200,150,0.15);color:var(--accent)">Variant B</span>' :
+                          '<span class="status-badge" style="background:rgba(255,255,255,0.05);color:var(--text-dim)">Pending</span>';
+
+      const category = row.category ? row.category.charAt(0).toUpperCase() + row.category.slice(1) : 'General';
+      const formattedDate = row.created_at ? row.created_at.split(' ')[0] : 'N/A';
+
+      tr.innerHTML = `
+        <td style="padding:12px 8px;font-weight:500">${row.business_name}</td>
+        <td style="padding:12px 8px;color:var(--text-dim)">${category}</td>
+        <td style="padding:12px 8px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${row.subject_a}">${row.subject_a || 'Control'}</td>
+        <td style="padding:12px 8px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${row.subject_b}">${row.subject_b || 'Challenger'}</td>
+        <td style="padding:12px 8px;text-align:center">${row.opens_a || 0} / ${row.opens_b || 0}</td>
+        <td style="padding:12px 8px;text-align:center">${winnerLabel}</td>
+        <td style="padding:12px 8px;text-align:right;color:var(--text-dim)">${formattedDate}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (e) {
+    console.error("Error loading A/B test data", e);
+    document.getElementById('experiments-table-body').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red)">Failed to load split test history.</td></tr>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadABTestData);
+</script>
+{% endblock %}
