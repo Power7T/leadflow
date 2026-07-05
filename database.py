@@ -200,6 +200,10 @@ def init_db():
         ("visual_preview_url", "TEXT"),
         ("ig_dm_sent",         "INTEGER DEFAULT 0"),
         ("ig_dm_sent_at",      "TEXT"),
+        ("tier",               "INTEGER DEFAULT 0"),
+        ("ig_dm_variant",      "TEXT"),
+        ("wa_dm_sent",         "INTEGER DEFAULT 0"),
+        ("wa_dm_sent_at",      "TEXT"),
     ]:
         try:
             conn.execute(f"ALTER TABLE businesses ADD COLUMN {col} {definition}")

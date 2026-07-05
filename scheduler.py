@@ -272,8 +272,8 @@ def job_daily_find(force: bool = False):
     last_niche_idx = cfg.get("last_niche_idx", 0) or 0
     location = _random.choice(locations)
 
-    # ── Daily scrape cap: 10 qualified leads total ─────────────────────────
-    DAILY_SCRAPE_CAP = 10  # Backlog is large — 10 quality leads/day is plenty
+    # ── Daily scrape cap: 20 qualified leads total ─────────────────────────
+    DAILY_SCRAPE_CAP = 20  # Backlog is large — 20 quality leads/day is plenty
     QUALITY_MIN_SCORE = 70
     QUALITY_MIN_RATING = 4.5
     QUALITY_MIN_REVIEWS = 30
@@ -469,6 +469,7 @@ def job_auto_send_instagram_dms():
             JOIN businesses b ON b.id = o.business_id 
             JOIN contacts c ON c.business_id = o.business_id 
             WHERE o.channel = 'instagram' AND o.status = 'draft' 
+              AND b.status NOT IN ('skipped', 'opted_out')
               AND b.demo_tunnel_url IS NOT NULL AND b.demo_tunnel_url != '' 
             GROUP BY o.business_id 
             LIMIT 200

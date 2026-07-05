@@ -345,59 +345,125 @@ def _run_gemini_rest(prompt: str, model: str = "gemini-2.5-flash", sys_ctx: str 
 
 
 
-# ── Fallback Tier 3: OpenRouter (free models) ─────────────────────────────
-
-# Only the top-tier models — no compromises on quality (benchmarked 2026-06)
-_OPENROUTER_FREE_MODELS = [
-    "openai/gpt-oss-120b:free",              # ⭐⭐⭐⭐⭐ Best quality, ~6s
-    "nvidia/nemotron-3-ultra-550b-a55b:free", # ⭐⭐⭐⭐⭐ Equally excellent, ~30s fallback
-]
-
-def _run_openrouter(prompt: str, sys_ctx: str = None) -> str | None:
-    """Call OpenRouter free models as a fallback tier.
-    Tries each model in order until one returns a valid response.
-    Needs OPENROUTER_API_KEY in .env.
+def _run_omniroute(prompt: str, sys_ctx: str = None) -> str | None:
+    """Call OmniRoute local server with agy models as a high-priority tier.
+    Uses the 10 local agy accounts connected via the OmniRoute API key.
     """
-    api_key = os.getenv("OPENROUTER_API_KEY")
-    if not api_key:
-        return None
+    api_key = "sk-0000000000000000-a9c69a-c35b9451"
     import urllib.request, json as _json, ssl
     full_prompt = (sys_ctx or get_system_context({})) + "\n\n" + prompt
-    # fix #7: use verified SSL context
-    try:
-        import certifi
-        ctx = ssl.create_default_context(cafile=certifi.where())
-    except ImportError:
-        ctx = ssl.create_default_context()
-    for model_id in _OPENROUTER_FREE_MODELS:
+    
+    # We use verification-free SSL context since it is localhost
+    ctx = ssl._create_unverified_context()
+    
+    # Try gemini-2.5-flash first, fallback to gemini-2.5-pro if needed
+    omni_models = [
+        "agy/gemini-3.5-flash-low",
+        "agy/gemini-3.5-flash-medium",
+        "agy/gemini-3.5-flash-high",
+        "agy/gemini-3.1-pro-high",
+        "agy/gemini-3.1-pro-low",
+    ]
+    for model_id in omni_models:
         try:
             payload = _json.dumps({
                 "model": model_id,
                 "messages": [{"role": "user", "content": full_prompt}],
                 "max_tokens": 512,
                 "temperature": 0.9,
+                "stream": False,
             }).encode()
             req = urllib.request.Request(
-                "https://openrouter.ai/api/v1/chat/completions",
+                "http://localhost:20128/v1/chat/completions",
                 data=payload,
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "https://leadflow.local",
-                    "X-Title": "LeadFlow",
                 },
             )
-            with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
+            # Short timeout since it is a local server
+            with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
                 data = _json.loads(resp.read().decode("utf-8"))
             if "error" in data:
-                print(f"[ai_writer] OpenRouter {model_id} error: {data['error'].get('message','')[:60]}")
+                print(f"[ai_writer] OmniRoute {model_id} error: {data['error'].get('message','')[:60]}")
                 continue
             out = (data.get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
             if out:
-                print(f"[ai_writer] OpenRouter success via {model_id}")
+                print(f"[ai_writer] OmniRoute success via {model_id}")
                 return out
         except Exception as e:
-            print(f"[ai_writer] OpenRouter {model_id} exception: {str(e)[:60]}")
+            print(f"[ai_writer] OmniRoute {model_id} exception: {str(e)[:60]}")
+    return None
+
+
+# ── Fallback Tier 3: OpenRouter (free models) ─────────────────────────────
+
+# Only the top-tier models — no compromises on quality (benchmarked 2026-06)
+_OPENROUTER_FREE_MODELS = [
+    "openai/gpt-oss-120b:free",              # ⭐⭐⭐⭐⭐ Best quality, ~6s
+    "nvidia/nemotron-3-ultra-550b-a55b:free", # ⭐⭐⭐⭐⭐ Equally excellent, ~30s fallback
+    "openrouter/free",                        # ⚡ Dynamic auto-router fallback (always online)
+]
+
+def _run_openrouter(prompt: str, sys_ctx: str = None) -> str | None:
+    """Call OpenRouter free models as a fallback tier.
+    Tries each model in order until one returns a valid response.
+    Supports rotating multiple comma-separated keys in OPENROUTER_API_KEY.
+    """
+    raw_keys = os.getenv("OPENROUTER_API_KEY")
+    if not raw_keys:
+        return None
+        
+    api_keys = [k.strip() for k in raw_keys.split(",") if k.strip()]
+    if not api_keys:
+        return None
+        
+    import urllib.request, json as _json, ssl
+    full_prompt = (sys_ctx or get_system_context({})) + "\n\n" + prompt
+    try:
+        import certifi
+        ctx = ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        ctx = ssl.create_default_context()
+        
+    for model_id in _OPENROUTER_FREE_MODELS:
+        for idx, api_key in enumerate(api_keys):
+            try:
+                payload = _json.dumps({
+                    "model": model_id,
+                    "messages": [{"role": "user", "content": full_prompt}],
+                    "max_tokens": 512,
+                    "temperature": 0.9,
+                }).encode()
+                req = urllib.request.Request(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    data=payload,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://leadflow.local",
+                        "X-Title": "LeadFlow",
+                    },
+                )
+                with urllib.request.urlopen(req, timeout=30, context=ctx) as resp:
+                    data = _json.loads(resp.read().decode("utf-8"))
+                if "error" in data:
+                    err_msg = data['error'].get('message','')
+                    print(f"[ai_writer] OpenRouter {model_id} (key {idx+1}) error: {err_msg[:60]}")
+                    if "429" in err_msg or "rate" in err_msg.lower():
+                        print(f"[ai_writer] Rate limit hit on key {idx+1}. Rotating to next key...")
+                        continue
+                    continue
+                out = (data.get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
+                if out:
+                    print(f"[ai_writer] OpenRouter success via {model_id} (using key {idx+1})")
+                    return out
+            except Exception as e:
+                err_str = str(e)
+                print(f"[ai_writer] OpenRouter {model_id} (key {idx+1}) exception: {err_str[:60]}")
+                if "429" in err_str or "too many requests" in err_str.lower():
+                    print(f"[ai_writer] Rate limit hit on key {idx+1}. Rotating to next key...")
+                    continue
     return None
 
 
@@ -717,30 +783,27 @@ def _run_template(prompt: str) -> str:
 def _run(prompt: str, attempts: int = 2, sys_ctx: str = None) -> str:
     """Call AI with a fallback chain so generation NEVER gets stuck.
 
-    Tier 1: agy CLI round-robin across all 9 profiles (9× free quota)
-    Tier 2: Gemini REST API (8 rotating API keys)
-    Tier 3: OpenRouter free models (gpt-oss-120b → nemotron-ultra-550b)
-    Tier 4: OpenAI gpt-4o-mini (OPENAI_API_KEY in .env)
-    Tier 5: Anthropic Claude Haiku (ANTHROPIC_API_KEY in .env)
-    Tier 6: Smart template (always works, zero cost, zero dependencies)
+    Tier 1: Gemini REST API (8 rotating API keys)
+    Tier 2: OpenRouter free models (10 rotating API keys)
+    Tier 3: OmniRoute agy local server (using 10 connected agy accounts)
     """
     import time
 
-    # ── Tier 1: agy profiles round-robin ──
-    print("[ai_writer] Trying Tier 1: agy profile rotation")
-    out = _run_agy_profiles(prompt, sys_ctx=sys_ctx)
-    if out and "Authentication required" not in out and "Waiting for authentication" not in out:
-        return out
-
-    # ── Tier 2: Gemini REST ──
-    print("[ai_writer] Trying Tier 2: Gemini REST")
+    # ── Tier 1: Gemini REST ──
+    print("[ai_writer] Trying Tier 1: Gemini REST")
     out = _run_gemini_rest(prompt, sys_ctx=sys_ctx)
     if out:
         return out
 
-    # ── Tier 3: OpenRouter free models ──
-    print("[ai_writer] Trying Tier 3: OpenRouter free models")
+    # ── Tier 2: OpenRouter free models ──
+    print("[ai_writer] Trying Tier 2: OpenRouter free models")
     out = _run_openrouter(prompt, sys_ctx=sys_ctx)
+    if out:
+        return out
+
+    # ── Tier 3: OmniRoute agy local server ──
+    print("[ai_writer] Trying Tier 3: OmniRoute agy server")
+    out = _run_omniroute(prompt, sys_ctx=sys_ctx)
     if out:
         return out
 
@@ -912,16 +975,63 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
         demo_part = f"IMPORTANT: Do NOT mention a demo link. Instead invite them to message you on Fiverr ({FIVERR_URL}) to see a custom demo."
         offer = _pitch_context(business.get('pitch_type', ''), "")
 
-    # Determine the psychological hook based on their data
-    if not business.get('website') or business.get('website') == 'NONE':
-        if int(business.get('google_reviews', 0)) > 20:
-            hook_strategy = "HOOK: Point out they have amazing Google reviews, but because they have NO website linked, they are bleeding high-ticket leads who try to click through from Maps to learn more."
+    website_score = int(business.get('website_score') or 100)
+
+    # ── A/B Testing for Tier 1 Gatekeepers ─────────────────────────────────
+    # If the business is Tier 1, assign Variant A (Owner Hook) or Variant B (Gatekeeper Hook) based on business ID.
+    is_tier_1 = (business.get("tier") == 1)
+    if not is_tier_1:
+        # Fallback check in case the 'tier' column is not populated yet: check category
+        cat = (business.get("category") or "").lower()
+        tier1_niches = ["roof", "hvac", "solar", "lawyer", "attorney", "med spa", "medspa", "remodel", "dentist", "orthodont"]
+        is_tier_1 = any(t in cat for t in tier1_niches)
+
+    variant = None
+    if is_tier_1:
+        bid = int(business.get("id") or 0)
+        # Even IDs -> Variant A (Owner Hook)
+        # Odd IDs  -> Variant B (Gatekeeper Hook)
+        variant = "A" if bid % 2 == 0 else "B"
+        
+        # Save variant to DB
+        if bid:
+            try:
+                import sqlite3
+                DB_PATH = "/Users/chandan/leadflow/leadflow.db" if os.path.exists("/Users/chandan/leadflow/leadflow.db") else "/data/data/com.termux/files/home/leadflow/leadflow.db"
+                conn = sqlite3.connect(DB_PATH, timeout=30.0)
+                conn.execute("UPDATE businesses SET ig_dm_variant = ? WHERE id = ?", (variant, bid))
+                conn.commit()
+                conn.close()
+                print(f"[ai_writer] Saved A/B variant {variant} for business ID {bid}")
+            except Exception as e:
+                print(f"[ai_writer] Error saving A/B variant to DB: {e}")
+
+        if variant == "A":
+            hook_strategy = (
+                "HOOK: Focus the hook strictly on the business owner or head decision-maker. "
+                "Point out that their website has mobile optimization flaws losing them high-paying clients, "
+                "and pitch the mockup directly to them. Do NOT address the team or receptionist."
+            )
         else:
-            hook_strategy = "HOOK: Point out that not having a website is costing them trust and local search traffic, making them lose customers to local competitors."
-    elif int(business.get('website_score', 100)) < 60:
-        hook_strategy = "HOOK: Use the 'Broken Thing' approach. Inform them their current website is loading very slowly or has technical flaws that are secretly leaking mobile traffic and losing them money."
+            hook_strategy = (
+                "HOOK: Target the receptionist, office manager, or administrative gatekeeper reading the DMs. "
+                "Acknowledge them and frame the mockup as a major win for *them* (e.g. automating client bookings, "
+                "reducing repeat phone calls, making scheduling hands-free). "
+                "End the message with a direct question: 'Could you pass this design layout on to the owner/doctor?'"
+            )
     else:
-        hook_strategy = "HOOK: Point out that while their business looks great, their digital infrastructure could be optimized to capture significantly more high-ticket leads."
+        # Original Hook Selection for Tier 2/3
+        if not business.get('website') or business.get('website') == 'NONE':
+            if int(business.get('google_reviews', 0)) > 20:
+                hook_strategy = "HOOK: Point out they have amazing Google reviews, but because they have NO website linked, they are bleeding high-ticket leads who try to click through from Maps to learn more."
+            else:
+                hook_strategy = "HOOK: Point out that not having a website is costing them trust and local search traffic, making them lose customers to local competitors."
+        elif website_score < 60:
+            hook_strategy = "HOOK: Use the 'Broken Thing' approach. Inform them their current website is loading very slowly or has technical flaws that are secretly leaking mobile traffic and losing them money."
+        elif website_score < 80:
+            hook_strategy = f"HOOK: Point out that their website scores {website_score}/100 on mobile — there are clear optimization opportunities that would help convert more of their local search traffic into booked clients."
+        else:
+            hook_strategy = "HOOK: Point out that while their business looks great online, their lead capture and follow-up system could be significantly improved to convert more website visitors into paying clients."
 
     prompt = f"""{_business_context(business, scraped)}
 Offer: {offer}
@@ -929,13 +1039,67 @@ Offer: {offer}
 
 Write a highly professional, expert-level Instagram DM (under 50 words).
 CRITICAL RULES:
-1. The message MUST be HYPER-PERSONALIZED to their exact business. Reference their specific niche, city, or a highly specific detail.
-2. Do NOT introduce yourself. Never say "I'm Chandan" or "I build websites". Lead directly with the value or the technical audit problem.
+1. The message MUST be HYPER-PERSONALIZED to this specific business. Reference their specific niche, city, review count, or a concrete detail from their profile.
+2. Do NOT introduce yourself. Never say "I'm Chandan" or "I build websites". Lead directly with the insight or the problem you spotted.
 3. Do NOT use emojis (or strictly 1 max). Do NOT sound desperate or use words like "no catch" or "free".
 4. {hook_strategy}
 5. You MUST reference their {business.get('google_reviews', '0')} Google reviews, their specific service, or their lack of a website.
-6. You MUST explicitly mention their exact business name. Make it feel 100% bespoke. Ready to send."""
-    return _run(prompt)
+6. You MUST explicitly mention their exact business name. Make it feel 100% bespoke. Ready to send.
+7. NEVER address the message to "[Business Name] team" — address the owner directly or use the business name alone without "team".
+8. NEVER say "ran a quick diagnostic check" or "noticed it is scoring X/100 on mobile load speed" — that exact phrasing is banned. Find a fresh, original way to express the same idea.
+9. The message MUST end with the exact link: {demo_url if demo_url else FIVERR_URL}.
+10. DO NOT add any closing text, sign-offs, or questions after the link (the link must be the final text in the message)."""
+    raw = _run(prompt)
+
+    # ── Validation guard: reject generic/broken AI output ────────────────────
+    # If AI failed or returned garbage, build a proper professional fallback
+    _bad_phrases = [
+        "love your profile", "great page", "awesome profile",
+        " team,", " team\n", " team.", "Offer: ",
+        "ran a quick diagnostic check",
+        "mobile load speed",  # catches the repetitive diagnostic pattern
+    ]
+    _is_bad = (
+        not raw
+        or any(p.lower() in (raw or "").lower() for p in _bad_phrases)
+        or len((raw or "").strip()) < 15
+        or (demo_url and demo_url not in raw)
+    )
+    if _is_bad:
+        name = (business.get("name") or "").strip()
+        clean_name = name.split(" - ")[0].strip() if " - " in name else name
+        city = (business.get("city") or "").split(",")[0].strip()
+        city_text = f" in {city}" if city else ""
+        rating = business.get("google_rating") or ""
+        reviews = business.get("google_reviews") or 0
+        score = business.get("website_score") or 0
+        has_website = bool(business.get("website") and str(business.get("website")).strip())
+
+        if not has_website:
+            raw = (
+                f"Hey {clean_name}, noticed you have "
+                + (f"an impressive {rating}★ across {reviews:,} reviews{city_text}" if (rating and reviews) else f"great reviews{city_text}")
+                + " but no website — you're likely losing leads to competitors who have one. "
+                + "Let me know what you think. "
+                + (f"I put together a quick demo to show what's possible: {demo_url}" if demo_url else f"Check my Fiverr to see a custom demo: {FIVERR_URL}")
+            )
+        elif score and int(score) < 75:
+            raw = (
+                f"Hey {clean_name}, your website is currently at {score}/100 on mobile — "
+                f"that means local leads{city_text} are bouncing before the page even loads. "
+                f"Let me know what you think. "
+                + (f"I built a faster version to show the difference: {demo_url}" if demo_url else f"Check my Fiverr to see a faster version: {FIVERR_URL}")
+            )
+        else:
+            raw = (
+                f"Hey {clean_name}, "
+                + (f"your {rating}★ from {reviews:,} reviews{city_text} is impressive — but the website could be converting far more of those searchers into booked clients. " if (rating and reviews) else f"the website{city_text} could be pulling in significantly more high-ticket leads. ")
+                + "Let me know what you think. "
+                + (f"I put together a quick optimized demo: {demo_url}" if demo_url else f"Check my Fiverr to see a custom demo: {FIVERR_URL}")
+            )
+
+    return raw
+
 
 
 def write_linkedin_dm(business: dict, demo_url: str = "", scraped: dict | None = None) -> str:
