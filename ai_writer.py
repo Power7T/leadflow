@@ -1094,10 +1094,13 @@ CRITICAL RULES:
         "ran a quick diagnostic check",
         "mobile load speed",  # catches the repetitive diagnostic pattern
     ]
+    cleaned_raw = (raw or "").strip()
+    ends_with_punc = cleaned_raw and cleaned_raw[-1] in (".", "?", "!", '"', "'")
     _is_bad = (
         not raw
         or any(p.lower() in (raw or "").lower() for p in _bad_phrases)
-        or len((raw or "").strip()) < 15
+        or len(cleaned_raw) < 15
+        or not ends_with_punc
         or (demo_url and demo_url not in raw and not (is_tier_1 and variant in ["B", "D"]))
     )
     if _is_bad:
