@@ -1056,6 +1056,12 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
         else:
             hook_strategy = "HOOK: Point out that while their business looks great online, their lead capture and follow-up system could be significantly improved to convert more website visitors into paying clients."
 
+    link_rule = (
+        "The message MUST end with the exact link or Fiverr URL specified in the rules above. DO NOT add any closing text, sign-offs, or questions after the link (the link must be the final text in the message)."
+        if (demo_url and not (is_tier_1 and variant in ["B", "D"])) else
+        "Do NOT include any website link, URL, or demo URL in this message. Instead, ask if you can send them the link to check it out. The message must end with the question asking for permission."
+    )
+
     prompt = f"""{_business_context(business, scraped)}
 Offer: {offer}
 {demo_part}
@@ -1070,8 +1076,7 @@ CRITICAL RULES:
 6. You MUST explicitly mention their exact business name. Make it feel 100% bespoke. Ready to send.
 7. NEVER address the message to "[Business Name] team" — address the owner directly or use the business name alone without "team".
 8. NEVER say "ran a quick diagnostic check" or "noticed it is scoring X/100 on mobile load speed" — that exact phrasing is banned. Find a fresh, original way to express the same idea.
-9. The message MUST end with the exact link or Fiverr URL specified in the rules above.
-10. DO NOT add any closing text, sign-offs, or questions after the link (the link must be the final text in the message)."""
+9. {link_rule}"""
     
     sys_ctx = (
         "You are a highly persuasive, world-class outbound sales copywriter. "
