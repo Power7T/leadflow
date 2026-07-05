@@ -553,6 +553,33 @@ def job_auto_send_instagram_dms():
         _instagram_send_lock.release()
 
 
+_instagram_reply_lock = threading.Lock()
+
+@require_internet
+def job_check_instagram_replies():
+    """
+    Check Instagram for replies/opt-outs and deliver links to positive responses.
+    """
+    if not _instagram_reply_lock.acquire(blocking=False):
+        log.info("[Instagram Reply] Responder job already running — skipping")
+        return
+    try:
+        import subprocess, sys
+        script_path = "/Users/chandan/leadflow/ig_reply_responder.py"
+        if os.path.exists(script_path):
+            log.info("[Instagram Reply] Launching automated reply responder...")
+            res = subprocess.run([sys.executable, script_path, "--method", "both"], capture_output=True, text=True, timeout=300)
+            if res.returncode == 0:
+                log.info("[Instagram Reply] Completed successfully.")
+            else:
+                log.error(f"[Instagram Reply] Responder failed: {res.stderr}")
+        else:
+            log.warning(f"[Instagram Reply] Responder script not found at {script_path}")
+    except Exception as e:
+        log.error(f"[Instagram Reply] Job error: {e}")
+    finally:
+        _instagram_reply_lock.release()
+
 
 @require_internet
 def job_auto_send_whatsapp():
@@ -1870,8 +1897,17 @@ def start_scheduler():
             fn()
         _wrapped.__name__ = fn.__name__
         return _wrapped
+        
+    def _mac_only(fn):
+        def _wrapped():
+            if not is_primary_active(): return
+            fn()
+        _wrapped.__name__ = fn.__name__
+        return _wrapped
+
     scheduler.add_job(_firestick_only(generate_wa_drafts.generate_drafts), "interval", hours=4, id="generate_wa_drafts", next_run_time=now_utc, replace_existing=True)
     scheduler.add_job(_firestick_only(generate_ig_drafts.generate_drafts), "interval", hours=4, id="generate_ig_drafts", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(_mac_only(job_check_instagram_replies), "interval", minutes=15, id="check_instagram_replies", next_run_time=now_utc, replace_existing=True)
 
     if not scheduler.running:
         scheduler.start()
