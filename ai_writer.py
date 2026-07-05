@@ -968,17 +968,8 @@ CRITICAL RULES:
 
 
 def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None = None) -> str:
-    if demo_url:
-        demo_part = f"ABSOLUTE REQUIREMENT: You MUST paste the exact link {demo_url} directly into your message. Do not ask if they want to see it."
-        offer = _pitch_context(business.get('pitch_type', ''), demo_url)
-    else:
-        demo_part = f"IMPORTANT: Do NOT mention a demo link. Instead invite them to message you on Fiverr ({FIVERR_URL}) to see a custom demo."
-        offer = _pitch_context(business.get('pitch_type', ''), "")
-
-    website_score = int(business.get('website_score') or 100)
-
-    # ── A/B Testing for Tier 1 Gatekeepers ─────────────────────────────────
-    # If the business is Tier 1, assign Variant A (Owner Hook) or Variant B (Gatekeeper Hook) based on business ID.
+    # ── A/B Testing Cohort Determination ──────────────────────────────────
+    # If the business is Tier 1, assign Variant A, B, C, or D based on business ID.
     is_tier_1 = (business.get("tier") == 1)
     if not is_tier_1:
         # Fallback check in case the 'tier' column is not populated yet: check category
@@ -989,9 +980,13 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
     variant = None
     if is_tier_1:
         bid = int(business.get("id") or 0)
-        # Even IDs -> Variant A (Owner Hook)
-        # Odd IDs  -> Variant B (Gatekeeper Hook)
-        variant = "A" if bid % 2 == 0 else "B"
+        # 4 Cohorts split using modulo 4
+        # A: Direct Link + Technical Pain
+        # B: Permission Hook + Gatekeeper Workflow
+        # C: Direct Link + Competitor Pride
+        # D: Permission Hook + Competitor Pride
+        cohorts = {0: "A", 1: "B", 2: "C", 3: "D"}
+        variant = cohorts[bid % 4]
         
         # Save variant to DB
         if bid:
@@ -1006,18 +1001,46 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
             except Exception as e:
                 print(f"[ai_writer] Error saving A/B variant to DB: {e}")
 
+    # Set up Demo Link vs Permission parameters
+    if is_tier_1 and variant in ["B", "D"]:
+        # Permission-based: NO link in the first message
+        demo_part = "IMPORTANT: Do NOT include any website link or URL in this message. Instead, ask if you can send them the link to check it out."
+        offer = _pitch_context(business.get('pitch_type', ''), "")
+    else:
+        # Standard: Direct Link sent immediately
+        if demo_url:
+            demo_part = f"ABSOLUTE REQUIREMENT: You MUST paste the exact link {demo_url} directly into your message."
+            offer = _pitch_context(business.get('pitch_type', ''), demo_url)
+        else:
+            demo_part = f"IMPORTANT: Do NOT mention a demo link. Invite them to check your Fiverr: {FIVERR_URL}"
+            offer = _pitch_context(business.get('pitch_type', ''), "")
+
+    website_score = int(business.get('website_score') or 100)
+
+    if is_tier_1:
         if variant == "A":
             hook_strategy = (
                 "HOOK: Focus the hook strictly on the business owner or head decision-maker. "
-                "Point out that their website has mobile optimization flaws losing them high-paying clients, "
-                "and pitch the mockup directly to them. Do NOT address the team or receptionist."
+                "Point out that their website has mobile speed/optimization performance issues (technical pain) "
+                "losing them local clients, and pitch the mockup directly to them. Do NOT address the team or receptionist."
             )
-        else:
+        elif variant == "B":
             hook_strategy = (
                 "HOOK: Target the receptionist, office manager, or administrative gatekeeper reading the DMs. "
                 "Acknowledge them and frame the mockup as a major win for *them* (e.g. automating client bookings, "
                 "reducing repeat phone calls, making scheduling hands-free). "
-                "End the message with a direct question: 'Could you pass this design layout on to the owner/doctor?'"
+                "Ask: 'Could you pass this design layout on to the owner/doctor?'"
+            )
+        elif variant == "C":
+            hook_strategy = (
+                "HOOK: Focus on brand pride and local competitors. Point out that local competitors "
+                "have modern layouts. Pitch your custom mockup directly to the owner/doctor as a way to stand out."
+            )
+        elif variant == "D":
+            hook_strategy = (
+                "HOOK: Focus on brand pride and local competitors. Point out that local competitors "
+                "have modern layouts. Tell the receptionist/manager that you made a custom mockup for their page to stand out, "
+                "and ask if you can send the link to pass along to the owner."
             )
     else:
         # Original Hook Selection for Tier 2/3
@@ -1327,13 +1350,27 @@ Subject on first line. Ready to send."""
 
     # Instagram DM follow-up — Day 6
     if business.get("instagram"):
+        # Test 3: Follow-Up Sequence (Value-Add vs Standard Bump)
+        bid = int(business.get("id") or 0)
+        fu_variant = "A" if bid % 2 == 0 else "B"
+        
+        if fu_variant == "A":
+            followup_rule = (
+                "- Keep it a simple, polite bump. e.g. 'Hey, just wanted to check if you got a chance to see the draft layout I sent over?'"
+            )
+        else:
+            followup_rule = (
+                "- Provide a quick, valuable SEO or ranking insight. e.g. 'Hey, I also ran a quick check on your Google Maps listing—adding a few keyword-rich replies to your reviews would boost your local ranking. Let me know if you want the mockup link!'"
+            )
+
         prompt_ig = f"""{ctx}
 Offer: {offer}
-{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your message. Do not ask if they want to see it.' if demo_url else ''}
+{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your message. Do not ask if they want to see it.' if (demo_url and fu_variant == "A") else ''}
 
 Write a short Instagram DM follow-up (sent 6 days after first contact).
-- Very casual. Under 40 words. Don't mention the email. Fresh angle.
+- Under 40 words.
 - Do NOT re-introduce yourself.
+{followup_rule}
 - CRITICAL: End with ONE simple question.
 Ready to send."""
         f_ig = _run(prompt_ig, sys_ctx=get_system_context(business))
