@@ -54,7 +54,7 @@
     @media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
 
     /* HERO */
-    #hero{min-height:100vh;display:flex;align-items:center;padding-top:140px;padding-bottom:80px;background:radial-gradient(ellipse 80% 60% at 70% 50%,rgba(217,119,6,.10) 0%,transparent 65%),radial-gradient(ellipse 60% 80% at 10% 80%,rgba(251,191,36,.06) 0%,transparent 60%),var(--navy)}
+    #hero{min-height:100vh;display:flex;align-items:center;padding-top:140px;padding-bottom:80px;background:radial-gradient(ellipse 80% 60% at 70% 50%,rgba(217,119,6,.10) 0%,transparent 65%),radial-gradient(ellipse 60% 80% at 10% 80%,rgba(251,191,36,.06) 0%,transparent 60%),linear-gradient(rgba(15,23,42,0.9),rgba(15,23,42,0.9)),url('{{ hero_img }}') center/cover}
     .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
     .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(217,119,6,.15);border:1px solid rgba(217,119,6,.35);border-radius:50px;padding:6px 18px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-light);margin-bottom:24px}
     .hero-title{font-family:var(--font-serif);font-size:clamp(2.4rem,4.5vw,3.8rem);font-weight:700;line-height:1.18;margin-bottom:20px}
@@ -351,11 +351,7 @@
   <section id="about">
     <div class="container about-grid">
       <div class="about-img-wrap reveal">
-        {% if hero_img %}
-          <img src="https://power7t.github.io/leadflow-demos/accountant-about.jpg" alt="{{ lead.name }} CPA Office" />
-        {% else %}
-          <img src="https://power7t.github.io/leadflow-demos/accountant-hero.jpg" alt="{{ lead.name }} CPA Office" />
-        {% endif %}
+        <img src="{{ about_img }}" alt="{{ lead.name }} CPA Office" />
         <div class="about-badge">
           <div class="big">A+</div>
           <div class="sm">BBB Rated</div>

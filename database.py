@@ -205,6 +205,19 @@ def init_db():
         ("ig_link_delivered",  "INTEGER DEFAULT 0"),
         ("wa_dm_sent",         "INTEGER DEFAULT 0"),
         ("wa_dm_sent_at",      "TEXT"),
+        ("shadow_status",        "TEXT DEFAULT 'untested'"),
+        ("shadow_tested_at",     "TEXT"),
+        ("shadow_issue",         "TEXT"),
+        ("site_builder",         "TEXT DEFAULT ''"),
+        ("complaint_hook",       "TEXT DEFAULT ''"),
+        ("place_id",             "TEXT DEFAULT ''"),
+        ("timezone",             "TEXT DEFAULT ''"),
+        ("competitor_name",      "TEXT DEFAULT ''"),
+        ("competitor_url",       "TEXT DEFAULT ''"),
+        ("competitor_score",     "INTEGER DEFAULT 0"),
+        ("gmb_gap_hook",         "TEXT DEFAULT ''"),
+        ("demo_first_opened_at",      "TEXT"),
+        ("demo_followup_nudge_sent",  "INTEGER DEFAULT 0"),
     ]:
         try:
             conn.execute(f"ALTER TABLE businesses ADD COLUMN {col} {definition}")
@@ -378,17 +391,27 @@ def insert_business(data: dict) -> int:
         "maps_rank": data.get("maps_rank", 0),
         "competitor_deficit": data.get("competitor_deficit"),
         "visual_preview_url": data.get("visual_preview_url"),
+        "site_builder": data.get("site_builder", ""),
+        "complaint_hook": data.get("complaint_hook", ""),
+        "place_id": data.get("place_id", ""),
+        "timezone": data.get("timezone", ""),
+        "competitor_name": data.get("competitor_name", ""),
+        "competitor_url": data.get("competitor_url", ""),
+        "competitor_score": data.get("competitor_score", 0),
+        "gmb_gap_hook": data.get("gmb_gap_hook", ""),
     }
 
     cur = conn.execute("""
         INSERT INTO businesses (name, category, address, city, country, phone,
             website, website_score, google_rating, google_reviews, gap, pitch_type,
             lead_score, domain_available, source, maps_url, has_google_ads, social_active, intent_score,
-            maps_rank, competitor_deficit, visual_preview_url)
+            maps_rank, competitor_deficit, visual_preview_url, site_builder, complaint_hook, place_id, timezone,
+            competitor_name, competitor_url, competitor_score, gmb_gap_hook)
         VALUES (:name, :category, :address, :city, :country, :phone,
             :website, :website_score, :google_rating, :google_reviews, :gap, :pitch_type,
             :lead_score, :domain_available, :source, :maps_url, :has_google_ads, :social_active, :intent_score,
-            :maps_rank, :competitor_deficit, :visual_preview_url)
+            :maps_rank, :competitor_deficit, :visual_preview_url, :site_builder, :complaint_hook, :place_id, :timezone,
+            :competitor_name, :competitor_url, :competitor_score, :gmb_gap_hook)
     """, bind_data)
     conn.commit()
     bid = cur.lastrowid
@@ -464,11 +487,16 @@ def get_all_active_leads() -> list:
                ) as interactions_json,
                (SELECT sent_at FROM outreach WHERE business_id = b.id AND sent_at IS NOT NULL ORDER BY id DESC LIMIT 1) as email_sent_at,
                (SELECT MAX(opened) FROM outreach WHERE business_id = b.id) as email_opened,
-               (SELECT MAX(clicked) FROM outreach WHERE business_id = b.id) as email_clicked
+               (SELECT MAX(clicked) FROM outreach WHERE business_id = b.id) as email_clicked,
+               (
+                   CASE WHEN b.demo_viewed = 1 THEN 2 ELSE 0 END
+                   + CASE WHEN EXISTS(SELECT 1 FROM tracking_events WHERE business_id=b.id AND event_type='engage:scroll_90') THEN 3 ELSE 0 END
+                   + CASE WHEN EXISTS(SELECT 1 FROM tracking_events WHERE business_id=b.id AND event_type='engage:cta_whatsapp') THEN 5 ELSE 0 END
+               ) as engagement_score
         FROM businesses b
         LEFT JOIN contacts c ON c.business_id = b.id
         WHERE b.status NOT IN ('skipped') AND (b.source IS NULL OR b.source != 'test_leads')
-        ORDER BY b.lead_score DESC, b.found_at DESC
+        ORDER BY engagement_score DESC, b.lead_score DESC, b.found_at DESC
     """).fetchall()
     conn.close()
     return [dict(r) for r in rows]
@@ -877,11 +905,11 @@ def get_stats() -> dict:
     for status in ("new", "approved", "sent", "replied", "skipped", "closed", "opted_out"):
         row = conn.execute("SELECT COUNT(*) as c FROM businesses WHERE status=? AND (source IS NULL OR (source NOT IN ('facebook_miami', 'instagram_reach', 'test_leads')))", (status,)).fetchone()
         stats[status] = row["c"]
-        
+
     # FB Miami leads count
     row_miami = conn.execute("SELECT COUNT(*) as c FROM businesses WHERE source='facebook_miami' AND status='new'").fetchone()
     stats["miami_new"] = row_miami["c"]
-    
+
     # Instagram Reach leads count
     row_ig = conn.execute("SELECT COUNT(*) as c FROM businesses WHERE source='instagram_reach' AND status='new'").fetchone()
     stats["instagram_reach_new"] = row_ig["c"]
@@ -889,13 +917,30 @@ def get_stats() -> dict:
     # Test Leads count
     row_test = conn.execute("SELECT COUNT(*) as c FROM businesses WHERE source='test_leads' AND status='new'").fetchone()
     stats["test_leads_new"] = row_test["c"]
-    
+
     # Check if autopilot scheduler is enabled
     cfg_row = conn.execute("SELECT enabled FROM scheduler_config LIMIT 1").fetchone()
     stats["autopilot_active"] = bool(cfg_row["enabled"]) if cfg_row else False
-    
+
     conn.close()
     return stats
+
+
+def get_ab_stats() -> list:
+    """Returns IG DM A/B variant reply rates: [{variant, sent, replied}]."""
+    conn = get_conn()
+    rows = conn.execute("""
+        SELECT b.ig_dm_variant as variant,
+               COUNT(*) as sent,
+               SUM(CASE WHEN b.status = 'replied' THEN 1 ELSE 0 END) as replied
+        FROM businesses b
+        WHERE b.ig_dm_variant IS NOT NULL AND b.ig_dm_variant != ''
+          AND b.status IN ('sent', 'replied')
+        GROUP BY b.ig_dm_variant
+        ORDER BY b.ig_dm_variant
+    """).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 def get_emails_sent_today() -> int:

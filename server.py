@@ -272,6 +272,26 @@ app.mount("/static", StaticFiles(directory=BASE / "static"), name="static")
 templates = Jinja2Templates(directory=BASE / "templates")
 
 
+@app.get("/api/health")
+def api_health():
+    """Lightweight health check endpoint verifying database and process state."""
+    db_ok = False
+    try:
+        from database import get_conn
+        conn = get_conn()
+        conn.execute("SELECT 1").fetchone()
+        conn.close()
+        db_ok = True
+    except Exception as e:
+        log.error(f"Health check database ping failed: {e}")
+        db_ok = False
+
+    if db_ok:
+        return JSONResponse(status_code=200, content={"status": "ok", "db": "connected"})
+    else:
+        return JSONResponse(status_code=500, content={"status": "error", "db": "disconnected"})
+
+
 def ctx(request: Request, page: str, **extra):
     return {"request": request, "page": page, "stats": get_stats(), **extra}
 
@@ -493,7 +513,13 @@ def get_ig_settings():
         # Reset if new day
         today = datetime.now().strftime("%Y-%m-%d")
         if last_reset_date != today:
+            import random
             sent_today = 0
+            daily_limit = random.randint(45, 50)
+            conn = get_conn()
+            conn.execute("UPDATE ig_settings SET sent_today=?, daily_limit=?, last_reset_date=? WHERE id=1", (sent_today, daily_limit, today))
+            conn.commit()
+            conn.close()
             
         return JSONResponse({"daily_limit": daily_limit, "sent_today": sent_today, "is_running": is_running})
     except Exception as e:
@@ -2031,7 +2057,38 @@ def demo_site(bid: str):
     conn.close()
     if not row:
         return HTMLResponse("<h1>Demo not found</h1>", status_code=404)
-    
+
+    # Expire demo 48hrs after first open
+    first_opened = row["demo_first_opened_at"] if "demo_first_opened_at" in row.keys() else None
+    if first_opened:
+        from datetime import datetime as _dt2, timedelta as _td
+        try:
+            opened_at = _dt2.strptime(first_opened, "%Y-%m-%d %H:%M:%S")
+            if _dt2.utcnow() - opened_at > _td(hours=48):
+                expired_html = f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo Expired</title>
+<style>
+  body{{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f0f;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem}}
+  .box{{max-width:420px}}
+  h1{{font-size:2rem;margin-bottom:.5rem}}
+  p{{color:#aaa;margin-bottom:2rem;line-height:1.6}}
+  a{{display:inline-block;background:#25D366;color:#fff;text-decoration:none;padding:14px 28px;border-radius:50px;font-weight:700;font-size:1rem}}
+  .sub{{margin-top:1.5rem;font-size:.85rem;color:#666}}
+</style>
+</head><body>
+<div class="box">
+  <div style="font-size:3rem;margin-bottom:1rem">⏰</div>
+  <h1>This demo has expired</h1>
+  <p>The free demo for <strong>{row['name']}</strong> was only available for 48 hours.<br>Message me and I'll put together a fresh one.</p>
+  <a href="https://wa.me/918669024169?text=Hi%2C%20can%20I%20get%20a%20fresh%20demo%20for%20{row['name'].replace(' ', '%20')}%3F">💬 Request a new demo</a>
+  <p class="sub">Usually ready within a few hours</p>
+</div>
+</body></html>"""
+                return HTMLResponse(expired_html)
+        except Exception:
+            pass
+
     from demo_generator import _is_gym, generate_gym_demo_html, generate_demo_html, generate_saas_crm_demo_html, _scrape_site
     lead = dict(row)
     
@@ -3015,6 +3072,132 @@ async def log_deal(request: Request):
     return JSONResponse({"ok": True})
 
 
+@app.post("/webhook/booking")
+async def booking_webhook(request: Request):
+    """Calendly (or any booking tool) webhook — fires when a prospect books a call.
+
+    Parses the payload, finds or creates the deal record, fires a HIGH-priority
+    ntfy alert, and returns a draft proposal outline.  No Stripe, no auto-send.
+    The user reviews rate and sends the proposal manually.
+    """
+    try:
+        payload = await request.json()
+    except Exception:
+        return JSONResponse({"error": "invalid json"}, status_code=400)
+
+    # ── Parse Calendly v2 webhook shape ────────────────────────────
+    event_type = payload.get("event", "")
+    invitee    = payload.get("payload", {}).get("invitee", payload.get("payload", {}))
+    name       = (invitee.get("name") or payload.get("name") or "").strip()
+    email      = (invitee.get("email") or payload.get("email") or "").strip().lower()
+    event_name = (payload.get("payload", {}).get("event_type", {}).get("name")
+                  or payload.get("event_name") or "Discovery Call").strip()
+    scheduled_at = (payload.get("payload", {}).get("scheduled_event", {}).get("start_time")
+                    or payload.get("scheduled_at") or "")
+
+    if not email and not name:
+        return JSONResponse({"error": "missing invitee info"}, status_code=400)
+
+    # ── Match to an existing lead ────────────────────────────────────
+    from database import get_conn, insert_deal as _insert_deal
+    conn = get_conn()
+    business = None
+    try:
+        if email:
+            row = conn.execute("""
+                SELECT b.* FROM businesses b
+                JOIN contacts c ON c.business_id = b.id
+                WHERE LOWER(c.email) = ?
+                ORDER BY b.created_at DESC LIMIT 1
+            """, (email,)).fetchone()
+            if row:
+                business = dict(row)
+        if not business and name:
+            row = conn.execute("""
+                SELECT * FROM businesses WHERE LOWER(name) LIKE ?
+                ORDER BY created_at DESC LIMIT 1
+            """, (f"%{name.lower()}%",)).fetchone()
+            if row:
+                business = dict(row)
+    finally:
+        conn.close()
+
+    # ── Create a 'booked' deal record ────────────────────────────────
+    deal_notes = f"Booked via {event_name}"
+    if scheduled_at:
+        deal_notes += f" · {scheduled_at}"
+    if business:
+        conn2 = get_conn()
+        try:
+            conn2.execute("""
+                INSERT INTO deals (business_id, value_usd, service, status, notes, created_at)
+                VALUES (?, 0, ?, 'booked', ?, CURRENT_TIMESTAMP)
+            """, (business["id"], event_name, deal_notes))
+            conn2.commit()
+        finally:
+            conn2.close()
+
+    # ── Draft proposal outline ──────────────────────────────────────
+    niche        = (business or {}).get("category", "business")
+    score        = (business or {}).get("website_score", 0)
+    pitch_type   = (business or {}).get("pitch_type", "website_redesign")
+    comp_name    = (business or {}).get("competitor_name", "")
+    comp_score   = (business or {}).get("competitor_score", 0)
+
+    comp_line = ""
+    if comp_name and comp_score and score and comp_score > score:
+        comp_line = f"\n- Competitor benchmark: {comp_name} scores {comp_score}/100 vs your current {score}/100 — close that gap fast."
+
+    proposal_draft = f"""PROPOSAL DRAFT — {name or 'Prospect'} / {email}
+{'=' * 60}
+Event:     {event_name}
+Scheduled: {scheduled_at or 'TBC'}
+Niche:     {niche}
+Current site score: {score}/100
+Pitch angle: {pitch_type}
+{comp_line}
+
+WHAT WE BUILD
+  • Fully custom website (no Wix / Squarespace / page builders)
+  • Mobile-first, fast-loading, SEO-ready
+  • Inquiry / booking form integrated
+  • Google Business Profile optimisation
+  • 3-month aftercare & edits included
+
+INVESTMENT
+  One-time build fee: [FILL IN RATE BEFORE SENDING]
+  Optional monthly care plan: [OPTIONAL]
+
+NEXT STEPS
+  1. You confirm the rate above
+  2. Reply-to this email with the final proposal
+  3. We issue invoice on agreement — no auto-charge
+
+Generated by LeadFlow · review before using.
+"""
+
+    # ── ntfy HIGH-priority push ─────────────────────────────────────
+    try:
+        import os as _os, requests as _r
+        topic = _os.getenv("NTFY_TOPIC")
+        if topic:
+            _r.post(
+                f"https://ntfy.sh/{topic}",
+                data=f"📅 BOOKING: {name or email} booked '{event_name}'. Deal logged. Check draft proposal!".encode(),
+                headers={"Title": "LeadFlow - New Booking!", "Tags": "calendar,fire", "Priority": "urgent"},
+                timeout=5,
+            )
+    except Exception:
+        pass
+
+    return JSONResponse({
+        "ok": True,
+        "matched_business": business["name"] if business else None,
+        "deal_logged": bool(business),
+        "proposal_draft": proposal_draft,
+    })
+
+
 # ── Audit API ──────────────────────────────────────────────────────────────
 
 @app.get("/api/audit")
@@ -3447,13 +3630,19 @@ def track_demo_view(bid: int = 0):
             if row:
                 # Update DB and notify if it's their first time viewing
                 if not row["demo_viewed"]:
-                    conn.execute("UPDATE businesses SET demo_viewed=1 WHERE id=?", (bid,))
+                    from datetime import datetime as _dt
+                    conn.execute(
+                        "UPDATE businesses SET demo_viewed=1, demo_first_opened_at=? WHERE id=?",
+                        (_dt.utcnow().strftime("%Y-%m-%d %H:%M:%S"), bid),
+                    )
                     conn.commit()
                     import requests, os as _ntfy_os
-                    _ntfy_topic = _ntfy_os.getenv("NTFY_TOPIC", "leadflow-chandan-secret")  # fix #12
+                    _ntfy_topic = _ntfy_os.getenv("NTFY_TOPIC")  # fix #12
                     requests.post(
                         f"https://ntfy.sh/{_ntfy_topic}",
-                        data=f"🔥 {row['name']} just opened your demo!".encode("utf-8")
+                        data=f"🔥 {row['name']} just opened your demo!".encode("utf-8"),
+                        headers={"Tags": "eyes", "Priority": "high"},
+                        timeout=5,
                     )
             conn.close()
         except Exception:
@@ -3488,7 +3677,7 @@ def track_engage(bid: int = 0, ev: str = ""):
             record_tracking_event("", bid, f"engage:{ev}")
             if row and ev in _ENGAGE_ALERTS:
                 import requests, os as _ntfy_os2
-                _ntfy_topic2 = _ntfy_os2.getenv("NTFY_TOPIC", "leadflow-chandan-secret")  # fix #12
+                _ntfy_topic2 = _ntfy_os2.getenv("NTFY_TOPIC")  # fix #12
                 requests.post(
                     f"https://ntfy.sh/{_ntfy_topic2}",
                     data=_ENGAGE_ALERTS[ev].format(name=row["name"]).encode("utf-8"),
@@ -3556,4 +3745,4 @@ async def refresh_tunnels(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="127.0.0.1", port=8765, reload=False, workers=1, timeout_keep_alive=30)
+    uvicorn.run("server:app", host="0.0.0.0", port=8765, reload=False, workers=1, timeout_keep_alive=30)

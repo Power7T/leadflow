@@ -28,16 +28,20 @@ fs_ip_file = Path(os.path.expanduser("~/.firestick_ip"))
 device_ip = fs_ip_file.read_text().strip() if fs_ip_file.exists() else "192.168.1.3:5555"
 
 files_to_push = [
-    "ai_writer.py", 
-    "scheduler.py", 
-    "generate_ig_drafts.py", 
-    "instagram_sender.py", 
-    "database.py", 
-    "sender.py", 
+    "ai_writer.py",
+    "scheduler.py",
+    "shadow_client.py",         # Shadow client pre-qualification (NEW)
+    "generate_ig_drafts.py",
+    "instagram_sender.py",
+    "database.py",
+    "sender.py",
     "ig_reply_responder.py",
     "server.py",
     "demo_generator.py",
     "demo_templates/config.json",
+    "sync_engine.py",
+    "unfollow_ghosts.py",
+    "start_leadflow_failover.sh",
     ".vivo_ip"
 ]
 

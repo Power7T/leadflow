@@ -243,11 +243,208 @@ section{padding:8.5rem 0;position:relative;overflow:hidden;}
   .widget-container{padding:2rem;}
 }
 </style>
+
+<!-- CONVERSION BOOST CSS -->
+<style>
+/* Hide standard navbar — pure proposal page */
+.navbar { display: none !important; }
+.hero { padding-top: 0 !important; }
+
+/* ── Urgency Marquee Ticker ── */
+.urg-ticker {
+  background: linear-gradient(90deg, #ff4444, #ff6600);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10001;
+  padding: 8px 0;
+  letter-spacing: 0.03em;
+}
+.urg-ticker-inner {
+  display: inline-block;
+  animation: marquee-scroll 28s linear infinite;
+}
+.urg-ticker-inner span { margin: 0 3rem; }
+@keyframes marquee-scroll {
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
+}
+
+/* ── Demo Banner (urgency version) ── */
+.demo-banner {
+  background: #0f0f0f !important;
+  color: #fff !important;
+  border-bottom: 2px solid #ff4444;
+  padding: 10px 20px !important;
+}
+.demo-banner a { color: #4ade80 !important; }
+.demo-banner .countdown-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.demo-banner .countdown-timer {
+  font-weight: 800;
+  color: #ff4444;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+/* ── Floating WhatsApp Button ── */
+.wa-float {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.wa-float-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.55);
+  animation: wa-pulse 2.2s ease-in-out infinite;
+  position: relative;
+}
+.wa-float-btn svg { width: 32px; height: 32px; }
+.wa-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: #ff4444;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  font-family: sans-serif;
+}
+.wa-float-label {
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: sans-serif;
+}
+@keyframes wa-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37,211,102,0.55); }
+  50%       { box-shadow: 0 4px 32px rgba(37,211,102,0.85), 0 0 0 8px rgba(37,211,102,0.15); }
+}
+
+/* ── Urgency strip below hero buttons ── */
+.hero-urgency-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+}
+.urg-pill {
+  background: rgba(255,68,68,0.12);
+  border: 1px solid rgba(255,68,68,0.35);
+  color: #ff7777;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-family: sans-serif;
+}
+.urg-pill.green {
+  background: rgba(74,222,128,0.1);
+  border-color: rgba(74,222,128,0.3);
+  color: #4ade80;
+}
+
+/* ── Email CTA btn ── */
+.btn-email-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.8rem 1.8rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  text-decoration: none;
+  transition: all 0.3s;
+  font-family: 'Inter', sans-serif;
+}
+.btn-email-cta:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* ── Scarcity box ── */
+.scarcity-box {
+  background: linear-gradient(135deg, rgba(255,68,68,0.08), rgba(255,102,0,0.06));
+  border: 1px solid rgba(255,68,68,0.2);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: sans-serif;
+  max-width: 460px;
+}
+.scarcity-box .sc-icon { font-size: 1.4rem; flex-shrink: 0; }
+.scarcity-box .sc-text { font-size: 0.85rem; color: #ffaaaa; line-height: 1.4; }
+.scarcity-box .sc-text strong { color: #ff6666; }
+
+@media(max-width: 576px) {
+  .wa-float { bottom: 16px; right: 14px; }
+  .wa-float-btn { width: 52px; height: 52px; }
+  .hero-urgency-strip { gap: 8px; }
+}
+</style>
+
 </head>
 <body>
+<!-- URGENCY MARQUEE TICKER -->
+<div class="urg-ticker" aria-hidden="true">
+  <div class="urg-ticker-inner">
+    <span>🔥 FREE demo — built exclusively for {{ lead.name }}</span>
+    <span>📊 80% of customers check a business online before visiting</span>
+    <span>⏰ This demo is only available for 48 hours</span>
+    <span>🚀 Businesses with websites get 3× more enquiries</span>
+    <span>💼 Your competitors already have a pro online presence</span>
+    <span>🎯 We'll take it live in 48 hours — just say yes</span>
+    <span>🔥 FREE demo — built exclusively for {{ lead.name }}</span>
+    <span>📊 80% of customers check a business online before visiting</span>
+    <span>⏰ This demo is only available for 48 hours</span>
+    <span>🚀 Businesses with websites get 3× more enquiries</span>
+    <span>💼 Your competitors already have a pro online presence</span>
+    <span>🎯 We'll take it live in 48 hours — just say yes</span>
+  </div>
+</div>
+
 
 <!-- 1. DEMO BANNER -->
-<div class="demo-banner">✨ FREE demo for {{ lead.name }} by Chandan Gosavi &mdash; <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live</a></div>
+<div class="demo-banner"><span id="lf-countdown" style="display:none">47:59:59</span>✨ FREE demo for {{ lead.name }} by Chandan Gosavi &mdash; <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live</a></div>
 
 <!-- 2. NAVBAR -->
 <nav class="navbar" id="navbar">
@@ -294,7 +491,7 @@ section{padding:8.5rem 0;position:relative;overflow:hidden;}
       </div>
       <div class="hero-visual reveal-right">
         <div class="hero-image-frame">
-          <img src="https://power7t.github.io/leadflow-demos/plumber-hero.jpg" alt="{{ lead.name }} Plumbing">
+          <img src="{{ hero_img }}" alt="{{ lead.name }} Plumbing">
         </div>
         <div class="hero-stat-badge">
           <span class="badge-star">⭐</span>
@@ -427,7 +624,7 @@ section{padding:8.5rem 0;position:relative;overflow:hidden;}
         <a href="tel:{{ lead.phone }}" class="btn btn-primary">Schedule a Visit</a>
       </div>
       <div class="about-img-wrap reveal-right">
-        <img src="https://power7t.github.io/leadflow-demos/plumber-about.jpg" alt="{{ lead.name }} Plumbing Team">
+        <img src="{{ about_img }}" alt="{{ lead.name }} Plumbing Team">
       </div>
     </div>
   </div>
@@ -601,5 +798,136 @@ section{padding:8.5rem 0;position:relative;overflow:hidden;}
   slider.addEventListener('input', updateCalc);
   updateCalc();
 </script>
+
+<!-- WHATSAPP FLOAT CTA -->
+<a class="wa-float"
+   onclick="try{fetch('/api/engage?bid={{ lead.id }}&ev=cta_whatsapp',{mode:'no-cors'});}catch(e){}"    href="https://wa.me/918669024169?text=Hi%2C%20I%27m%20interested%20in%20the%20website%20for%20{{ lead.name | urlencode }}"
+   target="_blank" rel="noopener" title="Chat on WhatsApp">
+  <div class="wa-float-btn">
+    <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+      <path d="M11.99 2C6.476 2 2 6.477 2 11.99c0 1.88.522 3.636 1.427 5.14L2 22l5.01-1.396A9.942 9.942 0 0011.99 22C17.523 22 22 17.522 22 11.99 22 6.478 17.522 2 11.99 2zm0 18.18a8.158 8.158 0 01-4.162-1.14l-.298-.178-3.078.858.869-3.022-.196-.311A8.148 8.148 0 013.82 11.99C3.82 7.48 7.479 3.82 11.99 3.82c4.51 0 8.17 3.66 8.17 8.17 0 4.51-3.661 8.19-8.17 8.19z"/>
+    </svg>
+    <div class="wa-badge">1</div>
+  </div>
+  <div class="wa-float-label">💬 Message Chandan</div>
+</a>
+
+<!-- CONVERSION BOOST SCRIPTS -->
+<script>
+(function(){
+  // ── Live countdown timer in demo banner ──
+  function startCountdown() {
+    var stored = sessionStorage.getItem('_lf_demo_deadline');
+    var deadline;
+    if (stored) {
+      deadline = parseInt(stored, 10);
+    } else {
+      deadline = Date.now() + 47 * 3600 * 1000 + 59 * 60 * 1000 + 59 * 1000;
+      sessionStorage.setItem('_lf_demo_deadline', deadline);
+    }
+    var timerEl = document.getElementById('lf-countdown');
+    if (!timerEl) return;
+    function tick() {
+      var diff = Math.max(0, deadline - Date.now());
+      var h = Math.floor(diff / 3600000);
+      var m = Math.floor((diff % 3600000) / 60000);
+      var s = Math.floor((diff % 60000) / 1000);
+      timerEl.textContent =
+        String(h).padStart(2,'0') + ':' +
+        String(m).padStart(2,'0') + ':' +
+        String(s).padStart(2,'0');
+      if (diff > 0) setTimeout(tick, 1000);
+    }
+    tick();
+  }
+
+  // ── Hero urgency strip ──
+  function injectHeroUrgency() {
+    var heroBtns = document.querySelector('.hero-btns');
+    if (!heroBtns || document.querySelector('.hero-urgency-strip')) return;
+    var strip = document.createElement('div');
+    strip.className = 'hero-urgency-strip';
+    strip.innerHTML =
+      '<span class="urg-pill">⏰ Offer expires in <span id="hero-countdown" style="font-variant-numeric:tabular-nums">47:59:59</span></span>' +
+      '<span class="urg-pill green">✓ 100% Free — No commitment</span>' +
+      '<span class="urg-pill green">🚀 Live in 48 hours</span>';
+    heroBtns.parentNode.insertBefore(strip, heroBtns.nextSibling);
+
+    // Sync hero countdown with banner countdown
+    var stored = sessionStorage.getItem('_lf_demo_deadline');
+    var deadline = stored ? parseInt(stored,10) : Date.now() + 47*3600000 + 59*60000 + 59000;
+    var heroTimer = document.getElementById('hero-countdown');
+    if (heroTimer) {
+      (function tickHero(){
+        var diff = Math.max(0, deadline - Date.now());
+        var h = Math.floor(diff/3600000);
+        var m = Math.floor((diff%3600000)/60000);
+        var s = Math.floor((diff%60000)/1000);
+        heroTimer.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+        if(diff > 0) setTimeout(tickHero,1000);
+      })();
+    }
+
+    // Scarcity box
+    var scarcity = document.createElement('div');
+    scarcity.className = 'scarcity-box';
+    scarcity.innerHTML =
+      '<span class="sc-icon">🔥</span>' +
+      '<div class="sc-text">We only take on <strong>3 new clients per week</strong> to ensure quality. ' +
+      'This demo was built just for <strong>{{ lead.name }}</strong> — spots fill fast.</div>';
+    heroBtns.parentNode.insertBefore(scarcity, strip.nextSibling);
+  }
+
+  // ── Email CTA (add alongside existing hero buttons) ──
+  function addEmailCTA() {
+    var heroBtns = document.querySelector('.hero-btns');
+    if (!heroBtns || heroBtns.querySelector('.btn-email-cta')) return;
+    var subject = encodeURIComponent('Website demo for {{ lead.name }}');
+    var body = encodeURIComponent(
+      'Hi Chandan,
+
+I saw the demo you built for {{ lead.name }} and I'm interested.
+
+Please get in touch.
+
+Thanks'
+    );
+    var emailBtn = document.createElement('a');
+    emailBtn.href = 'mailto:chandangosavi0@gmail.com?subject=' + subject + '&body=' + body;
+    emailBtn.className = 'btn-email-cta';
+    emailBtn.innerHTML = '✉️ Email Me';
+    heroBtns.appendChild(emailBtn);
+  }
+
+  
+  // Scroll depth tracking
+  (function(){
+    var _sf = {25:0,50:0,75:0,90:0};
+    function _pct(){
+      var el=document.documentElement,b=document.body;
+      var sh=Math.max(el.scrollHeight,b.scrollHeight,el.offsetHeight,b.offsetHeight,el.clientHeight,b.clientHeight);
+      var wh=window.innerHeight||el.clientHeight;
+      if(sh<=wh)return 100;
+      return Math.round((window.scrollY/(sh-wh))*100);
+    }
+    window.addEventListener('scroll',function(){
+      var p=_pct();
+      [25,50,75,90].forEach(function(d){
+        if(!_sf[d]&&p>=d){
+          _sf[d]=1;
+          try{fetch('/api/engage?bid={{ lead.id }}&ev=scroll_'+d,{mode:'no-cors'});}catch(e){}
+        }
+      });
+    },{passive:true});
+  })();
+  document.addEventListener('DOMContentLoaded', function() {
+    startCountdown();
+    injectHeroUrgency();
+    addEmailCTA();
+  });
+})();
+</script>
+
 </body>
 </html>

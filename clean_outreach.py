@@ -28,6 +28,14 @@ def clean():
             continue
             
         # Separate prompt-leaked ones from clean ones
+        sent_entries = [e for e in entries if e["status"] == "sent"]
+        if sent_entries:
+            # keep the sent ones, delete the rest
+            for e in entries:
+                if e not in sent_entries:
+                    to_delete.append(e["id"])
+            continue
+
         clean_entries = []
         leaked_entries = []
         

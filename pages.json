@@ -1,0 +1,192 @@
+{
+  "result": {
+    "id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+    "name": "leadflow-demos",
+    "subdomain": "leadflow-demos.pages.dev",
+    "domains": [
+      "leadflow-demos.pages.dev"
+    ],
+    "build_config": {
+      "web_analytics_tag": null,
+      "web_analytics_token": null
+    },
+    "deployment_configs": {
+      "preview": {
+        "env_vars": null,
+        "fail_open": true,
+        "always_use_latest_compatibility_date": false,
+        "compatibility_date": "2026-06-18",
+        "compatibility_flags": [],
+        "build_image_major_version": 3,
+        "usage_model": "standard"
+      },
+      "production": {
+        "env_vars": null,
+        "fail_open": true,
+        "always_use_latest_compatibility_date": false,
+        "compatibility_date": "2026-06-18",
+        "compatibility_flags": [],
+        "build_image_major_version": 3,
+        "usage_model": "standard"
+      }
+    },
+    "latest_deployment": {
+      "id": "418911b6-e9b3-41db-b8a9-8c10241babae",
+      "short_id": "418911b6",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://418911b6.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T18:52:33.643656Z",
+      "modified_on": "2026-07-07T18:52:34.881778Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T18:52:34.881778Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T18:52:33.643656Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T18:52:34.881778Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    "canonical_deployment": {
+      "id": "418911b6-e9b3-41db-b8a9-8c10241babae",
+      "short_id": "418911b6",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://418911b6.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T18:52:33.643656Z",
+      "modified_on": "2026-07-07T18:52:34.881778Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T18:52:34.881778Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T18:52:33.643656Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T18:52:34.881778Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    "created_on": "2026-06-18T06:16:29.044384Z",
+    "production_branch": "main",
+    "production_script_name": "pages-worker--15165030-production",
+    "preview_script_name": "pages-worker--15165030-preview",
+    "uses_functions": false,
+    "framework": "",
+    "framework_version": ""
+  },
+  "success": true,
+  "errors": [],
+  "messages": []
+}

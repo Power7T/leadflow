@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv("/Users/chandan/leadflow/.env")
 
 PUBLIC_URL = os.getenv("LEADFLOW_PUBLIC_URL", "https://leadflow-relay.chandango12.workers.dev")
-SECRET_TOKEN = os.getenv("LEADFLOW_SECRET_TOKEN", "lf_sec_9e21808ccce4d37")
+SECRET_TOKEN = os.getenv("LEADFLOW_SECRET_TOKEN")
 DEMO_TEMPLATES_DIR = Path("/Users/chandan/leadflow/demo_templates")
 
 # 1. Load config.json template rules

@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Elite Premium Services | Orthodontist & Smile Design</title>
+<meta name="description" content="Elite Premium Services — Board-certified orthodontist in Austin. Invisalign, braces, teen treatment & free consultations.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070511;--bg2:#0d0a1a;--bg3:#141025;--accent:#9B59B6;--accent-glow:rgba(155,89,182,0.25);--accent-dim:rgba(155,89,182,0.1);--tw:#fff;--tg:#b0a8c4;--tm:#4a3d62;--r-sm:8px;--r-md:16px;--r-lg:24px;--trans:0.35s cubic-bezier(0.25,1,0.5,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:var(--bg);color:var(--tw);font-family:'Inter',sans-serif;overflow-x:hidden}
+body{overflow-x:hidden;line-height:1.6}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+h1,h2,h3,h4{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;line-height:1.15}
+p{color:var(--tg);font-weight:400}a{text-decoration:none;color:inherit}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 0;transition:background var(--trans)}
+nav.scrolled{background:rgba(7,5,17,0.94);backdrop-filter:blur(20px);border-bottom:1px solid rgba(155,89,182,0.08)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:'Outfit',sans-serif;font-size:1.25rem;font-weight:800;display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#9B59B6,#6c3483);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:0.875rem;color:var(--tg);transition:color var(--trans)}
+.nav-links a:hover{color:var(--tw)}
+.nav-cta{background:var(--accent);color:#fff;padding:10px 22px;border-radius:8px;font-weight:700;font-size:0.875rem;transition:opacity var(--trans),transform var(--trans)}
+.nav-cta:hover{opacity:0.88;transform:translateY(-1px)}
+
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-image:linear-gradient(135deg,rgba(7,5,17,0.96) 0%,rgba(7,5,17,0.5) 55%,rgba(7,5,17,0.88) 100%),url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80');background-position:center;background-size:cover;background-repeat:no-repeat}
+.hero-content{position:relative;z-index:2;padding-top:100px;padding-bottom:80px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-dim);border:1px solid rgba(155,89,182,0.3);border-radius:50px;padding:8px 18px;font-size:0.8rem;font-weight:600;color:var(--accent);margin-bottom:28px;text-transform:uppercase;letter-spacing:0.06em}
+.hero h1{font-size:clamp(2.8rem,6vw,4.8rem);font-weight:900;margin-bottom:24px;max-width:780px}
+.hero h1 .hl{background:linear-gradient(135deg,#c39bd3,#9B59B6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:1.15rem;max-width:560px;margin-bottom:40px}
+.hero-btns{display:flex;gap:16px;flex-wrap:wrap}
+.btn-primary{background:linear-gradient(135deg,#9B59B6,#7d3c98);color:#fff;padding:15px 32px;border-radius:10px;font-weight:800;font-size:1rem;font-family:'Outfit',sans-serif;transition:transform var(--trans),box-shadow var(--trans);display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 35px var(--accent-glow)}
+.btn-ghost{border:1px solid rgba(255,255,255,0.15);color:var(--tw);padding:15px 32px;border-radius:10px;font-weight:600;font-size:1rem;transition:border-color var(--trans),background var(--trans)}
+.btn-ghost:hover{border-color:var(--accent);background:rgba(155,89,182,0.07)}
+.hero-stats{display:flex;gap:40px;margin-top:48px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap}
+.hero-stat .num{font-family:'Outfit',sans-serif;font-size:2rem;font-weight:900}
+.hero-stat .lbl{font-size:0.75rem;color:var(--tm);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px}
+
+.trust-bar{background:var(--bg2);border-top:1px solid rgba(155,89,182,0.07);border-bottom:1px solid rgba(155,89,182,0.07);padding:20px 0}
+.trust-items{display:flex;justify-content:center;gap:48px;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:10px;font-size:0.875rem;font-weight:600;color:var(--tg)}
+
+section{padding:100px 0}
+.section-tag{display:inline-block;background:var(--accent-dim);color:var(--accent);font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:6px 16px;border-radius:50px;margin-bottom:16px}
+.section-title{font-size:clamp(2rem,4vw,3rem);margin-bottom:16px}
+.section-sub{font-size:1.05rem;max-width:560px;margin-bottom:60px}
+
+#services{background:var(--bg2)}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.svc-card{background:rgba(20,16,37,0.9);border:1px solid rgba(155,89,182,0.08);border-radius:var(--r-md);padding:32px;transition:border-color var(--trans),transform var(--trans),box-shadow var(--trans)}
+.svc-card:hover{border-color:rgba(155,89,182,0.35);transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+.svc-icon{width:52px;height:52px;background:var(--accent-dim);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:20px}
+.svc-card h3{font-size:1.1rem;margin-bottom:10px;font-family:'Outfit',sans-serif;font-weight:700}
+.svc-card p{font-size:0.9rem;line-height:1.7}
+
+/* TREATMENT FINDER */
+#finder{background:var(--bg)}
+.finder-wrap{background:var(--bg2);border:1px solid rgba(155,89,182,0.12);border-radius:var(--r-lg);padding:48px;max-width:860px;margin:0 auto}
+.step{display:none}
+.step.active{display:block}
+.step-header{font-size:1rem;color:var(--tg);font-weight:600;margin-bottom:20px}
+.option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:28px}
+.opt-btn{background:var(--bg3);border:2px solid rgba(155,89,182,0.1);border-radius:var(--r-md);padding:18px 12px;text-align:center;cursor:pointer;transition:all var(--trans);font-size:0.875rem;font-weight:600;color:var(--tg);line-height:1.4}
+.opt-btn:hover{border-color:rgba(155,89,182,0.35);color:var(--tw);background:rgba(155,89,182,0.06)}
+.opt-btn.selected{border-color:var(--accent);background:rgba(155,89,182,0.12);color:var(--tw)}
+.opt-icon{display:block;font-size:1.5rem;margin-bottom:8px}
+.step-nav{display:flex;gap:12px;margin-top:20px}
+
+/* Card Flip */
+.plan-flip-wrap{perspective:1200px;height:280px;margin-top:20px}
+.plan-flip{width:100%;height:100%;position:relative;transition:transform 0.7s cubic-bezier(0.25,1,0.5,1);transform-style:preserve-3d}
+.plan-flip.flipped{transform:rotateY(180deg)}
+.plan-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r-lg);padding:36px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.plan-front{background:var(--bg3);border:1px solid rgba(155,89,182,0.12)}
+.plan-back{background:linear-gradient(135deg,rgba(155,89,182,0.15),rgba(155,89,182,0.05));border:1px solid rgba(155,89,182,0.35);transform:rotateY(180deg)}
+.plan-front p{font-size:0.9rem}
+.plan-back h3{font-size:1.5rem;margin-bottom:20px}
+.plan-detail{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-bottom:20px}
+.pdet{background:rgba(0,0,0,0.2);border-radius:var(--r-sm);padding:12px;text-align:center}
+.pdet .val{font-family:'Outfit',sans-serif;font-weight:800;font-size:1rem;color:var(--tw);margin-bottom:2px}
+.pdet .key{font-size:0.72rem;color:var(--tm);text-transform:uppercase;letter-spacing:0.07em}
+
+#about{background:var(--bg2)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.about-img{border-radius:var(--r-lg);overflow:hidden;aspect-ratio:4/3}
+.about-img img{width:100%;height:100%;object-fit:cover}
+.about-stats{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:32px}
+.astat{background:var(--bg3);border:1px solid rgba(155,89,182,0.08);border-radius:var(--r-md);padding:24px;text-align:center}
+.astat .num{font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:900;color:var(--accent)}
+.astat .lbl{font-size:0.78rem;color:var(--tm);text-transform:uppercase;letter-spacing:0.07em;margin-top:4px}
+
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+.testi-card{background:var(--bg2);border:1px solid rgba(255,255,255,0.05);border-radius:var(--r-md);padding:32px;transition:transform var(--trans),border-color var(--trans)}
+.testi-card:hover{transform:translateY(-4px);border-color:rgba(155,89,182,0.2)}
+.stars{color:var(--accent);font-size:1.1rem;margin-bottom:16px}
+.testi-card p{font-size:0.95rem;font-style:italic;line-height:1.8;margin-bottom:20px}
+.testi-card .author{font-weight:700;font-size:0.875rem;color:var(--tw)}
+
+#contact{background:var(--bg2)}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+.contact-info{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+.cinfo{display:flex;align-items:flex-start;gap:14px;padding:18px;background:var(--bg3);border:1px solid rgba(255,255,255,0.05);border-radius:var(--r-sm)}
+.cinfo-icon{font-size:1.3rem;flex-shrink:0}
+.cinfo-text h4{font-size:0.875rem;font-weight:700;margin-bottom:2px}
+.cinfo-text p{font-size:0.875rem}
+.contact-cta-box{background:linear-gradient(135deg,rgba(155,89,182,0.1),rgba(155,89,182,0.03));border:1px solid rgba(155,89,182,0.2);border-radius:var(--r-lg);padding:48px;text-align:center}
+.contact-cta-box h3{font-size:1.6rem;margin-bottom:12px}
+.contact-cta-box p{margin-bottom:28px}
+.free-badge{display:inline-block;background:rgba(155,89,182,0.15);color:var(--accent);border:1px solid rgba(155,89,182,0.3);border-radius:6px;padding:6px 14px;font-size:0.8rem;font-weight:700;margin-bottom:16px}
+
+footer{background:var(--bg);border-top:1px solid rgba(255,255,255,0.04);padding:40px 0;text-align:center}
+footer p{font-size:0.875rem;color:var(--tm)}
+footer a{color:var(--accent)}
+
+.fade-up{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease}
+.fade-up.visible{opacity:1;transform:none}
+
+@media(max-width:768px){
+  .option-grid{grid-template-columns:1fr 1fr}
+  .about-grid,.contact-grid{grid-template-columns:1fr}
+  .about-img{display:none}
+  .nav-links{display:none}
+  .hero h1{font-size:2.4rem}
+  .finder-wrap{padding:24px 16px}
+  .plan-detail{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="container nav-inner">
+    <div class="nav-logo">
+      <div class="logo-icon">😁</div>
+      <span>Elite Premium Services</span>
+    </div>
+    <div class="nav-links">
+      <a href="#services">Treatments</a>
+      <a href="#finder">Treatment Finder</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a href="#contact" class="nav-cta">Free Consult</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container hero-content">
+    <div class="hero-badge">😁 Board-Certified Orthodontist</div>
+    <h1>The Smile You've Always Wanted — <span class="hl">Finally Possible.</span></h1>
+    <p>Invisalign, braces, and custom smile design for teens and adults. Serving Austin with expert orthodontic care and interest-free financing.</p>
+    <div class="hero-btns">
+      <a href="#contact" class="btn-primary">😁 Book Free Consultation</a>
+      <a href="#finder" class="btn-ghost">Find My Treatment →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">5.0★</div><div class="lbl">Google Rating</div></div>
+      <div class="hero-stat"><div class="num">342</div><div class="lbl">Reviews</div></div>
+      <div class="hero-stat"><div class="num">2,000+</div><div class="lbl">Smiles Transformed</div></div>
+      <div class="hero-stat"><div class="num">0%</div><div class="lbl">Interest Financing</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="container trust-items">
+    <div class="trust-item"><span>🏆</span><span>Board Certified</span></div>
+    <div class="trust-item"><span>😁</span><span>2,000+ Smiles</span></div>
+    <div class="trust-item"><span>💳</span><span>0% Interest Financing</span></div>
+    <div class="trust-item"><span>✅</span><span>Free Consultation</span></div>
+    <div class="trust-item"><span>👶</span><span>Ages 7+ Welcome</span></div>
+  </div>
+</div>
+
+<section id="services">
+  <div class="container">
+    <span class="section-tag">Treatments</span>
+    <h2 class="section-title">Orthodontic Treatment Options</h2>
+    <p class="section-sub">From traditional braces to virtually invisible aligners — we have the right solution for every smile, age, and lifestyle.</p>
+    <div class="services-grid">
+      <div class="svc-card fade-up"><div class="svc-icon">🦷</div><h3>Traditional Metal Braces</h3><p>The gold standard of orthodontics. Modern braces are smaller, more comfortable, and faster than ever — and still the most effective for complex cases.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">✨</div><h3>Invisalign Clear Aligners</h3><p>Nearly invisible, removable aligners that work for most teens and adults. Straighten your teeth without anyone knowing — eat what you want, brush normally.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">👶</div><h3>Teen Braces & Early Treatment</h3><p>We specialize in Phase 1 treatment for children 7–10 to intercept issues early and avoid more complex treatment later. Palate expanders and interceptive ortho.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🔄</div><h3>Retainers & Post-Treatment</h3><p>Custom Hawley and clear retainers to protect your investment. Nighttime wear keeps your smile perfect for life after active treatment ends.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">🎨</div><h3>Smile Design Consultation</h3><p>Digital smile simulation before treatment begins. See your projected result, plan the journey, and start with confidence and clear expectations.</p></div>
+      <div class="svc-card fade-up"><div class="svc-icon">💎</div><h3>Teeth Whitening</h3><p>Professional-grade whitening to complete your smile transformation post-treatment. Take-home trays and in-office options for dramatically brighter results.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="finder">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:48px">
+      <span class="section-tag">Interactive Tool</span>
+      <h2 class="section-title">My Treatment Finder</h2>
+      <p style="max-width:500px;margin:0 auto">Answer two quick questions to get your personalized orthodontic treatment recommendation in seconds.</p>
+    </div>
+    <div class="finder-wrap">
+      <div class="step active" id="step1">
+        <div class="step-header">Step 1 of 2 — What's your main concern?</div>
+        <div class="option-grid">
+          <div class="opt-btn" onclick="pick(this,'concern','Mild Crowding')"><span class="opt-icon">😬</span>Mild Crowding</div>
+          <div class="opt-btn" onclick="pick(this,'concern','Moderate Crowding')"><span class="opt-icon">😶</span>Moderate Crowding</div>
+          <div class="opt-btn" onclick="pick(this,'concern','Severe Crowding')"><span class="opt-icon">😖</span>Severe Crowding</div>
+          <div class="opt-btn" onclick="pick(this,'concern','Gaps Between Teeth')"><span class="opt-icon">🦷</span>Gaps Between Teeth</div>
+          <div class="opt-btn" onclick="pick(this,'concern','Overbite or Underbite')"><span class="opt-icon">🤔</span>Overbite / Underbite</div>
+        </div>
+        <div class="step-nav"><button class="btn-primary" onclick="goStep(2)" style="cursor:pointer;border:none">Next Step →</button></div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-header">Step 2 of 2 — What matters most to you?</div>
+        <div class="option-grid">
+          <div class="opt-btn" onclick="pick(this,'lifestyle','Speed')"><span class="opt-icon">⚡</span>Fastest Results</div>
+          <div class="opt-btn" onclick="pick(this,'lifestyle','Discreet')"><span class="opt-icon">🤫</span>Most Discreet</div>
+          <div class="opt-btn" onclick="pick(this,'lifestyle','Affordable')"><span class="opt-icon">💰</span>Most Affordable</div>
+        </div>
+        <div class="step-nav">
+          <button class="btn-ghost" onclick="goStep(1)" style="cursor:pointer;border:1px solid rgba(255,255,255,0.15);background:none;color:#fff;padding:12px 24px;border-radius:10px;font-weight:600;font-size:0.9rem">← Back</button>
+          <button class="btn-primary" onclick="showPlan()" style="cursor:pointer;border:none">See My Plan ✨</button>
+        </div>
+      </div>
+      <div class="step" id="step3">
+        <div style="text-align:center;margin-bottom:20px"><span style="font-size:0.9rem;color:var(--tg)">Your personalized recommendation</span></div>
+        <div class="plan-flip-wrap">
+          <div class="plan-flip" id="planFlip">
+            <div class="plan-face plan-front">
+              <div style="font-size:2.5rem;margin-bottom:12px">✨</div>
+              <h3 style="margin-bottom:8px">Building your plan...</h3>
+              <p>Based on your answers, we're matching you to the ideal treatment.</p>
+            </div>
+            <div class="plan-face plan-back">
+              <h3 id="planTitle">Invisalign Clear Aligners</h3>
+              <div class="plan-detail">
+                <div class="pdet"><div class="val" id="planDuration">12–18 mo</div><div class="key">Duration</div></div>
+                <div class="pdet"><div class="val" id="planCost">$4,500–$6,500</div><div class="key">Investment</div></div>
+              </div>
+              <a href="#contact" class="btn-primary">Book Free Consultation →</a>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:24px">
+          <button onclick="goStep(1)" style="background:none;border:none;color:var(--tg);font-size:0.875rem;cursor:pointer;text-decoration:underline">Start over</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div>
+        <span class="section-tag">About</span>
+        <h2 class="section-title">Expert Orthodontic Care in Austin</h2>
+        <p style="margin-bottom:16px">Elite Premium Services combines board-certified expertise with the latest technology to deliver smile transformations that last a lifetime. We treat patients of all ages with a warm, judgment-free approach.</p>
+        <p>Every treatment plan is custom-designed. We use digital scanning (no goopy impressions), 3D treatment simulation, and the latest in clear aligner technology to deliver the most comfortable, efficient results possible.</p>
+        <div class="about-stats">
+          <div class="astat"><div class="num">2k+</div><div class="lbl">Smiles Done</div></div>
+          <div class="astat"><div class="num">100%</div><div class="lbl">Board Certified</div></div>
+          <div class="astat"><div class="num">0%</div><div class="lbl">Interest Plans</div></div>
+          <div class="astat"><div class="num">Free</div><div class="lbl">Consultation</div></div>
+        </div>
+      </div>
+      <div class="about-img"><img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80" alt="Elite Premium Services" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" style="background:var(--bg2)">
+  <div class="container">
+    <span class="section-tag">Patient Stories</span>
+    <h2 class="section-title" style="margin-bottom:48px">Life-Changing Smile Transformations</h2>
+    <div class="testi-grid">
+      <div class="testi-card fade-up">
+        <div class="stars">★★★★★</div>
+        <p>"I wore braces for 18 months as an adult and honestly wish I'd done it sooner. The team made me feel at ease every visit. My smile is unrecognizable — in the best possible way."</p>
+        <div class="author">— Natalie Ferreira, 32</div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="stars">★★★★★</div>
+        <p>"My daughter got Invisalign at 15 and absolutely loved it. No one at school even knew she was in treatment. Her confidence has completely transformed along with her teeth."</p>
+        <div class="author">— Patricia Huang</div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="stars">★★★★★</div>
+        <p>"Came in with severe crowding I'd been self-conscious about my whole life. 22 months later I can't stop smiling. The financing made it completely accessible. Worth every penny."</p>
+        <div class="author">— Daniel Osei, 28</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <span class="section-tag">Book Today</span>
+        <h2 class="section-title">Start Your Smile Journey</h2>
+        <p style="margin-bottom:32px">Free consultations with no obligation. Financing available. Serving Austin and surrounding communities.</p>
+        <div class="contact-info">
+          
+          <div class="cinfo"><div class="cinfo-icon">📍</div><div class="cinfo-text"><h4>Location</h4><p>Austin</p></div></div>
+          <div class="cinfo"><div class="cinfo-icon">⏰</div><div class="cinfo-text"><h4>Hours</h4><p>Mon–Thu 8am–6pm · Fri 8am–4pm · Sat by appointment</p></div></div>
+        </div>
+      </div>
+      <div class="contact-cta-box">
+        <div class="free-badge">✅ FREE CONSULTATION — No Obligation</div>
+        <h3>Book Your Free Smile Consult</h3>
+        <p>Meet our orthodontist, get a full evaluation, see your digital smile preview, and leave with a complete treatment plan — at no cost.</p>
+        
+        <a href="#finder" class="btn-ghost" style="display:inline-flex;margin-top:12px">✨ Find My Treatment</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p style="margin-bottom:8px">© 2026 Elite Premium Services. All rights reserved.</p>
+    <p>Website concept by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a> · Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here →</a></p>
+  </div>
+</footer>
+
+<img src="/api/track.png?bid=" style="display:none;width:0;height:0" alt="tracker" />
+
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>50)});
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.12});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+let answers={concern:'Mild Crowding',lifestyle:'Discreet'};
+
+function pick(el,key,val){
+  const group=el.parentNode.querySelectorAll('.opt-btn');
+  group.forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[key]=val;
+}
+
+function goStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  if(n===1){document.getElementById('planFlip').classList.remove('flipped')}
+}
+
+const plans={
+  'Mild Crowding':{Speed:{t:'Ceramic Braces',d:'8–12 mo',c:'$3,500–$5,000'},Discreet:{t:'Invisalign Lite',d:'6–10 mo',c:'$3,000–$4,500'},Affordable:{t:'Traditional Braces',d:'10–14 mo',c:'$2,800–$4,000'}},
+  'Moderate Crowding':{Speed:{t:'Braces + Expander',d:'14–18 mo',c:'$4,000–$5,500'},Discreet:{t:'Invisalign',d:'12–16 mo',c:'$4,500–$6,500'},Affordable:{t:'Traditional Braces',d:'16–20 mo',c:'$3,200–$4,800'}},
+  'Severe Crowding':{Speed:{t:'Full Braces',d:'18–24 mo',c:'$4,500–$6,000'},Discreet:{t:'Invisalign Comprehensive',d:'18–24 mo',c:'$5,500–$7,500'},Affordable:{t:'Traditional Braces',d:'20–26 mo',c:'$3,800–$5,200'}},
+  'Gaps Between Teeth':{Speed:{t:'Invisalign',d:'6–12 mo',c:'$3,500–$5,500'},Discreet:{t:'Invisalign',d:'8–14 mo',c:'$3,500–$5,500'},Affordable:{t:'Traditional Braces',d:'10–16 mo',c:'$2,800–$4,200'}},
+  'Overbite or Underbite':{Speed:{t:'Braces + Corrector',d:'18–24 mo',c:'$4,800–$6,500'},Discreet:{t:'Invisalign + Mandibular Advancement',d:'18–22 mo',c:'$5,500–$7,500'},Affordable:{t:'Traditional Braces',d:'20–28 mo',c:'$4,000–$5,500'}},
+};
+
+function showPlan(){
+  goStep(3);
+  const lKey=answers.lifestyle==='Fastest Results'?'Speed':answers.lifestyle==='Most Discreet'?'Discreet':'Affordable';
+  const p=(plans[answers.concern]||plans['Moderate Crowding'])[lKey];
+  document.getElementById('planTitle').textContent=p.t;
+  document.getElementById('planDuration').textContent=p.d;
+  document.getElementById('planCost').textContent=p.c;
+  setTimeout(()=>document.getElementById('planFlip').classList.add('flipped'),400);
+}
+</script>
+
+<!-- LEADFLOW CONVERSION LAYER WITH CONTROL PANEL -->
+<style>
+  /* Styling for the sticky CTA bar */
+  .lf-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:9998;
+    display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    padding:14px 20px;background:rgba(10,10,12,.92);backdrop-filter:blur(12px);
+    border-top:1px solid rgba(255,255,255,.12);
+    transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
+  .lf-cta-bar.show{transform:translateY(0)}
+  .lf-cta-bar p{margin:0;font-size:15px;font-weight:500}
+  .lf-cta-bar p b{color:#4d9fff}
+  
+  .lf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+    text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:999px;
+    transition:transform .15s,box-shadow .15s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-btn:hover{transform:translateY(-2px)}
+  .lf-btn-primary{background:linear-gradient(135deg,#4d9fff,#2563eb);color:#fff;
+    box-shadow:0 4px 15px rgba(77,159,255,.3)}
+  .lf-btn-ghost{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12)}
+  .lf-btn-ghost:hover{background:rgba(255,255,255,.1)}
+
+  /* Original Modal styles */
+  .lf-modal-bg{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:20px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-modal-bg.show{display:flex;animation:lf-fade .3s ease}
+  .lf-modal{position:relative;max-width:440px;width:100%;background:#0d0e12;color:#fff;
+    border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 28px;text-align:center;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:lf-pop .35s cubic-bezier(.2,.9,.3,1.2)}
+  .lf-modal h2{margin:0 0 12px;font-size:24px;line-height:1.25}
+  .lf-modal h2 b{color:#4d9fff}
+  .lf-modal p{margin:0 0 24px;font-size:15px;line-height:1.6;color:#a0aec0}
+  .lf-modal .lf-btn{width:100%;font-size:16px;padding:14px}
+  .lf-modal .lf-sub{margin-top:14px;font-size:12px;color:#718096}
+  .lf-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#718096;
+    font-size:24px;line-height:1;cursor:pointer}
+  .lf-x:hover{color:#fff}
+
+  /* Control Panel Toggle Launcher Button */
+  .lf-launcher{position:fixed;bottom:30px;left:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(37, 99, 235, 0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;animation:lf-pulse 2s infinite}
+  .lf-launcher:hover{transform:scale(1.1) rotate(15deg);box-shadow:0 12px 40px rgba(37, 99, 235, 0.6)}
+  .lf-launcher.open{transform:scale(0.9) rotate(-90deg);background:#1a202c;border-color:rgba(255,255,255,0.1)}
+  .lf-launcher.shift{bottom:90px}
+  
+  @keyframes lf-pulse{
+    0%{box-shadow:0 0 0 0 rgba(37,99,235,0.6)}
+    70%{box-shadow:0 0 0 14px rgba(37,99,235,0)}
+    100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}
+  }
+
+  /* Control Panel Sidebar Drawer */
+  .lf-drawer{position:fixed;top:0;left:-380px;width:350px;height:100vh;z-index:99995;
+    background:rgba(10,11,15,0.92);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border-right:1px solid rgba(255,255,255,0.08);box-shadow:20px 0 80px rgba(0,0,0,0.65);
+    transition:transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    display:flex;flex-direction:column}
+  .lf-drawer.open{transform:translateX(380px)}
+  
+  .lf-drawer-header{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}
+  .lf-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.1em;
+    background:rgba(59,130,246,0.12);color:#3b82f6;padding:4px 10px;border-radius:4px;
+    border:1px solid rgba(59,130,246,0.25);margin-bottom:12px;text-transform:uppercase}
+  .lf-drawer-header h3{margin:0;font-size:20px;font-weight:700}
+  .lf-drawer-header p{margin:4px 0 0;font-size:13px;color:#a0aec0}
+  
+  .lf-drawer-body{padding:24px;overflow-y:auto;flex-grow:1;display:flex;flex-direction:column;gap:24px}
+  .lf-section-title{font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;
+    letter-spacing:0.08em;margin-bottom:12px}
+  
+  /* Audit Card */
+  .lf-audit-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);
+    border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+  .lf-progress-bg{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-top:6px}
+  .lf-progress-bar{height:100%;border-radius:3px;transition:width 1s ease}
+
+  /* Customizer Card */
+  .lf-color-grid{display:flex;gap:10px;margin-top:8px}
+  .lf-color-btn{width:34px;height:34px;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;transition:transform 0.2s,border-color 0.2s;position:relative}
+  .lf-color-btn:hover{transform:scale(1.15)}
+  .lf-color-btn.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
+  .lf-color-tooltip{position:absolute;bottom:42px;left:50%;transform:translateX(-50%) translateY(5px);
+    background:#1a202c;color:#fff;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+  .lf-color-btn:hover .lf-color-tooltip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Feature list */
+  .lf-feat-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+  .lf-feat-item{font-size:13px;color:#cbd5e0;display:flex;align-items:center;gap:10px}
+  .lf-feat-icon{color:#10b981;font-size:14px}
+
+  /* Profile Card */
+  .lf-profile{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px}
+  .lf-avatar{width:40px;height:40px;border-radius:50%;background:#3b82f6;display:flex;
+    align-items:center;justify-content:center;font-size:18px;font-weight:700}
+  .lf-profile-info{display:flex;flex-direction:column}
+  .lf-profile-name{font-size:13px;font-weight:700;color:#fff}
+  .lf-profile-role{font-size:11px;color:#718096}
+
+  .lf-drawer-footer{padding:20px;border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;flex-direction:column;gap:10px}
+  .lf-drawer-footer .lf-btn{width:100%;font-size:15px;padding:12px;font-weight:700}
+  
+  /* Chatbot styles */
+  .lf-chat-launcher{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#10b981,#059669);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(16,185,129,0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;user-select:none}
+  .lf-chat-launcher:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(16,185,129,0.6)}
+  
+  .lf-chat-window{position:fixed;bottom:96px;right:30px;width:320px;height:420px;z-index:99995;
+    background:rgba(10,11,15,0.96);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.65);
+    display:none;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    overflow:hidden;transition:all 0.3s ease}
+  .lf-chat-window.open{display:flex}
+  
+  .lf-chat-header{padding:14px 16px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;justify-content:space-between;align-items:center}
+  .lf-chat-header h4{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .lf-chat-header h4::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981}
+  
+  .lf-chat-messages{flex-grow:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
+    font-size:12.5px;line-height:1.45}
+  
+  .lf-msg{max-width:82%;padding:8px 12px;border-radius:12px;margin-bottom:2px;word-break:break-word}
+  .lf-msg-user{align-self:flex-end;background:#2563eb;color:#fff;border-bottom-right-radius:2px}
+  .lf-msg-ai{align-self:flex-start;background:rgba(255,255,255,0.06);color:#e2e8f0;border-bottom-left-radius:2px;border:1px solid rgba(255,255,255,0.04)}
+  
+  .lf-chat-input-area{padding:10px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;gap:8px;align-items:center}
+  .lf-chat-input{flex-grow:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:999px;padding:6px 14px;color:#fff;font-size:12.5px;outline:none;transition:border-color 0.2s}
+  .lf-chat-input:focus{border-color:#10b981}
+  .lf-chat-send{background:#10b981;border:none;color:#fff;border-radius:50%;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:background 0.2s}
+  .lf-chat-send:hover{background:#059669}
+  
+  .lf-typing{display:none;align-self:flex-start;background:rgba(255,255,255,0.03);padding:6px 12px;border-radius:12px;font-size:11px;color:#718096;margin:0 16px 8px}
+  
+  /* Timeline styles for Sequence */
+  .lf-timeline{display:flex;flex-direction:column;gap:14px;position:relative;padding-left:14px;margin-top:10px}
+  .lf-timeline::before{content:'';position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:rgba(255,255,255,0.08)}
+  .lf-timeline-item{display:flex;gap:10px;position:relative}
+  .lf-timeline-badge{width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-top:4px;
+    position:absolute;left:-14px;border:2px solid #0a0b0f}
+  .lf-timeline-content h4{margin:0;font-size:12.5px;font-weight:700;color:#fff}
+  .lf-timeline-content p{margin:2px 0 0;font-size:10.5px;color:#718096;line-height:1.4}
+  
+  @keyframes lf-fade{from{opacity:0}to{opacity:1}}
+</style>
+
+<div class="lf-launcher" id="lfLauncher" aria-label="Toggle Customizer">🛠️</div>
+
+<div class="lf-drawer" id="lfDrawer">
+  <div class="lf-drawer-header">
+    <div class="lf-badge">Live Demo Controls</div>
+    <h3>Custom Presentation</h3>
+    <p>Prepared for <b>Elite Premium Services</b></p>
+  </div>
+  
+  <div class="lf-drawer-body">
+    <!-- Audit Section -->
+    <div>
+      <div class="lf-section-title">Speed & Performance Audit</div>
+      <div class="lf-audit-card">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>Your Current Website:</span>
+            <span style="font-weight:700;color:#ef4444">No Website / 0</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:10%;background:#ef4444"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>LeadFlow Modern Demo:</span>
+            <span style="font-weight:700;color:#10b981">98 / 100</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:98%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Selection -->
+    <div>
+      <div class="lf-section-title">Tailor Brand Colors</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 10px">Preview this template in other primary branding styles instantly:</p>
+      <div class="lf-color-grid">
+        <button class="lf-color-btn active" id="lf-color-orange" data-color="orange" style="background:#E05A26" aria-label="Orange">
+          <span class="lf-color-tooltip">Amber Orange</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-blue" data-color="blue" style="background:#2563eb" aria-label="Blue">
+          <span class="lf-color-tooltip">Electric Blue</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-green" data-color="green" style="background:#10b981" aria-label="Green">
+          <span class="lf-color-tooltip">Emerald Green</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-gold" data-color="gold" style="background:#d97706" aria-label="Gold">
+          <span class="lf-color-tooltip">Honey Gold</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-pink" data-color="pink" style="background:#db2777" aria-label="Pink">
+          <span class="lf-color-tooltip">Rose Pink</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div>
+      <div class="lf-section-title">Built-in Enhancements</div>
+      <ul class="lf-feat-list">
+        <li class="lf-feat-item"><span class="lf-feat-icon">⚡</span> 340% faster loading speed</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">📱</span> Responsive mobile-first layout</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🛠️</span> Interactive pricing & cost estimators</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🎯</span> Modern UX to capture 3x more bookings</li>
+      </ul>
+    </div>
+
+    <!-- Outreach Sequence Timeline -->
+    <div>
+      <div class="lf-section-title">Autonomous Outreach Engine</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 12px">How we follow up with your prospects automatically:</p>
+      <div class="lf-timeline">
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#3b82f6"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 1: Personalized Pitch</h4>
+            <p>Initial email sent with custom demo site link.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#10b981"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 3: WhatsApp Nudge</h4>
+            <p>Follow-up text sent if booking is pending.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#fbbf24"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 7: Social Follow-up</h4>
+            <p>Instagram DM sent to maximize response rate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Designer profile -->
+    <div style="margin-top:auto">
+      <div class="lf-section-title">Created By</div>
+      <div class="lf-profile">
+        <div class="lf-avatar">CG</div>
+        <div class="lf-profile-info">
+          <span class="lf-profile-name">Alex from Sitelink</span>
+          <span class="lf-profile-role">Web Developer & Architect</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="lf-drawer-footer">
+    <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_drawer">Claim Website &rarr;</a>
+    
+  </div>
+</div>
+
+<div class="lf-chat-launcher" id="lfChatLauncher" aria-label="Open Chat">💬</div>
+
+<div class="lf-chat-window" id="lfChatWindow">
+  <div class="lf-chat-header">
+    <h4 style="margin:0">AI Assistant</h4>
+    <button class="lf-x" id="lfChatClose" style="position:static;font-size:20px;padding:0;background:none;border:none;color:#718096;cursor:pointer" aria-label="Close Chat">&times;</button>
+  </div>
+  <div class="lf-chat-messages" id="lfChatMessages">
+    <div class="lf-msg lf-msg-ai">Hi there! I'm your AI business assistant. How can I help you today?</div>
+  </div>
+  <div class="lf-typing" id="lfChatTyping">AI is typing...</div>
+  <div class="lf-chat-input-area">
+    <input type="text" class="lf-chat-input" id="lfChatInput" placeholder="Type a message...">
+    <button class="lf-chat-send" id="lfChatSend" aria-label="Send message">➔</button>
+  </div>
+</div>
+
+<div class="lf-cta-bar" id="lfBar">
+  <p>👀 Like this design for <b>Elite Premium Services</b>?</p>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_bar">Book a free call →</a>
+  
+</div>
+
+<div class="lf-modal-bg" id="lfModal">
+  <div class="lf-modal">
+    <button class="lf-x" id="lfX" aria-label="Close">&times;</button>
+    <h2>Want this site live for <b>Elite Premium Services</b>?</h2>
+    <p>This demo was built specifically for you. Book a free 15-minute call and
+       I'll have it live on your domain — no obligation, no upfront cost.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:15px;flex-wrap:wrap">
+      <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_modal">Claim this website →</a>
+      
+    </div>
+    <div class="lf-sub">Built by Alex from Sitelink</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var BEACON="", BID="", sent={};
+  // Dynamically fetch the current server URL so beacon always works even after
+  // tunnel rotation — decoupled from the URL that was baked in at deploy-time.
+  (function loadBeacon(){
+    try{
+      fetch("https://power7t.github.io/leadflow-demos/beacon-config.json?_="+Date.now(),{cache:"no-store"})
+        .then(function(r){return r.json();})
+        .then(function(d){BEACON=d.url||"";})
+        .catch(function(){});
+    }catch(e){}
+  })();
+  function ping(ev){
+    if(sent[ev])return; sent[ev]=true;
+    function _do(){if(!BEACON)return;try{fetch(BEACON+"/api/engage?bid="+BID+"&ev="+ev,{mode:"no-cors",keepalive:true});}catch(e){}}
+    if(BEACON){_do();}else{setTimeout(_do,2500);} // wait for beacon config fetch
+  }
+  
+  // Customizer color switching
+  var colors = {
+    orange: { primary: '#E05A26', bright: '#FF6B35', glow: 'rgba(224,90,38,0.15)' },
+    blue: { primary: '#2563eb', bright: '#3b82f6', glow: 'rgba(37,99,235,0.15)' },
+    green: { primary: '#10b981', bright: '#34d399', glow: 'rgba(16,185,129,0.15)' },
+    gold: { primary: '#d97706', bright: '#fbbf24', glow: 'rgba(217,119,6,0.15)' },
+    pink: { primary: '#db2777', bright: '#f472b6', glow: 'rgba(219,39,119,0.15)' }
+  };
+  
+  function setAccent(key) {
+    var root = document.documentElement;
+    var p = colors[key];
+    if (!p) return;
+    
+    // Standard variables across templates
+    root.style.setProperty('--accent-orange', p.primary);
+    root.style.setProperty('--accent-orange-bright', p.bright);
+    root.style.setProperty('--accent-orange-glow', p.glow);
+    root.style.setProperty('--accent-cyan', p.primary);
+    root.style.setProperty('--accent-cyan-bright', p.bright);
+    root.style.setProperty('--accent-cyan-glow', p.glow);
+    root.style.setProperty('--accent-teal', p.primary);
+    root.style.setProperty('--accent-teal-glow', p.glow);
+    root.style.setProperty('--accent-gold', p.primary);
+    root.style.setProperty('--accent-gold-glow', p.glow);
+    root.style.setProperty('--accent-pink', p.primary);
+    root.style.setProperty('--accent-pink-glow', p.glow);
+    root.style.setProperty('--accent-wood', p.primary);
+    root.style.setProperty('--accent-wood-glow', p.glow);
+    root.style.setProperty('--accent-green', p.primary);
+    root.style.setProperty('--accent-green-glow', p.glow);
+    
+    document.querySelectorAll('.lf-color-btn').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+    var activeBtn = document.getElementById('lf-color-' + key);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    ping('customize_color_' + key);
+  }
+  
+  document.querySelectorAll('.lf-color-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var col = btn.getAttribute('data-color');
+      setAccent(col);
+    });
+  });
+
+  // Drawer toggling
+  var launcher = document.getElementById('lfLauncher');
+  var drawer = document.getElementById('lfDrawer');
+  
+  launcher.addEventListener('click', function(){
+    var isOpen = drawer.classList.contains('open');
+    if(isOpen) {
+      drawer.classList.remove('open');
+      launcher.classList.remove('open');
+      launcher.classList.remove('lf-panel-open');
+      launcher.innerHTML = '🛠️';
+      ping('drawer_closed');
+    } else {
+      drawer.classList.add('open');
+      launcher.classList.add('open');
+      launcher.classList.add('lf-panel-open');
+      launcher.innerHTML = '×';
+      ping('drawer_opened');
+    }
+  });
+
+  // Sticky CTA bar appears once they've scrolled in a bit
+  var bar=document.getElementById("lfBar"), barShown=false;
+  function onScroll(){
+    var sc=window.scrollY, h=document.body.scrollHeight-window.innerHeight;
+    var pct=h>0?sc/h:0;
+    if(pct>0.12&&!barShown){
+      bar.classList.add("show");
+      barShown=true;
+      launcher.classList.add("shift");
+      ping("scroll_in");
+    }
+    if(pct>0.9)ping("scroll_90");
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+
+  // Modal: exit-intent on desktop, timed on mobile, once per visit
+  var modal=document.getElementById("lfModal"), fired=false;
+  function openModal(){
+    if(fired||sessionStorage.getItem("lfSeen"))return;
+    fired=true; sessionStorage.setItem("lfSeen","1");
+    modal.classList.add("show"); ping("modal_shown");
+  }
+  function closeModal(){modal.classList.remove("show");}
+  document.getElementById("lfX").addEventListener("click",closeModal);
+  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+  if(matchMedia("(pointer:fine)").matches){
+    document.addEventListener("mouseout",function(e){if(e.clientY<=0)openModal();});
+  } else {
+    setTimeout(openModal,28000);
+  }
+  
+  // Chat window toggling
+  var chatLauncher = document.getElementById('lfChatLauncher');
+  var chatWindow = document.getElementById('lfChatWindow');
+  var chatClose = document.getElementById('lfChatClose');
+  var chatInput = document.getElementById('lfChatInput');
+  var chatSend = document.getElementById('lfChatSend');
+  var chatMessages = document.getElementById('lfChatMessages');
+  var chatTyping = document.getElementById('lfChatTyping');
+  
+  if (chatLauncher) {
+    chatLauncher.addEventListener('click', function(){
+      var isOpen = chatWindow.classList.contains('open');
+      if(isOpen) {
+        chatWindow.classList.remove('open');
+        ping('chat_closed');
+      } else {
+        chatWindow.classList.add('open');
+        ping('chat_opened');
+        chatInput.focus();
+      }
+    });
+  }
+  
+  if (chatClose) {
+    chatClose.addEventListener('click', function(){
+      chatWindow.classList.remove('open');
+    });
+  }
+  
+  var chatHistory = [];
+  
+  function sendChatMessage() {
+    var txt = chatInput.value.trim();
+    if(!txt) return;
+    chatInput.value = '';
+    
+    // Add User message
+    var userDiv = document.createElement('div');
+    userDiv.className = 'lf-msg lf-msg-user';
+    userDiv.textContent = txt;
+    chatMessages.appendChild(userDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    chatHistory.push({role: 'user', content: txt});
+    ping('chat_message_sent');
+    
+    // Show typing
+    chatTyping.style.display = 'block';
+    
+    // Send to server
+    function _doChat(){
+      if(!BEACON) {
+        setTimeout(_doChat, 1000);
+        return;
+      }
+      fetch(BEACON + "/leads/" + BID + "/chat", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: txt, history: chatHistory })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = data.reply || "Sorry, I'm having trouble connecting right now.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        chatHistory.push({role: 'assistant', content: data.reply || ''});
+      })
+      .catch(function(){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = "Sorry, I could not reach the server.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+    _doChat();
+  }
+  
+  if (chatSend) chatSend.addEventListener('click', sendChatMessage);
+  if (chatInput) {
+    chatInput.addEventListener('keypress', function(e){
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+
+  // Track high-intent clicks
+  document.querySelectorAll("[data-lf]").forEach(function(el){
+    el.addEventListener("click",function(){ping(el.getAttribute("data-lf"));});
+  });
+})();
+</script>
+
+
+</body>
+</html>

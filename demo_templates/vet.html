@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ lead.name }} | Premium Veterinary Care</title>
+<meta name="description" content="Welcome to {{ lead.name }}. Advanced Veterinary clinic offering Animal whitening, implants, braces, and general care in {{ lead.city or 'your city' }}.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #050b0e;
+  --bg-secondary: #081318;
+  --bg-tertiary: #0c1d24;
+  --accent: #5bb8d4;
+  --accent-glow: rgba(91, 184, 212, 0.3);
+  --text-white: #ffffff;
+  --text-gray: #b1c4cb;
+  --text-muted: #627982;
+  --glass-bg: rgba(8, 19, 24, 0.85);
+  --glass-border: rgba(91, 184, 212, 0.08);
+  --glass-border-hover: rgba(91, 184, 212, 0.35);
+  --border-radius-sm: 6px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
+  --transition-smooth: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-primary);
+  color: var(--text-white);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+p {
+  color: var(--text-gray);
+  font-weight: 300;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* DEMO BANNER */
+.demo-banner {
+  background: var(--accent);
+  color: #000;
+  text-align: center;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.demo-banner a {
+  color: #000;
+  text-decoration: underline;
+  font-weight: 800;
+}
+.demo-banner .orig {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: .75;
+}
+
+/* NAVBAR */
+.navbar {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--glass-border);
+}
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 90px;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled .nav-container {
+  height: 70px;
+}
+.logo {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logo span {
+  color: var(--accent);
+}
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--text-gray);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
+  position: relative;
+  padding: 0.5rem 0;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: var(--transition-smooth);
+}
+.nav-links a:hover, .nav-links a.active {
+  color: #fff;
+}
+.nav-links a:hover::after, .nav-links a.active::after {
+  width: 100%;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-primary {
+  background-color: var(--accent);
+  color: #000;
+}
+.btn-primary:hover {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+  transform: translateY(-2px);
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: #fff;
+}
+.btn-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* HERO */
+.hero {
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(rgba(5,11,14,0.65), rgba(5,11,14,0.85)), url('{{ hero_img or "https://images.unsplash.com/photo-1588776814546-daab30f310ce?w=1400" }}') center/cover no-repeat;
+  position: relative;
+  padding-top: 138px;
+}
+.hero-content {
+  max-width: 800px;
+}
+.hero-title {
+  font-size: 3.8rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+.hero-desc {
+  font-size: 1.2rem;
+  margin-bottom: 2.5rem;
+  max-width: 600px;
+}
+.hero-btns {
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* SECTION SPECIFICS */
+section {
+  padding: 8rem 0;
+  position: relative;
+}
+.section-tag {
+  color: var(--accent);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.section-title {
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+}
+
+/* SERVICES SECTION */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+.service-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 2.5rem 2rem;
+  border-radius: var(--border-radius-md);
+  transition: var(--transition-smooth);
+}
+.service-card:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+.service-icon {
+  font-size: 2.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--accent);
+}
+.service-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+}
+.service-card p {
+  font-size: 0.9rem;
+}
+
+/* WHY US SECTION */
+.why-us {
+  background: var(--bg-secondary);
+}
+.why-us-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+.why-img {
+  width: 100%;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--glass-border);
+}
+.why-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+.why-item {
+  display: flex;
+  gap: 1.5rem;
+}
+.why-badge {
+  width: 50px;
+  height: 50px;
+  background: var(--bg-tertiary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--accent);
+  flex-shrink: 0;
+  border: 1px solid var(--glass-border);
+}
+.why-text h4 {
+  font-size: 1.15rem;
+  margin-bottom: 0.3rem;
+}
+.why-text p {
+  font-size: 0.95rem;
+}
+
+/* TESTIMONIALS */
+.testimonials {
+  background: var(--bg-tertiary);
+}
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+.testimonial-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 2.5rem;
+  border-radius: var(--border-radius-md);
+}
+.stars {
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.t-text {
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+.t-author {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* CONTACT */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.contact-item h4 {
+  font-size: 1.15rem;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+/* FOOTER */
+.footer {
+  background: #030709;
+  padding: 4rem 0 2rem;
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+}
+.footer-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 1.5rem;
+}
+
+/* RESPONSIVE */
+@media(max-width: 991px) {
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .why-us-grid, .testimonials-grid, .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .navbar {
+    top: 0;
+  }
+}
+@media(max-width: 576px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* AHA MOMENT */
+.aha-section{padding:5rem 0;background:var(--bg-secondary,#0a1628);position:relative;overflow:hidden}
+.aha-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(32,178,170,0.07) 0%,transparent 70%);pointer-events:none}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.aha-controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:.5rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#b0c4c4;padding:9px 22px;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit;transition:all .25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent,#20b2aa);border-color:var(--accent,#20b2aa);color:#fff;box-shadow:0 4px 16px rgba(32,178,170,0.3)}
+.aha-svg-wrap{width:100%;max-width:300px;margin:0 auto}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;min-height:2rem;margin-top:.25rem}
+.aha-sub{font-size:.85rem;color:#718096;margin-top:.25rem}
+</style>
+
+<!-- CONVERSION BOOST CSS -->
+<style>
+/* Hide standard navbar — pure proposal page */
+.navbar { display: none !important; }
+.hero { padding-top: 0 !important; }
+
+/* ── Urgency Marquee Ticker ── */
+.urg-ticker {
+  background: linear-gradient(90deg, #ff4444, #ff6600);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10001;
+  padding: 8px 0;
+  letter-spacing: 0.03em;
+}
+.urg-ticker-inner {
+  display: inline-block;
+  animation: marquee-scroll 28s linear infinite;
+}
+.urg-ticker-inner span { margin: 0 3rem; }
+@keyframes marquee-scroll {
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
+}
+
+/* ── Demo Banner (urgency version) ── */
+.demo-banner {
+  background: #0f0f0f !important;
+  color: #fff !important;
+  border-bottom: 2px solid #ff4444;
+  padding: 10px 20px !important;
+}
+.demo-banner a { color: #4ade80 !important; }
+.demo-banner .countdown-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.demo-banner .countdown-timer {
+  font-weight: 800;
+  color: #ff4444;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+/* ── Floating WhatsApp Button ── */
+.wa-float {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.wa-float-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.55);
+  animation: wa-pulse 2.2s ease-in-out infinite;
+  position: relative;
+}
+.wa-float-btn svg { width: 32px; height: 32px; }
+.wa-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: #ff4444;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  font-family: sans-serif;
+}
+.wa-float-label {
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: sans-serif;
+}
+@keyframes wa-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37,211,102,0.55); }
+  50%       { box-shadow: 0 4px 32px rgba(37,211,102,0.85), 0 0 0 8px rgba(37,211,102,0.15); }
+}
+
+/* ── Urgency strip below hero buttons ── */
+.hero-urgency-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+}
+.urg-pill {
+  background: rgba(255,68,68,0.12);
+  border: 1px solid rgba(255,68,68,0.35);
+  color: #ff7777;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-family: sans-serif;
+}
+.urg-pill.green {
+  background: rgba(74,222,128,0.1);
+  border-color: rgba(74,222,128,0.3);
+  color: #4ade80;
+}
+
+/* ── Email CTA btn ── */
+.btn-email-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.8rem 1.8rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  text-decoration: none;
+  transition: all 0.3s;
+  font-family: 'Inter', sans-serif;
+}
+.btn-email-cta:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* ── Scarcity box ── */
+.scarcity-box {
+  background: linear-gradient(135deg, rgba(255,68,68,0.08), rgba(255,102,0,0.06));
+  border: 1px solid rgba(255,68,68,0.2);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: sans-serif;
+  max-width: 460px;
+}
+.scarcity-box .sc-icon { font-size: 1.4rem; flex-shrink: 0; }
+.scarcity-box .sc-text { font-size: 0.85rem; color: #ffaaaa; line-height: 1.4; }
+.scarcity-box .sc-text strong { color: #ff6666; }
+
+@media(max-width: 576px) {
+  .wa-float { bottom: 16px; right: 14px; }
+  .wa-float-btn { width: 52px; height: 52px; }
+  .hero-urgency-strip { gap: 8px; }
+}
+</style>
+
+</head>
+<body>
+<!-- URGENCY MARQUEE TICKER -->
+<div class="urg-ticker" aria-hidden="true">
+  <div class="urg-ticker-inner">
+    <span>🔥 FREE demo — built exclusively for {{ lead.name }}</span>
+    <span>📊 80% of customers check a business online before visiting</span>
+    <span>⏰ This demo is only available for 48 hours</span>
+    <span>🚀 Businesses with websites get 3× more enquiries</span>
+    <span>💼 Your competitors already have a pro online presence</span>
+    <span>🎯 We'll take it live in 48 hours — just say yes</span>
+    <span>🔥 FREE demo — built exclusively for {{ lead.name }}</span>
+    <span>📊 80% of customers check a business online before visiting</span>
+    <span>⏰ This demo is only available for 48 hours</span>
+    <span>🚀 Businesses with websites get 3× more enquiries</span>
+    <span>💼 Your competitors already have a pro online presence</span>
+    <span>🎯 We'll take it live in 48 hours — just say yes</span>
+  </div>
+</div>
+
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  <span>✨ FREE demo built for <strong>{{ lead.name }}</strong> — </span>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener">Hire me to take it live →</a>
+  <span class="countdown-wrap" style="margin-left:12px">
+    &nbsp;⏳ Offer expires:&nbsp;<span class="countdown-timer" id="lf-countdown">47:59:59</span>
+  </span>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">
+      {{ lead.name }}<span>.</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#why-us">Why Us</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.85rem">Book Appointment</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="home" class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <h1 class="hero-title">Healthy Pets For A Lifetime</h1>
+      
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
+      <p class="hero-desc">Experience state-of-the-art Veterinary care at {{ lead.name }}. Our dedicated experts combine technology and comfort to keep your Pet bright and healthy.</p>
+      <div class="hero-btns">
+        <a href="#services" class="btn btn-primary">Our Services</a>
+        <a href="#contact" class="btn btn-outline">Book Appointment</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section id="services">
+  <div class="container">
+    <span class="section-tag">Clinical Excellence</span>
+    <h2 class="section-title">State-of-the-Art Treatments</h2>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">✨</div>
+        <h3>Animal Whitening</h3>
+        <p>Advanced laser whitening technology to brighten your Pet up to 8 shades in a single visit.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🦷</div>
+        <h3>Veterinary Implants</h3>
+        <p>Premium titanium root replacements matching your natural Animal perfectly in form and function.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🦷</div>
+        <h3>Cosmetic Braces</h3>
+        <p>Discreet, comfortable orthodontic treatments including clear aligners for all age groups.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🦷</div>
+        <h3>General Cleaning</h3>
+        <p>Comprehensive oral hygiene scaling, polishing, and screening for optimal preventive care.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Us -->
+<section id="why-us" class="why-us">
+  <div class="container">
+    <div class="why-us-grid">
+      <div>
+        <span class="section-tag">Why Choose Us</span>
+        <h2 class="section-title">A Higher Standard of Care</h2>
+        <div class="why-list">
+          <div class="why-item">
+            <div class="why-badge">🌟</div>
+            <div class="why-text">
+              <h4>Advanced Technology</h4>
+              <p>We use 3D digital imaging, intraoral scanners, and low-radiation digital x-rays for ultra-precise diagnostics.</p>
+            </div>
+          </div>
+          <div class="why-item">
+            <div class="why-badge">❤️</div>
+            <div class="why-text">
+              <h4>Pain-Free Veterinarianry</h4>
+              <p>Experience stress-free procedures with our specialized sedation and comfort-first approach.</p>
+            </div>
+          </div>
+          <div class="why-item">
+            <div class="why-badge">⭐</div>
+            <div class="why-text">
+              <h4>Highly Experienced Team</h4>
+              <p>Our clinical Veterinarians are board-certified and hold active memberships in top national Veterinary academies.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <img class="why-img" src="{{ about_img or 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=600' }}" alt="Modern Veterinary equipment">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pet Simulator Aha Moment -->
+<section class="aha-section" id="Pet-sim">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Pet Simulator</span>
+      <h2 class="section-title">See Your Transformation</h2>
+      <p style="max-width:500px;color:#718096">Choose a treatment and watch the difference our care makes. Every Pet we create is crafted for you.</p>
+      <div class="aha-controls">
+        <button class="aha-btn active" data-tx="0">Cleaning</button>
+        <button class="aha-btn" data-tx="1">Whitening</button>
+        <button class="aha-btn" data-tx="2">Veneers</button>
+        <button class="aha-btn" data-tx="3">Full Restoration</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg viewBox="0 0 300 200" style="width:100%;height:auto">
+          <defs>
+            <radialGradient id="toothGrad" cx="50%" cy="30%" r="60%">
+              <stop id="tg-stop1" offset="0%" stop-color="#ffffff"/>
+              <stop id="tg-stop2" offset="100%" stop-color="#d4e8e6"/>
+            </radialGradient>
+            <filter id="glowF"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <!-- Background glow ring -->
+          <circle id="tx-glow" cx="150" cy="105" r="60" fill="rgba(32,178,170,0.06)" style="transition:r .4s ease,fill .4s ease"/>
+          <!-- Lips outline -->
+          <path d="M60,90 Q100,75 150,72 Q200,75 240,90 Q220,140 150,148 Q80,140 60,90 Z" fill="#1a2a2a" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+          <!-- Upper lip arch -->
+          <path d="M60,90 Q100,82 130,86 Q150,80 170,86 Q200,82 240,90" fill="none" stroke="rgba(255,80,80,0.15)" stroke-width="1.5"/>
+          <!-- Animal row top -->
+          <g id="Animal-top">
+            <rect x="98" y="95" width="18" height="22" rx="4" fill="url(#toothGrad)" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+            <rect x="118" y="93" width="20" height="24" rx="4" fill="url(#toothGrad)" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+            <rect x="140" y="93" width="20" height="24" rx="4" fill="url(#toothGrad)" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+            <rect x="162" y="95" width="18" height="22" rx="4" fill="url(#toothGrad)" stroke="rgba(0,0,0,0.1)" stroke-width="0.5"/>
+            <rect id="tx-stain" x="98" y="95" width="82" height="22" rx="4" fill="rgba(180,150,80,0.35)" style="transition:opacity .4s ease"/>
+          </g>
+          <!-- Animal row bottom -->
+          <g opacity="0.7">
+            <rect x="102" y="119" width="16" height="18" rx="3" fill="url(#toothGrad)"/>
+            <rect x="120" y="119" width="18" height="18" rx="3" fill="url(#toothGrad)"/>
+            <rect x="140" y="119" width="18" height="18" rx="3" fill="url(#toothGrad)"/>
+            <rect x="160" y="119" width="16" height="18" rx="3" fill="url(#toothGrad)"/>
+          </g>
+          <!-- Sparkle stars (hidden by default) -->
+          <g id="tx-sparkles" opacity="0" style="transition:opacity .4s ease">
+            <text x="93" y="90" font-size="12" fill="#fff" style="filter:drop-shadow(0 0 4px #20b2aa)">✦</text>
+            <text x="192" y="88" font-size="10" fill="#fff" style="filter:drop-shadow(0 0 4px #20b2aa)">✦</text>
+            <text x="145" y="80" font-size="8" fill="#fff" style="filter:drop-shadow(0 0 4px #20b2aa)">✦</text>
+          </g>
+          <!-- Score badge -->
+          <rect x="95" y="158" width="110" height="24" rx="6" fill="rgba(32,178,170,0.12)" stroke="rgba(32,178,170,0.3)" stroke-width="1"/>
+          <text id="tx-score" x="150" y="174" text-anchor="middle" fill="#20b2aa" font-family="sans-serif" font-size="11" font-weight="700">Pet Wellness Score: 72 / 100</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="tx-label">Deep Cleaning · Plaque Removal</div>
+      <div class="aha-sub" id="tx-sub">Starting at $149 · Insurance accepted</div>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Book Your Consult →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+  <div class="container">
+    <span class="section-tag">Pet Stories</span>
+    <h2 class="section-title">What Our Pets Say</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"The staff is exceptionally gentle and friendly. I had laser whitening done and the results are absolutely brilliant!"</p>
+        <p class="t-author">Amanda Ross</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"Best implant experience ever. I felt completely comfortable, no pain, and the restoration looks completely natural."</p>
+        <p class="t-author">George Vance</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"Extremely clean, modern clinic with a very welcoming environment. Highly recommend {{ lead.name }} for family Veterinary care."</p>
+        <p class="t-author">Clara Oswald</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <span class="section-tag">Book Today</span>
+        <h2 class="section-title">Schedule Appointment</h2>
+        <div class="contact-info">
+          <div class="contact-item">
+            <h4>Address</h4>
+            <p>{{ lead.address or 'Medical Center Hub' }}</p>
+          </div>
+          {% if lead.phone %}
+          <div class="contact-item">
+            <h4>Direct Line</h4>
+            <p>{{ lead.phone }}</p>
+          </div>
+          {% endif %}
+          <div class="contact-item">
+            <h4>Operating Hours</h4>
+            <p>Mon - Fri: 8:00 AM - 6:00 PM<br>Sat: 9:00 AM - 2:00 PM</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <!-- Map Placeholder -->
+        <div style="width:100%;height:300px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">
+          <div style="text-align:center">
+            <span style="font-size:2rem;display:block;margin-bottom:0.5rem">📍</span>
+            Veterinary location for {{ lead.name }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 {{ lead.name }}. All rights reserved.</p>
+    <p class="footer-text">Healthcare website concept designed by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
+  </div>
+</footer>
+
+<!-- Tracking Pixel -->
+
+
+<script>
+window.addEventListener('scroll', function() {
+  const navbar = document.getElementById('navbar');
+  if (window.scrollY > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+});
+// Pet Simulator Aha Moment
+(function(){
+  const treatments = [
+    { label:'Deep Cleaning · Plaque Removal', sub:'Starting at $149 · Insurance accepted',
+      score:'Pet Wellness Score: 72 / 100', stain:0.35, glow:'rgba(32,178,170,0.06)', glowR:60, sparkles:0, stop1:'#f5f0e8', stop2:'#d4e8e6' },
+    { label:'Animal Whitening · 6-8 Shades Brighter', sub:'Starting at $299 · Results same day',
+      score:'Pet Wellness Score: 88 / 100', stain:0.05, glow:'rgba(32,178,170,0.12)', glowR:75, sparkles:0.6, stop1:'#ffffff', stop2:'#e8f8f7' },
+    { label:'Porcelain Veneers · Custom Pet Design', sub:'Starting at $899/tooth · Forever beautiful',
+      score:'Pet Wellness Score: 96 / 100', stain:0, glow:'rgba(32,178,170,0.18)', glowR:88, sparkles:1, stop1:'#ffffff', stop2:'#edfffe' },
+    { label:'Full Mouth Restoration · Complete Rebuild', sub:'Free consultation · Financing available',
+      score:'Pet Wellness Score: 100 / 100 ✨', stain:0, glow:'rgba(32,200,180,0.22)', glowR:100, sparkles:1, stop1:'#ffffff', stop2:'#f0ffff' }
+  ];
+  const btns = document.querySelectorAll('.aha-btn[data-tx]');
+  const stain = document.getElementById('tx-stain');
+  const glowEl = document.getElementById('tx-glow');
+  const sparkles = document.getElementById('tx-sparkles');
+  const scoreEl = document.getElementById('tx-score');
+  const labelEl = document.getElementById('tx-label');
+  const subEl = document.getElementById('tx-sub');
+  const stop1 = document.getElementById('tg-stop1');
+  const stop2 = document.getElementById('tg-stop2');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = treatments[parseInt(btn.dataset.tx)];
+      stain.style.opacity = t.stain;
+      glowEl.setAttribute('fill', t.glow);
+      glowEl.setAttribute('r', t.glowR);
+      sparkles.style.opacity = t.sparkles;
+      scoreEl.textContent = t.score;
+      labelEl.textContent = t.label;
+      subEl.textContent = t.sub;
+      stop1.setAttribute('stop-color', t.stop1);
+      stop2.setAttribute('stop-color', t.stop2);
+    });
+  });
+})();
+</script>
+
+<!-- WHATSAPP FLOAT CTA -->
+<a class="wa-float"
+   onclick="try{fetch('/api/engage?bid={{ lead.id }}&ev=cta_whatsapp',{mode:'no-cors'});}catch(e){}"    href="https://wa.me/918669024169?text=Hi%2C%20I%27m%20interested%20in%20the%20website%20for%20{{ lead.name | urlencode }}"
+   target="_blank" rel="noopener" title="Chat on WhatsApp">
+  <div class="wa-float-btn">
+    <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+      <path d="M11.99 2C6.476 2 2 6.477 2 11.99c0 1.88.522 3.636 1.427 5.14L2 22l5.01-1.396A9.942 9.942 0 0011.99 22C17.523 22 22 17.522 22 11.99 22 6.478 17.522 2 11.99 2zm0 18.18a8.158 8.158 0 01-4.162-1.14l-.298-.178-3.078.858.869-3.022-.196-.311A8.148 8.148 0 013.82 11.99C3.82 7.48 7.479 3.82 11.99 3.82c4.51 0 8.17 3.66 8.17 8.17 0 4.51-3.661 8.19-8.17 8.19z"/>
+    </svg>
+    <div class="wa-badge">1</div>
+  </div>
+  <div class="wa-float-label">💬 Message Chandan</div>
+</a>
+
+<!-- CONVERSION BOOST SCRIPTS -->
+<script>
+(function(){
+  // ── Live countdown timer in demo banner ──
+  function startCountdown() {
+    var stored = sessionStorage.getItem('_lf_demo_deadline');
+    var deadline;
+    if (stored) {
+      deadline = parseInt(stored, 10);
+    } else {
+      deadline = Date.now() + 47 * 3600 * 1000 + 59 * 60 * 1000 + 59 * 1000;
+      sessionStorage.setItem('_lf_demo_deadline', deadline);
+    }
+    var timerEl = document.getElementById('lf-countdown');
+    if (!timerEl) return;
+    function tick() {
+      var diff = Math.max(0, deadline - Date.now());
+      var h = Math.floor(diff / 3600000);
+      var m = Math.floor((diff % 3600000) / 60000);
+      var s = Math.floor((diff % 60000) / 1000);
+      timerEl.textContent =
+        String(h).padStart(2,'0') + ':' +
+        String(m).padStart(2,'0') + ':' +
+        String(s).padStart(2,'0');
+      if (diff > 0) setTimeout(tick, 1000);
+    }
+    tick();
+  }
+
+  // ── Hero urgency strip ──
+  function injectHeroUrgency() {
+    var heroBtns = document.querySelector('.hero-btns');
+    if (!heroBtns || document.querySelector('.hero-urgency-strip')) return;
+    var strip = document.createElement('div');
+    strip.className = 'hero-urgency-strip';
+    strip.innerHTML =
+      '<span class="urg-pill">⏰ Offer expires in <span id="hero-countdown" style="font-variant-numeric:tabular-nums">47:59:59</span></span>' +
+      '<span class="urg-pill green">✓ 100% Free — No commitment</span>' +
+      '<span class="urg-pill green">🚀 Live in 48 hours</span>';
+    heroBtns.parentNode.insertBefore(strip, heroBtns.nextSibling);
+
+    // Sync hero countdown with banner countdown
+    var stored = sessionStorage.getItem('_lf_demo_deadline');
+    var deadline = stored ? parseInt(stored,10) : Date.now() + 47*3600000 + 59*60000 + 59000;
+    var heroTimer = document.getElementById('hero-countdown');
+    if (heroTimer) {
+      (function tickHero(){
+        var diff = Math.max(0, deadline - Date.now());
+        var h = Math.floor(diff/3600000);
+        var m = Math.floor((diff%3600000)/60000);
+        var s = Math.floor((diff%60000)/1000);
+        heroTimer.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+        if(diff > 0) setTimeout(tickHero,1000);
+      })();
+    }
+
+    // Scarcity box
+    var scarcity = document.createElement('div');
+    scarcity.className = 'scarcity-box';
+    scarcity.innerHTML =
+      '<span class="sc-icon">🔥</span>' +
+      '<div class="sc-text">We only take on <strong>3 new clients per week</strong> to ensure quality. ' +
+      'This demo was built just for <strong>{{ lead.name }}</strong> — spots fill fast.</div>';
+    heroBtns.parentNode.insertBefore(scarcity, strip.nextSibling);
+  }
+
+  // ── Email CTA (add alongside existing hero buttons) ──
+  function addEmailCTA() {
+    var heroBtns = document.querySelector('.hero-btns');
+    if (!heroBtns || heroBtns.querySelector('.btn-email-cta')) return;
+    var subject = encodeURIComponent('Website demo for {{ lead.name }}');
+    var body = encodeURIComponent(
+      'Hi Chandan,
+
+I saw the demo you built for {{ lead.name }} and I'm interested.
+
+Please get in touch.
+
+Thanks'
+    );
+    var emailBtn = document.createElement('a');
+    emailBtn.href = 'mailto:chandangosavi0@gmail.com?subject=' + subject + '&body=' + body;
+    emailBtn.className = 'btn-email-cta';
+    emailBtn.innerHTML = '✉️ Email Me';
+    heroBtns.appendChild(emailBtn);
+  }
+
+  
+  // Scroll depth tracking
+  (function(){
+    var _sf = {25:0,50:0,75:0,90:0};
+    function _pct(){
+      var el=document.documentElement,b=document.body;
+      var sh=Math.max(el.scrollHeight,b.scrollHeight,el.offsetHeight,b.offsetHeight,el.clientHeight,b.clientHeight);
+      var wh=window.innerHeight||el.clientHeight;
+      if(sh<=wh)return 100;
+      return Math.round((window.scrollY/(sh-wh))*100);
+    }
+    window.addEventListener('scroll',function(){
+      var p=_pct();
+      [25,50,75,90].forEach(function(d){
+        if(!_sf[d]&&p>=d){
+          _sf[d]=1;
+          try{fetch('/api/engage?bid={{ lead.id }}&ev=scroll_'+d,{mode:'no-cors'});}catch(e){}
+        }
+      });
+    },{passive:true});
+  })();
+  document.addEventListener('DOMContentLoaded', function() {
+    startCountdown();
+    injectHeroUrgency();
+    addEmailCTA();
+  });
+})();
+</script>
+
+</body>
+</html>

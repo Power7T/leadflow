@@ -26,11 +26,14 @@ def notify_chandan(title, message, tags="bell", priority="default"):
     # 1. Send push alert via ntfy.sh
     try:
         import requests
-        _ntfy_topic = os.getenv("NTFY_TOPIC", "leadflow-chandan-secret")
+        _ntfy_topic = os.getenv("NTFY_TOPIC")
+        # ntfy headers must be latin-1 safe — strip anything outside ASCII
+        safe_title = title.encode("ascii", errors="ignore").decode("ascii")
+        safe_tags = tags.encode("ascii", errors="ignore").decode("ascii")
         requests.post(
             f"https://ntfy.sh/{_ntfy_topic}",
             data=message.encode("utf-8"),
-            headers={"Title": title, "Tags": tags, "Priority": priority},
+            headers={"Title": safe_title, "Tags": safe_tags, "Priority": priority},
             timeout=5
         )
     except Exception as e:
@@ -46,11 +49,10 @@ def notify_chandan(title, message, tags="bell", priority="default"):
             import ssl
             context = ssl._create_unverified_context()
             url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-            formatted_text = f"🔔 *{title}*\n━━━━━━━━━━━━━━━━━━━━━━━━\n{message}"
+            formatted_text = f"{title}\n{message}"
             data = urllib.parse.urlencode({
                 "chat_id": user_id,
                 "text": formatted_text,
-                "parse_mode": "markdown"
             }).encode("utf-8")
             req = urllib.request.Request(url, data=data)
             with urllib.request.urlopen(req, context=context, timeout=5) as resp:
@@ -160,8 +162,23 @@ def check_replies():
     from database import DB_PATH
     conn = None
     try:
-        conn = sqlite3.connect(DB_PATH, timeout=10.0)
+        conn = sqlite3.connect(DB_PATH, timeout=30.0)
+        conn.execute("PRAGMA busy_timeout = 5000;")
         conn.row_factory = sqlite3.Row
+
+        # Ensure inbound_messages table exists (Fix B: prevent 'no such table' crash)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS inbound_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                business_id INTEGER,
+                message_id TEXT,
+                subject TEXT,
+                body TEXT,
+                received_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        conn.commit()
+
         cursor = conn.cursor()
 
         # Fetch all known lead emails
@@ -371,22 +388,70 @@ def check_replies():
                             cursor.execute("UPDATE businesses SET status='replied' WHERE id=?", (bid,))
                             cursor.execute("UPDATE contacts SET reply_text = CASE WHEN reply_text IS NULL OR reply_text = '' THEN ? ELSE reply_text || '\n\n━━━━━━━━━━━━━━━━━━━━\n\n' || ? END WHERE business_id=?", (body_text, body_text, bid))
                             cursor.execute("UPDATE outreach SET replied=1 WHERE business_id=?", (bid,))
-                            # DO NOT delete pending follow-ups for questions, just suspend them since status is no longer 'sent'
-                            
-                            # Notify of question
+                            cursor.execute("DELETE FROM follow_ups WHERE business_id=? AND status='pending'", (bid,))
+
+                            conn.commit()  # commit before sending email
                             try:
                                 biz_name = "there"
-                                biz_row = cursor.execute("SELECT name FROM businesses WHERE id=?", (bid,)).fetchone()
+                                biz_row = cursor.execute("SELECT name, demo_tunnel_url FROM businesses WHERE id=?", (bid,)).fetchone()
                                 if biz_row:
                                     biz_name = biz_row["name"]
+                                    demo_url = biz_row["demo_tunnel_url"] or ""
+
+                                # Re-send the original personalised outreach as the reply
+                                orig = cursor.execute(
+                                    "SELECT final_message, draft, subject_used FROM outreach "
+                                    "WHERE business_id=? AND channel='email' AND status='sent' "
+                                    "ORDER BY sent_at ASC LIMIT 1",
+                                    (bid,)
+                                ).fetchone()
+
+                                if orig:
+                                    original_body = orig["final_message"] or orig["draft"] or ""
+                                    original_subject = orig["subject_used"] or f"Re: your question about {biz_name}"
+                                    if original_body:
+                                        client_msg_id = msg.get("Message-ID")
+                                        re_subject = original_subject if original_subject.lower().startswith("re:") else f"Re: {original_subject}"
+
+                                        # AI-generated intro that acknowledges their specific question
+                                        ai_intro = ""
+                                        try:
+                                            from ai_writer import _run as _ai_run
+                                            agency = os.getenv("AGENCY_NAME", "us")
+                                            ai_prompt = (
+                                                f"A prospect named '{biz_name}' replied to our cold email with this message:\n\n"
+                                                f"\"{body_text[:600]}\"\n\n"
+                                                f"Write a SHORT 2-3 sentence reply that:\n"
+                                                f"1. Briefly answers their question (we build custom demo websites for local businesses so they can see exactly what their site could look like — no commitment needed)\n"
+                                                f"2. Naturally leads into showing them the demo we already built for them\n"
+                                                f"3. Ends with something like 'I actually already put together a quick demo for you — take a look:'\n\n"
+                                                f"Write ONLY the reply text, no subject line, no sign-off. Keep it warm, natural, and under 60 words."
+                                            )
+                                            ai_intro = _ai_run(ai_prompt) or ""
+                                            if ai_intro:
+                                                ai_intro = ai_intro.strip() + "\n\n"
+                                        except Exception as _ai_err:
+                                            log.warning(f"AI intro generation failed: {_ai_err}")
+
+                                        combined_body = ai_intro + original_body if ai_intro else original_body
+
+                                        from sender import send_email
+                                        send_email(
+                                            sender_email, re_subject, combined_body,
+                                            demo_url=demo_url,
+                                            business_id=bid,
+                                            reply_to_message_id=client_msg_id
+                                        )
+                                        log.info(f"Re-sent original outreach to {sender_email} as reply to question")
+
                                 notify_chandan(
-                                    "LeadFlow - Lead Question",
-                                    f"Question received from {biz_name} ({sender_email}).\n\nReply:\n\"{body_text[:400]}\"",
+                                    "LeadFlow - Lead Question (original outreach re-sent)",
+                                    f"Question from {biz_name} ({sender_email}).\n\nReply:\n\"{body_text[:400]}\"",
                                     tags="speech_balloon",
                                     priority="default"
                                 )
                             except Exception as _e:
-                                log.warning(f'IMAP close error: {_e}')
+                                log.warning(f'Question reply handler error: {_e}')
                         conn.commit()
                 # -- SCAN SENT MAIL FOR MANUAL REPLIES --
                 try:

@@ -10,7 +10,9 @@ log.setLevel(logging.INFO)
 DB_PATH = os.path.join(os.path.dirname(__file__), "leadflow.db")
 
 def get_conn():
-    return sqlite3.connect(DB_PATH, timeout=30.0)
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
+    conn.execute("PRAGMA busy_timeout = 30000;")
+    return conn
 
 def log_sync_action(action, payload):
     """Log a DB change to the local sync journal to be pushed to Cloudflare."""
@@ -103,10 +105,13 @@ def apply_sync_transaction(conn, action, payload):
             if not exist:
                 # Strip id so the DB auto-assigns one to avoid PK conflicts between nodes
                 b_insert = {k: v for k, v in b.items() if k != "id"}
-                cols = ", ".join(b_insert.keys())
-                placeholders = ", ".join("?" for _ in b_insert)
-                vals = list(b_insert.values())
-                conn.execute(f"INSERT INTO businesses ({cols}) VALUES ({placeholders})", vals)
+                if all(isinstance(k, str) and k.isidentifier() for k in b_insert.keys()):
+                    cols = ", ".join(b_insert.keys())
+                    placeholders = ", ".join("?" for _ in b_insert)
+                    vals = list(b_insert.values())
+                    conn.execute(f"INSERT INTO businesses ({cols}) VALUES ({placeholders})", vals)
+                else:
+                    log.error("SQL Injection attempt or invalid column name detected in insert_business keys.")
 
     elif action == "insert_contact":
         business_id = payload.get("business_id")
@@ -174,10 +179,13 @@ def apply_sync_transaction(conn, action, payload):
     elif action == "insert_deal":
         d = payload.get("deal")
         if d:
-            cols = ", ".join(d.keys())
-            placeholders = ", ".join("?" for _ in d)
-            vals = list(d.values())
-            conn.execute(f"INSERT OR REPLACE INTO deals ({cols}) VALUES ({placeholders})", vals)
+            if all(isinstance(k, str) and k.isidentifier() for k in d.keys()):
+                cols = ", ".join(d.keys())
+                placeholders = ", ".join("?" for _ in d)
+                vals = list(d.values())
+                conn.execute(f"INSERT OR REPLACE INTO deals ({cols}) VALUES ({placeholders})", vals)
+            else:
+                log.error("SQL Injection attempt or invalid column name detected in insert_deal keys.")
 
 def pull_remote_changes():
     """Pull new changes from Cloudflare and apply them locally in a single transaction."""
@@ -222,6 +230,15 @@ def pull_remote_changes():
     except Exception as e:
         log.error(f"Failed to pull changes from Cloudflare: {e}")
 
+def get_adb_binary() -> str:
+    """Helper to detect and return raw/original adb binary path to bypass custom shell wrapper.
+    Wrapper redirects generic adb commands. Bypassing it prevents routing collisions.
+    """
+    for path in ("/opt/homebrew/bin/adb.orig", "/usr/local/bin/adb.orig"):
+        if os.path.exists(path):
+            return path
+    return "adb"
+
 def lan_sync_to_peer(peer_ip: str, peer_adb_port: int = 5555, mac_ip: str = None, http_port: int = 9997):
     """
     Hard failsafe: sync the full DB to a peer device over LAN.
@@ -230,15 +247,18 @@ def lan_sync_to_peer(peer_ip: str, peer_adb_port: int = 5555, mac_ip: str = None
     """
     import subprocess, threading, http.server, tempfile, os
 
+    adb_bin = get_adb_binary()
+
     try:
         # Check peer DB size via ADB
         result = subprocess.run(
-            ["adb", "-s", f"{peer_ip}:{peer_adb_port}", "shell",
-             "run-as com.termux python3 -c \"import sqlite3; c=sqlite3.connect('/data/data/com.termux/files/home/leadflow/leadflow.db'); print(c.execute('SELECT COUNT(*) FROM businesses').fetchone()[0]); c.close()\""],
+            [adb_bin, "-s", f"{peer_ip}:{peer_adb_port}", "shell",
+             "run-as com.termux python3 -c \"import sqlite3; c=sqlite3.connect('/data/data/com.termux/files/home/leadflow/leadflow.db'); c.execute('PRAGMA busy_timeout=30000'); print(c.execute('SELECT COUNT(*) FROM businesses').fetchone()[0]); c.close()\""],
             capture_output=True, text=True, timeout=15
         )
         peer_count = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
-        local_conn = sqlite3.connect(DB_PATH)
+        local_conn = sqlite3.connect(DB_PATH, timeout=30.0)
+        local_conn.execute("PRAGMA busy_timeout = 5000;")
         local_count = local_conn.execute("SELECT COUNT(*) FROM businesses").fetchone()[0]
         local_conn.close()
 
@@ -251,7 +271,8 @@ def lan_sync_to_peer(peer_ip: str, peer_adb_port: int = 5555, mac_ip: str = None
         # Dump local DB as SQL into a temp directory
         dump_dir = tempfile.mkdtemp()
         dump_path = os.path.join(dump_dir, "leadflow_dump.sql")
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(DB_PATH, timeout=30.0)
+        conn.execute("PRAGMA busy_timeout = 5000;")
         with open(dump_path, "w") as f:
             for line in conn.iterdump():
                 f.write(line + "\n")
@@ -259,8 +280,14 @@ def lan_sync_to_peer(peer_ip: str, peer_adb_port: int = 5555, mac_ip: str = None
 
         # Auto-detect Mac IP if not provided
         if not mac_ip:
-            r = subprocess.run(["ipconfig", "getifaddr", "en0"], capture_output=True, text=True)
-            mac_ip = r.stdout.strip() or "192.168.1.5"
+            import socket
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.connect(("8.8.8.8", 80))
+                mac_ip = s.getsockname()[0]
+                s.close()
+            except Exception:
+                mac_ip = "192.168.1.17"
 
         # Serve the SQL dump via a temporary HTTP server
         handler = http.server.SimpleHTTPRequestHandler
@@ -281,7 +308,7 @@ def lan_sync_to_peer(peer_ip: str, peer_adb_port: int = 5555, mac_ip: str = None
             f"os.remove(sql); print('LAN sync restore done')"
         )
         subprocess.run(
-            ["adb", "-s", f"{peer_ip}:{peer_adb_port}", "shell",
+            [adb_bin, "-s", f"{peer_ip}:{peer_adb_port}", "shell",
              f"run-as com.termux /data/data/com.termux/files/usr/bin/python3 -c \"{restore_cmd}\""],
             capture_output=True, timeout=120
         )

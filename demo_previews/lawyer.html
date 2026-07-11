@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Elite Premium Services | Premium Legal Representation</title>
+<meta name="description" content="Welcome to Elite Premium Services. Distinguished attorneys providing high-caliber legal counsel and trial advocacy.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg-primary:#0B0E14;
+  --bg-secondary:#121720;
+  --bg-tertiary:#19202C;
+  --accent-gold:#C5A880;
+  --accent-gold-glow:rgba(197,168,128,0.3);
+  --accent-blue:#2C5282;
+  --accent-blue-glow:rgba(44,82,130,0.25);
+  --text-white:#FFFFFF;
+  --text-gray:#B3B9C9;
+  --text-muted:#718096;
+  --glass-bg:rgba(18,23,32,0.85);
+  --glass-border:rgba(255,255,255,0.04);
+  --glass-border-hover:rgba(197,168,128,0.25);
+  --border-radius-sm:4px;
+  --border-radius-md:12px;
+  --border-radius-lg:20px;
+  --shadow-sm:0 4px 12px rgba(0,0,0,0.4);
+  --shadow-md:0 12px 32px rgba(0,0,0,0.6);
+  --shadow-lg:0 24px 64px rgba(0,0,0,0.8);
+  --shadow-gold:0 0 25px rgba(197,168,128,0.2);
+  --transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);
+  --transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);
+  --transition-slow:0.8s cubic-bezier(0.25,1,0.5,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Inter',sans-serif;overflow-x:hidden}
+body{overflow-x:hidden;line-height:1.65;cursor:none}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--bg-tertiary);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-gold)}
+h1,h2,h3,h4,h5,h6{font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:-0.01em;line-height:1.15;color:var(--text-white)}
+p{color:var(--text-gray);font-weight:300}
+a{text-decoration:none;color:inherit}
+.text-gradient-gold{background:linear-gradient(135deg,#F7E7CE 0%,#C5A880 50%,#9A7F56 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.container{width:100%;max-width:1250px;margin:0 auto;padding:0 2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.95rem 2.2rem;font-family:'Inter',sans-serif;font-size:0.9rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;text-decoration:none;border-radius:var(--border-radius-sm);border:1px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
+.btn-primary{background-color:var(--accent-gold);color:#0B0E14;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:transparent;color:var(--accent-gold);border-color:var(--accent-gold);box-shadow:var(--shadow-gold);transform:translateY(-2px)}
+.btn-secondary{background:transparent;border-color:var(--glass-border);color:#fff}
+.btn-secondary:hover{background:rgba(255,255,255,.03);border-color:var(--accent-gold);transform:translateY(-2px)}
+section{padding:8.5rem 0;position:relative;overflow:hidden}
+.section-tag{font-family:'Inter',sans-serif;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.2em;color:var(--accent-gold);margin-bottom:1rem;display:inline-block}
+.section-title{font-size:3.2rem;margin-bottom:1.5rem}
+.section-desc{font-size:1.1rem;max-width:600px;margin-bottom:4rem}
+/* REVEAL */
+.reveal{opacity:0;transition:var(--transition-slow)}
+.reveal-slide-up{transform:translateY(50px)}
+.reveal-slide-left{transform:translateX(50px)}
+.reveal-slide-right{transform:translateX(-50px)}
+.reveal-scale-in{transform:scale(.95)}
+.reveal.revealed{opacity:1;transform:none}
+.delay-100{transition-delay:.1s}
+.delay-200{transition-delay:.2s}
+.delay-300{transition-delay:.3s}
+/* CURSOR */
+.custom-cursor-dot{position:fixed;width:6px;height:6px;background:var(--accent-gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
+.custom-cursor-ring{position:fixed;width:38px;height:38px;border:1px solid var(--accent-gold);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.5}
+body.cursor-hover .custom-cursor-dot{width:4px;height:4px;background:var(--text-white)}
+body.cursor-hover .custom-cursor-ring{width:54px;height:54px;border-color:var(--text-white);opacity:.3}
+@media(max-width:768px){.custom-cursor-dot,.custom-cursor-ring{display:none}body{cursor:auto}}
+/* SPOTLIGHT */
+.spotlight{position:absolute;width:550px;height:550px;background:radial-gradient(circle,var(--accent-gold-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.35}
+/* DEMO BANNER */
+.demo-banner{background:var(--accent-gold);color:#0B0E14;text-align:center;padding:12px 20px;font-size:13px;font-weight:600;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.demo-banner a{color:#0B0E14;text-decoration:underline;font-weight:700}
+.demo-banner .orig{font-size:11px;font-weight:400;opacity:.75}
+/* NAVBAR */
+.navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;transition:var(--transition-smooth)}
+.navbar.scrolled{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border)}
+.nav-container{display:flex;justify-content:space-between;align-items:center;height:90px;transition:var(--transition-smooth)}
+.navbar.scrolled .nav-container{height:75px}
+.logo{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:#fff;display:flex;align-items:center;gap:.6rem}
+.logo span{color:var(--accent-gold)}
+.logo-icon{width:26px;height:26px;border:1px solid var(--accent-gold);position:relative;flex-shrink:0;transform:rotate(45deg)}
+.logo-icon::after{content:'';position:absolute;width:8px;height:8px;background:var(--accent-gold);top:50%;left:50%;transform:translate(-50%,-50%)}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{color:var(--text-gray);font-weight:400;font-size:.9rem;transition:var(--transition-fast);position:relative;padding:.5rem 0}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:1px;background:var(--accent-gold);transition:var(--transition-smooth);transform:translateX(-50%)}
+.nav-links a:hover,.nav-links a.active{color:#fff}.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-actions{display:flex;align-items:center;gap:1.5rem}
+.hamburger{display:none;cursor:pointer;background:none;border:none;padding:.5rem}
+.hamburger span{display:block;width:24px;height:1px;background:#fff;margin:6px 0;transition:var(--transition-smooth)}
+.hamburger.active span:nth-child(1){transform:rotate(-45deg) translate(-5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(45deg) translate(-5px,-5px)}
+/* HERO */
+.hero{height:100vh;min-height:750px;display:flex;align-items:center;background:linear-gradient(rgba(11,14,20,0.65),rgba(11,14,20,0.9)),url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400') center/cover no-repeat;position:relative;padding-top:100px}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(11,14,20,.4) 50%,rgba(11,14,20,.8) 100%);z-index:1}
+.hero .container{position:relative;z-index:2}
+.hero-content{max-width:850px}
+.hero-tag{background:rgba(197,168,128,.1);border:1px solid rgba(197,168,128,0.25);color:var(--accent-gold);padding:.4rem 1.2rem;border-radius:2px;font-family:'Inter',sans-serif;font-weight:500;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
+.hero-tag::before{content:'';width:4px;height:4px;background:var(--accent-gold);border-radius:50%;box-shadow:0 0 8px var(--accent-gold)}
+.hero-name{font-size:5rem;line-height:1.05;margin-bottom:.5rem;font-weight:600}
+.hero-subtitle-wrapper{overflow:hidden;height:4.2rem;margin-bottom:1.8rem}
+.hero-subtitle-track{animation:slideUpDown 9s cubic-bezier(0.76,0,0.24,1) infinite}
+@keyframes slideUpDown{0%,25%{transform:translateY(0)}33%,58%{transform:translateY(-100%)}66%,91%{transform:translateY(-200%)}100%{transform:translateY(0)}}
+.hero-subtitle-track span{display:block;height:4.2rem;font-family:'Cormorant Garamond',serif;font-size:3.5rem;font-style:italic;line-height:1.2;color:var(--accent-gold)}
+.hero-desc{font-size:1.15rem;color:var(--text-gray);margin-bottom:3rem;max-width:600px}
+.hero-btns{display:flex;gap:1.5rem;flex-wrap:wrap}
+/* STATS */
+.stats{padding:0;margin-top:-70px;position:relative;z-index:10}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:2.5rem;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
+.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-gold),transparent)}
+.stat-item{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
+.stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:rgba(255,255,255,.05)}
+.stat-number{font-family:'Cormorant Garamond',serif;font-size:3.2rem;font-weight:600;line-height:1;margin-bottom:.3rem;color:var(--accent-gold)}
+.stat-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-gray);font-weight:400}
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:6rem;align-items:center}
+.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:3.5rem}
+.about-feature{display:flex;gap:1.2rem}
+.about-feature-icon{width:40px;height:40px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;transition:var(--transition-smooth);color:var(--accent-gold)}
+.about-feature:hover .about-feature-icon{border-color:var(--accent-gold);box-shadow:var(--shadow-gold)}
+.about-feature h4{font-size:1.2rem;margin-bottom:.4rem;font-weight:600}.about-feature p{font-size:.85rem;line-height:1.6}
+.about-img-wrapper{position:relative;display:flex;justify-content:center;align-items:center}
+.about-image{width:100%;max-width:440px;aspect-ratio:0.85;border-radius:var(--border-radius-sm);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
+.about-img-frame{position:absolute;width:calc(100% - 30px);max-width:440px;aspect-ratio:0.85;border:1px solid var(--accent-gold);z-index:1;transform:translate(15px,15px);transition:var(--transition-smooth)}
+.about-img-wrapper:hover .about-img-frame{transform:translate(8px,8px)}
+.about-badge{position:absolute;bottom:25px;left:-25px;background:var(--bg-secondary);border:1px solid var(--glass-border);backdrop-filter:blur(10px);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
+.badge-icon{width:30px;height:30px;border-radius:50%;background:rgba(197,168,128,.1);display:flex;align-items:center;justify-content:center;color:var(--accent-gold);font-size:0.9rem}
+.about-badge h5{font-size:1.15rem;margin-bottom:.1rem;font-weight:600}.about-badge p{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em}
+/* PRACTICE AREAS / PROGRAMS */
+.programs-section{background:var(--bg-secondary)}
+.programs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}
+.program-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
+.program-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-gold-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}
+.program-card:hover{transform:translateY(-5px);border-color:var(--accent-gold-glow);box-shadow:var(--shadow-md)}.program-card:hover::before{opacity:1}
+.program-icon{width:50px;height:50px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.5rem;transition:var(--transition-smooth);color:var(--accent-gold);position:relative;z-index:1}
+.program-card:hover .program-icon{border-color:var(--accent-gold);box-shadow:var(--shadow-gold)}
+.program-card h3{font-size:1.5rem;margin-bottom:.8rem;position:relative;z-index:1}.program-card p{font-size:.9rem;line-height:1.65;margin-bottom:2rem;position:relative;z-index:1}
+.program-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:var(--accent-gold);font-family:'Inter',sans-serif;font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;transition:var(--transition-fast);position:relative;z-index:1}
+.program-card:hover .program-link{color:#fff}
+/* TESTIMONIALS */
+.testimonials-section{padding:8.5rem 0}
+.t-slider-outer{overflow:hidden;margin-top:4rem}
+.t-slider{display:flex;gap:2rem;transition:transform .5s ease;cursor:grab}
+.t-slider.dragging{cursor:grabbing;transition:none}
+.t-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px}
+.t-stars{color:var(--accent-gold);font-size:.9rem;margin-bottom:1.2rem;letter-spacing:1.5px}
+.t-card p{font-size:.95rem;line-height:1.75;margin-bottom:2rem;font-style:italic;font-family:'Cormorant Garamond',serif;color:var(--text-white);font-weight:400}
+.t-author{font-family:'Inter',sans-serif;font-weight:600;font-size:.85rem;letter-spacing:.05em;text-transform:uppercase}
+.t-author span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.75rem;color:var(--text-muted);margin-top:.3rem;text-transform:none;letter-spacing:0}
+.t-controls{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:2.5rem}
+.t-btn{width:42px;height:42px;background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:var(--transition-fast)}
+.t-btn:hover{background:var(--accent-gold);color:#0B0E14;border-color:var(--accent-gold)}
+.t-dots{display:flex;gap:.6rem}
+.t-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}.t-dot.active{background:var(--accent-gold);width:16px;border-radius:3px}
+/* CTA */
+.cta-section{padding:8.5rem 0}
+.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:6.5rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-gold),transparent)}
+.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:350px;height:350px;background:radial-gradient(circle,var(--accent-gold-glow),transparent 70%);pointer-events:none}
+.cta-banner h2{font-size:3.4rem;max-width:750px;margin:0 auto 1.5rem;font-weight:500}
+.cta-banner p{font-size:1.1rem;max-width:550px;margin:0 auto 3rem}
+/* CONTACT */
+.contact-section{background:var(--bg-secondary)}
+.cinfo-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:3rem}
+.cinfo-item{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.9rem;transition:var(--transition-fast)}
+.cinfo-item:hover{border-color:var(--accent-gold);color:#fff}
+/* FOOTER */
+.footer{background:#07090D;border-top:1px solid var(--glass-border);padding:6.5rem 0 3rem}
+.footer-grid{display:grid;grid-template-columns:1.20fr .8fr .8fr;gap:4.5rem;margin-bottom:5.5rem}
+.footer-col h4{font-size:1.25rem;margin-bottom:2rem;padding-bottom:.5rem;position:relative;font-weight:600}
+.footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:24px;height:1px;background:var(--accent-gold)}
+.footer-about p{font-size:.88rem;margin-top:1.2rem;margin-bottom:2rem;line-height:1.7}
+.social-links{display:flex;gap:1rem}
+.social-btn{width:40px;height:40px;background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;transition:var(--transition-smooth)}
+.social-btn:hover{background:var(--accent-gold);color:#0B0E14;border-color:var(--accent-gold);transform:translateY(-2px)}
+.footer-links{list-style:none}.footer-links li{margin-bottom:.9rem}.footer-links a{color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}.footer-links a:hover{color:#fff;padding-left:5px}
+.footer-bottom{border-top:1px solid var(--glass-border);padding-top:3rem;display:flex;justify-content:space-between;align-items:center}
+.footer-bottom p{font-size:.8rem;color:var(--text-muted)}
+.footer-bottom a{color:var(--accent-gold)}
+@media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3.5rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.programs-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.hero-name{font-size:3.2rem}.hero-subtitle-track span{font-size:2.4rem}.hero-subtitle-wrapper{height:3rem}.section-title{font-size:2.4rem}.programs-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+/* AHA MOMENT INTERACTIVE SECTION */
+.aha-section{padding:5rem 0;position:relative;background:var(--bg-secondary);overflow:hidden}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2rem}
+.aha-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 20px;border-radius:999px;cursor:pointer;font-size:0.85rem;font-weight:600;font-family:inherit;transition:all 0.25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:0 4px 16px rgba(224,90,38,0.3)}
+.aha-svg-wrap{width:100%;max-width:320px}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;margin-top:0.5rem;min-height:2rem}
+@media(max-width:768px){.aha-controls{gap:8px}.aha-btn{font-size:0.75rem;padding:7px 14px}}
+.aha-slider{-webkit-appearance:none;appearance:none;width:260px;height:6px;border-radius:3px;background:rgba(255,255,255,0.1);outline:none;cursor:pointer}
+.aha-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:#c8a84b;box-shadow:0 0 8px rgba(200,168,75,0.6);cursor:pointer}
+.aha-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#c8a84b;box-shadow:0 0 8px rgba(200,168,75,0.6);cursor:pointer;border:none}
+</style>
+</head>
+<body>
+
+<div class="custom-cursor-dot" id="cursorDot"></div>
+<div class="custom-cursor-ring" id="cursorRing"></div>
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  ✨ FREE demo built for Elite Premium Services by Chandan Gosavi &mdash;
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
+  
+  <span class="orig">Based on <a href="http://https://example.com" target="_blank" style="color:inherit; text-decoration:underline;">http://www.https://example.com</a></span>
+  
+</div>
+
+
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">
+      <div class="logo-icon"></div>
+      Elite Premium Services
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" class="active">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#programs">Practice Areas</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="#contact" class="btn btn-secondary" style="padding:.5rem 1.5rem;font-size:.8rem">Consultation</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
+  <div class="container">
+    <div class="hero-content reveal reveal-slide-up">
+      <div class="hero-tag">&#x2022; Trusted Legal Counsel</div>
+      <h1 class="hero-name text-gradient-gold">Elite Premium Services</h1>
+      <div class="hero-subtitle-wrapper">
+        <div class="hero-subtitle-track">
+          <span>PERSONAL INJURY</span>
+          <span>BUSINESS ADVOCACY</span>
+          <span>CRIMINAL DEFENSE</span>
+        </div>
+      </div>
+      
+      
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">5.0</span>
+        <span style="opacity:0.8; font-size:0.9rem;">(342 reviews)</span>
+      </div>
+      
+      <p class="hero-desc">At Elite Premium Services, we provide high-caliber legal representation with a focus on delivering results. Our dedicated attorneys fight for your rights, offering clear counsel and strong advocacy through complex legal challenges.</p>
+      <div class="hero-btns">
+        <a href="#contact" class="btn btn-primary">Request Free Consultation</a>
+        <a href="#programs" class="btn btn-secondary">Explore Practice Areas</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats bar -->
+<section class="stats" id="stats">
+  <div class="container">
+    <div class="stats-grid reveal reveal-scale-in">
+      <div class="stat-item">
+        <div class="stat-number text-gradient-gold">98%</div>
+        <div class="stat-label">Success Rate</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number text-gradient-gold">25+</div>
+        <div class="stat-label">Years of Advocacy</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number text-gradient-gold">24/7</div>
+        <div class="stat-label">Support Access</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number text-gradient-gold">$50M+</div>
+        <div class="stat-label">Secured for Clients</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="about" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-content reveal reveal-slide-right">
+        <span class="section-tag">About the Firm</span>
+        <h2 class="section-title">Distinguished Counsel<br><span class="text-gradient-gold">Unyielding Defense</span> &amp; Justice</h2>
+        <p class="section-desc">We represent individuals and corporate entities with absolute dedication. Our team is respected for strategic courtroom litigation, meticulous negotiations, and a track record of high-stakes victories.</p>
+        <div class="about-features">
+          <div class="about-feature">
+            <div class="about-feature-icon">⚖️</div>
+            <div><h4>Expert Advocacy</h4><p>Dedicated legal specialists representing you with rigor and integrity.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">📞</div>
+            <div><h4>24/7 Availability</h4><p>Reach our team when it matters most — day or night.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">💰</div>
+            <div><h4>No Win, No Fee</h4><p>For injury cases, you pay absolutely nothing unless we secure recovery.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">🔍</div>
+            <div><h4>Proven Success</h4><p>Over two decades of winning complex lawsuits and record settlements.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="about-img-wrapper reveal reveal-slide-left">
+        <div class="about-img-frame"></div>
+        <img src="https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600" alt="Elite Premium Services" class="about-image" onerror="this.parentElement.style.opacity='0.3'">
+        <div class="about-badge">
+          <div class="badge-icon">✓</div>
+          <div><h5>Top Rated</h5><p>National Legal Association</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Practice Areas -->
+<section class="programs-section" id="programs">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,var(--accent-blue-glow),transparent 70%)"></div>
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Practice Areas</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Strategic Legal <span class="text-gradient-gold">Solutions</span></h2>
+      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Our firm spans multi-disciplinary fields of law, providing cohesive, high-impact strategies tailored to each client's specific legal needs.</p>
+    </div>
+    <div class="programs-grid">
+      <div class="program-card reveal reveal-slide-up">
+        <div class="program-icon">🚗</div>
+        <h3>Personal Injury</h3>
+        <p>Comprehensive representation for auto accidents, premises liability, and catastrophic injury claims.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="program-icon">🏢</div>
+        <h3>Business & Corporate Law</h3>
+        <p>Expert legal frameworks for entity formation, contract disputes, acquisitions, and risk management.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="program-icon">🛡️</div>
+        <h3>Criminal Defense</h3>
+        <p>Vigorous protection of your rights and freedom against state and federal allegations.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up">
+        <div class="program-icon">🤝</div>
+        <h3>Family & Divorce Law</h3>
+        <p>Strategic, compassionate guidance for asset division, custody matters, and marriage dissolutions.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="program-icon">🏡</div>
+        <h3>Real Estate Disputes</h3>
+        <p>Representation for complex commercial property acquisitions, leasing disputes, and zoning matters.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="program-icon">📜</div>
+        <h3>Wills, Trusts & Estates</h3>
+        <p>Asset preservation plans, family wealth trusts, corporate succession planning, and probate court filings.</p>
+        <a href="#contact" class="program-link">Case Evaluation →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AHA: Case Strength Meter -->
+<section class="aha-section" id="case-strength-meter">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Case Assessment</span>
+      <h2 class="section-title" style="max-width:600px;margin:.5rem auto 0">How Strong Is Your <span class="text-gradient-gold">Case?</span></h2>
+      <p style="color:var(--text-muted);max-width:480px;margin:0 auto">Drag the slider to see how the scales of justice shift with your case strength.</p>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;margin-top:0.5rem">
+        <input type="range" min="0" max="100" value="55" id="case-slider" class="aha-slider" oninput="lawyerViz(this.value)">
+        <div style="display:flex;justify-content:space-between;width:260px;font-size:0.75rem;color:rgba(255,255,255,0.4)">
+          <span>0 — Weak</span><span>50 — Even</span><span>100 — Strong</span>
+        </div>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg id="lawyer-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 0 20px rgba(200,168,75,0.35))">
+          <!-- Scale pole -->
+          <line x1="160" y1="40" x2="160" y2="170" stroke="#c8a84b" stroke-width="3"/>
+          <!-- Base -->
+          <rect x="130" y="170" width="60" height="8" rx="4" fill="#c8a84b"/>
+          <!-- Pivot point -->
+          <circle cx="160" cy="75" r="6" fill="#c8a84b"/>
+          <!-- Balance beam (rotates) -->
+          <g id="scale-beam" style="transform-origin:160px 75px;transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1)">
+            <line x1="60" y1="75" x2="260" y2="75" stroke="#c8a84b" stroke-width="2.5"/>
+            <!-- Left pan rope -->
+            <line x1="80" y1="75" x2="80" y2="110" stroke="#c8a84b" stroke-width="1.5"/>
+            <!-- Right pan rope -->
+            <line x1="240" y1="75" x2="240" y2="110" stroke="#c8a84b" stroke-width="1.5"/>
+            <!-- Left pan (Opposition) -->
+            <ellipse cx="80" cy="113" rx="28" ry="6" fill="none" stroke="#c0392b" stroke-width="2"/>
+            <!-- Right pan (Your Position) -->
+            <ellipse cx="240" cy="113" rx="28" ry="6" fill="none" stroke="#27ae60" stroke-width="2"/>
+          </g>
+          <!-- Labels -->
+          <text x="80" y="145" text-anchor="middle" fill="#c0392b" font-size="9" font-family="sans-serif" font-weight="700">OPPOSITION</text>
+          <text x="240" y="145" text-anchor="middle" fill="#27ae60" font-size="9" font-family="sans-serif" font-weight="700">YOUR POSITION</text>
+          <!-- Score display -->
+          <text id="law-score" x="160" y="30" text-anchor="middle" fill="#c8a84b" font-size="16" font-weight="800" font-family="sans-serif">55/100</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="lawyer-label">Moderate Position — Build Your Case</div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials-section" id="testimonials">
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Client Reviews</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Client Success, <span class="text-gradient-gold">Proven Results</span></h2>
+    </div>
+    <div class="t-slider-outer">
+      <div class="t-slider" id="tSlider">
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"The team at Elite Premium Services guided me through a very complex business dispute. Their attention to detail and trial experience saved my company."</p>
+          <div class="t-author">Sarah M.<span>Corporate Client</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"After my car accident, they took care of everything. They negotiated with the insurance company and got me a settlement that exceeded my expectations."</p>
+          <div class="t-author">James K.<span>Personal Injury Client</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"Extremely professional, compassionate, and sharp. They answered all my questions late at night and won my case. Highly recommend."</p>
+          <div class="t-author">Priya R.<span>Litigation Client</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"I have worked with several law firms, but Elite Premium Services provides unmatched responsiveness and strategy. They are simply the best."</p>
+          <div class="t-author">Ahmed N.<span>Business Owner</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="t-controls">
+      <button class="t-btn" id="tPrev">&larr;</button>
+      <div class="t-dots" id="tDots"></div>
+      <button class="t-btn" id="tNext">&rarr;</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-banner reveal reveal-scale-in">
+      <span class="section-tag">Protect Your Rights</span>
+      <h2>Request a Confidential Case Evaluation from<br><span class="text-gradient-gold">Elite Premium Services</span> Today</h2>
+      <p>Take the first step. Contact us now to schedule your private consultation with our legal team.</p>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Schedule Free Evaluation</a>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
+  <div class="container" style="text-align:center">
+    <span class="section-tag">Our Offices</span>
+    <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-gold">Elite Premium Services</span></h2>
+    <p>Schedule a consult or visit our law offices.</p>
+    <div class="cinfo-grid">
+      
+      
+      
+      
+      
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col footer-about">
+        <a href="#home" class="logo" style="font-size:1.5rem">
+          <div class="logo-icon"></div>
+          Elite Premium Services
+        </a>
+        <p>A prestigious law firm committed to professional excellence, advocacy, and securing justice for our clients.</p>
+        <div class="social-links">
+          
+          
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About the Firm</a></li>
+          <li><a href="#programs">Practice Areas</a></li>
+          <li><a href="#contact">Contact Offices</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul class="footer-links">
+          
+          
+          
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Elite Premium Services. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here &rarr;</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Custom cursor
+const dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
+(function animRing(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
+document.querySelectorAll('a,button,.program-card,.t-btn,.gallery-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+});
+
+// Navbar scroll + active link
+const navbar=document.getElementById('navbar');
+const sections=document.querySelectorAll('section[id]');
+function onScroll(){
+  navbar.classList.toggle('scrolled',scrollY>50);
+  let cur='';
+  sections.forEach(s=>{if(scrollY>=s.offsetTop-200)cur=s.id});
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+}
+window.addEventListener('scroll',onScroll,{passive:true});
+
+// Hamburger
+const hamburger=document.getElementById('hamburger'),navLinks=document.getElementById('navLinks');
+hamburger.addEventListener('click',()=>{hamburger.classList.toggle('active');navLinks.classList.toggle('active')});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{hamburger.classList.remove('active');navLinks.classList.remove('active')}));
+
+// Scroll reveal
+const revObs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');revObs.unobserve(e.target)}},{threshold:0.1}));
+document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+// Testimonials slider
+(function(){
+  const slider=document.getElementById('tSlider'),dotsEl=document.getElementById('tDots');
+  const cards=Array.from(slider.children);
+  let cur=0,startX=0,dragX=0,isDrag=false;
+  function visible(){return window.innerWidth>991?3:window.innerWidth>600?2:1}
+  function buildDots(){
+    const pages=Math.ceil(cards.length/visible());
+    dotsEl.innerHTML='';
+    for(let i=0;i<pages;i++){
+      const d=document.createElement('div');d.className='t-dot'+(i===Math.floor(cur/visible())?' active':'');
+      d.addEventListener('click',()=>goto(i*visible()));dotsEl.appendChild(d);
+    }
+  }
+  function goto(n){
+    const max=cards.length-visible();cur=Math.max(0,Math.min(n,max));
+    const w=cards[0].offsetWidth+32;slider.style.transform=`translateX(${-cur*w}px)`;
+    buildDots();
+  }
+  document.getElementById('tPrev').addEventListener('click',()=>goto(cur-visible()));
+  document.getElementById('tNext').addEventListener('click',()=>goto(cur+visible()));
+  slider.addEventListener('mousedown',e=>{isDrag=true;startX=e.clientX;slider.classList.add('dragging')});
+  window.addEventListener('mousemove',e=>{if(isDrag)dragX=e.clientX-startX});
+  window.addEventListener('mouseup',()=>{
+    if(!isDrag)return;isDrag=false;slider.classList.remove('dragging');
+    const w=cards[0].offsetWidth+32;if(Math.abs(dragX)>w*.25)goto(dragX<0?cur+visible():cur-visible());else goto(cur);
+    dragX=0;
+  });
+  slider.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
+  slider.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-startX;
+    const w=cards[0].offsetWidth+32;if(Math.abs(dx)>w*.25)goto(dx<0?cur+visible():cur-visible());
+  },{passive:true});
+  buildDots();
+  window.addEventListener('resize',()=>goto(0));
+})();
+(function(){
+  window.lawyerViz=function(val){
+    val=parseInt(val);
+    var angle=((val-50)/50)*22;
+    document.getElementById('scale-beam').style.transform='rotate('+angle+'deg)';
+    document.getElementById('law-score').textContent=val+'/100';
+    var label,color;
+    if(val<40){label='Weak Position — Critical to Build Evidence';color='#e74c3c';}
+    else if(val<70){label='Moderate Position — Build Your Case';color='#c8a84b';}
+    else{label='Strong Position — Favorable Outcome Likely';color='#27ae60';}
+    document.getElementById('lawyer-label').textContent=label;
+    document.getElementById('lawyer-label').style.color=color;
+    var glow=val>70?'rgba(39,174,96,0.4)':val<40?'rgba(231,76,60,0.35)':'rgba(200,168,75,0.35)';
+    document.getElementById('lawyer-svg').style.filter='drop-shadow(0 0 20px '+glow+')';
+  };
+  lawyerViz(55);
+})();
+</script>
+
+
+<!-- LEADFLOW CONVERSION LAYER WITH CONTROL PANEL -->
+<style>
+  /* Styling for the sticky CTA bar */
+  .lf-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:9998;
+    display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    padding:14px 20px;background:rgba(10,10,12,.92);backdrop-filter:blur(12px);
+    border-top:1px solid rgba(255,255,255,.12);
+    transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
+  .lf-cta-bar.show{transform:translateY(0)}
+  .lf-cta-bar p{margin:0;font-size:15px;font-weight:500}
+  .lf-cta-bar p b{color:#4d9fff}
+  
+  .lf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+    text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:999px;
+    transition:transform .15s,box-shadow .15s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-btn:hover{transform:translateY(-2px)}
+  .lf-btn-primary{background:linear-gradient(135deg,#4d9fff,#2563eb);color:#fff;
+    box-shadow:0 4px 15px rgba(77,159,255,.3)}
+  .lf-btn-ghost{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12)}
+  .lf-btn-ghost:hover{background:rgba(255,255,255,.1)}
+
+  /* Original Modal styles */
+  .lf-modal-bg{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:20px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-modal-bg.show{display:flex;animation:lf-fade .3s ease}
+  .lf-modal{position:relative;max-width:440px;width:100%;background:#0d0e12;color:#fff;
+    border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 28px;text-align:center;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:lf-pop .35s cubic-bezier(.2,.9,.3,1.2)}
+  .lf-modal h2{margin:0 0 12px;font-size:24px;line-height:1.25}
+  .lf-modal h2 b{color:#4d9fff}
+  .lf-modal p{margin:0 0 24px;font-size:15px;line-height:1.6;color:#a0aec0}
+  .lf-modal .lf-btn{width:100%;font-size:16px;padding:14px}
+  .lf-modal .lf-sub{margin-top:14px;font-size:12px;color:#718096}
+  .lf-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#718096;
+    font-size:24px;line-height:1;cursor:pointer}
+  .lf-x:hover{color:#fff}
+
+  /* Control Panel Toggle Launcher Button */
+  .lf-launcher{position:fixed;bottom:30px;left:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(37, 99, 235, 0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;animation:lf-pulse 2s infinite}
+  .lf-launcher:hover{transform:scale(1.1) rotate(15deg);box-shadow:0 12px 40px rgba(37, 99, 235, 0.6)}
+  .lf-launcher.open{transform:scale(0.9) rotate(-90deg);background:#1a202c;border-color:rgba(255,255,255,0.1)}
+  .lf-launcher.shift{bottom:90px}
+  
+  @keyframes lf-pulse{
+    0%{box-shadow:0 0 0 0 rgba(37,99,235,0.6)}
+    70%{box-shadow:0 0 0 14px rgba(37,99,235,0)}
+    100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}
+  }
+
+  /* Control Panel Sidebar Drawer */
+  .lf-drawer{position:fixed;top:0;left:-380px;width:350px;height:100vh;z-index:99995;
+    background:rgba(10,11,15,0.92);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border-right:1px solid rgba(255,255,255,0.08);box-shadow:20px 0 80px rgba(0,0,0,0.65);
+    transition:transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    display:flex;flex-direction:column}
+  .lf-drawer.open{transform:translateX(380px)}
+  
+  .lf-drawer-header{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}
+  .lf-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.1em;
+    background:rgba(59,130,246,0.12);color:#3b82f6;padding:4px 10px;border-radius:4px;
+    border:1px solid rgba(59,130,246,0.25);margin-bottom:12px;text-transform:uppercase}
+  .lf-drawer-header h3{margin:0;font-size:20px;font-weight:700}
+  .lf-drawer-header p{margin:4px 0 0;font-size:13px;color:#a0aec0}
+  
+  .lf-drawer-body{padding:24px;overflow-y:auto;flex-grow:1;display:flex;flex-direction:column;gap:24px}
+  .lf-section-title{font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;
+    letter-spacing:0.08em;margin-bottom:12px}
+  
+  /* Audit Card */
+  .lf-audit-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);
+    border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+  .lf-progress-bg{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-top:6px}
+  .lf-progress-bar{height:100%;border-radius:3px;transition:width 1s ease}
+
+  /* Customizer Card */
+  .lf-color-grid{display:flex;gap:10px;margin-top:8px}
+  .lf-color-btn{width:34px;height:34px;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;transition:transform 0.2s,border-color 0.2s;position:relative}
+  .lf-color-btn:hover{transform:scale(1.15)}
+  .lf-color-btn.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
+  .lf-color-tooltip{position:absolute;bottom:42px;left:50%;transform:translateX(-50%) translateY(5px);
+    background:#1a202c;color:#fff;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+  .lf-color-btn:hover .lf-color-tooltip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Feature list */
+  .lf-feat-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+  .lf-feat-item{font-size:13px;color:#cbd5e0;display:flex;align-items:center;gap:10px}
+  .lf-feat-icon{color:#10b981;font-size:14px}
+
+  /* Profile Card */
+  .lf-profile{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px}
+  .lf-avatar{width:40px;height:40px;border-radius:50%;background:#3b82f6;display:flex;
+    align-items:center;justify-content:center;font-size:18px;font-weight:700}
+  .lf-profile-info{display:flex;flex-direction:column}
+  .lf-profile-name{font-size:13px;font-weight:700;color:#fff}
+  .lf-profile-role{font-size:11px;color:#718096}
+
+  .lf-drawer-footer{padding:20px;border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;flex-direction:column;gap:10px}
+  .lf-drawer-footer .lf-btn{width:100%;font-size:15px;padding:12px;font-weight:700}
+  
+  /* Chatbot styles */
+  .lf-chat-launcher{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#10b981,#059669);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(16,185,129,0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;user-select:none}
+  .lf-chat-launcher:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(16,185,129,0.6)}
+  
+  .lf-chat-window{position:fixed;bottom:96px;right:30px;width:320px;height:420px;z-index:99995;
+    background:rgba(10,11,15,0.96);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.65);
+    display:none;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    overflow:hidden;transition:all 0.3s ease}
+  .lf-chat-window.open{display:flex}
+  
+  .lf-chat-header{padding:14px 16px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;justify-content:space-between;align-items:center}
+  .lf-chat-header h4{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .lf-chat-header h4::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981}
+  
+  .lf-chat-messages{flex-grow:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
+    font-size:12.5px;line-height:1.45}
+  
+  .lf-msg{max-width:82%;padding:8px 12px;border-radius:12px;margin-bottom:2px;word-break:break-word}
+  .lf-msg-user{align-self:flex-end;background:#2563eb;color:#fff;border-bottom-right-radius:2px}
+  .lf-msg-ai{align-self:flex-start;background:rgba(255,255,255,0.06);color:#e2e8f0;border-bottom-left-radius:2px;border:1px solid rgba(255,255,255,0.04)}
+  
+  .lf-chat-input-area{padding:10px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;gap:8px;align-items:center}
+  .lf-chat-input{flex-grow:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:999px;padding:6px 14px;color:#fff;font-size:12.5px;outline:none;transition:border-color 0.2s}
+  .lf-chat-input:focus{border-color:#10b981}
+  .lf-chat-send{background:#10b981;border:none;color:#fff;border-radius:50%;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:background 0.2s}
+  .lf-chat-send:hover{background:#059669}
+  
+  .lf-typing{display:none;align-self:flex-start;background:rgba(255,255,255,0.03);padding:6px 12px;border-radius:12px;font-size:11px;color:#718096;margin:0 16px 8px}
+  
+  /* Timeline styles for Sequence */
+  .lf-timeline{display:flex;flex-direction:column;gap:14px;position:relative;padding-left:14px;margin-top:10px}
+  .lf-timeline::before{content:'';position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:rgba(255,255,255,0.08)}
+  .lf-timeline-item{display:flex;gap:10px;position:relative}
+  .lf-timeline-badge{width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-top:4px;
+    position:absolute;left:-14px;border:2px solid #0a0b0f}
+  .lf-timeline-content h4{margin:0;font-size:12.5px;font-weight:700;color:#fff}
+  .lf-timeline-content p{margin:2px 0 0;font-size:10.5px;color:#718096;line-height:1.4}
+  
+  @keyframes lf-fade{from{opacity:0}to{opacity:1}}
+</style>
+
+<div class="lf-launcher" id="lfLauncher" aria-label="Toggle Customizer">🛠️</div>
+
+<div class="lf-drawer" id="lfDrawer">
+  <div class="lf-drawer-header">
+    <div class="lf-badge">Live Demo Controls</div>
+    <h3>Custom Presentation</h3>
+    <p>Prepared for <b>Elite Premium Services</b></p>
+  </div>
+  
+  <div class="lf-drawer-body">
+    <!-- Audit Section -->
+    <div>
+      <div class="lf-section-title">Speed & Performance Audit</div>
+      <div class="lf-audit-card">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>Your Current Website:</span>
+            <span style="font-weight:700;color:#ef4444">No Website / 0</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:10%;background:#ef4444"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>LeadFlow Modern Demo:</span>
+            <span style="font-weight:700;color:#10b981">98 / 100</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:98%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Selection -->
+    <div>
+      <div class="lf-section-title">Tailor Brand Colors</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 10px">Preview this template in other primary branding styles instantly:</p>
+      <div class="lf-color-grid">
+        <button class="lf-color-btn active" id="lf-color-orange" data-color="orange" style="background:#E05A26" aria-label="Orange">
+          <span class="lf-color-tooltip">Amber Orange</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-blue" data-color="blue" style="background:#2563eb" aria-label="Blue">
+          <span class="lf-color-tooltip">Electric Blue</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-green" data-color="green" style="background:#10b981" aria-label="Green">
+          <span class="lf-color-tooltip">Emerald Green</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-gold" data-color="gold" style="background:#d97706" aria-label="Gold">
+          <span class="lf-color-tooltip">Honey Gold</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-pink" data-color="pink" style="background:#db2777" aria-label="Pink">
+          <span class="lf-color-tooltip">Rose Pink</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div>
+      <div class="lf-section-title">Built-in Enhancements</div>
+      <ul class="lf-feat-list">
+        <li class="lf-feat-item"><span class="lf-feat-icon">⚡</span> 340% faster loading speed</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">📱</span> Responsive mobile-first layout</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🛠️</span> Interactive pricing & cost estimators</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🎯</span> Modern UX to capture 3x more bookings</li>
+      </ul>
+    </div>
+
+    <!-- Outreach Sequence Timeline -->
+    <div>
+      <div class="lf-section-title">Autonomous Outreach Engine</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 12px">How we follow up with your prospects automatically:</p>
+      <div class="lf-timeline">
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#3b82f6"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 1: Personalized Pitch</h4>
+            <p>Initial email sent with custom demo site link.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#10b981"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 3: WhatsApp Nudge</h4>
+            <p>Follow-up text sent if booking is pending.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#fbbf24"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 7: Social Follow-up</h4>
+            <p>Instagram DM sent to maximize response rate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Designer profile -->
+    <div style="margin-top:auto">
+      <div class="lf-section-title">Created By</div>
+      <div class="lf-profile">
+        <div class="lf-avatar">CG</div>
+        <div class="lf-profile-info">
+          <span class="lf-profile-name">Alex from Sitelink</span>
+          <span class="lf-profile-role">Web Developer & Architect</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="lf-drawer-footer">
+    <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_drawer">Claim Website &rarr;</a>
+    
+  </div>
+</div>
+
+<div class="lf-chat-launcher" id="lfChatLauncher" aria-label="Open Chat">💬</div>
+
+<div class="lf-chat-window" id="lfChatWindow">
+  <div class="lf-chat-header">
+    <h4 style="margin:0">AI Assistant</h4>
+    <button class="lf-x" id="lfChatClose" style="position:static;font-size:20px;padding:0;background:none;border:none;color:#718096;cursor:pointer" aria-label="Close Chat">&times;</button>
+  </div>
+  <div class="lf-chat-messages" id="lfChatMessages">
+    <div class="lf-msg lf-msg-ai">Hi there! I'm your AI business assistant. How can I help you today?</div>
+  </div>
+  <div class="lf-typing" id="lfChatTyping">AI is typing...</div>
+  <div class="lf-chat-input-area">
+    <input type="text" class="lf-chat-input" id="lfChatInput" placeholder="Type a message...">
+    <button class="lf-chat-send" id="lfChatSend" aria-label="Send message">➔</button>
+  </div>
+</div>
+
+<div class="lf-cta-bar" id="lfBar">
+  <p>👀 Like this design for <b>Elite Premium Services</b>?</p>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_bar">Book a free call →</a>
+  
+</div>
+
+<div class="lf-modal-bg" id="lfModal">
+  <div class="lf-modal">
+    <button class="lf-x" id="lfX" aria-label="Close">&times;</button>
+    <h2>Want this site live for <b>Elite Premium Services</b>?</h2>
+    <p>This demo was built specifically for you. Book a free 15-minute call and
+       I'll have it live on your domain — no obligation, no upfront cost.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:15px;flex-wrap:wrap">
+      <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_modal">Claim this website →</a>
+      
+    </div>
+    <div class="lf-sub">Built by Alex from Sitelink</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var BEACON="", BID="", sent={};
+  // Dynamically fetch the current server URL so beacon always works even after
+  // tunnel rotation — decoupled from the URL that was baked in at deploy-time.
+  (function loadBeacon(){
+    try{
+      fetch("https://power7t.github.io/leadflow-demos/beacon-config.json?_="+Date.now(),{cache:"no-store"})
+        .then(function(r){return r.json();})
+        .then(function(d){BEACON=d.url||"";})
+        .catch(function(){});
+    }catch(e){}
+  })();
+  function ping(ev){
+    if(sent[ev])return; sent[ev]=true;
+    function _do(){if(!BEACON)return;try{fetch(BEACON+"/api/engage?bid="+BID+"&ev="+ev,{mode:"no-cors",keepalive:true});}catch(e){}}
+    if(BEACON){_do();}else{setTimeout(_do,2500);} // wait for beacon config fetch
+  }
+  
+  // Customizer color switching
+  var colors = {
+    orange: { primary: '#E05A26', bright: '#FF6B35', glow: 'rgba(224,90,38,0.15)' },
+    blue: { primary: '#2563eb', bright: '#3b82f6', glow: 'rgba(37,99,235,0.15)' },
+    green: { primary: '#10b981', bright: '#34d399', glow: 'rgba(16,185,129,0.15)' },
+    gold: { primary: '#d97706', bright: '#fbbf24', glow: 'rgba(217,119,6,0.15)' },
+    pink: { primary: '#db2777', bright: '#f472b6', glow: 'rgba(219,39,119,0.15)' }
+  };
+  
+  function setAccent(key) {
+    var root = document.documentElement;
+    var p = colors[key];
+    if (!p) return;
+    
+    // Standard variables across templates
+    root.style.setProperty('--accent-orange', p.primary);
+    root.style.setProperty('--accent-orange-bright', p.bright);
+    root.style.setProperty('--accent-orange-glow', p.glow);
+    root.style.setProperty('--accent-cyan', p.primary);
+    root.style.setProperty('--accent-cyan-bright', p.bright);
+    root.style.setProperty('--accent-cyan-glow', p.glow);
+    root.style.setProperty('--accent-teal', p.primary);
+    root.style.setProperty('--accent-teal-glow', p.glow);
+    root.style.setProperty('--accent-gold', p.primary);
+    root.style.setProperty('--accent-gold-glow', p.glow);
+    root.style.setProperty('--accent-pink', p.primary);
+    root.style.setProperty('--accent-pink-glow', p.glow);
+    root.style.setProperty('--accent-wood', p.primary);
+    root.style.setProperty('--accent-wood-glow', p.glow);
+    root.style.setProperty('--accent-green', p.primary);
+    root.style.setProperty('--accent-green-glow', p.glow);
+    
+    document.querySelectorAll('.lf-color-btn').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+    var activeBtn = document.getElementById('lf-color-' + key);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    ping('customize_color_' + key);
+  }
+  
+  document.querySelectorAll('.lf-color-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var col = btn.getAttribute('data-color');
+      setAccent(col);
+    });
+  });
+
+  // Drawer toggling
+  var launcher = document.getElementById('lfLauncher');
+  var drawer = document.getElementById('lfDrawer');
+  
+  launcher.addEventListener('click', function(){
+    var isOpen = drawer.classList.contains('open');
+    if(isOpen) {
+      drawer.classList.remove('open');
+      launcher.classList.remove('open');
+      launcher.classList.remove('lf-panel-open');
+      launcher.innerHTML = '🛠️';
+      ping('drawer_closed');
+    } else {
+      drawer.classList.add('open');
+      launcher.classList.add('open');
+      launcher.classList.add('lf-panel-open');
+      launcher.innerHTML = '×';
+      ping('drawer_opened');
+    }
+  });
+
+  // Sticky CTA bar appears once they've scrolled in a bit
+  var bar=document.getElementById("lfBar"), barShown=false;
+  function onScroll(){
+    var sc=window.scrollY, h=document.body.scrollHeight-window.innerHeight;
+    var pct=h>0?sc/h:0;
+    if(pct>0.12&&!barShown){
+      bar.classList.add("show");
+      barShown=true;
+      launcher.classList.add("shift");
+      ping("scroll_in");
+    }
+    if(pct>0.9)ping("scroll_90");
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+
+  // Modal: exit-intent on desktop, timed on mobile, once per visit
+  var modal=document.getElementById("lfModal"), fired=false;
+  function openModal(){
+    if(fired||sessionStorage.getItem("lfSeen"))return;
+    fired=true; sessionStorage.setItem("lfSeen","1");
+    modal.classList.add("show"); ping("modal_shown");
+  }
+  function closeModal(){modal.classList.remove("show");}
+  document.getElementById("lfX").addEventListener("click",closeModal);
+  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+  if(matchMedia("(pointer:fine)").matches){
+    document.addEventListener("mouseout",function(e){if(e.clientY<=0)openModal();});
+  } else {
+    setTimeout(openModal,28000);
+  }
+  
+  // Chat window toggling
+  var chatLauncher = document.getElementById('lfChatLauncher');
+  var chatWindow = document.getElementById('lfChatWindow');
+  var chatClose = document.getElementById('lfChatClose');
+  var chatInput = document.getElementById('lfChatInput');
+  var chatSend = document.getElementById('lfChatSend');
+  var chatMessages = document.getElementById('lfChatMessages');
+  var chatTyping = document.getElementById('lfChatTyping');
+  
+  if (chatLauncher) {
+    chatLauncher.addEventListener('click', function(){
+      var isOpen = chatWindow.classList.contains('open');
+      if(isOpen) {
+        chatWindow.classList.remove('open');
+        ping('chat_closed');
+      } else {
+        chatWindow.classList.add('open');
+        ping('chat_opened');
+        chatInput.focus();
+      }
+    });
+  }
+  
+  if (chatClose) {
+    chatClose.addEventListener('click', function(){
+      chatWindow.classList.remove('open');
+    });
+  }
+  
+  var chatHistory = [];
+  
+  function sendChatMessage() {
+    var txt = chatInput.value.trim();
+    if(!txt) return;
+    chatInput.value = '';
+    
+    // Add User message
+    var userDiv = document.createElement('div');
+    userDiv.className = 'lf-msg lf-msg-user';
+    userDiv.textContent = txt;
+    chatMessages.appendChild(userDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    chatHistory.push({role: 'user', content: txt});
+    ping('chat_message_sent');
+    
+    // Show typing
+    chatTyping.style.display = 'block';
+    
+    // Send to server
+    function _doChat(){
+      if(!BEACON) {
+        setTimeout(_doChat, 1000);
+        return;
+      }
+      fetch(BEACON + "/leads/" + BID + "/chat", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: txt, history: chatHistory })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = data.reply || "Sorry, I'm having trouble connecting right now.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        chatHistory.push({role: 'assistant', content: data.reply || ''});
+      })
+      .catch(function(){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = "Sorry, I could not reach the server.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+    _doChat();
+  }
+  
+  if (chatSend) chatSend.addEventListener('click', sendChatMessage);
+  if (chatInput) {
+    chatInput.addEventListener('keypress', function(e){
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+
+  // Track high-intent clicks
+  document.querySelectorAll("[data-lf]").forEach(function(el){
+    el.addEventListener("click",function(){ping(el.getAttribute("data-lf"));});
+  });
+})();
+</script>
+
+
+</body>
+</html>

@@ -66,6 +66,14 @@ LeadFlow is an autonomous, end-to-end outbound sales and lead generation system 
 - **API Key Validator:** Test each Gemini key individually from the settings page with real-time status badges.
 - **Gmail Connection Tester:** Verifies SMTP + IMAP credentials before enabling Autopilot.
 
+### 10. Advanced Anti-Ban & Instagram Farm Emulation
+- **Physical Device Execution (ADB):** DMs are sent using a physical Android device over ADB, fully bypassing browser-based (Selenium/Puppeteer) automation fingerprints.
+- **Deep Spintax & AI Vibe Shifting:** AI natively generates highly variable Spintax structures for every DM, meaning no two messages ever have the exact same text footprint, bypassing duplicate-content hashing.
+- **Bored Human Simulator (OS-Level Camouflage):** Randomly opens Google Chrome, YouTube, or Settings to scroll and waste time *before* opening Instagram. This diversifies OS-level telemetry and proves to Meta that the device is a personal phone, not a dedicated automation farm.
+- **Atomic Split-Brain Locks:** Implements robust cross-device locking (`acquire_phone_lock`) with stale-lock detection to guarantee the Firestick and Mac never collide or rapid-fire actions simultaneously.
+- **Auto-Unfollow Ghosts (Randomized):** Background job wakes up at random intervals throughout the day to prune 1-2 old DMs (7+ days, no reply) at a time, keeping the following ratio pristine without triggering bulk-action flags.
+- **Organic In-App Warmups:** Automatically scrolls the home feed and reads posts with random human-like delays (3-8 seconds) before ever visiting a prospect's profile.
+
 ---
 
 ## Technology Stack

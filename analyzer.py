@@ -223,6 +223,16 @@ def score_website(url: str) -> int:
     return score
 
 
+def score_website_with_details(url: str) -> tuple[int, str]:
+    """Returns (score, builder_name). builder_name is '' if no DIY builder detected."""
+    if not url:
+        return 0, ""
+    if not url.startswith("http"):
+        url = "https://" + url
+    score, details = _direct_check(url)
+    return score, details.get("builder", "")
+
+
 def full_audit(url: str) -> dict:
     """
     Full audit combining direct check + PageSpeed API.

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PUBLIC_URL = os.getenv("LEADFLOW_PUBLIC_URL", "https://leadflow-relay.chandango12.workers.dev")
-TOKEN = os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37")
+TOKEN = os.getenv("SECRET_TOKEN")
 
 def check_mac_heartbeat():
     try:
@@ -44,7 +44,7 @@ def main():
             )
             # Send ntfy notification
             try:
-                topic = os.getenv("NTFY_TOPIC", "leadflow-chandan-secret")
+                topic = os.getenv("NTFY_TOPIC")
                 requests.post(
                     f"https://ntfy.sh/{topic}",
                     data="⚠️ Mac server went offline! Running backup sending engine on Firestick 24/7.",
@@ -61,7 +61,7 @@ def main():
             subprocess.run("pkill -f 'python3 scheduler.py'", shell=True)
             # Send ntfy notification
             try:
-                topic = os.getenv("NTFY_TOPIC", "leadflow-chandan-secret")
+                topic = os.getenv("NTFY_TOPIC")
                 requests.post(
                     f"https://ntfy.sh/{topic}",
                     data="✅ Mac server restored! Backup sending engine on Firestick deactivated.",

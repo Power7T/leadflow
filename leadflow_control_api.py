@@ -21,7 +21,7 @@ from fastapi import FastAPI, HTTPException
 from stealdeals_userbot import client, logger
 
 # Re‑use the ntfy helper (same implementation as in leadflow_userbot)
-NTFY_TOPIC = os.getenv("NTFY_TOPIC", "leadflow-chandan-secret")
+NTFY_TOPIC = os.getenv("NTFY_TOPIC")
 NTFY_URL = f"https://ntfy.sh/{NTFY_TOPIC}"
 
 async def ntfy_notify(title: str, message: str) -> None:

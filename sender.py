@@ -75,8 +75,22 @@ def get_sender_credentials(assigned_email: str = None) -> tuple[str, str]:
 def send_email(to_email: str, subject: str, body: str,
                tracking_id: str = "", demo_url: str = "",
                business_id: int = None, smtp_server=None,
-               reply_to_message_id: str = None) -> bool:
+               reply_to_message_id: str = None,
+               cc: str = None,
+               cc_email: str = None,
+               auth_email: str = None, auth_password: str = None) -> bool:
     from database import get_or_assign_sender_email, get_conn
+
+    # Merge/alias cc and cc_email
+    cc_value = cc or cc_email
+    cc_list = []
+    if cc_value:
+        if isinstance(cc_value, list):
+            cc_list = [c.strip() for c in cc_value if c.strip()]
+        elif isinstance(cc_value, str):
+            cc_list = [c.strip() for c in cc_value.split(",") if c.strip()]
+    recipients = [to_email] + cc_list
+
 
     # Prevent contractors (roofer, hvac, solar, plumbers) from sending/receiving demo links to boost reply rates
     if business_id:
@@ -100,8 +114,13 @@ def send_email(to_email: str, subject: str, body: str,
     if business_id:
         assigned_email = get_or_assign_sender_email(business_id)
 
-    sender_email, sender_password = get_sender_credentials(assigned_email)
-    sender_name     = os.getenv("AGENCY_NAME", "")
+    sender_email = auth_email
+    sender_password = auth_password
+    if not sender_email or not sender_password:
+        sender_email, sender_password = get_sender_credentials(assigned_email)
+
+    sender_name = os.getenv("AGENCY_NAME", "")
+
     if not sender_email or not sender_password:
         raise ValueError("SENDER_EMAIL and SENDER_APP_PASSWORD must be set in .env")
 
@@ -112,6 +131,9 @@ def send_email(to_email: str, subject: str, body: str,
     msg = MIMEMultipart("alternative")
     msg["From"]    = formataddr((sender_name, sender_email)) if sender_name else sender_email
     msg["To"]      = to_email
+    if cc_list:
+        msg["Cc"]  = ", ".join(cc_list)
+
 
     # One-click unsubscribe headers (mailto always; https one-click if reachable).
     base = _public_base()
@@ -177,7 +199,7 @@ def send_email(to_email: str, subject: str, body: str,
     def _do_send():
         """Inner function that performs the actual SMTP connection and send."""
         if smtp_server is not None:
-            smtp_server.sendmail(sender_email, to_email, msg.as_string())
+            smtp_server.sendmail(sender_email, recipients, msg.as_string())
         else:
             smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
             try:
@@ -188,12 +210,13 @@ def send_email(to_email: str, subject: str, body: str,
             if smtp_port == 465:
                 with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
                     server.login(sender_email, sender_password)
-                    server.sendmail(sender_email, to_email, msg.as_string())
+                    server.sendmail(sender_email, recipients, msg.as_string())
             else:
                 with smtplib.SMTP(smtp_host, smtp_port) as server:
                     server.starttls()
                     server.login(sender_email, sender_password)
-                    server.sendmail(sender_email, to_email, msg.as_string())
+                    server.sendmail(sender_email, recipients, msg.as_string())
+
 
     # ── Retry loop with exponential backoff ───────────────────────────
     last_exc = None
@@ -203,11 +226,19 @@ def send_email(to_email: str, subject: str, body: str,
             last_exc = None
             break  # success
         except (smtplib.SMTPServerDisconnected, smtplib.SMTPConnectError,
-                smtplib.SMTPTemporaryFailure, ConnectionResetError, OSError) as e:
+                ConnectionResetError, OSError) as e:
             # Transient network/server error — wait then retry
             last_exc = e
             if attempt < len(_SMTP_RETRY_DELAYS):
                 time.sleep(_SMTP_RETRY_DELAYS[attempt])
+        except smtplib.SMTPResponseException as e:
+            # Only retry on 4xx transient SMTP codes
+            if 400 <= e.smtp_code < 500:
+                last_exc = e
+                if attempt < len(_SMTP_RETRY_DELAYS):
+                    time.sleep(_SMTP_RETRY_DELAYS[attempt])
+            else:
+                raise RuntimeError(f"Failed to send email: {e}")
         except Exception as e:
             # Non-retryable error (auth failure, bad recipient, etc.)
             raise RuntimeError(f"Failed to send email: {e}")

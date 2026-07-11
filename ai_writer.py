@@ -43,17 +43,17 @@ def _spintax(text: str) -> str:
 # ── Personalized first-line generator ──────────────────────────────────────
 
 _FIRST_LINE_TEMPLATES = [
-    "{reviews} reviews and a {rating}★ rating — {name} is clearly doing something right.",
-    "Saw {name}'s {rating}★ on Google ({reviews} reviews) and had to reach out.",
-    "{reviews} people gave {name} {rating} stars — that kind of reputation is rare.",
-    "Not many {category} businesses hit {rating}★ with {reviews} reviews. {name} is one of them.",
-    "Honestly, {reviews} reviews at {rating}★ for a {category} business in {city} is impressive.",
+    "Noticed {name} has {reviews} reviews and a strong {rating}★ rating on Google — really solid reputation.",
+    "Saw {name} has {reviews} Google reviews with a {rating}★ average. You guys clearly do good work.",
+    "Was looking at local services in {city} and saw {name} has {reviews} reviews at {rating}★ — that's a really strong track record.",
+    "Not many {category} providers in {city} reach {rating}★ with {reviews} reviews, but {name} stands out.",
+    "Saw {name}'s {rating}★ rating from {reviews} clients on Google. Impressive reputation.",
 ]
 
 _FIRST_LINE_NO_RATING = [
-    "Found {name} while looking at top {category} businesses in {city}.",
-    "{name} came up as one of the better {category} options in {city}.",
-    "Was checking out {category} businesses in {city} and {name} stood out.",
+    "Came across {name} while looking up local {category} options in {city}.",
+    "Was checking out {category} setups in {city} and {name} caught my attention.",
+    "Found {name} online while looking at local {category} providers in {city}.",
 ]
 
 def _build_first_line(business: dict) -> str:
@@ -81,24 +81,24 @@ def _build_first_line(business: dict) -> str:
 # ── Social proof snippets by niche ──────────────────────────────────────────
 
 _SOCIAL_PROOF = {
-    "roofing":      "Last month I helped a roofing company in {city} — they got 3 new estimate requests in the first week after their site went live.",
-    "roof":         "Last month I helped a roofing company in {city} — they got 3 new estimate requests in the first week after their site went live.",
-    "hvac":         "A heating & cooling company I worked with recently started getting 2-3 more inbound calls per week just from local search after the new site.",
-    "plumb":        "A plumber I helped last month in {city} started getting found on Google Maps within days of the site going live.",
-    "solar":        "A solar installer I worked with doubled their contact form submissions within 2 weeks of the site launching.",
-    "landscap":     "Helped a landscaping business in {city} recently — they picked up 4 new maintenance clients in the first month.",
-    "gym":          "A gym I worked with saw a 30% jump in trial sign-up inquiries after we made their site mobile-friendly and fast.",
-    "fitness":      "A gym I worked with saw a 30% jump in trial sign-up inquiries after we made their site mobile-friendly and fast.",
-    "dentist":      "A dental practice I helped recently now shows up on the first page of local search for their city — they told me it brought in 5 new patients in a month.",
-    "dental":       "A dental practice I helped recently now shows up on the first page of local search for their city — they told me it brought in 5 new patients in a month.",
-    "chiropract":   "A chiropractor I helped in {city} started getting booked-out weeks in advance after their new site went live.",
-    "lawyer":       "A law firm I helped recently started getting 3-4 new consultation requests per week from local search alone.",
-    "remodel":      "A remodeling company I worked with recently — after we rebuilt their site, they closed 2 new kitchen renovation projects in the first month.",
-    "cleaning":     "A cleaning company I helped is now fully booked 3 weeks out after their site started ranking locally.",
-    "moving":       "A moving company I helped in {city} went from invisible online to getting 6+ quote requests a week.",
-    "accountant":   "A CPA firm I helped recently started getting new client inquiries directly from their website — they said it paid for itself in the first month.",
-    "medspa":       "A med spa I worked with saw their online booking increase 40% within weeks of the site launch.",
-    "detailing":    "A detailing shop I helped in {city} now shows up when people search for detailing near them — they said it brought in 8 new customers in the first month.",
+    "roofing":      "Last month I rebuilt the mobile layout for a local roofing contractor — they picked up 3 new metal roof estimates in their first week from search clicks.",
+    "roof":         "Last month I rebuilt the mobile layout for a local roofing contractor — they picked up 3 new metal roof estimates in their first week from search clicks.",
+    "hvac":         "An HVAC partner we worked with recently started getting 2-3 more emergency service calls a week just by fixing their slow mobile contact form.",
+    "plumb":        "A plumber we helped last month in {city} started ranking in Google Maps 3-pack within 10 days of launching a fast, mobile-friendly page.",
+    "solar":        "A solar installer we worked with doubled their high-quality lead submissions in two weeks by switching to a zero-friction mobile layout.",
+    "landscap":     "Helped a landscaping team recently — they picked up 4 new commercial maintenance agreements in their first month from search traffic.",
+    "gym":          "A local gym we optimized saw a 30% increase in signups for their 3-day pass just by making their schedule load under 1.5 seconds.",
+    "fitness":      "A local gym we optimized saw a 30% increase in signups for their 3-day pass just by making their schedule load under 1.5 seconds.",
+    "dentist":      "A dentist we helped in {city} ranking on page 2 moved to the top 3 on Maps and booked 5 new patient consultations in the first month.",
+    "dental":       "A dentist we helped in {city} ranking on page 2 moved to the top 3 on Maps and booked 5 new patient consultations in the first month.",
+    "chiropract":   "A chiropractor in {city} got their calendar booked out 2 weeks in advance after we simplified their mobile booking interface.",
+    "lawyer":       "A personal injury firm we worked with went from getting lost in search to receiving 3-4 new case consultations weekly.",
+    "remodel":      "A home remodeler we rebuilt a layout for closed two kitchen renovation projects (worth $45k+) in 30 days from search visitors.",
+    "cleaning":     "A residential cleaning business we helped is now booked solid 3 weeks out after we fixed their mobile site load speed.",
+    "moving":       "A local moving company we worked with in {city} went from invisible to receiving 6+ residential quote requests a week.",
+    "accountant":   "A CPA firm we helped got 4 new corporate tax clients in the first month simply by adding a fast, simple consultation form.",
+    "medspa":       "A med spa client saw their online booking rate increase by 40% after we replaced their heavy, slow-loading homepage.",
+    "detailing":    "An auto detailing shop we helped in {city} got 8 new ceramic coating bookings in their first month from mobile searchers.",
 }
 
 _SOCIAL_PROOF_DEFAULT = "I've helped businesses similar to yours start capturing more local customers within weeks of their site going live."
@@ -305,11 +305,11 @@ def _run_gemini_rest(prompt: str, model: str = "gemini-2.5-flash", sys_ctx: str 
     if not keys:
         return None
 
-    import urllib.request, json, time, ssl
+    import urllib.request, json, time, ssl, random
     full_prompt = (sys_ctx or get_system_context({})) + "\n\n" + prompt
     payload = json.dumps({
         "contents": [{"parts": [{"text": full_prompt}]}],
-        "generationConfig": {"maxOutputTokens": 512, "temperature": 0.9},
+        "generationConfig": {"maxOutputTokens": 1024, "temperature": 0.9},
     }).encode()
     # fix #7: use verified SSL context
     try:
@@ -318,6 +318,7 @@ def _run_gemini_rest(prompt: str, model: str = "gemini-2.5-flash", sys_ctx: str 
     except ImportError:
         ctx = ssl.create_default_context()
 
+    random.shuffle(keys)
     for idx, api_key in enumerate(keys):
         # Try the same key up to 2 times before moving on
         for attempt in range(2):
@@ -345,64 +346,64 @@ def _run_gemini_rest(prompt: str, model: str = "gemini-2.5-flash", sys_ctx: str 
 
 
 
-def _run_omniroute(prompt: str, sys_ctx: str = None) -> str | None:
-    """Call OmniRoute local server with agy models as a high-priority tier.
-    Uses the 10 local agy accounts connected via the OmniRoute API key.
+def _run_omniroute(prompt: str, omni_models: list[str], sys_ctx: str = None) -> str | None:
+    """Call OmniRoute local server as a smart proxy/load-balancer.
+    It can route to either OpenRouter or AGY based on the models provided.
     """
-    api_key = "sk-0000000000000000-a9c69a-c35b9451"
+    api_key = os.getenv("OMNIROUTE_API_KEY")
+    if not api_key:
+        return None
+        
     import urllib.request, json as _json, ssl
     full_prompt = (sys_ctx or get_system_context({})) + "\n\n" + prompt
     
-    # We use verification-free SSL context since it is localhost
     ctx = ssl._create_unverified_context()
     
-    # Try gemini-2.5-flash first, fallback to gemini-2.5-pro if needed
-    omni_models = [
-        "agy/gemini-3.5-flash-low",
-        "agy/gemini-3.5-flash-medium",
-        "agy/gemini-3.5-flash-high",
-        "agy/gemini-3.1-pro-high",
-        "agy/gemini-3.1-pro-low",
-    ]
+    # If running on Mac, localhost works. If running on Firestick, we must hit the Mac's LAN IP.
+    omni_hosts = ["localhost:20128", "192.168.1.17:20128"]
+    
     for model_id in omni_models:
-        try:
-            payload = _json.dumps({
-                "model": model_id,
-                "messages": [{"role": "user", "content": full_prompt}],
-                "max_tokens": 512,
-                "temperature": 0.9,
-                "stream": False,
-            }).encode()
-            req = urllib.request.Request(
-                "http://localhost:20128/v1/chat/completions",
-                data=payload,
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json",
-                },
-            )
-            # Short timeout since it is a local server
-            with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
-                data = _json.loads(resp.read().decode("utf-8"))
-            if "error" in data:
-                print(f"[ai_writer] OmniRoute {model_id} error: {data['error'].get('message','')[:60]}")
+        for host in omni_hosts:
+            try:
+                payload = _json.dumps({
+                    "model": model_id,
+                    "messages": [{"role": "user", "content": full_prompt}],
+                    "max_tokens": 512,
+                    "temperature": 0.9,
+                }).encode()
+                req = urllib.request.Request(
+                    f"http://{host}/v1/chat/completions",
+                    data=payload,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                )
+                with urllib.request.urlopen(req, timeout=45, context=ctx) as resp:
+                    data = _json.loads(resp.read().decode("utf-8"))
+                if "error" in data:
+                    print(f"[ai_writer] OmniRoute {model_id} on {host} error: {data['error'].get('message','')[:60]}")
+                    continue
+                out = (data.get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
+                if out:
+                    print(f"[ai_writer] OmniRoute success via {model_id} on {host}")
+                    return out
+            except Exception as e:
+                # ConnectionRefusedError usually means we are on Firestick trying localhost, so try next host quietly
+                if "Connection refused" not in str(e):
+                    print(f"[ai_writer] OmniRoute {model_id} on {host} exception: {str(e)[:60]}")
                 continue
-            out = (data.get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
-            if out:
-                print(f"[ai_writer] OmniRoute success via {model_id}")
-                return out
-        except Exception as e:
-            print(f"[ai_writer] OmniRoute {model_id} exception: {str(e)[:60]}")
     return None
 
 
 # ── Fallback Tier 3: OpenRouter (free models) ─────────────────────────────
 
-# Only the top-tier models — no compromises on quality (benchmarked 2026-06)
+# Ordered from low/fast models to high/slow models
 _OPENROUTER_FREE_MODELS = [
-    "openai/gpt-oss-120b:free",              # ⭐⭐⭐⭐⭐ Best quality, ~6s
-    "nvidia/nemotron-3-ultra-550b-a55b:free", # ⭐⭐⭐⭐⭐ Equally excellent, ~30s fallback
-    "openrouter/free",                        # ⚡ Dynamic auto-router fallback (always online)
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "openai/gpt-oss-120b:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "openrouter/free",
 ]
 
 def _run_openrouter(prompt: str, sys_ctx: str = None) -> str | None:
@@ -418,7 +419,7 @@ def _run_openrouter(prompt: str, sys_ctx: str = None) -> str | None:
     if not api_keys:
         return None
         
-    import urllib.request, json as _json, ssl
+    import urllib.request, json as _json, ssl, random
     full_prompt = (sys_ctx or get_system_context({})) + "\n\n" + prompt
     try:
         import certifi
@@ -426,6 +427,7 @@ def _run_openrouter(prompt: str, sys_ctx: str = None) -> str | None:
     except ImportError:
         ctx = ssl.create_default_context()
         
+    random.shuffle(api_keys)
     for model_id in _OPENROUTER_FREE_MODELS:
         for idx, api_key in enumerate(api_keys):
             try:
@@ -778,36 +780,158 @@ def _run_template(prompt: str) -> str:
     )
 
 
-# ── Main runner with full fallback chain ───────────────────────────────────
+
+def ai_review_draft(draft: str, business_name: str, ig_handle: str, expected_min_chars: int = 80):
+    """
+    AI PRE-SEND REVIEW (Point 2):
+    Validates a draft via 4 local checks + a second Gemini QA call before queuing.
+    Returns: (True, "OK") or (False, reason_str)
+    """
+    if not draft or len(draft.strip()) < 10:
+        return False, "Draft is empty or too short"
+
+    draft_lower = draft.lower()
+
+    # Check 1 -- No thinking/reasoning artifacts
+    thinking_markers = [
+        "<thought>", "</thought>", "drafting:", "word count check:", "constraints check:",
+        "analysis:", "rationale:", "let me draft", "here's my draft", "i need to write",
+        "okay, so", "first, i'll", "step 1:", "step 2:"
+    ]
+    for marker in thinking_markers:
+        if marker in draft_lower:
+            return False, f"Thinking artifact detected: '{marker}'"
+
+    # Check 2 -- Minimum length
+    if len(draft.strip()) < expected_min_chars:
+        return False, f"Draft too short: {len(draft.strip())} chars (min {expected_min_chars})"
+
+    # Check 3 -- Business name or handle keyword present in draft
+    biz_words = [w for w in business_name.lower().split() if len(w) > 3]
+    handle_words = [w for w in ig_handle.lower().replace("_", " ").replace(".", " ").split() if len(w) > 3]
+    all_keywords = biz_words + handle_words
+    if all_keywords and not any(kw in draft_lower for kw in all_keywords):
+        return False, f"Business name/handle not mentioned. Expected one of: {all_keywords[:3]}"
+
+    # Check 4 -- No placeholder text
+    placeholders = ["[business name]", "[your name]", "[insert", "{{", "}}", "todo:"]
+    for ph in placeholders:
+        if ph in draft_lower:
+            return False, f"Placeholder text found: '{ph}'"
+
+    # Check 5 -- AI semantic QA via second Gemini call
+    try:
+        review_prompt = (
+            "You are a strict QA reviewer for outbound Instagram DMs sent by a web developer named Chandan.\n"
+            "Review this draft DM and respond with ONLY 'APPROVED' or 'REJECTED: <short reason>'.\n\n"
+            f"Business: {business_name}\nInstagram handle: @{ig_handle}\n\n"
+            f"---DRAFT---\n{draft}\n---END---\n\n"
+            "Reject if: contains reasoning/planning text, is cut off mid-sentence, "
+            "has no personalization, or has placeholder text.\n"
+            "Approve if: reads as a natural, personalized, complete outreach DM.\n"
+            "Reply ONLY 'APPROVED' or 'REJECTED: reason'."
+        )
+        result = _run(review_prompt).strip()
+        if result.upper().startswith("APPROVED"):
+            return True, "AI reviewer: APPROVED"
+        elif result.upper().startswith("REJECTED"):
+            reason = result[8:].strip(" :")
+            return False, f"AI reviewer rejected: {reason}"
+        else:
+            return False, "AI reviewer ambiguous, defaulting to reject"
+    except Exception as e:
+        return False, f"AI review failed ({e}), defaulting to reject"
+
+def clean_ai_output(text: str) -> str:
+    if not text:
+        return ""
+    
+    import re
+    text = re.sub(r'<thought>.*?</thought>', '', text, flags=re.DOTALL)
+    text = re.sub(r'```[a-zA-Z]*\n', '', text)
+    text = text.replace('```', '')
+    text = text.strip()
+    
+    lower_text = text.lower()
+    has_marker = "drafting:" in lower_text or "message:" in lower_text or "body:" in lower_text
+    
+    lines = text.split('\n')
+    cleaned_lines = []
+    started = not has_marker
+    
+    for line in lines:
+        line_strip = line.strip()
+        if not line_strip:
+            if started:
+                cleaned_lines.append("")
+            continue
+            
+        if any(k in line_strip.lower() for k in ["word count", "constraints check", "analysis:", "rationale:", "subject:"]):
+            if started and cleaned_lines:
+                break
+            continue
+            
+        if any(line_strip.lower().startswith(p) for p in ["drafting:", "message:", "body:"]):
+            started = True
+            cleaned_lines = []
+            continue
+            
+        if started:
+            if (line_strip.startswith('"') and line_strip.endswith('"')) or (line_strip.startswith("'") and line_strip.endswith("'")):
+                line_strip = line_strip[1:-1].strip()
+            cleaned_lines.append(line_strip)
+            
+    final_text = "\n".join(cleaned_lines).strip()
+    if len(final_text) < 15:
+        return text.strip()
+    return final_text
+
 
 def _run(prompt: str, attempts: int = 2, sys_ctx: str = None) -> str:
     """Call AI with a fallback chain so generation NEVER gets stuck.
 
     Tier 1: Gemini REST API (8 rotating API keys)
-    Tier 2: OpenRouter free models (10 rotating API keys)
-    Tier 3: OmniRoute agy local server (using 10 connected agy accounts)
+    Tier 2: OpenRouter models via OmniRoute proxy
+    Tier 3: OpenRouter models via Direct OpenRouter keys
+    Tier 4: AGY CLI quotas via OmniRoute proxy
     """
     import time
 
-    # ── Tier 1: Gemini REST ──
-    print("[ai_writer] Trying Tier 1: Gemini REST")
+    # ── Tier 1: Gemini REST (Direct Keys) ──
+    print("[ai_writer] Trying Tier 1: Gemini REST direct keys")
     out = _run_gemini_rest(prompt, sys_ctx=sys_ctx)
     if out:
-        return out
+        return clean_ai_output(out)
 
-    # ── Tier 2: OpenRouter free models ──
-    print("[ai_writer] Trying Tier 2: OpenRouter free models")
+    # ── Tier 2: OpenRouter via OmniRoute ──
+    print("[ai_writer] Trying Tier 2: OpenRouter models via OmniRoute proxy")
+    or_models = [
+        "openrouter/meta-llama/llama-3.3-70b-instruct:free",
+        "openrouter/openai/gpt-oss-120b:free",
+        "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/openrouter/free"
+    ]
+    out = _run_omniroute(prompt, omni_models=or_models, sys_ctx=sys_ctx)
+    if out:
+        return clean_ai_output(out)
+
+    # ── Tier 3: OpenRouter Direct ──
+    print("[ai_writer] Trying Tier 3: OpenRouter direct keys")
     out = _run_openrouter(prompt, sys_ctx=sys_ctx)
     if out:
-        return out
+        return clean_ai_output(out)
 
-    # ── Tier 3: OmniRoute agy local server ──
-    print("[ai_writer] Trying Tier 3: OmniRoute agy server")
-    out = _run_omniroute(prompt, sys_ctx=sys_ctx)
+    # ── Tier 4: AGY CLI via OmniRoute ──
+    print("[ai_writer] Trying Tier 4: AGY CLI quotas via OmniRoute proxy")
+    agy_models = [
+        "no-think/agy/claude-sonnet-4-6",
+        "no-think/agy/claude-opus-4-6-thinking"
+    ]
+    out = _run_omniroute(prompt, omni_models=agy_models, sys_ctx=sys_ctx)
     if out:
-        return out
+        return clean_ai_output(out)
 
-    # ── Tier 4: Abort (No Generic Fallback) ──
+    # ── Abort (No Generic Fallback) ──
     print("[ai_writer] All AI tiers exhausted. Aborting to avoid sending a generic message.")
     return ""
 
@@ -819,13 +943,43 @@ def _business_context(b: dict, scraped: dict | None = None) -> str:
     rating_line = f"{rating}★ across {reviews:,} reviews" if rating and reviews else ""
     owner = b.get("owner_name", "")
     owner_line = f"\nOwner: {owner}" if owner else ""
-    ctx = f"""Business: {b.get('name','')}
+    shadow_line = ""
+    shadow_status = b.get("shadow_status")
+    if shadow_status in ("slow_reply", "failed_form"):
+        shadow_issue = b.get("shadow_issue", "No response.")
+        shadow_line = f"\n!!! CRITICAL HOOK: Mention you tried reaching out yesterday as a customer, but {shadow_issue}. They are losing money because of it. !!!"
+
+    ctx = f"""Business: {b.get('name','')}{shadow_line}
 Location: {b.get('city','')}
 Category: {b.get('category','')}
 Google: {rating_line}
 Website: {b.get('website') or 'NONE'}
 Website score: {b.get('website_score',0)}/100
-Gap: {b.get('gap','')}{owner_line}"""
+Gap: {b.get('gap','')}"""
+
+    if b.get('site_builder'):
+        ctx += f"\nSite builder: {b['site_builder']} (DIY platform — low quality, easy pitch)"
+
+    if b.get('complaint_hook'):
+        ctx += f"\nCustomer complaint (digital): {b['complaint_hook']}"
+
+    if b.get('gmb_gap_hook'):
+        ctx += f"\nGoogle Business Profile gap: {b['gmb_gap_hook']}"
+
+    # Competitor audit — only include if competitor site is objectively better than prospect's
+    # (competitor_score > website_score). This is the opening hook: "your top competitor
+    # already has a site scoring X/100, yours scores Y/100 — that gap is costing you clients."
+    comp_name = b.get("competitor_name", "")
+    comp_score = b.get("competitor_score", 0) or 0
+    prospect_score = b.get("website_score", 0) or 0
+    if comp_name and comp_score > prospect_score:
+        ctx += (
+            f"\n!!! COMPETITOR AUDIT: {comp_name} (your top local competitor) scores {comp_score}/100 online "
+            f"vs your {prospect_score}/100 — that gap is actively sending clients to them. "
+            f"Mention this directly as the opening hook. !!!"
+        )
+
+    ctx += owner_line
 
     if scraped:
         if scraped.get("hero_text"):
@@ -840,6 +994,8 @@ Gap: {b.get('gap','')}{owner_line}"""
             ctx += f"\nServices offered: {', '.join(titles)}"
         if scraped.get("tagline"):
             ctx += f"\nTagline: {scraped['tagline']}"
+        if scraped.get("top_competitor"):
+            ctx += f"\nTop Local Competitor: {scraped['top_competitor']}"
     return ctx
 
 
@@ -932,6 +1088,50 @@ Output exactly 3 lines, numbered 1. 2. 3. — nothing else."""
     return clean[:3]
 
 
+# ── Bounce inbox reply conversion ──────────────────────────────────────────
+
+def generate_bounce_reply(business: dict, client_reply_text: str) -> str:
+    """Generate a conversational AI reply to a lead who responded to a bounce-check ping email.
+
+    Uses business context to pitch services naturally and includes the demo/booking link.
+    """
+    agency_name = os.getenv("AGENCY_NAME", "Alex from Sitelink")
+    booking_url = os.getenv("BOOKING_URL", "")
+    demo_url = business.get("demo_tunnel_url", "") or ""
+    biz_name = business.get("name", "your business")
+    category = business.get("category", "business")
+    city = business.get("city", "")
+
+    link_part = ""
+    if demo_url:
+        link_part = f"Here's a quick custom demo I put together for {biz_name}: {demo_url}"
+    if booking_url:
+        link_part += f"\n\nIf you'd like to chat, here's my calendar: {booking_url}"
+
+    prompt = f"""You are {agency_name}. A potential client just replied to a brief check-in email
+you sent to verify their address. Their reply:
+
+\"{client_reply_text[:600]}\"
+
+Business context:
+- Name: {biz_name}
+- Category: {category}
+- City: {city}
+
+Write a warm, professional reply (under 80 words) that:
+1. Acknowledges their reply naturally (don't apologise excessively for the original email).
+2. Briefly explains you noticed their business and built something for them.
+3. Includes the following links naturally in the body:
+{link_part}
+4. Ends with a soft CTA (e.g. "Would love to hear what you think").
+
+Do NOT use placeholders. Output the email body only — no subject line, no signature block.
+Sign off as {agency_name}.
+"""
+    raw = _run(prompt, sys_ctx=" ")
+    return clean_ai_output(raw) if raw else ""
+
+
 # ── Primary outreach ───────────────────────────────────────────────────────
 
 def write_email(business: dict, demo_url: str = "", scraped: dict | None = None) -> str:
@@ -980,13 +1180,18 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
     variant = None
     if is_tier_1:
         bid = int(business.get("id") or 0)
-        # 4 Cohorts split using modulo 4
+        # 4 Cohorts split using a hash to avoid confounding when IDs are
+        # inserted in sequential chunks (modulo-by-ID would assign entire
+        # batches to the same cohort).
         # A: Direct Link + Technical Pain
         # B: Permission Hook + Gatekeeper Workflow
         # C: Direct Link + Competitor Pride
         # D: Permission Hook + Competitor Pride
+        import hashlib
+        identifier = str(business.get("name") or business.get("id") or "")
+        hash_val = int(hashlib.md5(identifier.encode()).hexdigest(), 16)
         cohorts = {0: "A", 1: "B", 2: "C", 3: "D"}
-        variant = cohorts[bid % 4]
+        variant = cohorts[hash_val % 4]
         
         # Save variant to DB
         if bid:
@@ -1032,13 +1237,15 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
                 "Ask: 'Could you pass this design layout on to the owner/doctor?'"
             )
         elif variant == "C":
+            comp_hint = f" (explicitly name-drop {scraped.get('top_competitor')} as the competitor taking their traffic)" if (scraped and scraped.get("top_competitor")) else ""
             hook_strategy = (
-                "HOOK: Focus on brand pride and local competitors. Point out that local competitors "
+                f"HOOK: Focus on brand pride and local competitors{comp_hint}. Point out that local competitors "
                 "have modern layouts. Pitch your custom mockup directly to the owner/doctor as a way to stand out."
             )
         elif variant == "D":
+            comp_hint = f" (explicitly name-drop {scraped.get('top_competitor')} as the competitor taking their traffic)" if (scraped and scraped.get("top_competitor")) else ""
             hook_strategy = (
-                "HOOK: Focus on brand pride and local competitors. Point out that local competitors "
+                f"HOOK: Focus on brand pride and local competitors{comp_hint}. Point out that local competitors "
                 "have modern layouts. Tell the receptionist/manager that you made a custom mockup for their page to stand out, "
                 "and ask if you can send the link to pass along to the owner."
             )
@@ -1076,11 +1283,12 @@ CRITICAL RULES:
 6. You MUST explicitly mention their exact business name. Make it feel 100% bespoke. Ready to send.
 7. NEVER address the message to "[Business Name] team" — address the owner directly or use the business name alone without "team".
 8. NEVER say "ran a quick diagnostic check" or "noticed it is scoring X/100 on mobile load speed" — that exact phrasing is banned. Find a fresh, original way to express the same idea.
-9. {link_rule}"""
+9. SPINTAX REQUIRED: You MUST format the entire message body using Spintax format (e.g. {{Hey|Hi|Hello}} @username, {{I noticed|I saw}} your {{awesome|great}} {{rating}} star rating...). Inject Spintax into every possible sentence so the text can be randomized heavily. Use standard {{option1|option2}} syntax.
+10. {link_rule}"""
     
     sys_ctx = (
         "You are a highly persuasive, world-class outbound sales copywriter. "
-        "Output ONLY the raw Instagram DM message body. Do NOT include any Subject line, "
+        "Output ONLY the raw Instagram DM message body in Spintax format. Do NOT include any Subject line, "
         "do NOT include any conversational introduction, and do NOT use markdown code fences. "
         "Your entire output must be copy-pasteable directly into an Instagram DM client without editing."
     )
@@ -1138,7 +1346,7 @@ CRITICAL RULES:
                    f"Let me know what you think. I put together a quick optimized demo: {demo_url}")
             )
 
-    return raw
+    return _spintax(raw) if raw else ""
 
 
 
@@ -1258,10 +1466,10 @@ def _clean_draft(text: str) -> str:
     return text
 
 
-def write_follow_up_sequence(business: dict, demo_url: str = "", is_hot_lead: bool = False) -> list[dict]:
+def write_follow_up_sequence(business: dict, demo_url: str = "", is_hot_lead: bool = False, channel: str = "email") -> list[dict]:
     """
     Generate a follow-up sequence.
-    is_hot_lead=True: lead just opened the email or scrolled the demo — use an
+    is_hot_lead=True: lead just opened the email/DM or scrolled the demo — use an
     immediate, intent-aware tone for FU#1 instead of the generic day-4 cadence.
     """
     ctx = _business_context(business)
@@ -1273,8 +1481,20 @@ def write_follow_up_sequence(business: dict, demo_url: str = "", is_hot_lead: bo
     booking_part = f"\nFiverr Gig Link: {BOOKING_URL}\nRule: You can optionally mention they can order safely on Fiverr using this link. Do NOT use or mention any other Fiverr link or profile link; use ONLY this exact gig link: {BOOKING_URL}" if BOOKING_URL else ""
 
     if is_hot_lead:
-        # They just opened/viewed — acknowledge it, be direct, strike now
-        prompt1 = f"""{ctx}
+        if channel == "instagram":
+            prompt1 = f"""{ctx}
+Offer: {offer}
+{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your message.' if demo_url else ''}
+
+Write a short Instagram DM follow-up (under 40 words) for someone who JUST looked at our mockup or profile.
+- Do NOT introduce yourself or say "I'm Chandan" or "I build websites" or "just checking in".
+- Keep it direct and human, like a text message.
+- Banned phrases: "streamline", "leverage", "revolutionize", "optimization".
+- CRITICAL: End with ONE simple question (e.g. "Any feedback on that layout?", "Worth a quick chat?").
+- Do NOT include any Subject line. Ready to send."""
+        else:
+            # They just opened/viewed — acknowledge it, be direct, strike now
+            prompt1 = f"""{ctx}
 Offer: {offer}
 {booking_part}
 {'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your email body.' if demo_url else ''}
@@ -1284,12 +1504,26 @@ Write a VERY SHORT follow-up email (under 60 words) for someone who JUST opened 
 - Do NOT re-introduce yourself (e.g. "Hey, I'm Chandan")
 - Acknowledge naturally that they saw it (e.g. "Saw you had a look..." or "Wanted to follow up while it's fresh...")
 - Casual, human, direct — like a text message in email form
+- Banned phrases: "streamline", "leverage", "revolutionize", "optimization".
 - CRITICAL: End with ONE simple question (e.g. "What do you think?" or "Worth a quick chat?")
 - Use a generic greeting if no owner name is provided. Do NOT use the business name as a person's name.
 - Subject line on first line. Ready to send."""
     else:
-        # Step 2: The Mobile Scorecard (2 days later)
-        prompt1 = f"""{ctx}
+        if channel == "instagram":
+            prompt1 = f"""{ctx}
+Offer: {offer}
+{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your message.' if demo_url else ''}
+
+Write a short Instagram DM follow-up #1 (The Mobile Scorecard, under 50 words).
+- Provide a raw comparison of their current website speed score versus our redesign speed score (assume our mobile redesign scores 95+).
+- Emphasize how this speed gap affects their customer bookings.
+- Do NOT re-introduce yourself or use conversational filler.
+- Banned phrases: "streamline", "leverage", "revolutionize", "optimization".
+- CRITICAL: End with ONE direct question to prompt a reply.
+- Do NOT include any Subject line. Ready to send."""
+        else:
+            # Step 2: The Mobile Scorecard (2 days later)
+            prompt1 = f"""{ctx}
 Offer: {offer}
 {booking_part}
 {'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your email body. Do not ask if they want to see it.' if demo_url else ''}
@@ -1298,22 +1532,42 @@ Write follow-up email #1 (The Mobile Scorecard, sent 2 days after first email).
 - Provide a raw comparison of their current website speed score versus our redesign speed score (assume our mobile-optimized redesign scores 95+).
 - Emphasize how this 'Mobile Conversion Gap' affects their bookings.
 - Do NOT re-introduce yourself (e.g. "Hey, I'm Chandan").
+- Banned phrases: "streamline", "leverage", "revolutionize", "optimization".
 - CRITICAL: End with ONE direct question to prompt a reply.
 - Use a generic greeting if no owner name is provided. Do NOT use the business name as a person's name.
 Under 80 words. Subject on first line. Ready to send."""
 
     f1 = _run(prompt1, sys_ctx=get_system_context(business))
+    fu1_delay = 3 if channel == "instagram" else 2  # IG gets more breathing room
     sequences.append({
         "num": 1,
-        "channel": "email",
+        "channel": channel,
         "draft": _clean_draft(f1),
-        "scheduled_for": (now + timedelta(days=2)).isoformat() if not is_hot_lead else (now + timedelta(days=2)).isoformat(),
+        "scheduled_for": (now + timedelta(days=fu1_delay)).isoformat(),
     })
 
-
+    # Instagram-primary leads get only 1 follow-up (initial DM + 1 FU).
+    # Additional follow-ups in DMs feel spammy — keep the rest for email only.
+    if channel == "instagram":
+        return sequences
     # Step 3: Case Study Proof (Day 5)
     social_proof = _social_proof_snippet(business)
-    prompt2 = f"""{ctx}
+    if channel == "instagram":
+        prompt2 = f"""{ctx}
+Offer: {offer}
+{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your message.' if demo_url else ''}
+
+SOCIAL PROOF (weave this naturally into the message):
+"{social_proof}"
+
+Write a short Instagram DM follow-up #2 (Case Study Proof, under 50 words).
+- Mention the social proof above — a similar business got real results.
+- Do NOT re-introduce yourself.
+- Banned phrases: "streamline", "leverage", "revolutionize", "optimization".
+- CRITICAL: End with ONE simple question to prompt a response.
+- Do NOT include any Subject line. Ready to send."""
+    else:
+        prompt2 = f"""{ctx}
 Offer: {offer}
 {booking_part}
 {'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your email body. Do not ask if they want to see it.' if demo_url else ''}
@@ -1324,13 +1578,15 @@ SOCIAL PROOF (weave this naturally into the email — do NOT quote it verbatim, 
 Write follow-up email #2 (Case Study Proof, sent 5 days after first email).
 - Mention the social proof above — a similar business got real results. Keep it short — under 70 words.
 - Do NOT re-introduce yourself.
+- Banned phrases: "streamline", "leverage", "revolutionize", "optimization".
 - CRITICAL: End with ONE direct, simple question to close the loop.
 - Use a generic greeting if no owner name is provided. Do NOT use the business name as a person's name.
 Subject on first line. Ready to send."""
+
     f2 = _run(prompt2, sys_ctx=get_system_context(business))
     sequences.append({
         "num": 2,
-        "channel": "email",
+        "channel": channel,
         "draft": _clean_draft(_spintax(f2) if f2 else f2),
         "scheduled_for": (now + timedelta(days=5)).isoformat(),
     })
@@ -1338,7 +1594,20 @@ Subject on first line. Ready to send."""
     # Step 4: The Irresistible Value Stack (Day 8)
     chosen_calendly = _random_mod.choice(CALENDLY_URLS) if CALENDLY_URLS else ""
     calendly_part = f"\nBooking Link: {chosen_calendly}\nRule: Naturally suggest they can book a call using this booking link if they'd like to discuss how to grow their business." if chosen_calendly else ""
-    prompt3_stack = f"""{ctx}
+    
+    if channel == "instagram":
+        prompt3_stack = f"""{ctx}
+Offer: {offer}
+{'ABSOLUTE REQUIREMENT: You MUST paste the exact link ' + demo_url + ' directly into your message.' if demo_url else ''}
+
+Write a short Instagram DM follow-up #3 (The Irresistible Value Stack, under 50 words).
+- Pitch an irresistible Fiverr-secured offer: custom web design, speed boost, and Google Maps optimization.
+- Do NOT re-introduce yourself.
+- Banned phrases: "streamline", "leverage", "revolutionize", "optimization".
+- CRITICAL: End with ONE direct question to prompt a reply (e.g. "Should I send over what it would cost to launch?").
+- Do NOT include any Subject line. Ready to send."""
+    else:
+        prompt3_stack = f"""{ctx}
 Offer: {offer}
 {booking_part}
 {calendly_part}
@@ -1347,19 +1616,21 @@ Offer: {offer}
 Write follow-up email #3 (The Irresistible Value Stack, sent 8 days after first email).
 - Pitch an irresistible Fiverr-secured offer stacking: web design, speed boost, Google Map optimization, and contact form setup.
 - Do NOT re-introduce yourself.
+- Banned phrases: "streamline", "leverage", "revolutionize", "optimization".
 - CRITICAL: End with ONE direct question to prompt a reply (e.g. "Should I send over what it would cost to go live?").
 - Use a generic greeting if no owner name is provided. Do NOT use the business name as a person's name.
 Subject on first line. Ready to send."""
+
     f3 = _run(prompt3_stack, sys_ctx=get_system_context(business))
     sequences.append({
         "num": 3,
-        "channel": "email",
+        "channel": channel,
         "draft": _clean_draft(_spintax(f3) if f3 else f3),
         "scheduled_for": (now + timedelta(days=8)).isoformat(),
     })
 
-    # Instagram DM follow-up — Day 6
-    if business.get("instagram"):
+    # Instagram DM follow-up — Day 6 (Only add this cross-channel touch if the primary campaign is email)
+    if business.get("instagram") and channel != "instagram":
         # Test 3: Follow-Up Sequence (Value-Add vs Standard Bump)
         bid = int(business.get("id") or 0)
         fu_variant = "A" if bid % 2 == 0 else "B"

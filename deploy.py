@@ -134,14 +134,33 @@ def get_cf_env() -> dict:
 
 
 def deploy_demo(bid: int, name: str, html: str) -> dict:
-    """Publish the demo JSON data to the Cloudflare Worker to serve dynamically."""
+    """Publish the demo HTML and JSON data to the Cloudflare Worker to serve dynamically."""
     import os
     import json
     import requests
     import sqlite3
     from demo_generator import _scrape_site
+    from pathlib import Path
 
-    # 1. Fetch the business details from database
+    # 1. Upload pre-rendered HTML directly to Cloudflare KV via Worker
+    public_url = os.getenv("LEADFLOW_PUBLIC_URL", "https://leadflow-relay.chandango12.workers.dev")
+    secret_token = os.getenv("LEADFLOW_SECRET_TOKEN")
+    slug = slug_for(bid, name)
+    url = f"{public_url}/demo/{slug}"
+
+    try:
+        r_html = requests.post(
+            f"{public_url}/api/demo-html?slug={slug}",
+            headers={"X-Secret-Token": secret_token, "Content-Type": "application/json"},
+            json={"html": html},
+            timeout=15
+        )
+        if r_html.status_code != 200:
+            print(f"[deploy] HTML upload failed: {r_html.status_code} - {r_html.text}")
+    except Exception as e:
+        print(f"[deploy] HTML upload exception: {e}")
+
+    # 2. Fetch the business details from database (for metadata upload)
     db_path = os.path.join(os.path.dirname(__file__), "leadflow.db")
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -157,8 +176,7 @@ def deploy_demo(bid: int, name: str, html: str) -> dict:
     biz = dict(row)
     conn.close()
 
-    # 2. Determine template
-    from pathlib import Path
+    # 3. Determine template
     demo_templates_dir = Path(os.path.dirname(__file__)) / "demo_templates"
     
     config_path = demo_templates_dir / "config.json"
@@ -188,7 +206,7 @@ def deploy_demo(bid: int, name: str, html: str) -> dict:
 
     tpl = get_template(biz["category"], biz["name"], biz["template_id"])
 
-    # 3. Choose stock images
+    # 4. Choose stock images
     hero_img = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1400"
     about_img = "https://images.unsplash.com/photo-1521737711867-e3b904737c88?w=600"
     
@@ -217,11 +235,11 @@ def deploy_demo(bid: int, name: str, html: str) -> dict:
         hero_img = "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1400"
         about_img = "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600"
 
-    # 4. Scrape the website on-the-fly to populate scraped fields
+    # 5. Scrape website on-the-fly
     website = biz.get("website", "")
     scraped_data = _scrape_site(website) if website else {}
 
-    # 5. Build payload
+    # 6. Build payload
     payload = {
         "business": biz,
         "website_data": scraped_data,
@@ -230,12 +248,6 @@ def deploy_demo(bid: int, name: str, html: str) -> dict:
         "about_img": about_img
     }
 
-    # 6. Upload payload to Worker
-    public_url = os.getenv("LEADFLOW_PUBLIC_URL", "https://leadflow-relay.chandango12.workers.dev")
-    secret_token = os.getenv("LEADFLOW_SECRET_TOKEN", "lf_sec_9e21808ccce4d37")
-    slug = slug_for(bid, name)
-    url = f"{public_url}/demo/{slug}"
-    
     try:
         r = requests.post(
             f"{public_url}/api/demo?slug={slug}",

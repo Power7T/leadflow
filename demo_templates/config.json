@@ -27,6 +27,11 @@
     {"file": "valet_laundry.html", "name": "Valet Laundry Service", "enabled": true, "niches": ["valet", "laundry", "dry clean", "dry cleaner", "linens", "linen service", "wash and fold"]},
     {"file": "handyman.html", "name": "Handyman & Repair Services", "enabled": true, "niches": ["handyman", "repair", "maintenance", "locksmith", "fix", "assembly", "mounting"]},
     {"file": "interiordesign.html", "name": "Interior Design & Staging", "enabled": true, "niches": ["interior design", "staging", "decor", "home staging", "art", "decorator"]},
-    {"file": "trash.html", "name": "Trash & Waste Services", "enabled": true, "niches": ["trash", "waste", "garbage", "junk removal", "dumpster", "trash service"]}
+    {"file": "trash.html", "name": "Trash & Waste Services", "enabled": true, "niches": ["trash", "waste", "garbage", "junk removal", "dumpster", "trash service"]},
+    {"file": "pestcontrol.html", "name": "Pest Control & Extermination", "enabled": true, "niches": ["pest control", "exterminator", "termite", "rodent", "bugs", "fumigation"]},
+    {"file": "autorepair.html", "name": "Auto Repair & Collision Center", "enabled": true, "niches": ["auto repair", "collision center", "mechanic", "body shop", "car repair", "transmission"]},
+    {"file": "vet.html", "name": "Veterinarian & Animal Hospital", "enabled": true, "niches": ["vet", "veterinarian", "animal hospital", "pet clinic", "pet grooming", "veterinary"]},
+    {"file": "homebuilder.html", "name": "Custom Home Builder & Architect", "enabled": true, "niches": ["home builder", "custom homes", "architect", "architecture", "new construction", "luxury homes"]},
+    {"file": "wedding.html", "name": "Wedding Venue & Event Planning", "enabled": true, "niches": ["wedding", "wedding venue", "event planner", "event venue", "banquet", "reception"]}
   ]
 }

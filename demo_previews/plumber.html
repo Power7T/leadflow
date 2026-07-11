@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Elite Premium Services | 24/7 Emergency Plumbing Services</title>
+<meta name="description" content="Elite Premium Services — licensed plumbers offering emergency leak repair, water heater installation, drain cleaning, and pipe replacement. Call now for same-day service.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-primary:#040c14;
+  --bg-secondary:#0a1624;
+  --bg-tertiary:#112236;
+  --bg-footer:#020810;
+  --accent-main:#0284c7;
+  --accent-glow:rgba(2,132,199,0.15);
+  --accent-bright:#38bdf8;
+  --accent-dark:#0369a1;
+  --text-white:#FFFFFF;
+  --text-gray:#9FA8B4;
+  --text-muted:#626D7C;
+  --glass-bg:rgba(4,12,20,0.96);
+  --glass-border:rgba(2,132,199,0.1);
+  --glass-border-hover:rgba(2,132,199,0.4);
+  --radius-sm:8px;
+  --radius-md:16px;
+  --radius-lg:24px;
+  --shadow-sm:0 4px 12px rgba(4,12,20,0.5);
+  --shadow-md:0 12px 32px rgba(4,12,20,0.7);
+  --shadow-lg:0 24px 64px rgba(4,12,20,0.9);
+  --shadow-accent:0 0 30px rgba(2,132,199,0.2);
+  --transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);
+  --transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Inter',sans-serif;overflow-x:hidden;}
+body{line-height:1.7;overflow-x:hidden;}
+h1,h2,h3,h4,h5,h6{font-family:'Space Grotesk',sans-serif;font-weight:700;line-height:1.15;color:var(--text-white);}
+p{color:var(--text-gray);font-weight:300;}
+a{text-decoration:none;color:inherit;}
+img{display:block;max-width:100%;}
+
+.text-gradient{background:linear-gradient(135deg,#FFFFFF 0%,var(--accent-bright) 60%,var(--accent-main) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 2rem;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.9rem 2rem;font-family:'Space Grotesk',sans-serif;font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;transition:var(--transition-smooth);}
+.btn-primary{background:var(--accent-main);color:#fff;box-shadow:var(--shadow-sm);}
+.btn-primary:hover{background:transparent;border-color:var(--accent-main);color:var(--accent-main);box-shadow:var(--shadow-accent);transform:translateY(-2px);}
+.btn-outline{background:transparent;border-color:rgba(255,255,255,.25);color:var(--text-white);}
+.btn-outline:hover{border-color:var(--accent-main);color:var(--accent-main);transform:translateY(-2px);}
+.btn-big{padding:1.1rem 2.8rem;font-size:.95rem;}
+
+section{padding:8.5rem 0;position:relative;overflow:hidden;}
+
+/* SECTION HELPERS */
+.section-tag{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent-bright);margin-bottom:1rem;display:inline-block;background:rgba(2,132,199,0.08);padding:5px 16px;border-radius:4px;border:1px solid rgba(2,132,199,0.18);}
+.section-header{text-align:center;margin-bottom:4.5rem;}
+.section-header h2{font-size:clamp(2rem,4vw,3.2rem);margin-bottom:1rem;}
+.section-header p{color:var(--text-gray);font-size:1.05rem;max-width:580px;margin:0 auto;}
+
+/* REVEAL ANIMATIONS */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-left{opacity:0;transform:translateX(-50px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal-left.visible{opacity:1;transform:translateX(0);}
+.reveal-right{opacity:0;transform:translateX(50px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal-right.visible{opacity:1;transform:translateX(0);}
+
+/* SPOTLIGHT BG GLOW */
+.spotlight{position:absolute;width:600px;height:600px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.5;}
+
+/* =========================================
+   1. DEMO BANNER
+   ========================================= */
+.demo-banner{background:var(--accent-main);color:#fff;text-align:center;padding:13px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
+.demo-banner a{color:#fff;text-decoration:underline;font-weight:800;transition:opacity .2s;}
+.demo-banner a:hover{opacity:.8;}
+
+/* =========================================
+   2. NAVBAR
+   ========================================= */
+.navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;background:var(--glass-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);transition:top var(--transition-smooth),box-shadow var(--transition-smooth);}
+.navbar.scrolled{top:0;box-shadow:0 8px 32px rgba(4,12,20,0.8);}
+.nav-container{display:flex;justify-content:space-between;align-items:center;height:75px;}
+.logo{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--text-white);letter-spacing:-1px;display:flex;align-items:center;gap:.4rem;}
+.logo-drop{color:var(--accent-bright);}
+.nav-links{display:flex;gap:2.5rem;list-style:none;}
+.nav-links a{color:var(--text-gray);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;transition:var(--transition-fast);position:relative;padding-bottom:4px;}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--accent-bright);transition:width var(--transition-smooth);}
+.nav-links a:hover{color:var(--text-white);}
+.nav-links a:hover::after{width:100%;}
+.nav-right{display:flex;align-items:center;gap:1rem;}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;background:none;border:none;}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text-white);border-radius:2px;transition:var(--transition-smooth);}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
+.hamburger.open span:nth-child(2){opacity:0;}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px);}
+.mobile-menu{display:none;position:absolute;top:100%;left:0;width:100%;background:var(--bg-secondary);border-bottom:1px solid var(--glass-border);padding:1.5rem 2rem;flex-direction:column;gap:1rem;box-shadow:var(--shadow-md);}
+.mobile-menu.open{display:flex;}
+.mobile-menu a{color:var(--text-gray);font-weight:600;font-size:.95rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.04);}
+
+/* =========================================
+   3. HERO
+   ========================================= */
+.hero{min-height:100vh;display:flex;align-items:center;background:var(--bg-primary);padding-top:123px;position:relative;overflow:hidden;}
+.hero .spotlight{top:-150px;left:-150px;}
+.hero .spotlight-2{top:auto;bottom:-200px;right:-200px;opacity:.3;}
+.hero .container{position:relative;z-index:2;}
+.hero-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:4rem;align-items:center;}
+.hero-content-tag{margin-bottom:1.5rem;}
+.hero h1{font-size:clamp(3rem,5.5vw,4.8rem);margin-bottom:1.5rem;letter-spacing:-.03em;line-height:1.08;}
+.hero-subtitle{font-size:1.1rem;margin-bottom:2.5rem;color:var(--text-gray);max-width:500px;}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;}
+.hero-visual{position:relative;display:flex;justify-content:center;align-items:center;}
+.hero-image-frame{width:100%;max-width:460px;aspect-ratio:0.85;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--glass-border-hover);box-shadow:var(--shadow-lg),var(--shadow-accent);position:relative;}
+.hero-image-frame img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease;}
+.hero-image-frame:hover img{transform:scale(1.04);}
+.hero-stat-badge{position:absolute;bottom:-18px;right:-18px;background:var(--bg-tertiary);border:1px solid var(--glass-border-hover);border-radius:var(--radius-sm);padding:1rem 1.4rem;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:.8rem;}
+.hero-stat-badge .badge-star{color:#f59e0b;font-size:1.1rem;}
+.hero-stat-badge strong{font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:700;display:block;color:var(--text-white);}
+.hero-stat-badge span{font-size:.78rem;color:var(--text-muted);}
+
+/* =========================================
+   4. WIDGET — LEAK COST CALCULATOR
+   ========================================= */
+.widget-section{background:var(--bg-secondary);padding:8rem 0;}
+.widget-container{max-width:900px;margin:0 auto;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:3.5rem;box-shadow:var(--shadow-lg);position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;}
+.widget-label{font-size:.78rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted);font-weight:600;margin-bottom:.4rem;}
+.widget-value{font-family:'Space Grotesk',sans-serif;font-size:2.8rem;font-weight:700;line-height:1;margin-bottom:1.5rem;}
+.widget-value.blue{color:var(--accent-bright);}
+.widget-value.red{color:#ef4444;}
+.slider-wrapper{margin:1.5rem 0 2rem;}
+.slider-labels{display:flex;justify-content:space-between;margin-top:.75rem;color:var(--text-muted);font-size:.8rem;}
+.calc-slider{width:100%;height:6px;background:var(--bg-primary);outline:none;border-radius:3px;-webkit-appearance:none;cursor:pointer;}
+.calc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:var(--accent-bright);border-radius:50%;cursor:pointer;box-shadow:0 0 12px var(--accent-bright);transition:box-shadow .2s;}
+.calc-slider::-webkit-slider-thumb:hover{box-shadow:0 0 20px var(--accent-bright);}
+.water-tank-svg{width:100%;height:260px;background:var(--bg-primary);border-radius:var(--radius-sm);border:2px solid var(--glass-border);overflow:hidden;}
+
+/* =========================================
+   5. SERVICES
+   ========================================= */
+.services{background:var(--bg-primary);}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;}
+.service-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:2.5rem;transition:var(--transition-smooth);position:relative;overflow:hidden;}
+.service-card::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,var(--accent-glow),transparent 70%);opacity:0;transition:opacity var(--transition-smooth);}
+.service-card:hover{transform:translateY(-8px);border-color:var(--glass-border-hover);box-shadow:var(--shadow-accent);}
+.service-card:hover::after{opacity:1;}
+.service-icon{width:60px;height:60px;background:rgba(2,132,199,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:1.5rem;transition:var(--transition-smooth);color:var(--accent-bright);position:relative;z-index:1;}
+.service-card:hover .service-icon{background:var(--accent-main);color:#fff;}
+.service-card h3{font-size:1.2rem;margin-bottom:.7rem;position:relative;z-index:1;}
+.service-card p{font-size:.92rem;color:var(--text-gray);position:relative;z-index:1;}
+
+/* =========================================
+   6. ABOUT
+   ========================================= */
+.about{background:var(--bg-secondary);}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
+.about-content h2{font-size:clamp(2rem,3.5vw,2.9rem);margin-bottom:1rem;}
+.about-content > p{margin-bottom:2rem;}
+.trust-list{list-style:none;margin-bottom:2.5rem;}
+.trust-list li{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.2rem;font-size:.95rem;color:var(--text-gray);}
+.trust-check{width:28px;height:28px;background:rgba(2,132,199,0.12);border:1px solid rgba(2,132,199,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent-bright);font-size:.75rem;font-weight:700;flex-shrink:0;margin-top:2px;}
+.trust-list li strong{color:var(--text-white);font-weight:600;display:block;margin-bottom:2px;}
+.about-img-wrap{border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);aspect-ratio:1/1;border:1px solid var(--glass-border-hover);position:relative;}
+.about-img-wrap::before{content:'';position:absolute;inset:0;box-shadow:inset 0 0 40px rgba(2,132,199,0.08);z-index:1;border-radius:var(--radius-lg);}
+.about-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease;}
+.about-img-wrap:hover img{transform:scale(1.04);}
+
+/* =========================================
+   7. TESTIMONIALS
+   ========================================= */
+.testimonials{background:var(--bg-primary);}
+.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;}
+.testimonial-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--radius-md);padding:2.5rem;transition:var(--transition-smooth);}
+.testimonial-card:hover{border-color:rgba(2,132,199,0.3);box-shadow:var(--shadow-accent);transform:translateY(-6px);}
+.stars{color:#f59e0b;font-size:1rem;letter-spacing:3px;margin-bottom:1.2rem;}
+.testimonial-card blockquote{font-size:.95rem;color:var(--text-gray);font-style:italic;line-height:1.8;margin-bottom:1.5rem;padding-left:1rem;border-left:2px solid var(--accent-main);}
+.testimonial-author strong{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:var(--text-white);display:block;}
+.testimonial-author span{font-size:.82rem;color:var(--text-muted);}
+
+/* =========================================
+   8. CTA BANNER
+   ========================================= */
+.cta-banner{background:var(--bg-primary);padding:8rem 0;text-align:center;position:relative;overflow:hidden;}
+.cta-banner::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(2,132,199,0.12) 0%,transparent 70%);pointer-events:none;}
+.cta-banner > .container{position:relative;z-index:1;}
+.cta-banner h2{font-size:clamp(2.2rem,5vw,3.8rem);margin-bottom:1rem;}
+.cta-phone{font-size:clamp(2.5rem,6vw,4.5rem);font-family:'Space Grotesk',sans-serif;font-weight:700;margin:1rem 0;line-height:1;}
+.cta-banner p{font-size:1.05rem;margin-bottom:2.5rem;}
+.cta-banner .cta-sub{font-size:.9rem;color:var(--text-muted);margin-top:1.5rem;margin-bottom:0;}
+
+/* =========================================
+   9. CONTACT
+   ========================================= */
+.contact{background:var(--bg-secondary);padding:7rem 0;}
+.contact-inner{max-width:700px;margin:0 auto;text-align:center;}
+.contact-inner h2{font-size:clamp(2rem,3.5vw,2.8rem);margin-bottom:1rem;}
+.contact-inner > p{margin-bottom:3rem;}
+.contact-items{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;}
+.contact-item{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-left:3px solid var(--accent-main);border-radius:var(--radius-sm);padding:1.8rem 2.2rem;display:flex;align-items:center;gap:1.2rem;box-shadow:var(--shadow-sm);transition:var(--transition-smooth);min-width:240px;}
+.contact-item:hover{border-color:var(--glass-border-hover);box-shadow:var(--shadow-accent);transform:translateY(-4px);}
+.contact-item-icon{width:46px;height:46px;background:rgba(2,132,199,0.1);color:var(--accent-bright);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.contact-item strong{font-family:'Space Grotesk',sans-serif;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);display:block;margin-bottom:2px;}
+.contact-item a,.contact-item span{font-size:.95rem;font-weight:500;color:var(--text-white);}
+.contact-item a:hover{color:var(--accent-bright);}
+
+/* =========================================
+   10. FOOTER
+   ========================================= */
+.footer{background:var(--bg-footer);padding:5rem 0 2rem;border-top:1px solid rgba(255,255,255,.04);}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:4rem;margin-bottom:3rem;}
+.footer-brand .footer-logo{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:var(--text-white);margin-bottom:1rem;letter-spacing:-.02em;}
+.footer-brand .footer-logo span{color:var(--accent-bright);}
+.footer-brand p{color:var(--text-muted);font-size:.88rem;max-width:300px;}
+.footer-links h4{font-family:'Space Grotesk',sans-serif;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--text-muted);margin-bottom:1.5rem;}
+.footer-links ul{list-style:none;}
+.footer-links ul li{margin-bottom:.7rem;}
+.footer-links ul a{color:var(--text-muted);font-size:.88rem;transition:color var(--transition-fast);}
+.footer-links ul a:hover{color:var(--accent-bright);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.05);padding-top:2rem;text-align:center;color:#364151;font-size:.82rem;}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media(max-width:992px){
+  .hero-grid,.about-grid{grid-template-columns:1fr;}
+  .hero-visual{order:0;margin-bottom:2rem;}
+  .hero{text-align:center;}
+  .hero-subtitle,.hero-btns{margin-left:auto;margin-right:auto;justify-content:center;}
+  .hero-stat-badge{display:none;}
+  .widget-container{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr;}
+}
+@media(max-width:768px){
+  section{padding:5.5rem 0;}
+  .cta-banner{padding:5rem 0;}
+  .nav-links{display:none;}
+  .hamburger{display:flex;}
+  .services-grid,.testimonials-grid{grid-template-columns:1fr;}
+  .contact-items{flex-direction:column;align-items:center;}
+  .widget-container{padding:2rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- 1. DEMO BANNER -->
+<div class="demo-banner">✨ FREE demo for Elite Premium Services by Chandan Gosavi &mdash; <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live</a></div>
+
+<!-- 2. NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">💧 <span>Elite Premium Services</span></a>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#calculator">Calculator</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="tel:" class="btn btn-primary" style="padding:.5rem 1.4rem;font-size:.75rem;">Call Now</a>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#home">Home</a>
+    <a href="#calculator">Calculator</a>
+    <a href="#services">Services</a>
+    <a href="#contact">Contact</a>
+    <a href="tel:" class="btn btn-primary" style="text-align:center;margin-top:.5rem;">Call Now</a>
+  </div>
+</nav>
+
+<!-- 3. HERO -->
+<section class="hero" id="home">
+  <div class="spotlight"></div>
+  <div class="spotlight spotlight-2"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content reveal-left">
+        <div class="hero-content-tag">
+          <span class="section-tag">24/7 Emergency Plumbing</span>
+        </div>
+        <h1 class="text-gradient">Flow Restored.<br>Disaster Averted.</h1>
+        <p class="hero-subtitle">Expert leak detection, water heater installation, and pipe repair for residential and commercial properties — we answer every call, day or night.</p>
+        <div class="hero-btns">
+          <a href="#calculator" class="btn btn-primary btn-big">Calculate Leak Cost &rarr;</a>
+          <a href="tel:" class="btn btn-outline btn-big">Call Now</a>
+        </div>
+      </div>
+      <div class="hero-visual reveal-right">
+        <div class="hero-image-frame">
+          <img src="https://power7t.github.io/leadflow-demos/plumber-hero.jpg" alt="Elite Premium Services Plumbing">
+        </div>
+        <div class="hero-stat-badge">
+          <span class="badge-star">⭐</span>
+          <div>
+            <strong>4.9 Rating</strong>
+            <span>500+ Jobs Done</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. LEAK COST CALCULATOR WIDGET -->
+<section class="widget-section" id="calculator">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">Interactive Tool</span>
+      <h2>Leak Cost <span class="text-gradient">Calculator</span></h2>
+      <p>See how much a dripping pipe or running toilet really costs you over time.</p>
+    </div>
+    <div class="widget-container reveal">
+      <div>
+        <h3 style="font-size:1.6rem;margin-bottom:1.5rem;">Months Leaking</h3>
+        <div class="slider-wrapper">
+          <input type="range" id="monthsSlider" class="calc-slider" min="1" max="12" step="1" value="1">
+          <div class="slider-labels">
+            <span>1 Month</span>
+            <span>1 Year</span>
+          </div>
+        </div>
+        <div style="margin-top:2rem;">
+          <div class="widget-label">Gallons Wasted</div>
+          <div class="widget-value blue" id="gallonsOut">750</div>
+        </div>
+        <div>
+          <div class="widget-label">Estimated Bill Spike</div>
+          <div class="widget-value red" id="costOut">$15</div>
+        </div>
+        <a href="tel:" class="btn btn-primary" style="margin-top:1rem;">Fix It Now &rarr;</a>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+        <svg class="water-tank-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <!-- Pipe dripping -->
+          <path d="M 45 0 L 45 15 L 55 15 L 55 0 Z" fill="#9ca3af" />
+          <path d="M 40 15 L 60 15 L 60 20 L 40 20 Z" fill="#6b7280" />
+          <!-- Drop animation -->
+          <circle cx="50" cy="25" r="3" fill="#0284c7">
+            <animate attributeName="cy" values="25;90" dur="1s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite" />
+          </circle>
+          <!-- Water level -->
+          <rect id="waterRect" x="0" y="95" width="100" height="5" fill="#0284c7" opacity="0.8" style="transition:all 0.5s ease;" />
+        </svg>
+        <p style="font-size:.78rem;color:var(--text-muted);text-align:center;">Water level rises with each passing month of unaddressed leaks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. SERVICES -->
+<section class="services" id="services">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">What We Do</span>
+      <h2>What We <span class="text-gradient">Fix</span></h2>
+      <p>Comprehensive plumbing solutions for every situation — from emergency leaks to full bathroom remodels.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="service-icon">🚨</div>
+        <h3>Emergency Leak Repair</h3>
+        <p>Burst pipes, slab leaks, and emergency shutoffs handled fast — 24/7 — before the damage spreads any further.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">🔥</div>
+        <h3>Water Heater Install</h3>
+        <p>Tank and tankless water heater installations and replacements by certified technicians, same day available.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">🌀</div>
+        <h3>Drain Cleaning</h3>
+        <p>Hydro-jetting and snake clearing for slow drains, clogs, and full blockages anywhere in your plumbing system.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">🔧</div>
+        <h3>Pipe Replacement</h3>
+        <p>Full or partial repiping for old, corroded, or lead pipes — minimal disruption, guaranteed lasting results.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">🛁</div>
+        <h3>Bathroom Remodels</h3>
+        <p>Full plumbing for bathroom renovations, fixture upgrades, and new toilet, tub, and shower installations.</p>
+      </div>
+      <div class="service-card reveal">
+        <div class="service-icon">🏗️</div>
+        <h3>Sewer Line</h3>
+        <p>Sewer camera inspections, trenchless repairs, and full sewer line replacement when needed — guaranteed work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. ABOUT -->
+<section class="about" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-content reveal-left">
+        <span class="section-tag">Why Choose Us</span>
+        <h2>Why <span class="text-gradient">Elite Premium Services</span>?</h2>
+        <p>We're not just plumbers — we're your neighbors. Elite Premium Services has built a reputation on honest pricing, fast response, and work that lasts. Here's why thousands of homeowners trust us with their most important systems.</p>
+        <ul class="trust-list">
+          <li>
+            <div class="trust-check">✔</div>
+            <div><strong>Licensed &amp; Insured</strong> Fully licensed, bonded, and insured for your complete protection on every job.</div>
+          </li>
+          <li>
+            <div class="trust-check">✔</div>
+            <div><strong>Same-Day Service</strong> We dispatch within 2 hours for emergency calls, 7 days a week, no exceptions.</div>
+          </li>
+          <li>
+            <div class="trust-check">✔</div>
+            <div><strong>Upfront Pricing</strong> No hidden fees or surprise invoices. You approve the quote before we turn a wrench.</div>
+          </li>
+          <li>
+            <div class="trust-check">✔</div>
+            <div><strong>Lifetime Warranty on Parts</strong> Every part we install is backed by our lifetime parts warranty for your peace of mind.</div>
+          </li>
+        </ul>
+        <a href="tel:" class="btn btn-primary">Schedule a Visit</a>
+      </div>
+      <div class="about-img-wrap reveal-right">
+        <img src="https://power7t.github.io/leadflow-demos/plumber-about.jpg" alt="Elite Premium Services Plumbing Team">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-tag">Customer Reviews</span>
+      <h2>What Our Customers <span class="text-gradient">Say</span></h2>
+      <p>Real reviews from real homeowners who trusted Elite Premium Services with their plumbing emergencies.</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Elite Premium Services showed up within an hour of my emergency call. Fixed a burst pipe fast and professionally. They genuinely saved my basement from disaster!"</blockquote>
+        <div class="testimonial-author">
+          <strong>Mike T.</strong>
+          <span>Chicago, IL</span>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Best plumber I've ever hired. Elite Premium Services was completely upfront about pricing, lightning fast, and cleaned up perfectly after the job. No surprises."</blockquote>
+        <div class="testimonial-author">
+          <strong>Linda K.</strong>
+          <span>Phoenix, AZ</span>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Installed a new tankless water heater same day I called. Elite Premium Services made the whole process completely painless. Highly recommend to everyone!"</blockquote>
+        <div class="testimonial-author">
+          <strong>Carlos R.</strong>
+          <span>Dallas, TX</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. CTA BANNER -->
+<section class="cta-banner" id="emergency">
+  <div class="container reveal">
+    <h2>24/7 Emergency Plumber</h2>
+    <div class="cta-phone text-gradient"></div>
+    <p>We answer every call. Day or night. No voicemail. No waiting.</p>
+    <a href="tel:" class="btn btn-primary btn-big">Call Now &rarr;</a>
+    <p class="cta-sub">Licensed &bull; Insured &bull; Same-Day Response</p>
+  </div>
+</section>
+
+<!-- 9. CONTACT -->
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="contact-inner">
+      <div class="reveal">
+        <span class="section-tag">Get In Touch</span>
+        <h2>Reach <span class="text-gradient">Us</span></h2>
+        <p>Have a plumbing issue or need a free estimate? We're ready.</p>
+      </div>
+      <div class="contact-items reveal">
+        <div class="contact-item">
+          <div class="contact-item-icon">📞</div>
+          <div>
+            <strong>Phone</strong>
+            <a href="tel:"></a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-item-icon">📍</div>
+          <div>
+            <strong>Address</strong>
+            <span>123 Main Street, Your City, ST 00000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">Elite Premium Services<span> 💧</span></div>
+        <p>Licensed Plumbers. Guaranteed Work. Available 24 hours a day, 7 days a week for all your plumbing needs.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#calculator">Leak Calculator</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="tel:">Call Now</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2025 Elite Premium Services. All rights reserved. &nbsp;|&nbsp; Emergency Plumbing Available 24/7
+    </div>
+  </div>
+</footer>
+
+<!-- 11. JAVASCRIPT -->
+<script>
+  // --- NAVBAR SCROLL ---
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // --- HAMBURGER ---
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    mobileMenu.classList.toggle('open');
+  });
+  mobileMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+    });
+  });
+
+  // --- INTERSECTION OBSERVER REVEALS ---
+  const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const delay = parseInt(entry.target.dataset.delay || 0) * 100;
+        setTimeout(() => entry.target.classList.add('visible'), delay);
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  // Stagger cards
+  document.querySelectorAll('.service-card, .testimonial-card').forEach((el, i) => {
+    el.dataset.delay = i % 3;
+  });
+
+  revealEls.forEach(el => revealObserver.observe(el));
+
+  // --- LEAK COST CALCULATOR ---
+  const slider = document.getElementById('monthsSlider');
+  const gallonsOut = document.getElementById('gallonsOut');
+  const costOut = document.getElementById('costOut');
+  const waterRect = document.getElementById('waterRect');
+
+  function updateCalc() {
+    const months = parseInt(slider.value);
+    const gallons = months * 750;
+    const cost = months * 15;
+
+    gallonsOut.textContent = gallons.toLocaleString();
+    costOut.textContent = '$' + cost.toLocaleString();
+
+    // Update water level in SVG (fills up to 90% of height)
+    const pct = months / 12;
+    const h = pct * 90;
+    const y = 100 - h;
+    waterRect.setAttribute('height', h);
+    waterRect.setAttribute('y', y);
+  }
+
+  slider.addEventListener('input', updateCalc);
+  updateCalc();
+</script>
+
+<!-- LEADFLOW CONVERSION LAYER WITH CONTROL PANEL -->
+<style>
+  /* Styling for the sticky CTA bar */
+  .lf-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:9998;
+    display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    padding:14px 20px;background:rgba(10,10,12,.92);backdrop-filter:blur(12px);
+    border-top:1px solid rgba(255,255,255,.12);
+    transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
+  .lf-cta-bar.show{transform:translateY(0)}
+  .lf-cta-bar p{margin:0;font-size:15px;font-weight:500}
+  .lf-cta-bar p b{color:#4d9fff}
+  
+  .lf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+    text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:999px;
+    transition:transform .15s,box-shadow .15s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-btn:hover{transform:translateY(-2px)}
+  .lf-btn-primary{background:linear-gradient(135deg,#4d9fff,#2563eb);color:#fff;
+    box-shadow:0 4px 15px rgba(77,159,255,.3)}
+  .lf-btn-ghost{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12)}
+  .lf-btn-ghost:hover{background:rgba(255,255,255,.1)}
+
+  /* Original Modal styles */
+  .lf-modal-bg{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:20px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-modal-bg.show{display:flex;animation:lf-fade .3s ease}
+  .lf-modal{position:relative;max-width:440px;width:100%;background:#0d0e12;color:#fff;
+    border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 28px;text-align:center;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:lf-pop .35s cubic-bezier(.2,.9,.3,1.2)}
+  .lf-modal h2{margin:0 0 12px;font-size:24px;line-height:1.25}
+  .lf-modal h2 b{color:#4d9fff}
+  .lf-modal p{margin:0 0 24px;font-size:15px;line-height:1.6;color:#a0aec0}
+  .lf-modal .lf-btn{width:100%;font-size:16px;padding:14px}
+  .lf-modal .lf-sub{margin-top:14px;font-size:12px;color:#718096}
+  .lf-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#718096;
+    font-size:24px;line-height:1;cursor:pointer}
+  .lf-x:hover{color:#fff}
+
+  /* Control Panel Toggle Launcher Button */
+  .lf-launcher{position:fixed;bottom:30px;left:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(37, 99, 235, 0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;animation:lf-pulse 2s infinite}
+  .lf-launcher:hover{transform:scale(1.1) rotate(15deg);box-shadow:0 12px 40px rgba(37, 99, 235, 0.6)}
+  .lf-launcher.open{transform:scale(0.9) rotate(-90deg);background:#1a202c;border-color:rgba(255,255,255,0.1)}
+  .lf-launcher.shift{bottom:90px}
+  
+  @keyframes lf-pulse{
+    0%{box-shadow:0 0 0 0 rgba(37,99,235,0.6)}
+    70%{box-shadow:0 0 0 14px rgba(37,99,235,0)}
+    100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}
+  }
+
+  /* Control Panel Sidebar Drawer */
+  .lf-drawer{position:fixed;top:0;left:-380px;width:350px;height:100vh;z-index:99995;
+    background:rgba(10,11,15,0.92);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border-right:1px solid rgba(255,255,255,0.08);box-shadow:20px 0 80px rgba(0,0,0,0.65);
+    transition:transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    display:flex;flex-direction:column}
+  .lf-drawer.open{transform:translateX(380px)}
+  
+  .lf-drawer-header{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}
+  .lf-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.1em;
+    background:rgba(59,130,246,0.12);color:#3b82f6;padding:4px 10px;border-radius:4px;
+    border:1px solid rgba(59,130,246,0.25);margin-bottom:12px;text-transform:uppercase}
+  .lf-drawer-header h3{margin:0;font-size:20px;font-weight:700}
+  .lf-drawer-header p{margin:4px 0 0;font-size:13px;color:#a0aec0}
+  
+  .lf-drawer-body{padding:24px;overflow-y:auto;flex-grow:1;display:flex;flex-direction:column;gap:24px}
+  .lf-section-title{font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;
+    letter-spacing:0.08em;margin-bottom:12px}
+  
+  /* Audit Card */
+  .lf-audit-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);
+    border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+  .lf-progress-bg{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-top:6px}
+  .lf-progress-bar{height:100%;border-radius:3px;transition:width 1s ease}
+
+  /* Customizer Card */
+  .lf-color-grid{display:flex;gap:10px;margin-top:8px}
+  .lf-color-btn{width:34px;height:34px;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;transition:transform 0.2s,border-color 0.2s;position:relative}
+  .lf-color-btn:hover{transform:scale(1.15)}
+  .lf-color-btn.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
+  .lf-color-tooltip{position:absolute;bottom:42px;left:50%;transform:translateX(-50%) translateY(5px);
+    background:#1a202c;color:#fff;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+  .lf-color-btn:hover .lf-color-tooltip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Feature list */
+  .lf-feat-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+  .lf-feat-item{font-size:13px;color:#cbd5e0;display:flex;align-items:center;gap:10px}
+  .lf-feat-icon{color:#10b981;font-size:14px}
+
+  /* Profile Card */
+  .lf-profile{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px}
+  .lf-avatar{width:40px;height:40px;border-radius:50%;background:#3b82f6;display:flex;
+    align-items:center;justify-content:center;font-size:18px;font-weight:700}
+  .lf-profile-info{display:flex;flex-direction:column}
+  .lf-profile-name{font-size:13px;font-weight:700;color:#fff}
+  .lf-profile-role{font-size:11px;color:#718096}
+
+  .lf-drawer-footer{padding:20px;border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;flex-direction:column;gap:10px}
+  .lf-drawer-footer .lf-btn{width:100%;font-size:15px;padding:12px;font-weight:700}
+  
+  /* Chatbot styles */
+  .lf-chat-launcher{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#10b981,#059669);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(16,185,129,0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;user-select:none}
+  .lf-chat-launcher:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(16,185,129,0.6)}
+  
+  .lf-chat-window{position:fixed;bottom:96px;right:30px;width:320px;height:420px;z-index:99995;
+    background:rgba(10,11,15,0.96);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.65);
+    display:none;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    overflow:hidden;transition:all 0.3s ease}
+  .lf-chat-window.open{display:flex}
+  
+  .lf-chat-header{padding:14px 16px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;justify-content:space-between;align-items:center}
+  .lf-chat-header h4{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .lf-chat-header h4::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981}
+  
+  .lf-chat-messages{flex-grow:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
+    font-size:12.5px;line-height:1.45}
+  
+  .lf-msg{max-width:82%;padding:8px 12px;border-radius:12px;margin-bottom:2px;word-break:break-word}
+  .lf-msg-user{align-self:flex-end;background:#2563eb;color:#fff;border-bottom-right-radius:2px}
+  .lf-msg-ai{align-self:flex-start;background:rgba(255,255,255,0.06);color:#e2e8f0;border-bottom-left-radius:2px;border:1px solid rgba(255,255,255,0.04)}
+  
+  .lf-chat-input-area{padding:10px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;gap:8px;align-items:center}
+  .lf-chat-input{flex-grow:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:999px;padding:6px 14px;color:#fff;font-size:12.5px;outline:none;transition:border-color 0.2s}
+  .lf-chat-input:focus{border-color:#10b981}
+  .lf-chat-send{background:#10b981;border:none;color:#fff;border-radius:50%;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:background 0.2s}
+  .lf-chat-send:hover{background:#059669}
+  
+  .lf-typing{display:none;align-self:flex-start;background:rgba(255,255,255,0.03);padding:6px 12px;border-radius:12px;font-size:11px;color:#718096;margin:0 16px 8px}
+  
+  /* Timeline styles for Sequence */
+  .lf-timeline{display:flex;flex-direction:column;gap:14px;position:relative;padding-left:14px;margin-top:10px}
+  .lf-timeline::before{content:'';position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:rgba(255,255,255,0.08)}
+  .lf-timeline-item{display:flex;gap:10px;position:relative}
+  .lf-timeline-badge{width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-top:4px;
+    position:absolute;left:-14px;border:2px solid #0a0b0f}
+  .lf-timeline-content h4{margin:0;font-size:12.5px;font-weight:700;color:#fff}
+  .lf-timeline-content p{margin:2px 0 0;font-size:10.5px;color:#718096;line-height:1.4}
+  
+  @keyframes lf-fade{from{opacity:0}to{opacity:1}}
+</style>
+
+<div class="lf-launcher" id="lfLauncher" aria-label="Toggle Customizer">🛠️</div>
+
+<div class="lf-drawer" id="lfDrawer">
+  <div class="lf-drawer-header">
+    <div class="lf-badge">Live Demo Controls</div>
+    <h3>Custom Presentation</h3>
+    <p>Prepared for <b>Elite Premium Services</b></p>
+  </div>
+  
+  <div class="lf-drawer-body">
+    <!-- Audit Section -->
+    <div>
+      <div class="lf-section-title">Speed & Performance Audit</div>
+      <div class="lf-audit-card">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>Your Current Website:</span>
+            <span style="font-weight:700;color:#ef4444">No Website / 0</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:10%;background:#ef4444"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>LeadFlow Modern Demo:</span>
+            <span style="font-weight:700;color:#10b981">98 / 100</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:98%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Selection -->
+    <div>
+      <div class="lf-section-title">Tailor Brand Colors</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 10px">Preview this template in other primary branding styles instantly:</p>
+      <div class="lf-color-grid">
+        <button class="lf-color-btn active" id="lf-color-orange" data-color="orange" style="background:#E05A26" aria-label="Orange">
+          <span class="lf-color-tooltip">Amber Orange</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-blue" data-color="blue" style="background:#2563eb" aria-label="Blue">
+          <span class="lf-color-tooltip">Electric Blue</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-green" data-color="green" style="background:#10b981" aria-label="Green">
+          <span class="lf-color-tooltip">Emerald Green</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-gold" data-color="gold" style="background:#d97706" aria-label="Gold">
+          <span class="lf-color-tooltip">Honey Gold</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-pink" data-color="pink" style="background:#db2777" aria-label="Pink">
+          <span class="lf-color-tooltip">Rose Pink</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div>
+      <div class="lf-section-title">Built-in Enhancements</div>
+      <ul class="lf-feat-list">
+        <li class="lf-feat-item"><span class="lf-feat-icon">⚡</span> 340% faster loading speed</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">📱</span> Responsive mobile-first layout</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🛠️</span> Interactive pricing & cost estimators</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🎯</span> Modern UX to capture 3x more bookings</li>
+      </ul>
+    </div>
+
+    <!-- Outreach Sequence Timeline -->
+    <div>
+      <div class="lf-section-title">Autonomous Outreach Engine</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 12px">How we follow up with your prospects automatically:</p>
+      <div class="lf-timeline">
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#3b82f6"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 1: Personalized Pitch</h4>
+            <p>Initial email sent with custom demo site link.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#10b981"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 3: WhatsApp Nudge</h4>
+            <p>Follow-up text sent if booking is pending.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#fbbf24"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 7: Social Follow-up</h4>
+            <p>Instagram DM sent to maximize response rate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Designer profile -->
+    <div style="margin-top:auto">
+      <div class="lf-section-title">Created By</div>
+      <div class="lf-profile">
+        <div class="lf-avatar">CG</div>
+        <div class="lf-profile-info">
+          <span class="lf-profile-name">Alex from Sitelink</span>
+          <span class="lf-profile-role">Web Developer & Architect</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="lf-drawer-footer">
+    <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_drawer">Claim Website &rarr;</a>
+    
+  </div>
+</div>
+
+<div class="lf-chat-launcher" id="lfChatLauncher" aria-label="Open Chat">💬</div>
+
+<div class="lf-chat-window" id="lfChatWindow">
+  <div class="lf-chat-header">
+    <h4 style="margin:0">AI Assistant</h4>
+    <button class="lf-x" id="lfChatClose" style="position:static;font-size:20px;padding:0;background:none;border:none;color:#718096;cursor:pointer" aria-label="Close Chat">&times;</button>
+  </div>
+  <div class="lf-chat-messages" id="lfChatMessages">
+    <div class="lf-msg lf-msg-ai">Hi there! I'm your AI business assistant. How can I help you today?</div>
+  </div>
+  <div class="lf-typing" id="lfChatTyping">AI is typing...</div>
+  <div class="lf-chat-input-area">
+    <input type="text" class="lf-chat-input" id="lfChatInput" placeholder="Type a message...">
+    <button class="lf-chat-send" id="lfChatSend" aria-label="Send message">➔</button>
+  </div>
+</div>
+
+<div class="lf-cta-bar" id="lfBar">
+  <p>👀 Like this design for <b>Elite Premium Services</b>?</p>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_bar">Book a free call →</a>
+  
+</div>
+
+<div class="lf-modal-bg" id="lfModal">
+  <div class="lf-modal">
+    <button class="lf-x" id="lfX" aria-label="Close">&times;</button>
+    <h2>Want this site live for <b>Elite Premium Services</b>?</h2>
+    <p>This demo was built specifically for you. Book a free 15-minute call and
+       I'll have it live on your domain — no obligation, no upfront cost.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:15px;flex-wrap:wrap">
+      <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_modal">Claim this website →</a>
+      
+    </div>
+    <div class="lf-sub">Built by Alex from Sitelink</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var BEACON="", BID="", sent={};
+  // Dynamically fetch the current server URL so beacon always works even after
+  // tunnel rotation — decoupled from the URL that was baked in at deploy-time.
+  (function loadBeacon(){
+    try{
+      fetch("https://power7t.github.io/leadflow-demos/beacon-config.json?_="+Date.now(),{cache:"no-store"})
+        .then(function(r){return r.json();})
+        .then(function(d){BEACON=d.url||"";})
+        .catch(function(){});
+    }catch(e){}
+  })();
+  function ping(ev){
+    if(sent[ev])return; sent[ev]=true;
+    function _do(){if(!BEACON)return;try{fetch(BEACON+"/api/engage?bid="+BID+"&ev="+ev,{mode:"no-cors",keepalive:true});}catch(e){}}
+    if(BEACON){_do();}else{setTimeout(_do,2500);} // wait for beacon config fetch
+  }
+  
+  // Customizer color switching
+  var colors = {
+    orange: { primary: '#E05A26', bright: '#FF6B35', glow: 'rgba(224,90,38,0.15)' },
+    blue: { primary: '#2563eb', bright: '#3b82f6', glow: 'rgba(37,99,235,0.15)' },
+    green: { primary: '#10b981', bright: '#34d399', glow: 'rgba(16,185,129,0.15)' },
+    gold: { primary: '#d97706', bright: '#fbbf24', glow: 'rgba(217,119,6,0.15)' },
+    pink: { primary: '#db2777', bright: '#f472b6', glow: 'rgba(219,39,119,0.15)' }
+  };
+  
+  function setAccent(key) {
+    var root = document.documentElement;
+    var p = colors[key];
+    if (!p) return;
+    
+    // Standard variables across templates
+    root.style.setProperty('--accent-orange', p.primary);
+    root.style.setProperty('--accent-orange-bright', p.bright);
+    root.style.setProperty('--accent-orange-glow', p.glow);
+    root.style.setProperty('--accent-cyan', p.primary);
+    root.style.setProperty('--accent-cyan-bright', p.bright);
+    root.style.setProperty('--accent-cyan-glow', p.glow);
+    root.style.setProperty('--accent-teal', p.primary);
+    root.style.setProperty('--accent-teal-glow', p.glow);
+    root.style.setProperty('--accent-gold', p.primary);
+    root.style.setProperty('--accent-gold-glow', p.glow);
+    root.style.setProperty('--accent-pink', p.primary);
+    root.style.setProperty('--accent-pink-glow', p.glow);
+    root.style.setProperty('--accent-wood', p.primary);
+    root.style.setProperty('--accent-wood-glow', p.glow);
+    root.style.setProperty('--accent-green', p.primary);
+    root.style.setProperty('--accent-green-glow', p.glow);
+    
+    document.querySelectorAll('.lf-color-btn').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+    var activeBtn = document.getElementById('lf-color-' + key);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    ping('customize_color_' + key);
+  }
+  
+  document.querySelectorAll('.lf-color-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var col = btn.getAttribute('data-color');
+      setAccent(col);
+    });
+  });
+
+  // Drawer toggling
+  var launcher = document.getElementById('lfLauncher');
+  var drawer = document.getElementById('lfDrawer');
+  
+  launcher.addEventListener('click', function(){
+    var isOpen = drawer.classList.contains('open');
+    if(isOpen) {
+      drawer.classList.remove('open');
+      launcher.classList.remove('open');
+      launcher.classList.remove('lf-panel-open');
+      launcher.innerHTML = '🛠️';
+      ping('drawer_closed');
+    } else {
+      drawer.classList.add('open');
+      launcher.classList.add('open');
+      launcher.classList.add('lf-panel-open');
+      launcher.innerHTML = '×';
+      ping('drawer_opened');
+    }
+  });
+
+  // Sticky CTA bar appears once they've scrolled in a bit
+  var bar=document.getElementById("lfBar"), barShown=false;
+  function onScroll(){
+    var sc=window.scrollY, h=document.body.scrollHeight-window.innerHeight;
+    var pct=h>0?sc/h:0;
+    if(pct>0.12&&!barShown){
+      bar.classList.add("show");
+      barShown=true;
+      launcher.classList.add("shift");
+      ping("scroll_in");
+    }
+    if(pct>0.9)ping("scroll_90");
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+
+  // Modal: exit-intent on desktop, timed on mobile, once per visit
+  var modal=document.getElementById("lfModal"), fired=false;
+  function openModal(){
+    if(fired||sessionStorage.getItem("lfSeen"))return;
+    fired=true; sessionStorage.setItem("lfSeen","1");
+    modal.classList.add("show"); ping("modal_shown");
+  }
+  function closeModal(){modal.classList.remove("show");}
+  document.getElementById("lfX").addEventListener("click",closeModal);
+  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+  if(matchMedia("(pointer:fine)").matches){
+    document.addEventListener("mouseout",function(e){if(e.clientY<=0)openModal();});
+  } else {
+    setTimeout(openModal,28000);
+  }
+  
+  // Chat window toggling
+  var chatLauncher = document.getElementById('lfChatLauncher');
+  var chatWindow = document.getElementById('lfChatWindow');
+  var chatClose = document.getElementById('lfChatClose');
+  var chatInput = document.getElementById('lfChatInput');
+  var chatSend = document.getElementById('lfChatSend');
+  var chatMessages = document.getElementById('lfChatMessages');
+  var chatTyping = document.getElementById('lfChatTyping');
+  
+  if (chatLauncher) {
+    chatLauncher.addEventListener('click', function(){
+      var isOpen = chatWindow.classList.contains('open');
+      if(isOpen) {
+        chatWindow.classList.remove('open');
+        ping('chat_closed');
+      } else {
+        chatWindow.classList.add('open');
+        ping('chat_opened');
+        chatInput.focus();
+      }
+    });
+  }
+  
+  if (chatClose) {
+    chatClose.addEventListener('click', function(){
+      chatWindow.classList.remove('open');
+    });
+  }
+  
+  var chatHistory = [];
+  
+  function sendChatMessage() {
+    var txt = chatInput.value.trim();
+    if(!txt) return;
+    chatInput.value = '';
+    
+    // Add User message
+    var userDiv = document.createElement('div');
+    userDiv.className = 'lf-msg lf-msg-user';
+    userDiv.textContent = txt;
+    chatMessages.appendChild(userDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    chatHistory.push({role: 'user', content: txt});
+    ping('chat_message_sent');
+    
+    // Show typing
+    chatTyping.style.display = 'block';
+    
+    // Send to server
+    function _doChat(){
+      if(!BEACON) {
+        setTimeout(_doChat, 1000);
+        return;
+      }
+      fetch(BEACON + "/leads/" + BID + "/chat", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: txt, history: chatHistory })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = data.reply || "Sorry, I'm having trouble connecting right now.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        chatHistory.push({role: 'assistant', content: data.reply || ''});
+      })
+      .catch(function(){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = "Sorry, I could not reach the server.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+    _doChat();
+  }
+  
+  if (chatSend) chatSend.addEventListener('click', sendChatMessage);
+  if (chatInput) {
+    chatInput.addEventListener('keypress', function(e){
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+
+  // Track high-intent clicks
+  document.querySelectorAll("[data-lf]").forEach(function(el){
+    el.addEventListener("click",function(){ping(el.getAttribute("data-lf"));});
+  });
+})();
+</script>
+
+
+</body>
+</html>

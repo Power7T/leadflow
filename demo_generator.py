@@ -145,10 +145,69 @@ CATEGORY_FALLBACK_COLORS = {
 }
 
 
+def get_competitor_name(category: str, city: str, business_name: str) -> str:
+    """Search Google via Serper API to find the top local competitor."""
+    info = get_competitor_info(category, city, business_name)
+    return info.get("name", "")
+
+
+def get_competitor_info(category: str, city: str, business_name: str) -> dict:
+    """Return {name, url, score} for the top local competitor.
+
+    score is the website quality score (0-100) from score_website().
+    Returns empty dict on failure.
+    """
+    if not category or not city or not business_name:
+        return {}
+    import os
+    api_key = os.getenv("SERPER_API_KEY")
+    if not api_key:
+        return {}
+    try:
+        query = f"top {category} in {city}"
+        payload = {"q": query, "location": city}
+        headers = {'X-API-KEY': api_key, 'Content-Type': 'application/json'}
+        response = requests.post("https://google.serper.dev/search", json=payload, headers=headers, timeout=5)
+        if response.status_code != 200:
+            return {}
+        data = response.json()
+        name = ""
+        url = ""
+        # Try places (local map pack) first
+        places = data.get("places", [])
+        for place in places:
+            title = place.get("title", "")
+            if title and business_name.lower() not in title.lower() and "yelp" not in title.lower():
+                name = title
+                url = place.get("website", "") or place.get("link", "")
+                break
+        # Fallback to organic results
+        if not name:
+            organic = data.get("organic", [])
+            for org in organic:
+                title = org.get("title", "").split("-")[0].split("|")[0].strip()
+                if title and business_name.lower() not in title.lower() and "yelp" not in title.lower() and "bbb" not in title.lower():
+                    name = title
+                    url = org.get("link", "")
+                    break
+        if not name:
+            return {}
+        score = 0
+        if url:
+            try:
+                from analyzer import score_website
+                score = score_website(url) or 0
+            except Exception:
+                pass
+        return {"name": name, "url": url, "score": int(score)}
+    except Exception:
+        pass
+    return {}
+
 # ── Scraping ──────────────────────────────────────────────────────────────────
 
 def _scrape_site(url: str) -> dict:
-    """Fetch and extract everything useful from the existing website."""
+    """Fetch and extract everything useful from the existing website, including Deep-Dive into About/Services."""
     out = {
         "title": "", "description": "", "og_image": "",
         "about_text": "", "services": [], "images": [],
@@ -183,23 +242,30 @@ def _scrape_site(url: str) -> dict:
     if og_desc and not out["description"]:
         out["description"] = (og_desc.get("content") or "").strip()[:300]
 
-    # Accent color from theme-color meta
     tc = soup.find("meta", {"name": "theme-color"})
     if tc:
         out["accent_color"] = tc.get("content", "")
 
-    # Hero text — first big h1 or h2
     for tag in soup.find_all(["h1", "h2"]):
         text = tag.get_text(" ", strip=True)
         if 4 < len(text) < 120 and not any(bad in text.lower() for bad in ["cookie", "menu", "nav", "skip"]):
             out["hero_text"] = text
             break
 
-    # Strip noise before deep extraction
+    # Find Deep-Dive Links before decomposing noise
+    about_link = None
+    services_link = None
+    for a in soup.find_all("a", href=True):
+        href = a["href"].lower()
+        text = a.get_text(" ", strip=True).lower()
+        if not about_link and ("about" in href or "about" in text or "story" in href):
+            about_link = urljoin(base, a["href"])
+        if not services_link and ("service" in href or "service" in text or "treatment" in href):
+            services_link = urljoin(base, a["href"])
+
     for t in soup.find_all(STRIP_TAGS):
         t.decompose()
 
-    # Tagline — first p after h1/h2
     for h in soup.find_all(["h1", "h2"]):
         sib = h.find_next_sibling()
         if sib and sib.name == "p":
@@ -208,17 +274,14 @@ def _scrape_site(url: str) -> dict:
                 out["tagline"] = text
                 break
 
-    # About — biggest coherent paragraph (50–500 chars)
     paras = []
     for p in soup.find_all("p"):
         text = p.get_text(" ", strip=True)
         if 50 < len(text) < 500:
             paras.append(text)
     if paras:
-        # Prefer the longest meaningful paragraph
         out["about_text"] = max(paras, key=len)
 
-    # Services — headings/items inside a service-like section
     services = []
     for section in soup.find_all(["section", "div", "article"]):
         heading = section.find(["h2", "h3", "h4"])
@@ -227,7 +290,6 @@ def _scrape_site(url: str) -> dict:
         heading_text = heading.get_text(strip=True)
         if not SERVICE_KEYWORDS.search(heading_text):
             continue
-        # Collect child items (li or sub-headings + their p)
         items = []
         for li in section.find_all("li"):
             t = li.get_text(" ", strip=True)
@@ -236,15 +298,12 @@ def _scrape_site(url: str) -> dict:
         if not items:
             for h in section.find_all(["h3", "h4", "h5"]):
                 title = h.get_text(strip=True)
-                desc_p = h.find_next_sibling("p")
-                desc = desc_p.get_text(" ", strip=True)[:120] if desc_p else ""
                 if 2 < len(title) < 60:
-                    items.append({"title": title, "desc": desc})
+                    items.append({"title": title, "desc": ""})
         if items:
             services.extend(items[:6])
             break
 
-    # Fallback services — pull from any ul with 3+ short items
     if not services:
         for ul in soup.find_all("ul"):
             items = []
@@ -255,14 +314,45 @@ def _scrape_site(url: str) -> dict:
             if len(items) >= 3:
                 services = items[:6]
                 break
-
     out["services"] = services
 
-    # We never use the prospect's own images on demos — only built-in stock —
-    # so don't bother scraping them.
-    out["images"] = []
+    # ── DEEP-DIVE ─────────────────────────────────────────────────────────────
+    # If homepage was thin on About/Story, scrape the About page
+    if about_link and (not out["about_text"] or len(out["about_text"]) < 100):
+        try:
+            r = requests.get(about_link, headers=HEADERS, timeout=5)
+            if r.status_code == 200:
+                sub_soup = BeautifulSoup(r.text, "lxml")
+                for t in sub_soup.find_all(STRIP_TAGS): t.decompose()
+                sub_paras = [p.get_text(" ", strip=True) for p in sub_soup.find_all("p")]
+                long_paras = [p for p in sub_paras if 100 < len(p) < 600 and "cookie" not in p.lower()]
+                if long_paras:
+                    out["about_text"] = max(long_paras, key=len)  # Best guess at founding story
+        except Exception:
+            pass
 
+    # If homepage was thin on Services, scrape the Services page
+    if services_link and len(out["services"]) < 3:
+        try:
+            r = requests.get(services_link, headers=HEADERS, timeout=5)
+            if r.status_code == 200:
+                sub_soup = BeautifulSoup(r.text, "lxml")
+                for t in sub_soup.find_all(STRIP_TAGS): t.decompose()
+                sub_svcs = []
+                # Look for h2/h3 as service titles
+                for h in sub_soup.find_all(["h2", "h3"]):
+                    t = h.get_text(" ", strip=True)
+                    if 4 < len(t) < 40 and "contact" not in t.lower() and "about" not in t.lower():
+                        sub_svcs.append({"title": t, "desc": ""})
+                if len(sub_svcs) >= 3:
+                    out["services"] = sub_svcs[:6]
+        except Exception:
+            pass
+    # ──────────────────────────────────────────────────────────────────────────
+
+    out["images"] = []
     return out
+
 
 
 # ── HTML builder ──────────────────────────────────────────────────────────────
@@ -287,6 +377,26 @@ def _is_gym(category: str, name: str) -> bool:
     cat = (category or "").lower()
     nm = (name or "").lower()
     return bool(GYM_KEYWORDS.search(nm) or GYM_KEYWORDS.search(cat))
+
+
+def _pick_real_testimonials(reviews_list: list, count: int = 4) -> list[str]:
+    """Return up to `count` verbatim 4-5★ Google review texts, cleaned for HTML.
+
+    Only positive reviews (rating >= 4) are used — reviews that read like
+    complaints about staff/food/price are filtered client-side by the caller.
+    Returns an empty list if no qualifying reviews exist.
+    """
+    good = [r for r in (reviews_list or []) if isinstance(r, dict) and r.get("rating", 0) >= 4 and r.get("text", "").strip()]
+    # Prefer longer reviews with more substance; cap at 300 chars for layout
+    good.sort(key=lambda r: len(r["text"]), reverse=True)
+    out = []
+    for r in good[:count]:
+        text = r["text"].strip().replace('"', '“').replace('"', '”')
+        # Trim to 280 chars so testimonial cards don't overflow demo layout
+        if len(text) > 280:
+            text = text[:277].rstrip() + "…"
+        out.append(f'"{text}"')
+    return out
 
 
 def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = False) -> str:
@@ -316,7 +426,7 @@ def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = Fals
     _IPG = "https://pms5566.github.io/Iron-Peak-Gym/images/"
     hero_img     = _IPG + "hero-bg.png"
     about_img    = _IPG + "about.png"
-    gallery_imgs = []
+    gallery_imgs = _fetch_gmaps_photos(business.get("place_id", ""), n=4) if not use_stock else []
 
     # Build hero CSS background (no background-attachment:fixed — janky on mobile).
     hero_bg = (
@@ -399,6 +509,17 @@ def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = Fals
         phrase3 = "TRUE POTENTIAL"
         page_title = f"{name} | Elevate Your Performance"
         page_desc = f"Welcome to {name}. Premium fitness facility in your city."
+
+    # Override hardcoded testimonials with real 4-5★ Google reviews if available
+    real_testis = _pick_real_testimonials(business.get("reviews_list", []))
+    if len(real_testis) >= 1:
+        testi_1 = real_testis[0]
+    if len(real_testis) >= 2:
+        testi_2 = real_testis[1]
+    if len(real_testis) >= 3:
+        testi_3 = real_testis[2]
+    if len(real_testis) >= 4:
+        testi_4 = real_testis[3]
 
     # Program cards — use scraped services or defaults
     services = (scraped.get("services") or [])[:6]
@@ -1104,6 +1225,7 @@ def generate_demo_html(business: dict, website_data: dict = None, use_stock: boo
                 about_img = "/static/detailing_about.jpg"
             elif target_template == "treeservice.html":
                 hero_img = "/static/treeservice_hero.jpg"
+                about_img = "/static/treeservice_about.jpg"
             elif target_template == "chiropractor.html":
                 hero_img = "https://power7t.github.io/leadflow-demos/chiro-hero.jpg"
                 about_img = "https://power7t.github.io/leadflow-demos/chiro-about.jpg"
@@ -1125,6 +1247,42 @@ def generate_demo_html(business: dict, website_data: dict = None, use_stock: boo
             elif target_template == "interiordesign.html":
                 hero_img = "https://power7t.github.io/leadflow-demos/interiordesign-hero.jpg"
                 about_img = "https://power7t.github.io/leadflow-demos/interiordesign-about.jpg"
+            elif target_template == "pestcontrol.html":
+                hero_img = "https://images.unsplash.com/photo-1587825140062-720520658739?w=1400"
+                about_img = "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600"
+            elif target_template == "autorepair.html":
+                hero_img = "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1400"
+                about_img = "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600"
+            elif target_template == "homebuilder.html":
+                hero_img = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1400"
+                about_img = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600"
+            elif target_template == "vet.html":
+                hero_img = "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=1400"
+                about_img = "https://images.unsplash.com/photo-1628009368231-7bb7cbcb8127?w=600"
+            elif target_template == "wedding.html":
+                hero_img = "https://images.unsplash.com/photo-1519741497674-611481863552?w=1400"
+                about_img = "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600"
+            elif target_template == "electrician.html":
+                hero_img = "/static/electrician_hero.jpg"
+                about_img = "/static/electrician_about.jpg"
+            elif target_template == "orthodontist.html":
+                hero_img = "/static/orthodontist_hero.jpg"
+                about_img = "/static/orthodontist_about.jpg"
+            elif target_template == "pool.html":
+                hero_img = "/static/pool_hero.jpg"
+                about_img = "/static/pool_about.jpg"
+            elif target_template == "painting.html":
+                hero_img = "/static/painting_hero.jpg"
+                about_img = "/static/painting_about.jpg"
+            elif target_template == "flooring.html":
+                hero_img = "/static/flooring_hero.jpg"
+                about_img = "/static/flooring_about.jpg"
+            elif target_template == "trash.html":
+                hero_img = "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1400"
+                about_img = "https://images.unsplash.com/photo-1605608670494-b2c65a444c15?w=600"
+            elif target_template == "handyman.html":
+                hero_img = "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1400"
+                about_img = "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600"
             else:
                 hero_img, about_img = _STOCK_HERO, _STOCK_ABOUT
 
@@ -1393,6 +1551,16 @@ def generate_saas_crm_demo_html(business: dict) -> str:
     Generates a SaaS CRM Demo landing page for the prospect.
     Falls back to the generic generate_demo_html but with a SaaS theme twist.
     """
-    # For now, we wrap the generic demo HTML to satisfy the import. 
-    # In a full implementation, you could build a distinct Jinja template for SaaS.
-    return generate_demo_html(business)
+    name = business.get("name", "Your Business")
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>{name} - SaaS CRM Demo</title>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding: 50px;">
+    <h1>SaaS CRM Automation for {name}</h1>
+    <p>We built a custom automated CRM and lead-nurturing pipeline specifically for your workflow.</p>
+    <button style="padding: 15px 30px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">View Pipeline Setup</button>
+    {_track_pixel(business)}
+</body>
+</html>"""

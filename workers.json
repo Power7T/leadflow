@@ -1,0 +1,155 @@
+{
+  "result": [
+    {
+      "created_on": "2026-06-27T05:51:59.248509Z",
+      "modified_on": "2026-07-05T17:14:50.592622Z",
+      "id": "leadflow-relay",
+      "tag": "541a09542c514dedaaf3529a1a4513f6",
+      "tags": [],
+      "deployment_id": "",
+      "tail_consumers": null,
+      "logpush": false,
+      "has_assets": false,
+      "has_modules": true,
+      "etag": "57d0e4aa1d49afa44051fb0a0956bc1dc5fa07f22b75bc90f9f9188951799b84",
+      "handlers": [
+        "fetch"
+      ],
+      "last_deployed_from": "wrangler",
+      "compatibility_date": "2024-01-01",
+      "usage_model": "standard",
+      "routes": null
+    },
+    {
+      "created_on": "2026-06-29T14:42:03.294252Z",
+      "modified_on": "2026-06-29T18:14:02.575223Z",
+      "id": "leadflow-telegram",
+      "tag": "767b63f63c524ed0a2d32af7a50f80d2",
+      "tags": null,
+      "deployment_id": "",
+      "tail_consumers": null,
+      "logpush": false,
+      "has_assets": false,
+      "has_modules": true,
+      "etag": "884ca007b4d770bd2c1ec5eeba1d3238914c86591c51d6004b7efdf3e938be01",
+      "handlers": [
+        "fetch"
+      ],
+      "last_deployed_from": "wrangler",
+      "compatibility_date": "2024-01-01",
+      "usage_model": "standard",
+      "routes": null
+    },
+    {
+      "created_on": "2026-06-06T20:16:12.611336Z",
+      "modified_on": "2026-06-06T20:16:13.772288Z",
+      "id": "lively-heart-3993",
+      "tag": "119b15466efb487ba425ffc4f25fe754",
+      "tags": null,
+      "deployment_id": "",
+      "tail_consumers": null,
+      "logpush": false,
+      "observability": {
+        "enabled": true,
+        "head_sampling_rate": 1,
+        "logs": {
+          "enabled": true,
+          "head_sampling_rate": 1,
+          "persist": true,
+          "invocation_logs": true
+        },
+        "traces": {
+          "enabled": false,
+          "persist": true,
+          "head_sampling_rate": 1
+        }
+      },
+      "has_assets": false,
+      "has_modules": true,
+      "etag": "bcd772621630eb8ddfca2ad6947ed8cd90ac5e0f72b7b749b022b56e6c9a14d4",
+      "handlers": [
+        "fetch"
+      ],
+      "last_deployed_from": "dash_template",
+      "compatibility_date": "2026-06-06",
+      "usage_model": "standard",
+      "routes": null
+    },
+    {
+      "created_on": "2025-07-04T11:07:42.388225Z",
+      "modified_on": "2026-01-23T05:27:52.564864Z",
+      "id": "my-complete-telegram-bot",
+      "tag": "0c986652e0d54c1b8af9c62e8f9adbf1",
+      "tags": [],
+      "deployment_id": "",
+      "tail_consumers": null,
+      "logpush": false,
+      "has_assets": false,
+      "has_modules": true,
+      "etag": "7ad6d05b3e78cde60d182e570d9d441cbfb4689f0efdc41a6a8f9a4a5a53b91d",
+      "handlers": [
+        "fetch"
+      ],
+      "named_handlers": [
+        {
+          "name": "QuizDatabase",
+          "handlers": [
+            "class"
+          ]
+        },
+        {
+          "name": "SessionManager",
+          "handlers": [
+            "class"
+          ]
+        }
+      ],
+      "last_deployed_from": "wrangler",
+      "migration_tag": "v1",
+      "compatibility_date": "2024-01-01",
+      "usage_model": "standard",
+      "routes": null
+    },
+    {
+      "created_on": "2025-07-13T07:37:21.382516Z",
+      "modified_on": "2025-07-19T17:23:36.175493Z",
+      "id": "my-new-telegram-bot",
+      "tag": "a93b1e96804d4e8da6f01e77a0167858",
+      "tags": [],
+      "deployment_id": "",
+      "tail_consumers": null,
+      "logpush": false,
+      "observability": {
+        "enabled": false,
+        "head_sampling_rate": 1,
+        "logs": {
+          "enabled": true,
+          "head_sampling_rate": 1,
+          "persist": true,
+          "invocation_logs": true
+        },
+        "traces": {
+          "enabled": false,
+          "persist": true,
+          "head_sampling_rate": 1
+        }
+      },
+      "has_assets": false,
+      "has_modules": true,
+      "etag": "cbf527d02e13bc73ac6c10c2c4babd4aeef3e37853bc5af916c9baf17cf2db8e",
+      "handlers": [
+        "fetch"
+      ],
+      "last_deployed_from": "wrangler",
+      "compatibility_date": "2025-07-13",
+      "compatibility_flags": [
+        "nodejs_compat"
+      ],
+      "usage_model": "standard",
+      "routes": null
+    }
+  ],
+  "success": true,
+  "errors": [],
+  "messages": []
+}

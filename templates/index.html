@@ -134,7 +134,7 @@
   <!-- Right Side: Stats & Config -->
   <div>
     <!-- Daily Limit Stats Card -->
-    {% set limit = cfg.max_auto_send | default(10) %}
+    {% set limit = cfg.get('max_auto_send') if cfg.get('max_auto_send') is not none else 10 %}
     {% set limit = limit if limit > 0 else 10 %}
     <div class="form-card" style="margin-bottom: 24px;">
       <h2>📊 Deliverability & Protection</h2>

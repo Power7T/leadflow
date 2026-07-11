@@ -3,7 +3,7 @@
 import { notifyAll, PIXEL_GIF } from "./utils.js";
 
 // A static fallback token (should be overridden by a secret in the dashboard)
-const DEFAULT_TOKEN = "lf_sec_9e21808ccce4d37";
+const DEFAULT_TOKEN = ""; // Read from env.SECRET_TOKEN binding — never hardcode
 
 /** Helper: verify the secret token supplied via header or query */
 function verify(request, env) {

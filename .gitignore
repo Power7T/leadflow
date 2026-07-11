@@ -39,6 +39,7 @@ ENV/
 
 # ── Logs ────────────────────────────────────────────────────────────────────
 *.log
+*.log.*
 *.bak
 server_run.log
 daemon.log
@@ -48,6 +49,9 @@ demos/
 cf_stage/
 leadflow-demos/
 *.html.bak
+kv.json
+test_secret.py
+clean_secrets.py
 
 # ── Patch/fix scripts (one-off) ─────────────────────────────────────────────
 patch_*.py

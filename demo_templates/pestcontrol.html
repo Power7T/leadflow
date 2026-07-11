@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ lead.name }} | Premium Pest Control & Gutter Solutions</title>
+<meta name="description" content="Welcome to {{ lead.name }}. Your local GAF-certified Pest Control contractor. Specializing in high-durability Property replacements, emergency leak repairs, and seamless gutters.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg-primary:#0A0D10;
+  --bg-secondary:#12171E;
+  --bg-tertiary:#1A212B;
+  --accent-orange:#E05A26;
+  --accent-orange-glow:rgba(224,90,38,0.15);
+  --accent-orange-bright:#FF6B35;
+  --text-white:#FFFFFF;
+  --text-gray:#9FA8B4;
+  --text-muted:#626D7C;
+  --glass-bg:rgba(18,23,30,0.95);
+  --glass-border:rgba(224,90,38,0.1);
+  --glass-border-hover:rgba(224,90,38,0.35);
+  --border-radius-sm:8px;
+  --border-radius-md:16px;
+  --border-radius-lg:24px;
+  --shadow-sm:0 4px 12px rgba(10,13,16,0.5);
+  --shadow-md:0 12px 32px rgba(10,13,16,0.7);
+  --shadow-lg:0 24px 64px rgba(10,13,16,0.9);
+  --shadow-orange:0 0 25px rgba(224,90,38,0.25);
+  --transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);
+  --transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);
+  --transition-slow:0.8s cubic-bezier(0.25,1,0.5,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Inter',sans-serif;overflow-x:hidden}
+body{overflow-x:hidden;line-height:1.7;cursor:none}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--bg-tertiary);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-orange)}
+h1,h2,h3,h4,h5,h6{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:-0.02em;line-height:1.15;color:var(--text-white)}
+p{color:var(--text-gray);font-weight:300}
+a{text-decoration:none;color:inherit}
+.text-gradient-orange{background:linear-gradient(135deg,#FFFFFF 0%,var(--accent-orange-bright) 60%,var(--accent-orange) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.95rem 2.2rem;font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-decoration:none;border-radius:var(--border-radius-sm);border:1px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
+.btn-primary{background-color:var(--accent-orange);color:#FFF;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:transparent;border-color:var(--accent-orange);color:var(--accent-orange);box-shadow:var(--shadow-orange);transform:translateY(-2px)}
+.btn-secondary{background:transparent;border-color:var(--glass-border);color:var(--text-white)}
+.btn-secondary:hover{background:rgba(255,255,255,.03);border-color:var(--accent-orange);transform:translateY(-2px)}
+.btn-emergency{background-color:#E53E3E;color:#FFF;box-shadow:0 4px 15px rgba(229,62,62,0.3);animation:pulse-red 2s infinite}
+.btn-emergency:hover{background-color:#C53030;transform:translateY(-2px)}
+@keyframes pulse-red{
+  0%{box-shadow:0 0 0 0 rgba(229,62,62,0.4)}
+  70%{box-shadow:0 0 0 12px rgba(229,62,62,0)}
+  100%{box-shadow:0 0 0 0 rgba(229,62,62,0)}
+}
+section{padding:8.5rem 0;position:relative;overflow:hidden}
+.section-tag{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent-orange-bright);margin-bottom:1rem;display:inline-block;background:rgba(224,90,38,0.08);padding:4px 14px;border-radius:4px;border:1px solid rgba(224,90,38,0.15)}
+.section-title{font-size:3.2rem;margin-bottom:1.5rem}
+.section-desc{font-size:1.05rem;max-width:600px;margin-bottom:4rem}
+
+/* REVEAL */
+.reveal{opacity:0;transition:var(--transition-slow)}
+.reveal-slide-up{transform:translateY(40px)}
+.reveal-slide-left{transform:translateX(40px)}
+.reveal-slide-right{transform:translateX(-40px)}
+.reveal-scale-in{transform:scale(.97)}
+.reveal.revealed{opacity:1;transform:none}
+.delay-100{transition-delay:.1s}
+.delay-200{transition-delay:.2s}
+.delay-300{transition-delay:.3s}
+
+/* CURSOR */
+.custom-cursor-dot{position:fixed;width:6px;height:6px;background:var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
+.custom-cursor-ring{position:fixed;width:36px;height:36px;border:1px solid var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.5}
+body.cursor-hover .custom-cursor-dot{width:4px;height:4px;background:#FFF}
+body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;opacity:.3}
+@media(max-width:768px){.custom-cursor-dot,.custom-cursor-ring{display:none}body{cursor:auto}}
+
+/* SPOTLIGHT */
+.spotlight{position:absolute;width:550px;height:550px;background:radial-gradient(circle,var(--accent-orange-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.4}
+
+/* DEMO BANNER */
+.demo-banner{background:var(--accent-orange);color:#0A0D10;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.demo-banner a{color:#0A0D10;text-decoration:underline;font-weight:800}
+.demo-banner .orig{font-size:11px;font-weight:400;opacity:.8}
+
+/* Floating Emergency Badge */
+{% if lead.phone %}
+.emergency-float{position:fixed;bottom:30px;right:30px;z-index:999;display:flex;align-items:center;gap:10px;background:#E53E3E;color:#FFF;padding:12px 24px;border-radius:50px;box-shadow:0 8px 30px rgba(229,62,62,0.4);font-weight:700;font-size:0.85rem;letter-spacing:0.05em;text-transform:uppercase;transition:var(--transition-smooth);font-family:'Space Grotesk',sans-serif}
+.emergency-float:hover{background:#C53030;transform:translateY(-3px)}
+.emergency-icon-ring{width:8px;height:8px;background:#FFF;border-radius:50%;animation:ping-red 1.2s infinite}
+@keyframes ping-red{
+  0%{transform:scale(0.8);opacity:1}
+  100%{transform:scale(2.4);opacity:0}
+}
+@media(max-width:768px){.emergency-float{bottom:20px;right:20px;padding:10px 18px;font-size:0.75rem}}
+{% endif %}
+
+/* NAVBAR */
+.navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;transition:var(--transition-smooth)}
+.navbar.scrolled{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border);box-shadow:var(--shadow-sm)}
+.nav-container{display:flex;justify-content:space-between;align-items:center;height:95px;transition:var(--transition-smooth)}
+.navbar.scrolled .nav-container{height:75px}
+.logo{font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;color:var(--text-white);display:flex;align-items:center;gap:.6rem;letter-spacing:-1px}
+.logo span{color:var(--accent-orange-bright)}
+.logo-icon{width:26px;height:26px;background:linear-gradient(135deg,var(--accent-orange-bright),var(--accent-orange));border-radius:4px;position:relative;flex-shrink:0}
+.logo-icon::after{content:'';position:absolute;width:14px;height:2px;background:var(--bg-primary);top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg)}
+.logo-icon::before{content:'';position:absolute;width:14px;height:2px;background:var(--bg-primary);top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg)}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{color:var(--text-gray);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;transition:var(--transition-fast);position:relative;padding:.5rem 0}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:var(--accent-orange-bright);transition:var(--transition-smooth);transform:translateX(-50%)}
+.nav-links a:hover,.nav-links a.active{color:var(--text-white)}.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-actions{display:flex;align-items:center;gap:1.5rem}
+.hamburger{display:none;cursor:pointer;background:none;border:none;padding:.5rem}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text-white);margin:6px 0;transition:var(--transition-smooth)}
+.hamburger.active span:nth-child(1){transform:rotate(-45deg) translate(-5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(45deg) translate(-5px,-5px)}
+
+/* HERO */
+.hero{height:100vh;min-height:800px;display:flex;align-items:center;position:relative;padding-top:100px;background:var(--bg-primary)}
+.hero-bg-overlay{position:absolute;inset:0;background:linear-gradient(rgba(10,13,16,0.88),rgba(10,13,16,0.96)),url('{{ hero_img }}') center/cover no-repeat;z-index:1}
+.hero .container{position:relative;z-index:2}
+.hero-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:4rem;align-items:center}
+.hero-content{max-width:650px}
+.hero-tag{background:rgba(224,90,38,0.08);border:1px solid rgba(224,90,38,0.25);color:var(--accent-orange-bright);padding:.4rem 1.2rem;border-radius:4px;font-weight:700;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
+.hero-tag::before{content:'';width:4px;height:4px;background:var(--accent-orange-bright);border-radius:50%}
+.hero-name{font-size:4.2rem;line-height:1.05;margin-bottom:1.5rem;font-weight:700}
+.hero-desc{font-size:1.1rem;color:var(--text-gray);margin-bottom:2.5rem}
+.hero-btns{display:flex;gap:1.5rem;flex-wrap:wrap}
+.hero-visual{position:relative;display:flex;justify-content:center;align-items:center}
+.hero-image-frame{width:100%;max-width:440px;aspect-ratio:0.9;border-radius:var(--border-radius-md);overflow:hidden;border:1px solid var(--glass-border-hover);box-shadow:var(--shadow-lg);transform:rotate(-1.5deg);transition:var(--transition-smooth)}
+.hero-image-frame img{width:100%;height:100%;object-fit:cover}
+.hero-visual:hover .hero-image-frame{transform:rotate(0deg) scale(1.02)}
+.hero-floating-badge{position:absolute;bottom:30px;left:-20px;background:var(--bg-secondary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-sm);padding:1rem 1.5rem;box-shadow:var(--shadow-md);z-index:3;display:flex;align-items:center;gap:.8rem}
+.h-badge-icon{font-size:1.5rem}
+
+/* STATS */
+.stats{padding:0;margin-top:-60px;position:relative;z-index:10}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:2.5rem;box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--accent-orange),transparent)}
+.stat-item{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
+.stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--bg-tertiary)}
+.stat-number{font-family:'Space Grotesk',sans-serif;font-size:3rem;font-weight:700;line-height:1;margin-bottom:.3rem;color:var(--text-white)}
+.stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-gray);font-weight:600}
+
+/* ABOUT */
+.about{background:var(--bg-secondary)}
+.about-grid{display:grid;grid-template-columns:0.95fr 1.05fr;gap:5.5rem;align-items:center}
+.about-content{position:relative}
+.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3.5rem}
+.about-feature{display:flex;gap:1.2rem;flex-direction:column}
+.about-feature-icon{width:42px;height:42px;border:1px solid var(--glass-border);background:var(--bg-tertiary);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--accent-orange-bright);transition:var(--transition-smooth)}
+.about-feature:hover .about-feature-icon{border-color:var(--accent-orange-bright);box-shadow:var(--shadow-orange);background:var(--accent-orange-bright);color:#FFF}
+.about-feature h4{font-size:1.1rem;margin-bottom:.4rem;font-weight:700;color:var(--text-white)}
+.about-feature p{font-size:.85rem;line-height:1.6;color:var(--text-gray)}
+.about-img-wrapper{position:relative;display:flex;justify-content:center;align-items:center}
+.about-image{width:100%;max-width:440px;aspect-ratio:0.85;border-radius:var(--border-radius-sm);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
+.about-img-frame{position:absolute;width:calc(100% - 30px);max-width:440px;aspect-ratio:0.85;border:2px solid var(--accent-orange);border-radius:var(--border-radius-sm);z-index:1;transform:translate(15px,15px);transition:var(--transition-smooth)}
+.about-img-wrapper:hover .about-img-frame{transform:translate(8px,8px)}
+.about-badge{position:absolute;top:-25px;right:-15px;background:var(--bg-primary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-sm);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
+
+/* INTERACTIVE Property ESTIMATOR */
+.calculator-section{background:var(--bg-primary);position:relative}
+.calc-container{max-width:900px;margin:0 auto;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:3.5rem;box-shadow:var(--shadow-lg);position:relative;z-index:2}
+.calc-header{text-align:center;margin-bottom:3rem}
+.calc-header h3{font-size:2.2rem;margin-bottom:.5rem}
+.calc-header p{color:var(--text-gray)}
+.calc-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:3.5rem;align-items:flex-start}
+.calc-inputs{display:flex;flex-direction:column;gap:2rem}
+.calc-group{display:flex;flex-direction:column;gap:.8rem}
+.calc-label{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:600;display:flex;justify-content:space-between}
+.calc-label span:last-child{color:var(--accent-orange-bright)}
+.slider-container{position:relative;display:flex;align-items:center}
+.calc-slider{width:100%;height:6px;background:var(--bg-tertiary);outline:none;border-radius:3px;-webkit-appearance:none}
+.calc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--accent-orange-bright);border-radius:50%;cursor:pointer;transition:var(--transition-fast);box-shadow:0 0 10px var(--accent-orange-bright)}
+.calc-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.material-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.material-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:1.2rem;text-align:center;cursor:pointer;transition:var(--transition-smooth)}
+.material-card h5{font-size:.9rem;margin-bottom:.3rem}
+.material-card p{font-size:.75rem;color:var(--text-muted)}
+.material-card.active{border-color:var(--accent-orange-bright);background:rgba(224,90,38,0.06);box-shadow:0 0 15px rgba(224,90,38,0.15)}
+.calc-outputs{background:var(--bg-tertiary);border:1px solid var(--glass-border-hover);border-radius:var(--border-radius-sm);padding:2.5rem;display:flex;flex-direction:column;gap:1.8rem;position:sticky;top:120px}
+.calc-output-item{display:flex;flex-direction:column;gap:.3rem}
+.calc-output-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted)}
+.calc-output-val{font-family:'Space Grotesk',sans-serif;font-size:2.2rem;font-weight:700;color:var(--accent-orange-bright)}
+.calc-details{border-top:1px solid var(--glass-border);padding-top:1.2rem;display:flex;flex-direction:column;gap:.8rem;font-size:.85rem}
+.calc-detail-row{display:flex;justify-content:space-between}
+.calc-detail-row span:last-child{font-weight:600;color:var(--text-white)}
+
+/* SERVICES */
+.services-section{background:var(--bg-secondary)}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}
+.service-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
+.service-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-orange-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}
+.service-card:hover{transform:translateY(-8px);border-color:var(--accent-orange-bright);box-shadow:var(--shadow-md)}
+.service-card:hover::before{opacity:1}
+.service-icon{width:46px;height:46px;background:var(--bg-secondary);border-radius:4px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.3rem;transition:var(--transition-smooth);color:var(--accent-orange-bright);position:relative;z-index:1}
+.service-card:hover .service-icon{border-color:#FFF;background:#FFF;color:#0F1215}
+.service-card h3{font-size:1.35rem;margin-bottom:.8rem;position:relative;z-index:1;font-weight:700}
+.service-card p{font-size:.88rem;line-height:1.65;margin-bottom:2rem;position:relative;z-index:1;color:var(--text-gray)}
+.service-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:var(--accent-orange-bright);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;transition:var(--transition-fast);position:relative;z-index:1}
+.service-card:hover .service-link{color:#FFF}
+
+/* TESTIMONIALS */
+.testimonials-section{padding:8.5rem 0;background:var(--bg-primary)}
+.t-slider-outer{overflow:hidden;margin-top:4rem}
+.t-slider{display:flex;gap:2rem;transition:transform .5s ease;cursor:grab}
+.t-slider.dragging{cursor:grabbing;transition:none}
+.t-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px;box-shadow:var(--shadow-sm)}
+.t-stars{color:var(--accent-orange-bright);font-size:.9rem;margin-bottom:1.2rem;letter-spacing:1.5px}
+.t-card p{font-size:1.02rem;line-height:1.75;margin-bottom:2rem;font-style:italic;color:var(--text-white);font-weight:400}
+.t-author{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+.t-author span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.7rem;color:var(--text-muted);margin-top:.3rem;text-transform:none;letter-spacing:0}
+.t-controls{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:2.5rem}
+.t-btn{width:42px;height:42px;border-radius:4px;background:var(--bg-secondary);border:1px solid var(--glass-border);color:var(--text-white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:var(--transition-fast)}
+.t-btn:hover{background:#FFF;color:#0A0D10;border-color:#FFF}
+.t-dots{display:flex;gap:.6rem}
+.t-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}.t-dot.active{background:var(--accent-orange-bright);width:16px;border-radius:3px}
+
+/* CTA */
+.cta-section{padding:8.5rem 0;background:var(--bg-primary)}
+.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:6.5rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-md)}
+.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--accent-orange-bright),transparent)}
+.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:350px;height:350px;background:radial-gradient(circle,var(--accent-orange-glow),transparent 70%);pointer-events:none}
+.cta-banner h2{font-size:3.4rem;max-width:750px;margin:0 auto 1.5rem;font-weight:700}
+.cta-banner p{font-size:1.05rem;max-width:550px;margin:0 auto 3rem}
+
+/* CONTACT */
+.contact-section{background:var(--bg-secondary)}
+.cinfo-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:3rem}
+.cinfo-item{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}
+.cinfo-item:hover{border-color:var(--accent-orange-bright);color:var(--text-white)}
+
+/* FOOTER */
+.footer{background:var(--bg-primary);border-top:1px solid var(--glass-border);padding:6.5rem 0 3rem}
+.footer-grid{display:grid;grid-template-columns:1.20fr .8fr .8fr;gap:4.5rem;margin-bottom:5.5rem}
+.footer-col h4{font-size:1.15rem;margin-bottom:2rem;padding-bottom:.5rem;position:relative;font-weight:700;text-transform:uppercase;letter-spacing:0.1em}
+.footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:24px;height:2px;background:var(--accent-orange-bright)}
+.footer-about p{font-size:.88rem;margin-top:1.2rem;margin-bottom:2rem;line-height:1.7}
+.social-links{display:flex;gap:1rem}
+.social-btn{width:40px;height:40px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:4px;color:var(--text-white);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;transition:var(--transition-smooth)}
+.social-btn:hover{background:#FFF;color:#0A0D10;border-color:#FFF;transform:translateY(-2px)}
+.footer-links{list-style:none}.footer-links li{margin-bottom:.9rem}.footer-links a{color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}.footer-links a:hover{color:var(--text-white);padding-left:5px}
+.footer-bottom{border-top:1px solid var(--glass-border);padding-top:3rem;display:flex;justify-content:space-between;align-items:center}
+.footer-bottom p{font-size:.8rem;color:var(--text-muted)}
+.footer-bottom a{color:var(--text-white);font-weight:700}
+
+/* RESPONSIVE */
+@media(max-width:991px){
+  .hero-grid{grid-template-columns:1fr;gap:3rem;text-align:center}
+  .hero-visual{order:-1}
+  .hero-content{margin:0 auto}
+  .about-grid{grid-template-columns:1fr;gap:3.5rem}
+  .about-img-wrapper{order:-1}
+  .hamburger{display:block}
+  .nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}
+  .nav-links.active{right:0}
+  .nav-actions{margin-right:3rem}
+  .services-grid{grid-template-columns:repeat(2,1fr)}
+  .calc-grid{grid-template-columns:1fr;gap:2.5rem}
+  .calc-outputs{position:static}
+}
+@media(max-width:768px){
+  .hero-name{font-size:3.2rem}
+  .section-title{font-size:2.4rem}
+  .services-grid{grid-template-columns:1fr}
+  .t-card{flex:0 0 calc(100% - 1rem)}
+  .stats-grid{grid-template-columns:repeat(2,1fr);padding:1.5rem}
+  .cta-banner{padding:3.5rem 1.5rem}
+  .cta-banner h2{font-size:2.2rem}
+  .footer-grid{grid-template-columns:1fr;gap:2.5rem}
+  .footer-bottom{flex-direction:column;gap:1rem;text-align:center}
+  .calc-container{padding:2rem 1.5rem}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+  .material-selector{grid-template-columns:1fr}
+}
+</style>
+
+<!-- CONVERSION BOOST CSS -->
+<style>
+/* Hide standard navbar — pure proposal page */
+.navbar { display: none !important; }
+.hero { padding-top: 0 !important; }
+
+/* ── Urgency Marquee Ticker ── */
+.urg-ticker {
+  background: linear-gradient(90deg, #ff4444, #ff6600);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10001;
+  padding: 8px 0;
+  letter-spacing: 0.03em;
+}
+.urg-ticker-inner {
+  display: inline-block;
+  animation: marquee-scroll 28s linear infinite;
+}
+.urg-ticker-inner span { margin: 0 3rem; }
+@keyframes marquee-scroll {
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
+}
+
+/* ── Demo Banner (urgency version) ── */
+.demo-banner {
+  background: #0f0f0f !important;
+  color: #fff !important;
+  border-bottom: 2px solid #ff4444;
+  padding: 10px 20px !important;
+}
+.demo-banner a { color: #4ade80 !important; }
+.demo-banner .countdown-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.demo-banner .countdown-timer {
+  font-weight: 800;
+  color: #ff4444;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+/* ── Floating WhatsApp Button ── */
+.wa-float {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.wa-float-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.55);
+  animation: wa-pulse 2.2s ease-in-out infinite;
+  position: relative;
+}
+.wa-float-btn svg { width: 32px; height: 32px; }
+.wa-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: #ff4444;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  font-family: sans-serif;
+}
+.wa-float-label {
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: sans-serif;
+}
+@keyframes wa-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37,211,102,0.55); }
+  50%       { box-shadow: 0 4px 32px rgba(37,211,102,0.85), 0 0 0 8px rgba(37,211,102,0.15); }
+}
+
+/* ── Urgency strip below hero buttons ── */
+.hero-urgency-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+}
+.urg-pill {
+  background: rgba(255,68,68,0.12);
+  border: 1px solid rgba(255,68,68,0.35);
+  color: #ff7777;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-family: sans-serif;
+}
+.urg-pill.green {
+  background: rgba(74,222,128,0.1);
+  border-color: rgba(74,222,128,0.3);
+  color: #4ade80;
+}
+
+/* ── Email CTA btn ── */
+.btn-email-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.8rem 1.8rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  text-decoration: none;
+  transition: all 0.3s;
+  font-family: 'Inter', sans-serif;
+}
+.btn-email-cta:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.4);
+}
+
+/* ── Scarcity box ── */
+.scarcity-box {
+  background: linear-gradient(135deg, rgba(255,68,68,0.08), rgba(255,102,0,0.06));
+  border: 1px solid rgba(255,68,68,0.2);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: sans-serif;
+  max-width: 460px;
+}
+.scarcity-box .sc-icon { font-size: 1.4rem; flex-shrink: 0; }
+.scarcity-box .sc-text { font-size: 0.85rem; color: #ffaaaa; line-height: 1.4; }
+.scarcity-box .sc-text strong { color: #ff6666; }
+
+@media(max-width: 576px) {
+  .wa-float { bottom: 16px; right: 14px; }
+  .wa-float-btn { width: 52px; height: 52px; }
+  .hero-urgency-strip { gap: 8px; }
+}
+</style>
+
+</head>
+<body>
+<!-- URGENCY MARQUEE TICKER -->
+<div class="urg-ticker" aria-hidden="true">
+  <div class="urg-ticker-inner">
+    <span>🔥 FREE demo — built exclusively for {{ lead.name }}</span>
+    <span>📊 80% of customers check a business online before visiting</span>
+    <span>⏰ This demo is only available for 48 hours</span>
+    <span>🚀 Businesses with websites get 3× more enquiries</span>
+    <span>💼 Your competitors already have a pro online presence</span>
+    <span>🎯 We'll take it live in 48 hours — just say yes</span>
+    <span>🔥 FREE demo — built exclusively for {{ lead.name }}</span>
+    <span>📊 80% of customers check a business online before visiting</span>
+    <span>⏰ This demo is only available for 48 hours</span>
+    <span>🚀 Businesses with websites get 3× more enquiries</span>
+    <span>💼 Your competitors already have a pro online presence</span>
+    <span>🎯 We'll take it live in 48 hours — just say yes</span>
+  </div>
+</div>
+
+
+<div class="custom-cursor-dot" id="cursorDot"></div>
+<div class="custom-cursor-ring" id="cursorRing"></div>
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  <span>✨ FREE demo built for <strong>{{ lead.name }}</strong> — </span>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener">Hire me to take it live →</a>
+  <span class="countdown-wrap" style="margin-left:12px">
+    &nbsp;⏳ Offer expires:&nbsp;<span class="countdown-timer" id="lf-countdown">47:59:59</span>
+  </span>
+</div>
+
+<!-- Floating Emergency Dispatch Badge -->
+{% if lead.phone %}
+<a href="tel:{{ lead.phone }}" class="emergency-float">
+  <span class="emergency-icon-ring"></span>
+  📞 24/7 Leak Dispatch
+</a>
+{% endif %}
+
+
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">
+      <div class="logo-icon"></div>
+      {{ lead.name }}
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" class="active">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#estimator">Cost Tool</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      {% if lead.phone %}
+      <a href="tel:{{ lead.phone }}" class="btn btn-primary" style="padding:.5rem 1.5rem;font-size:.75rem">Emergency Call</a>
+      {% else %}
+      <a href="#contact" class="btn btn-primary" style="padding:.5rem 1.5rem;font-size:.75rem">Get Proposal</a>
+      {% endif %}
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
+  <div class="hero-bg-overlay"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content reveal reveal-slide-up">
+        <div class="hero-tag">&#x2022; GAF-certified Pest Control System installer</div>
+        <h1 class="hero-name text-gradient-orange">Built to Protect.<br>Backed to Last.</h1>
+        
+      {% if lead.google_rating and lead.google_reviews %}
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">{{ lead.google_rating }}</span>
+        <span style="opacity:0.8; font-size:0.9rem;">({{ lead.google_reviews }} reviews)</span>
+      </div>
+      {% endif %}
+      <p class="hero-desc">At {{ lead.name }}, we build premium, high-durability Pest Control systems engineered to withstand the harshest storms. From leak inspections to complete replacement, our licensed crews guarantee weather-tight security for your home.</p>
+        <div class="hero-btns">
+          <a href="#estimator" class="btn btn-primary">Try Estimate Tool</a>
+          <a href="#services" class="btn btn-secondary">Explore Services</a>
+        </div>
+      </div>
+      <div class="hero-visual reveal reveal-slide-left">
+        <div class="hero-image-frame">
+          <img src="{{ hero_img }}" alt="{{ lead.name }} Pest Control Hero" onerror="this.parentElement.style.opacity='0.3'">
+        </div>
+        <div class="hero-floating-badge">
+          <span class="h-badge-icon">🏠</span>
+          <div>
+            <h5 style="font-size:1rem;font-weight:700">Lifetime Warranty</h5>
+            <p style="font-size:.7rem;color:var(--text-muted)">GAF Golden Pledge Eligible</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats bar -->
+<section class="stats" id="stats">
+  <div class="container">
+    <div class="stats-grid reveal reveal-scale-in">
+      <div class="stat-item">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Zero-Leak Guarantee</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">25+</div>
+        <div class="stat-label">Years System Warranty</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">3,200+</div>
+        <div class="stat-label">Propertys Installed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">$0</div>
+        <div class="stat-label">Upfront Attic Audits</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="about" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-img-wrapper reveal reveal-slide-right">
+        <div class="about-img-frame"></div>
+        <img src="{{ about_img }}" alt="{{ lead.name }} Crew in harness" class="about-image" onerror="this.parentElement.style.opacity='0.3'">
+        <div class="about-badge">
+          <span style="font-size:1.5rem">🛡️</span>
+          <div><h5 style="font-weight:700;font-size:0.95rem">Fully Insured</h5><p style="font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">2M General Liability</p></div>
+        </div>
+      </div>
+      <div class="about-content reveal reveal-slide-left">
+        <span class="section-tag">About the Company</span>
+        <h2 class="section-title">Engineered Quality for <span class="text-gradient-orange">Every Property Style</span></h2>
+        <p class="section-desc">We combine premium multi-layered underlayments, certified crews, and strict safety guidelines to ensure your home or commercial structure receives the absolute best exterior protection.</p>
+        <div class="about-features">
+          <div class="about-feature">
+            <div class="about-feature-icon">🔍</div>
+            <div><h4>Drone Leak Audits</h4><p>High-resolution drone scans to capture hidden stress points and moisture leaks.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">🔨</div>
+            <div><h4>Certified Installation</h4><p>Trained master crews conforming to strict manufacturer installation manuals.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">🚨</div>
+            <div><h4>Storm Rapid Response</h4><p>Emergency crews ready to install structural tarps and secure damages post-storm.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">🧱</div>
+            <div><h4>GAF & Owens Premium</h4><p>Only laying down components from industry leaders with verified class-4 ratings.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Interactive Property Estimator & Material Selector -->
+<section class="calculator-section" id="estimator">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,rgba(224,90,38,0.06),transparent 70%)"></div>
+  <div class="container">
+    <div class="calc-container reveal reveal-slide-up">
+      <div class="calc-header">
+        <span class="section-tag">Interactive Calculator</span>
+        <h3>Property Replacement Cost Tool</h3>
+        <p>Get a real-time ballpark estimate based on your footprint and preferred Property shingles.</p>
+      </div>
+      
+      <div class="calc-grid">
+        <div class="calc-inputs">
+          <div class="calc-group">
+            <label class="calc-label" for="sqftSlider">
+              <span>Estimated Property Area</span>
+              <span id="sqftVal">2,200 sq. ft.</span>
+            </label>
+            <div class="slider-container">
+              <input type="range" id="sqftSlider" class="calc-slider" min="1000" max="5000" step="100" value="2200">
+            </div>
+          </div>
+          
+          <div class="calc-group">
+            <span class="calc-label">Select Pest Control Shingles</span>
+            <div class="material-selector">
+              <div class="material-card active" data-rate="4.50" data-life="20-25" data-warranty="20" data-mat="Asphalt">
+                <h5>Asphalt Shingles</h5>
+                <p>Standard architectural durability</p>
+              </div>
+              <div class="material-card" data-rate="8.00" data-life="40-50" data-warranty="40" data-mat="Standing Seam Metal">
+                <h5>Standing Seam Metal</h5>
+                <p>Premium modern weather resilience</p>
+              </div>
+              <div class="material-card" data-rate="14.00" data-life="75-100" data-warranty="Lifetime" data-mat="Slate / Clay Tile">
+                <h5>Slate / Clay Tile</h5>
+                <p>Luxury natural stone protection</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="calc-outputs" style="position:relative;">
+          <!-- Interactive Property Preview SVG (Aha Moment!) -->
+          <svg viewBox="0 0 200 120" class="house-svg" style="width:100%; max-width:240px; height:auto; margin:0 auto 1.5rem; display:block;">
+            <defs>
+              <!-- Pattern 1: Asphalt Shingles (charcoal gray staggered brick) -->
+              <pattern id="pat-asphalt" width="12" height="7" patternUnits="userSpaceOnUse">
+                <rect width="12" height="7" fill="#1e2530" />
+                <path d="M0,0 L12,0 M0,3.5 L12,3.5 M6,0 L6,3.5 M0,3.5 L0,7 M12,3.5 L12,7" stroke="#4A5568" stroke-width="0.5" />
+              </pattern>
+              
+              <!-- Pattern 2: Standing Seam Metal (vertical metal seams) -->
+              <pattern id="pat-metal" width="8" height="20" patternUnits="userSpaceOnUse">
+                <rect width="8" height="20" fill="#1A365D" />
+                <line x1="0" y1="0" x2="0" y2="20" stroke="#3182CE" stroke-width="0.75" />
+              </pattern>
+              
+              <!-- Pattern 3: Slate / Clay Tile (terracotta scallops) -->
+              <pattern id="pat-slate" width="12" height="8" patternUnits="userSpaceOnUse">
+                <rect width="12" height="8" fill="#9B2C2C" />
+                <path d="M0,4 C3,0 9,0 12,4 M0,8 C3,4 9,4 12,8" stroke="#E53E3E" stroke-width="0.5" fill="none" />
+              </pattern>
+            </defs>
+            
+            <!-- Background glow -->
+            <circle cx="100" cy="90" r="45" fill="var(--accent-orange-glow)" opacity="0.4" style="transition: fill 0.3s ease;" id="glowCircle" />
+            
+            <!-- House structure -->
+            <rect x="40" y="65" width="120" height="45" fill="var(--bg-tertiary)" stroke="var(--glass-border)" stroke-width="1" rx="4" />
+            
+            <!-- Door -->
+            <rect x="90" y="85" width="20" height="25" fill="#0A0D10" stroke="var(--glass-border)" stroke-width="1" rx="2" />
+            <circle cx="106" cy="97" r="1.5" fill="var(--accent-orange)" id="doorKnob" style="transition: fill 0.3s ease;" />
+            
+            <!-- Windows -->
+            <rect x="55" y="75" width="18" height="15" fill="#FEFCBF" opacity="0.8" rx="2" style="filter: drop-shadow(0 0 3px #FEFCBF)" />
+            <line x1="64" y1="75" x2="64" y2="90" stroke="#1A202C" stroke-width="0.5" />
+            <line x1="55" y1="82.5" x2="73" y2="82.5" stroke="#1A202C" stroke-width="0.5" />
+            
+            <rect x="127" y="75" width="18" height="15" fill="#FEFCBF" opacity="0.8" rx="2" style="filter: drop-shadow(0 0 3px #FEFCBF)" />
+            <line x1="136" y1="75" x2="136" y2="90" stroke="#1A202C" stroke-width="0.5" />
+            <line x1="127" y1="82.5" x2="145" y2="82.5" stroke="#1A202C" stroke-width="0.5" />
+            
+            <!-- Chimney -->
+            <rect x="130" y="32" width="12" height="18" fill="#2A3444" stroke="var(--glass-border)" stroke-width="1" />
+            <rect x="127" y="29" width="18" height="3" fill="#12171E" rx="1" />
+            
+            <!-- Interactive Property -->
+            <polygon id="PropertyGraphic" points="30,65 170,65 100,25" fill="url(#pat-asphalt)" stroke="var(--accent-orange)" stroke-width="1.5" style="transition: fill 0.3s ease, stroke 0.3s ease;" />
+            
+            <!-- Shingle Text Info overlay on Property -->
+            <text id="PropertyText" x="100" y="52" text-anchor="middle" fill="#FFFFFF" font-family="'Space Grotesk', sans-serif" font-weight="700" font-size="7.5" style="pointer-events:none; text-shadow:0 1.5px 3px rgba(0,0,0,0.95); letter-spacing:-0.01em;"></text>
+          </svg>
+
+          <div class="calc-output-item">
+            <span class="calc-output-label">Estimated System Cost</span>
+            <span class="calc-output-val" id="calcPrice">$9,900</span>
+          </div>
+          
+          <div class="calc-details">
+            <div class="calc-detail-row">
+              <span>Selected Material:</span>
+              <span id="detailMat">Asphalt Shingles</span>
+            </div>
+            <div class="calc-detail-row">
+              <span>Lifespan:</span>
+              <span id="detailLife">20-25 Years</span>
+            </div>
+            <div class="calc-detail-row">
+              <span>Manufacturer Warranty:</span>
+              <span id="detailWarranty">20 Years</span>
+            </div>
+            <div class="calc-detail-row" style="margin-top:.8rem; border-top:1px dashed var(--glass-border); padding-top:.8rem">
+              <span style="color:var(--accent-orange-bright)">LeadFlow Special:</span>
+              <span style="color:var(--accent-orange-bright)">$0 Inspections Included</span>
+            </div>
+          </div>
+          
+          <a href="#contact" class="btn btn-primary" style="width:100%; text-align:center; padding:.8rem">Book Free Attic Verification &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services Grid -->
+<section class="services-section" id="services">
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Scope of Services</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Premium Contractor Solutions</h2>
+      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Certified exterior structures designed for maximum architectural shielding and lifespan.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal reveal-slide-up">
+        <div class="service-icon">🏠</div>
+        <h3>Property Replacement</h3>
+        <p>Complete structural teardown and deployment of certified architectural multi-shingle layouts.</p>
+        <a href="#contact" class="service-link">Request Plan &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="service-icon">🔍</div>
+        <h3>Attic & Leak Audits</h3>
+        <p>Dynamic detection of thermal leaks, dry rot, sagging structures, and underlayment punctures.</p>
+        <a href="#contact" class="service-link">Book Inspection &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="service-icon">⛈️</div>
+        <h3>Storm Damage Repair</h3>
+        <p>Insurance-approved inspections, damage documentation, emergency tarps, and hail dent removals.</p>
+        <a href="#contact" class="service-link">Get Dispatch &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up">
+        <div class="service-icon">🌊</div>
+        <h3>Seamless Gutters</h3>
+        <p>Custom-fit heavy gauge aluminum gutters and guards designed to route heavy downspouts.</p>
+        <a href="#contact" class="service-link">Request Quote &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="service-icon">🏢</div>
+        <h3>Commercial Propertys</h3>
+        <p>EPDM, TPO, flat tar coatings, and high-durability membranes for retail and warehouse complexes.</p>
+        <a href="#contact" class="service-link">View Commercial &rarr;</a>
+      </div>
+      <div class="service-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="service-icon">🪵</div>
+        <h3>Siding & Trim Care</h3>
+        <p>HardiePlank and premium vinyl composite siding to shield exterior facades from wind and moisture.</p>
+        <a href="#contact" class="service-link">Request Quote &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials-section" id="testimonials">
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Client Reviews</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Trusted by Local Homeowners</h2>
+    </div>
+    <div class="t-slider-outer">
+      <div class="t-slider" id="tSlider">
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"A tree fell on our garage Property during a weekend gale. Their response team was on site with tarps within 45 minutes, preventing massive internal flooding. Highly recommended!"</p>
+          <div class="t-author">Marcus G.<span>Homeowner</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"Replaced our old asphalt Property with standing seam metal. The crew was fast, respectful of our landscaping, and cleaned up every single loose nail. The Property looks incredible."</p>
+          <div class="t-author">Daniel K.<span>Property Owner</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"Their inspector found storm damage we didn't even know existed and handled the insurance claim directly. Got the Property fully replaced and paid only my deductible!"</p>
+          <div class="t-author">Elena S.<span>Residential Client</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"Clean, professional, and transparent about estimates. No hidden charges. They used premium GAF shingles with a 25-year system warranty."</p>
+          <div class="t-author">Robert H.<span>Estate Owner</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="t-controls">
+      <button class="t-btn" id="tPrev">&larr;</button>
+      <div class="t-dots" id="tDots"></div>
+      <button class="t-btn" id="tNext">&rarr;</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-banner reveal reveal-scale-in">
+      <span class="section-tag">Claim Your Quote</span>
+      <h2>Claim Your Free Safety Inspection & Estimate from<br><span class="text-gradient-orange">{{ lead.name }}</span> Today</h2>
+      <p>Schedule a certified inspector today. We'll crawl the attic, scan the shingles, and outline a flat-rate proposal.</p>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Schedule Free Audit</a>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
+  <div class="container" style="text-align:center">
+    <span class="section-tag">Get in Touch</span>
+    <h2 class="section-title" style="margin:.5rem auto 1rem">Secure Your Structure</h2>
+    <p>Contact us for inspections, gutter layouts, or emergency tarp dispatches.</p>
+    <div class="cinfo-grid">
+      {% if lead.phone %}<a href="tel:{{ lead.phone }}" class="cinfo-item">📞 Call Us: {{ lead.phone }}</a>{% endif %}
+      {% if lead.email %}<a href="mailto:{{ lead.email }}" class="cinfo-item">✉ Email: {{ lead.email }}</a>{% endif %}
+      {% if lead.address %}<div class="cinfo-item">📍 Address: {{ lead.address }}</div>{% endif %}
+      {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="cinfo-item">📸 @{{ lead.instagram }}</a>{% endif %}
+      {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="cinfo-item">🗺 View on Google Maps</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col footer-about">
+        <a href="#home" class="logo" style="font-size:1.5rem">
+          <div class="logo-icon"></div>
+          {{ lead.name }}
+        </a>
+        <p>GAF Certified professional contractor delivering storm-resilient Property replacements, structural leak sealing, and custom gutter layouts.</p>
+        <div class="social-links">
+          {% if lead.instagram %}<a href="https://instagram.com/{{ lead.instagram }}" target="_blank" class="social-btn">IG</a>{% endif %}
+          {% if lead.maps_url %}<a href="{{ lead.maps_url }}" target="_blank" class="social-btn">📍</a>{% endif %}
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul class="footer-links">
+          <li><a href="#services">Property Replacement</a></li>
+          <li><a href="#services">Leak Sealing & Repair</a></li>
+          <li><a href="#services">Seamless Gutters</a></li>
+          <li><a href="#services">Storm Inspections</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul class="footer-links">
+          {% if lead.phone %}<li>{{ lead.phone }}</li>{% endif %}
+          {% if lead.email %}<li>{{ lead.email }}</li>{% endif %}
+          {% if lead.address %}<li>{{ lead.address }}</li>{% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 {{ lead.name }}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this website live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order on Fiverr &rarr;</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Custom cursor
+const dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
+(function animRing(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
+document.querySelectorAll('a,button,.service-card,.t-btn,.material-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+});
+
+// Navbar scroll + active link
+const navbar=document.getElementById('navbar');
+const sections=document.querySelectorAll('section[id]');
+function onScroll(){
+  navbar.classList.toggle('scrolled',scrollY>50);
+  let cur='';
+  sections.forEach(s=>{if(scrollY>=s.offsetTop-200)cur=s.id});
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+}
+window.addEventListener('scroll',onScroll,{passive:true});
+
+// Hamburger
+const hamburger=document.getElementById('hamburger'),navLinks=document.getElementById('navLinks');
+hamburger.addEventListener('click',()=>{hamburger.classList.toggle('active');navLinks.classList.toggle('active')});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{hamburger.classList.remove('active');navLinks.classList.remove('active')}));
+
+// Scroll reveal
+const revObs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');revObs.unobserve(e.target)}},{threshold:0.1}));
+document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+// Interactive Property Calculator
+(function(){
+  const slider = document.getElementById('sqftSlider');
+  const sqftVal = document.getElementById('sqftVal');
+  const calcPrice = document.getElementById('calcPrice');
+  const cards = document.querySelectorAll('.material-card');
+  
+  const detailMat = document.getElementById('detailMat');
+  const detailLife = document.getElementById('detailLife');
+  const detailWarranty = document.getElementById('detailWarranty');
+  
+  const PropertyGraphic = document.getElementById('PropertyGraphic');
+  const PropertyText = document.getElementById('PropertyText');
+  const glowCircle = document.getElementById('glowCircle');
+  const doorKnob = document.getElementById('doorKnob');
+  
+  let currentRate = 4.50; // Default: Asphalt
+  
+  // Custom Property border/accent trim colors
+  const PropertyColors = {
+    "Asphalt": { stroke: "#E05A26", glow: "rgba(224,90,38,0.15)", knob: "#E05A26" },
+    "Standing Seam Metal": { stroke: "#3182CE", glow: "rgba(49,130,206,0.15)", knob: "#3182CE" },
+    "Slate / Clay Tile": { stroke: "#E53E3E", glow: "rgba(229,62,62,0.15)", knob: "#E53E3E" }
+  };
+  
+  function calculate(){
+    const area = parseInt(slider.value);
+    sqftVal.textContent = area.toLocaleString() + ' sq. ft.';
+    const total = area * currentRate;
+    const priceStr = '$' + Math.round(total).toLocaleString();
+    calcPrice.textContent = priceStr;
+    
+    // Update SVG Property text (Aha Moment details!)
+    if (PropertyText) {
+      PropertyText.textContent = area.toLocaleString() + ' sqft • ' + priceStr;
+    }
+  }
+  
+  slider.addEventListener('input', calculate);
+  
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      cards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      
+      const mat = card.dataset.mat;
+      currentRate = parseFloat(card.dataset.rate);
+      
+      detailMat.textContent = mat;
+      detailLife.textContent = card.dataset.life + ' Years';
+      detailWarranty.textContent = card.dataset.warranty === 'Lifetime' ? 'Lifetime System Warranty' : card.dataset.warranty + ' Years';
+      
+      // Update Property SVG pattern textures and trim colors
+      if (PropertyGraphic) {
+        if (mat === "Asphalt") {
+          PropertyGraphic.setAttribute('fill', 'url(#pat-asphalt)');
+        } else if (mat === "Standing Seam Metal") {
+          PropertyGraphic.setAttribute('fill', 'url(#pat-metal)');
+        } else if (mat === "Slate / Clay Tile") {
+          PropertyGraphic.setAttribute('fill', 'url(#pat-slate)');
+        }
+        
+        // Apply styling colors
+        const theme = PropertyColors[mat];
+        if (theme) {
+          PropertyGraphic.setAttribute('stroke', theme.stroke);
+          if (glowCircle) glowCircle.setAttribute('fill', theme.glow);
+          if (doorKnob) doorKnob.setAttribute('fill', theme.knob);
+        }
+      }
+      
+      calculate();
+    });
+  });
+  
+  calculate();
+})();
+
+// Testimonials slider
+(function(){
+  const slider=document.getElementById('tSlider'),dotsEl=document.getElementById('tDots');
+  const cards=Array.from(slider.children);
+  let cur=0,startX=0,dragX=0,isDrag=false;
+  function visible(){return window.innerWidth>991?3:window.innerWidth>600?2:1}
+  function buildDots(){
+    const pages=Math.ceil(cards.length/visible());
+    dotsEl.innerHTML='';
+    for(let i=0;i<pages;i++){
+      const d=document.createElement('div');d.className='t-dot'+(i===Math.floor(cur/visible())?' active':'');
+      d.addEventListener('click',()=>goto(i*visible()));dotsEl.appendChild(d);
+    }
+  }
+  function goto(n){
+    const max=cards.length-visible();cur=Math.max(0,Math.min(n,max));
+    const w=cards[0].offsetWidth+32;slider.style.transform=`translateX(${-cur*w}px)`;
+    buildDots();
+  }
+  document.getElementById('tPrev').addEventListener('click',()=>goto(cur-visible()));
+  document.getElementById('tNext').addEventListener('click',()=>goto(cur+visible()));
+  slider.addEventListener('mousedown',e=>{isDrag=true;startX=e.clientX;slider.classList.add('dragging')});
+  window.addEventListener('mousemove',e=>{if(isDrag)dragX=e.clientX-startX});
+  window.addEventListener('mouseup',()=>{
+    if(!isDrag)return;isDrag=false;slider.classList.remove('dragging');
+    const w=cards[0].offsetWidth+32;if(Math.abs(dragX)>w*.25)goto(dragX<0?cur+visible():cur-visible());else goto(cur);
+    dragX=0;
+  });
+  slider.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
+  slider.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-startX;
+    const w=cards[0].offsetWidth+32;if(Math.abs(dx)>w*.25)goto(dx<0?cur+visible():cur-visible());
+  },{passive:true});
+  buildDots();
+  window.addEventListener('resize',()=>goto(0));
+})();
+</script>
+
+
+<!-- WHATSAPP FLOAT CTA -->
+<a class="wa-float"
+   onclick="try{fetch('/api/engage?bid={{ lead.id }}&ev=cta_whatsapp',{mode:'no-cors'});}catch(e){}"    href="https://wa.me/918669024169?text=Hi%2C%20I%27m%20interested%20in%20the%20website%20for%20{{ lead.name | urlencode }}"
+   target="_blank" rel="noopener" title="Chat on WhatsApp">
+  <div class="wa-float-btn">
+    <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+      <path d="M11.99 2C6.476 2 2 6.477 2 11.99c0 1.88.522 3.636 1.427 5.14L2 22l5.01-1.396A9.942 9.942 0 0011.99 22C17.523 22 22 17.522 22 11.99 22 6.478 17.522 2 11.99 2zm0 18.18a8.158 8.158 0 01-4.162-1.14l-.298-.178-3.078.858.869-3.022-.196-.311A8.148 8.148 0 013.82 11.99C3.82 7.48 7.479 3.82 11.99 3.82c4.51 0 8.17 3.66 8.17 8.17 0 4.51-3.661 8.19-8.17 8.19z"/>
+    </svg>
+    <div class="wa-badge">1</div>
+  </div>
+  <div class="wa-float-label">💬 Message Chandan</div>
+</a>
+
+<!-- CONVERSION BOOST SCRIPTS -->
+<script>
+(function(){
+  // ── Live countdown timer in demo banner ──
+  function startCountdown() {
+    var stored = sessionStorage.getItem('_lf_demo_deadline');
+    var deadline;
+    if (stored) {
+      deadline = parseInt(stored, 10);
+    } else {
+      deadline = Date.now() + 47 * 3600 * 1000 + 59 * 60 * 1000 + 59 * 1000;
+      sessionStorage.setItem('_lf_demo_deadline', deadline);
+    }
+    var timerEl = document.getElementById('lf-countdown');
+    if (!timerEl) return;
+    function tick() {
+      var diff = Math.max(0, deadline - Date.now());
+      var h = Math.floor(diff / 3600000);
+      var m = Math.floor((diff % 3600000) / 60000);
+      var s = Math.floor((diff % 60000) / 1000);
+      timerEl.textContent =
+        String(h).padStart(2,'0') + ':' +
+        String(m).padStart(2,'0') + ':' +
+        String(s).padStart(2,'0');
+      if (diff > 0) setTimeout(tick, 1000);
+    }
+    tick();
+  }
+
+  // ── Hero urgency strip ──
+  function injectHeroUrgency() {
+    var heroBtns = document.querySelector('.hero-btns');
+    if (!heroBtns || document.querySelector('.hero-urgency-strip')) return;
+    var strip = document.createElement('div');
+    strip.className = 'hero-urgency-strip';
+    strip.innerHTML =
+      '<span class="urg-pill">⏰ Offer expires in <span id="hero-countdown" style="font-variant-numeric:tabular-nums">47:59:59</span></span>' +
+      '<span class="urg-pill green">✓ 100% Free — No commitment</span>' +
+      '<span class="urg-pill green">🚀 Live in 48 hours</span>';
+    heroBtns.parentNode.insertBefore(strip, heroBtns.nextSibling);
+
+    // Sync hero countdown with banner countdown
+    var stored = sessionStorage.getItem('_lf_demo_deadline');
+    var deadline = stored ? parseInt(stored,10) : Date.now() + 47*3600000 + 59*60000 + 59000;
+    var heroTimer = document.getElementById('hero-countdown');
+    if (heroTimer) {
+      (function tickHero(){
+        var diff = Math.max(0, deadline - Date.now());
+        var h = Math.floor(diff/3600000);
+        var m = Math.floor((diff%3600000)/60000);
+        var s = Math.floor((diff%60000)/1000);
+        heroTimer.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+        if(diff > 0) setTimeout(tickHero,1000);
+      })();
+    }
+
+    // Scarcity box
+    var scarcity = document.createElement('div');
+    scarcity.className = 'scarcity-box';
+    scarcity.innerHTML =
+      '<span class="sc-icon">🔥</span>' +
+      '<div class="sc-text">We only take on <strong>3 new clients per week</strong> to ensure quality. ' +
+      'This demo was built just for <strong>{{ lead.name }}</strong> — spots fill fast.</div>';
+    heroBtns.parentNode.insertBefore(scarcity, strip.nextSibling);
+  }
+
+  // ── Email CTA (add alongside existing hero buttons) ──
+  function addEmailCTA() {
+    var heroBtns = document.querySelector('.hero-btns');
+    if (!heroBtns || heroBtns.querySelector('.btn-email-cta')) return;
+    var subject = encodeURIComponent('Website demo for {{ lead.name }}');
+    var body = encodeURIComponent(
+      'Hi Chandan,
+
+I saw the demo you built for {{ lead.name }} and I'm interested.
+
+Please get in touch.
+
+Thanks'
+    );
+    var emailBtn = document.createElement('a');
+    emailBtn.href = 'mailto:chandangosavi0@gmail.com?subject=' + subject + '&body=' + body;
+    emailBtn.className = 'btn-email-cta';
+    emailBtn.innerHTML = '✉️ Email Me';
+    heroBtns.appendChild(emailBtn);
+  }
+
+  
+  // Scroll depth tracking
+  (function(){
+    var _sf = {25:0,50:0,75:0,90:0};
+    function _pct(){
+      var el=document.documentElement,b=document.body;
+      var sh=Math.max(el.scrollHeight,b.scrollHeight,el.offsetHeight,b.offsetHeight,el.clientHeight,b.clientHeight);
+      var wh=window.innerHeight||el.clientHeight;
+      if(sh<=wh)return 100;
+      return Math.round((window.scrollY/(sh-wh))*100);
+    }
+    window.addEventListener('scroll',function(){
+      var p=_pct();
+      [25,50,75,90].forEach(function(d){
+        if(!_sf[d]&&p>=d){
+          _sf[d]=1;
+          try{fetch('/api/engage?bid={{ lead.id }}&ev=scroll_'+d,{mode:'no-cors'});}catch(e){}
+        }
+      });
+    },{passive:true});
+  })();
+  document.addEventListener('DOMContentLoaded', function() {
+    startCountdown();
+    injectHeroUrgency();
+    addEmailCTA();
+  });
+})();
+</script>
+
+</body>
+</html>

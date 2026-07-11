@@ -11,6 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 log = logging.getLogger("leadflow.scheduler")
 log.setLevel(logging.INFO)
+log.propagate = False
 if not log.handlers:
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
@@ -20,6 +21,7 @@ scheduler = BackgroundScheduler(timezone="UTC")
 
 _leads_send_lock = threading.Lock()
 _followups_send_lock = threading.Lock()
+_enqueue_lock = threading.Lock()
 
 
 def get_active_network_name():
@@ -47,7 +49,7 @@ def get_active_network_name():
 def send_ntfy_sent_notification(email_type, recipient, sender, subject):
     try:
         import requests, os
-        topic = os.getenv("NTFY_TOPIC", "leadflow-chandan-secret")
+        topic = os.getenv("NTFY_TOPIC")
         net_name = get_active_network_name()
         
         msg = f"✅ {email_type} sent to {recipient} via {sender}\n"
@@ -102,34 +104,136 @@ def _enqueue_sequence_for_lead(lead: dict, is_hot_lead: bool = False,
     Returns:
         Number of follow-up steps inserted, or 0 on error.
     """
-    from database import insert_follow_ups
+    from database import insert_follow_ups, get_conn
     from ai_writer import write_follow_up_sequence
     from datetime import timedelta
 
-    try:
-        demo_url = lead.get("demo_tunnel_url", "")
-        sequences = write_follow_up_sequence(lead, demo_url, is_hot_lead=is_hot_lead)
+    with _enqueue_lock:
+        # Check if follow-ups already exist for this lead (prevents race condition
+        # between job_queue_follow_ups, job_auto_followup_opened_leads, and
+        # job_check_scroll_engaged_leads running concurrently)
+        conn = get_conn()
+        try:
+            res = conn.execute("SELECT 1 FROM follow_ups WHERE business_id=?", (lead["id"],)).fetchone()
+        finally:
+            conn.close()
+        if res:
+            return 0
 
-        # Override timing if caller wants immediate or custom first-touch
-        if first_fu_delay_minutes is not None:
-            now = datetime.utcnow()
-            for seq in sequences:
-                if seq["channel"] == "email":
+        try:
+            demo_url = lead.get("demo_tunnel_url", "")
+            original_channel = lead.get("original_channel", "email")
+            sequences = write_follow_up_sequence(lead, demo_url, is_hot_lead=is_hot_lead, channel=original_channel)
+
+            # Override timing if caller wants immediate or custom first-touch
+            if first_fu_delay_minutes is not None:
+                now = datetime.utcnow()
+                for seq in sequences:
                     if seq["num"] == 1:
                         seq["scheduled_for"] = (now + timedelta(minutes=first_fu_delay_minutes)).isoformat()
                     elif seq["num"] == 2:
                         seq["scheduled_for"] = (now + timedelta(days=2)).isoformat()
                     elif seq["num"] == 3:
                         seq["scheduled_for"] = (now + timedelta(days=5)).isoformat()
-                elif seq["channel"] == "instagram":
-                    seq["scheduled_for"] = (now + timedelta(hours=6)).isoformat()
+                    elif seq["num"] == 4:
+                        seq["scheduled_for"] = (now + timedelta(hours=6)).isoformat()
 
-        insert_follow_ups(lead["id"], sequences)
-        return len(sequences)
-    except Exception as e:
-        log.error(f"[Scheduler] _enqueue_sequence_for_lead failed for {lead.get('name', '?')}: {e}")
-        return 0
+            insert_follow_ups(lead["id"], sequences)
+            return len(sequences)
+        except Exception as e:
+            log.error(f"[Scheduler] _enqueue_sequence_for_lead failed for {lead.get('name', '?')}: {e}")
+            return 0
 
+
+
+def city_to_timezone(city: str) -> str:
+    """Map a city/location string to an IANA timezone identifier.
+
+    Uses a broad keyword match so partial strings like 'Austin, Texas, USA'
+    still resolve correctly.  Falls back to 'America/New_York' (EST/EDT)
+    which covers the majority of US leads.
+    """
+    if not city:
+        return "America/New_York"
+
+    c = city.lower()
+
+    # ── India ──────────────────────────────────────────────────────────────
+    india_cities = [
+        "mumbai", "delhi", "bangalore", "bengaluru", "hyderabad", "chennai",
+        "kolkata", "pune", "ahmedabad", "jaipur", "surat", "lucknow",
+        "kanpur", "nagpur", "indore", "bhopal", "patna", "vadodara",
+        "coimbatore", "agra", "india",
+    ]
+    if any(x in c for x in india_cities):
+        return "Asia/Kolkata"
+
+    # ── UK / Ireland ───────────────────────────────────────────────────────
+    if any(x in c for x in ["london", "manchester", "birmingham", "glasgow",
+                              "liverpool", "leeds", "edinburgh", "bristol",
+                              "united kingdom", "uk", "ireland", "dublin"]):
+        return "Europe/London"
+
+    # ── Europe ─────────────────────────────────────────────────────────────
+    if any(x in c for x in ["paris", "france", "berlin", "germany", "madrid",
+                              "spain", "rome", "italy", "amsterdam", "netherlands",
+                              "brussels", "belgium", "vienna", "austria",
+                              "zurich", "switzerland", "prague", "warsaw",
+                              "stockholm", "oslo", "copenhagen"]):
+        return "Europe/Paris"
+
+    # ── Australia ──────────────────────────────────────────────────────────
+    if any(x in c for x in ["sydney", "melbourne", "brisbane", "perth",
+                              "adelaide", "australia"]):
+        if "perth" in c or "western australia" in c:
+            return "Australia/Perth"
+        if "brisbane" in c or "queensland" in c:
+            return "Australia/Brisbane"
+        if "adelaide" in c or "south australia" in c:
+            return "Australia/Adelaide"
+        return "Australia/Sydney"
+
+    # ── Canada ─────────────────────────────────────────────────────────────
+    if any(x in c for x in ["toronto", "ontario", "ottawa", "montreal",
+                              "quebec", "nova scotia", "new brunswick",
+                              "prince edward"]):
+        return "America/Toronto"
+    if any(x in c for x in ["vancouver", "victoria", "british columbia"]):
+        return "America/Vancouver"
+    if any(x in c for x in ["calgary", "edmonton", "alberta"]):
+        return "America/Edmonton"
+    if any(x in c for x in ["winnipeg", "manitoba", "saskatchewan", "regina",
+                              "saskatoon"]):
+        return "America/Winnipeg"
+
+    # ── US Pacific ─────────────────────────────────────────────────────────
+    if any(x in c for x in ["los angeles", "san francisco", "seattle",
+                              "portland", "san diego", "las vegas",
+                              "phoenix", "denver", "salt lake",
+                              "california", "nevada", "oregon", "washington",
+                              "colorado", "utah", "idaho", "montana",
+                              "wyoming", "alaska", "hawaii"]):
+        if "alaska" in c:
+            return "America/Anchorage"
+        if "hawaii" in c:
+            return "Pacific/Honolulu"
+        if any(x in c for x in ["denver", "colorado", "salt lake", "utah",
+                                  "idaho", "montana", "wyoming"]):
+            return "America/Denver"
+        return "America/Los_Angeles"
+
+    # ── US Central ─────────────────────────────────────────────────────────
+    if any(x in c for x in ["chicago", "houston", "dallas", "austin",
+                              "san antonio", "minneapolis", "kansas city",
+                              "oklahoma", "new orleans", "memphis",
+                              "milwaukee", "illinois", "texas", "minnesota",
+                              "missouri", "iowa", "kansas", "nebraska",
+                              "north dakota", "south dakota", "arkansas",
+                              "louisiana", "mississippi", "wisconsin"]):
+        return "America/Chicago"
+
+    # ── US Eastern (default for unrecognized US cities) ────────────────────
+    return "America/New_York"
 
 
 def _assign_scheduled_at(tz_str: str) -> str:
@@ -191,7 +295,17 @@ def auto_update_warmup_limit():
     import os
     from database import get_conn, get_sender_warmup, get_sender_daily_limit, resolve_ab_winners
     from sender import get_all_sender_accounts
-    
+def job_shadow_checks():
+    try:
+        from shadow_client import check_shadow_timeouts, send_shadow_inquiries
+        log.info("[Scheduler] Running shadow checks...")
+        send_shadow_inquiries(limit=3)
+        check_shadow_timeouts(timeout_hours=24)
+    except Exception as e:
+        log.error(f"[Scheduler] check_shadow_timeouts failed: {e}")
+
+    from database import get_conn, get_sender_warmup, get_sender_daily_limit, resolve_ab_winners
+    from sender import get_all_sender_accounts
     accounts = get_all_sender_accounts()
     if not accounts:
         return
@@ -334,12 +448,12 @@ def job_queue_follow_ups():
         # fix #2: was filtering on found_at (scrape date). Now correctly filters on
         # the actual sent_at from the outreach table so 3-day window starts at send time.
         rows = conn.execute("""
-            SELECT b.*, c.email, c.instagram
+            SELECT b.*, c.email, c.instagram, o.channel as original_channel
             FROM businesses b
             LEFT JOIN contacts c ON c.business_id = b.id
             JOIN outreach o ON o.business_id = b.id
             WHERE b.status = 'sent'
-              AND o.channel = 'email'
+              AND o.channel IN ('email', 'instagram')
               AND o.status = 'sent'
               AND o.sent_at <= datetime('now', '-2 days')
               AND b.id NOT IN (SELECT DISTINCT business_id FROM follow_ups)
@@ -371,14 +485,14 @@ def job_auto_followup_opened_leads():
     conn = get_conn()
     try:
         rows = conn.execute("""
-            SELECT b.*, c.email, c.instagram
+            SELECT b.*, c.email, c.instagram, o.channel as original_channel
             FROM businesses b
             JOIN outreach o ON o.business_id = b.id
             LEFT JOIN contacts c ON c.business_id = b.id
             WHERE o.opened = 1
               AND b.status = 'sent'
               AND b.id NOT IN (SELECT DISTINCT business_id FROM follow_ups)
-              AND c.email IS NOT NULL
+              AND (c.email IS NOT NULL OR c.instagram IS NOT NULL)
             ORDER BY o.open_count DESC
             LIMIT 20
         """).fetchall()
@@ -401,7 +515,7 @@ def job_auto_followup_opened_leads():
             # Operator alert
             try:
                 import requests as _req
-                _ntfy_t = __import__('os').getenv('NTFY_TOPIC', 'leadflow-chandan-secret')  # fix #12
+                _ntfy_t = __import__('os').getenv('NTFY_TOPIC')  # fix #12
                 _req.post(
                     f"https://ntfy.sh/{_ntfy_t}",
                     data=f"\U0001f7e1 Follow-up queued for OPENED lead: {lead['name']} ({lead.get('email','?')})".encode(),
@@ -420,6 +534,65 @@ _instagram_send_lock = threading.Lock()
 _whatsapp_send_lock  = threading.Lock()
 
 
+def is_ig_handle_match(business_name: str, ig_handle: str) -> bool:
+    biz = (business_name or "").lower()
+    ig = (ig_handle or "").lower()
+    
+    if ig in {"squarespace", "wix", "wordpress", "weebly", "v", "link", "instagram", "facebook", "twitter"}:
+        return False
+    if len(ig) < 3:
+        return False
+        
+    import re
+    biz_words = re.findall(r'\b[a-z]{3,}\b', biz)
+    
+    niche_words = {
+        'gym', 'fitness', 'studio', 'center', 'club', 'crossfit', 'health', 'wellness', 
+        'training', 'barbell', 'strength', 'performance', 'athletics', 'dentist', 'dental',
+        'chiropractic', 'chiropractor', 'chiro', 'medspa', 'spa', 'barbershop', 'barber',
+        'realestate', 'realty', 'estate', 'roofing', 'roof', 'hvac', 'heating', 'cooling',
+        'lawyer', 'attorney', 'legal', 'law', 'salon', 'restaurant', 'cafe', 'food'
+    }
+    stopwords = {
+        'the', 'and', 'for', 'you', 'with', 'from', 'our', 'your', 'this', 'that', 'are',
+        'inc', 'llc', 'gbr', 'gmbh', 'pty', 'ltd', 'limited', 'group', 'services', 'team',
+        'city', 'north', 'south', 'east', 'west', 'valley', 'bay', 'creek', 'hill', 'lake'
+    }
+    
+    filtered_biz_words = [w for w in biz_words if w not in niche_words and w not in stopwords]
+    
+    if not filtered_biz_words:
+        clean_biz = re.sub(r'[^a-z]', '', biz)
+        clean_ig = re.sub(r'[^a-z]', '', ig)
+        return clean_biz in clean_ig or clean_ig in clean_biz
+        
+    for w in filtered_biz_words:
+        if w in ig or ig in w:
+            return True
+            
+    abbr = "".join([w[0] for w in biz_words if w not in stopwords])
+    if len(abbr) >= 3 and abbr in ig:
+        return True
+        
+    return False
+
+
+def job_unfollow_ghosts():
+    """Runs the script to unfollow ghosts randomly throughout the day."""
+    import time
+    import random
+    # Jitter start time by 0 to 15 minutes so it's completely unpredictable
+    jitter = random.randint(0, 900)
+    log.info(f"[Scheduler] Jittering unfollow job by {jitter} seconds...")
+    time.sleep(jitter)
+    
+    try:
+        import unfollow_ghosts
+        unfollow_ghosts.run_unfollow_routine()
+    except Exception as e:
+        log.error(f"[Scheduler] Failed to run unfollow ghosts routine: {e}")
+
+
 @require_internet
 def job_auto_send_instagram_dms():
     """
@@ -434,9 +607,20 @@ def job_auto_send_instagram_dms():
         from database import get_conn
         conn_status = get_conn()
         try:
-            status_row = conn_status.execute("SELECT status FROM ig_settings WHERE id=1").fetchone()
+            import sqlite3
+            conn_status.row_factory = sqlite3.Row
+            status_row = conn_status.execute("SELECT status, daily_limit, sent_today, last_reset_date FROM ig_settings WHERE id=1").fetchone()
             is_running = status_row and status_row["status"] == "running"
-        except Exception:
+            if is_running:
+                from datetime import datetime
+                today = datetime.now().strftime("%Y-%m-%d")
+                last_reset = status_row["last_reset_date"]
+                if last_reset != today:
+                    import random
+                    conn_status.execute("UPDATE ig_settings SET sent_today=0, daily_limit=?, last_reset_date=? WHERE id=1", (random.randint(45, 50), today))
+                    conn_status.commit()
+        except Exception as err:
+            log.warning(f"[Instagram] Settings reset check failed: {err}")
             is_running = False
         finally:
             conn_status.close()
@@ -451,13 +635,13 @@ def job_auto_send_instagram_dms():
 
         import os, json, requests
         public_url = os.getenv("CF_WORKER_URL", "https://leadflow-relay.chandango12.workers.dev")
-        headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37")}
+        headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN")}
         
         # Fetch directly from the local Mac database
         import sqlite3
         from database import get_conn, is_optimal_send_time, detect_timezone
         from zoneinfo import ZoneInfo
-        from datetime import datetime
+        from datetime import datetime, timezone
         
         conn = get_conn()
         conn.row_factory = sqlite3.Row
@@ -519,13 +703,26 @@ def job_auto_send_instagram_dms():
             draft  = lead.get("ai_draft") or ""
             if not handle or not draft:
                 continue
+
+            # Mismatch Prevention double-check
+            if not is_ig_handle_match(lead.get("business_name", ""), handle):
+                log.warning(f"[Instagram] Mismatch detected: Business '{lead.get('business_name')}' does not match handle '{handle}'! Skipping to review_needed.")
+                try:
+                    conn_update = get_conn()
+                    conn_update.execute("UPDATE outreach SET status='review_needed' WHERE business_id=? AND channel='instagram'", (lead.get('business_id'),))
+                    conn_update.commit()
+                    conn_update.close()
+                except Exception as db_err:
+                    log.error(f"[Instagram] Mismatch state update failed: {db_err}")
+                continue
+
             ok = send_instagram_dm(handle, draft)
             if ok:
                 # Update SQLite database status immediately
                 try:
                     conn_update = get_conn()
-                    conn_update.execute("UPDATE outreach SET status='sent', sent_at=datetime('now','localtime') WHERE business_id=? AND channel='instagram'", (lead.get('business_id'),))
-                    conn_update.execute("UPDATE businesses SET ig_dm_sent=1, ig_dm_sent_at=datetime('now','localtime'), status='sent' WHERE id=?", (lead.get('business_id'),))
+                    conn_update.execute("UPDATE outreach SET status='sent', sent_at=datetime('now') WHERE business_id=? AND channel='instagram'", (lead.get('business_id'),))
+                    conn_update.execute("UPDATE businesses SET ig_dm_sent=1, ig_dm_sent_at=datetime('now'), status='sent' WHERE id=?", (lead.get('business_id'),))
                     conn_update.commit()
                     conn_update.close()
                     log.info(f"[Instagram] Updated local SQLite database status for @{handle} to sent")
@@ -536,9 +733,9 @@ def job_auto_send_instagram_dms():
                 try:
                     res_done = requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_done_queue"}, timeout=10)
                     done_q = json.loads(res_done.json().get("value", "[]") or "[]")
-                except:
+                except Exception:
                     done_q = []
-                done_q.append({"business_id": lead.get('business_id', lead.get('id')), "done_at": "2026-07-02T00:00:00Z"})
+                done_q.append({"business_id": lead.get('business_id', lead.get('id')), "done_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
                 try:
                     requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_done_queue", "value": json.dumps(done_q)}, timeout=10)
                 except Exception as kv_err:
@@ -564,7 +761,7 @@ def job_check_instagram_replies():
         log.info("[Instagram Reply] Responder job already running — skipping")
         return
     try:
-        import subprocess, sys
+        import os, subprocess, sys
         script_path = "/Users/chandan/leadflow/ig_reply_responder.py"
         if os.path.exists(script_path):
             log.info("[Instagram Reply] Launching automated reply responder...")
@@ -667,13 +864,14 @@ def job_check_scroll_engaged_leads():
     conn = get_conn()
     try:
         rows = conn.execute("""
-            SELECT DISTINCT b.*, c.email
+            SELECT DISTINCT b.*, c.email, c.instagram, o.channel as original_channel
             FROM tracking_events te
             JOIN businesses b ON b.id = te.business_id
             LEFT JOIN contacts c ON c.business_id = b.id
+            LEFT JOIN outreach o ON o.business_id = b.id AND o.status = 'sent'
             WHERE te.event_type IN ('engage:scroll_90', 'engage:modal_shown', 'click')
               AND b.status = 'sent'
-              AND c.email IS NOT NULL
+              AND (c.email IS NOT NULL OR c.instagram IS NOT NULL)
               AND b.id NOT IN (SELECT DISTINCT business_id FROM follow_ups)
             ORDER BY te.occurred_at DESC
             LIMIT 10
@@ -701,18 +899,18 @@ def job_check_scroll_engaged_leads():
             finally:
                 conn2.close()
 
-            # Use shared helper with FU1 firing in 3 minutes (scroll = live RIGHT NOW)
-            n = _enqueue_sequence_for_lead(lead, is_hot_lead=True, first_fu_delay_minutes=3)
+            # Use shared helper with FU1 firing in 20 minutes (scroll = live, but avoid feeling like surveillance)
+            n = _enqueue_sequence_for_lead(lead, is_hot_lead=True, first_fu_delay_minutes=20)
             if n:
-                log.info(f"[Scheduler]   -> Queued SCROLL-PRIORITY follow-up for {lead['name']} (FU1 in 3 min)")
+                log.info(f"[Scheduler]   -> Queued SCROLL-PRIORITY follow-up for {lead['name']} (FU1 in 20 min)")
 
             # Push notification
             try:
                 import requests as _req
-                _ntfy_t2 = __import__('os').getenv('NTFY_TOPIC', 'leadflow-chandan-secret')  # fix #12
+                _ntfy_t2 = __import__('os').getenv('NTFY_TOPIC')  # fix #12
                 _req.post(
                     f"https://ntfy.sh/{_ntfy_t2}",
-                    data=f"🔥 {lead['name']} scrolled 90%+ through their demo — follow-up queued in 3 min!".encode(),
+                    data=f"🔥 {lead['name']} scrolled 90%+ through their demo — follow-up queued in 20 min!".encode(),
                     headers={"Title": "LeadFlow - HOT Demo Engagement!", "Tags": "fire,chart_with_upwards_trend", "Priority": "high"},
                     timeout=5,
                 )
@@ -722,6 +920,245 @@ def job_check_scroll_engaged_leads():
             log.error(f"[Scheduler] Scroll-engaged FU error for {lead['name']}: {e}")
 
 
+@require_internet
+def job_demo_open_nudge():
+    """
+    Every 15 min: find leads who opened the demo 2+ hrs ago but never tapped
+    WhatsApp. Fire a personal ntfy ping so Chandan can follow up manually.
+    """
+    from database import get_conn
+    from datetime import datetime as _dt, timedelta as _td
+
+    conn = get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT b.id, b.name, b.demo_first_opened_at
+            FROM businesses b
+            WHERE b.demo_first_opened_at IS NOT NULL
+              AND b.demo_followup_nudge_sent = 0
+              AND b.demo_first_opened_at <= datetime('now', '-2 hours')
+              AND b.id NOT IN (
+                  SELECT DISTINCT business_id FROM tracking_events
+                  WHERE event_type = 'engage:cta_whatsapp'
+              )
+        """).fetchall()
+        leads = [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+    if not leads:
+        return
+
+    import requests as _req
+    _ntfy_t = __import__('os').getenv('NTFY_TOPIC')
+
+    for lead in leads:
+        try:
+            log.info(f"[Scheduler] Demo-open nudge: {lead['name']} (opened {lead['demo_first_opened_at']}, no WA tap)")
+            if _ntfy_t:
+                _req.post(
+                    f"https://ntfy.sh/{_ntfy_t}",
+                    data=f"⏰ {lead['name']} opened the demo 2h ago — no WhatsApp tap yet. Follow up now!".encode(),
+                    headers={"Title": "LeadFlow - Demo Follow-up", "Tags": "alarm_clock", "Priority": "high"},
+                    timeout=5,
+                )
+            conn2 = get_conn()
+            try:
+                conn2.execute(
+                    "UPDATE businesses SET demo_followup_nudge_sent=1 WHERE id=?",
+                    (lead["id"],),
+                )
+                conn2.commit()
+            finally:
+                conn2.close()
+        except Exception as e:
+            log.error(f"[Scheduler] Demo nudge error for {lead['name']}: {e}")
+
+
+@require_internet
+def job_check_color_customizer_leads():
+    """Every 5 minutes: detect leads who used the color customizer in their demo.
+
+    Color-picking is a strong buying signal — the prospect is imagining the
+    site as their own.  Queue an urgent follow-up (fires in 5 minutes) and
+    bump lead_score +35 so they surface at the top of every queue.
+    Only acts on leads that don't already have a follow-up queued.
+    """
+    from database import get_conn, insert_follow_ups
+
+    conn = get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT DISTINCT b.*, c.email, c.instagram, o.channel as original_channel
+            FROM tracking_events te
+            JOIN businesses b ON b.id = te.business_id
+            LEFT JOIN contacts c ON c.business_id = b.id
+            LEFT JOIN outreach o ON o.business_id = b.id AND o.status = 'sent'
+            WHERE te.event_type LIKE 'engage:customize_color_%'
+              AND b.status = 'sent'
+              AND (c.email IS NOT NULL OR c.instagram IS NOT NULL)
+              AND b.id NOT IN (SELECT DISTINCT business_id FROM follow_ups)
+            ORDER BY te.occurred_at DESC
+            LIMIT 10
+        """).fetchall()
+        leads = [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+    if not leads:
+        return
+
+    log.info(f"[Scheduler] 🎨 {len(leads)} COLOR-CUSTOMIZER leads detected — queueing priority follow-ups")
+
+    for lead in leads:
+        log.info(f"[Scheduler] Color-customized: {lead['name']} ({lead.get('email', '?')})")
+        try:
+            # Bump lead score +35 — color-picking is stronger signal than scrolling
+            conn2 = get_conn()
+            try:
+                conn2.execute("""
+                    UPDATE businesses SET lead_score = MIN(100, COALESCE(lead_score,0) + 35)
+                    WHERE id=?
+                """, (lead["id"],))
+                conn2.commit()
+            finally:
+                conn2.close()
+
+            # FU1 in 5 minutes — they're live and engaged right now
+            n = _enqueue_sequence_for_lead(lead, is_hot_lead=True, first_fu_delay_minutes=5)
+            if n:
+                log.info(f"[Scheduler]   -> Queued COLOR-PRIORITY follow-up for {lead['name']} (FU1 in 5 min)")
+
+            # ntfy push — high priority
+            try:
+                import requests as _r
+                _topic = __import__('os').getenv('NTFY_TOPIC')
+                _r.post(
+                    f"https://ntfy.sh/{_topic}",
+                    data=f"🎨 {lead['name']} just customized their demo colors — they're picturing it as theirs! FU queued in 5 min.".encode(),
+                    headers={"Title": "LeadFlow - Color Customizer Alert!", "Tags": "art,fire", "Priority": "high"},
+                    timeout=5,
+                )
+            except Exception:
+                pass
+        except Exception as e:
+            log.error(f"[Scheduler] Color-customizer FU error for {lead['name']}: {e}")
+
+
+def job_lead_score_decay():
+    """
+    Weekly: subtract 5 from lead_score for every silent 'sent' lead.
+    If lead_score drops below 20, mark status='cold' to stop follow-up queues.
+    """
+    from database import get_conn
+    conn = get_conn()
+    try:
+        # Decay: -5 for every lead sent with no reply in the last 7 days
+        conn.execute("""
+            UPDATE businesses
+            SET lead_score = MAX(0, COALESCE(lead_score, 50) - 5)
+            WHERE status = 'sent'
+              AND id NOT IN (
+                  SELECT DISTINCT business_id FROM contacts
+                  WHERE replied_at IS NOT NULL AND replied_at != ''
+              )
+        """)
+        # Mark cold when score too low
+        affected = conn.execute("""
+            UPDATE businesses
+            SET status = 'cold'
+            WHERE status = 'sent'
+              AND COALESCE(lead_score, 0) < 20
+        """).rowcount
+        conn.commit()
+        if affected:
+            log.info(f"[Lead Decay] Marked {affected} leads cold (score < 20)")
+    except Exception as e:
+        log.error(f"[Lead Decay] Error: {e}")
+    finally:
+        conn.close()
+
+
+@require_internet
+def job_reengage_cold_leads():
+    """
+    Daily: find silent 'sent' leads at 30/60/90-day milestones and queue
+    a re-engagement follow-up with an angle appropriate to the stage.
+    """
+    from database import get_conn, insert_follow_ups
+    from ai_writer import write_follow_up_sequence
+    from datetime import datetime as _dt, timedelta
+
+    STAGES = [
+        (90,  "final_nudge",   "Last reach-out — I'll close your file after this. Should I?"),
+        (60,  "new_angle",     "New case study from a similar business — worth 2 minutes?"),
+        (30,  "checking_in",   "Quick check-in — are you still exploring options for your website?"),
+    ]
+
+    conn = get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT b.id, b.name, b.category, b.city, b.website, b.website_score,
+                   b.gap, b.pitch_type, b.lead_score, b.demo_tunnel_url,
+                   c.email, c.instagram,
+                   o.channel as original_channel, o.sent_at
+            FROM businesses b
+            JOIN contacts c ON c.business_id = b.id
+            JOIN outreach o ON o.business_id = b.id AND o.status='sent'
+            WHERE b.status = 'sent'
+              AND (c.replied_at IS NULL OR c.replied_at = '')
+              AND (c.email IS NOT NULL OR c.instagram IS NOT NULL)
+              AND julianday('now') - julianday(o.sent_at) >= 30
+            ORDER BY o.sent_at ASC
+            LIMIT 20
+        """).fetchall()
+        leads = [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+    for lead in leads:
+        try:
+            sent_days = 0
+            try:
+                sent_days = (_dt.utcnow() - _dt.fromisoformat(lead["sent_at"])).days
+            except Exception:
+                continue
+
+            # Pick the highest applicable stage
+            stage_key = None
+            stage_msg = None
+            for min_days, key, msg in STAGES:
+                if sent_days >= min_days:
+                    stage_key = key
+                    stage_msg = msg
+                    break
+
+            if not stage_key:
+                continue
+
+            # Skip if we already queued this stage angle for this lead
+            conn2 = get_conn()
+            already = conn2.execute(
+                "SELECT id FROM follow_ups WHERE business_id=? AND followup_angle=?",
+                (lead["id"], stage_key)
+            ).fetchone()
+            conn2.close()
+            if already:
+                continue
+
+            channel = lead.get("original_channel") or ("email" if lead.get("email") else "instagram")
+            now = _dt.utcnow()
+            sequences = [{
+                "num": 1,
+                "channel": channel,
+                "draft": stage_msg,
+                "scheduled_for": (now + timedelta(minutes=10)).isoformat(),
+                "followup_angle": stage_key,
+            }]
+            insert_follow_ups(lead["id"], sequences)
+            log.info(f"[Reengage] {stage_key} queued for {lead['name']} ({sent_days}d silent)")
+        except Exception as e:
+            log.error(f"[Reengage] Error for {lead.get('name')}: {e}")
 
 
 @require_internet
@@ -747,7 +1184,7 @@ def job_sync_beacon():
     
     try:
         import os, requests, time
-        token = os.getenv("SECRET_TOKEN", "lf_sec_9e21808ccce4d37")
+        token = os.getenv("SECRET_TOKEN")
         public_url = os.getenv("LEADFLOW_PUBLIC_URL", "")
         role = os.getenv("LEADFLOW_DEVICE_ROLE", "backup")
         if public_url:
@@ -771,9 +1208,20 @@ def job_replicate_database():
     """
     try:
         from sync_engine import run_sync_cycle
+        import socket as _sock
         # Pass Firestick IP as LAN peer for failsafe full-DB sync
         lan_peers = ["192.168.1.3"]
-        run_sync_cycle(lan_peers=lan_peers)
+        # Filter out this device's own IP to prevent syncing to self
+        try:
+            own_ip = _sock.gethostbyname(_sock.gethostname())
+        except Exception:
+            own_ip = None
+        lan_peers = [p for p in lan_peers if p != own_ip]
+        if lan_peers:
+            run_sync_cycle(lan_peers=lan_peers)
+        else:
+            run_sync_cycle()
+            log.debug("[Scheduler] No remote LAN peers after filtering own IP, skipping LAN sync.")
         log.info("[Scheduler] Database replication cycle completed (Cloudflare + LAN).")
     except Exception as e:
         log.error(f"[Scheduler] Database replication error: {e}")
@@ -791,14 +1239,84 @@ def job_replicate_dashboard_static():
 
 
 def is_primary_active() -> bool:
-    """Check if we are NOT the active leader.
-    
-    Currently, the Mac is the primary device that runs the Python scripts and sends ADB commands to the Firestick.
-    Therefore, we always return False (meaning "do not skip") so the Mac executes the jobs.
+    """Check if the primary leader (Firestick) is active via Cloudflare KV.
+    Requires at least 2 consecutive stale checks to execute backup failover.
     """
-    return False
+    import os, requests, json, time
+    from pathlib import Path
+    
+    device_role = os.getenv("LEADFLOW_DEVICE_ROLE", "backup")
+    if device_role == "primary":
+        # Write heartbeat to KV so the Mac backup knows we are alive
+        try:
+            public_url = os.getenv('CF_WORKER_URL') or os.getenv('LEADFLOW_PUBLIC_URL') or 'https://leadflow-relay.chandango12.workers.dev'
+            headers = {'X-Secret-Token': os.getenv('LEADFLOW_SECRET_TOKEN') or os.getenv('SECRET_TOKEN') or 'fallback-secret'}
+            requests.post(
+                f"{public_url}/api/kv",
+                headers=headers,
+                json={"key": "leader:heartbeat", "value": str(time.time())},
+                timeout=5
+            )
+        except Exception:
+            pass
+        return False # Firestick executes its own jobs
 
-    return True
+    # If this is the Mac (Backup), check primary's LAN health endpoint first to avoid KV read counts
+    try:
+        ping_res = requests.get(f'http://{os.getenv("PRIMARY_LAN_IP", "192.168.1.3")}:8765/api/health', timeout=2)
+        if ping_res.status_code == 200 and ping_res.json().get("status") == "ok":
+            try:
+                Path("/tmp/failover_checks.txt").write_text("0")
+            except Exception:
+                pass
+            return True # Primary active on LAN, Backup stands down
+    except Exception:
+        pass
+
+    # If this is the Mac (Backup), read heartbeat to decide if we should stand down
+    try:
+        public_url = os.getenv('CF_WORKER_URL') or os.getenv('LEADFLOW_PUBLIC_URL') or 'https://leadflow-relay.chandango12.workers.dev'
+        headers = {'X-Secret-Token': os.getenv('LEADFLOW_SECRET_TOKEN') or os.getenv('SECRET_TOKEN') or 'fallback-secret'}
+        res = requests.post(
+            f"{public_url}/api/kv", 
+            headers=headers, 
+            json={"key": "leader:heartbeat"}, 
+            timeout=5
+        )
+        last_heartbeat = float(res.json().get("value") or 0)
+        
+        # If heartbeat is under 10 minutes old, the Firestick is active.
+        if (time.time() - last_heartbeat) < 600:
+            try:
+                Path("/tmp/failover_checks.txt").write_text("0")
+            except Exception:
+                pass
+            return True # Skip running jobs on the Mac
+    except Exception:
+        pass
+        
+    # Heartbeat check failed (stale or network exception). Let's count consecutive failures.
+    fail_file = Path("/tmp/failover_checks.txt")
+    fails = 0
+    try:
+        if fail_file.exists():
+            fails = int(fail_file.read_text().strip())
+    except Exception:
+        pass
+        
+    fails += 1
+    try:
+        fail_file.write_text(str(fails))
+    except Exception:
+        pass
+    
+    # Require at least 2 consecutive stale checks before taking over
+    if fails >= 2:
+        log.warning(f"[Scheduler] Failover active: Primary is offline (stale heartbeat check #{fails}). Mac taking over...")
+        return False # Mac executes outreach jobs
+        
+    log.info(f"[Scheduler] Heartbeat stale (check #{fails}/2). Standby monitoring active...")
+    return True # Stand down for now to account for KV propagation delay
 
 
 
@@ -814,7 +1332,15 @@ def job_process_ig_regens():
     headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN", "fallback-secret")}
     try:
         res = requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_regen_queue"}, timeout=10)
-        q = json.loads(res.json().get("value", "[]") or "[]")
+        if not res.text or not res.text.strip():
+            log.warning("[Scheduler] IG regen queue: upstream returned empty response, skipping")
+            return
+        try:
+            kv_data = res.json()
+        except (json.JSONDecodeError, ValueError):
+            log.warning(f"[Scheduler] IG regen queue: invalid JSON from upstream ({res.text[:120]}), skipping")
+            return
+        q = json.loads(kv_data.get("value", "[]") or "[]")
         if not q: return
         
         conn = get_conn()
@@ -860,6 +1386,13 @@ def job_push_bot_kv():
     try:
         from database import get_conn
         conn = get_conn()
+
+        # Ensure tier column exists (prevents "no such column: b.tier" on older DBs)
+        try:
+            conn.execute("ALTER TABLE businesses ADD COLUMN tier INTEGER DEFAULT 0")
+            conn.commit()
+        except Exception:
+            pass  # column already exists
 
         # Build stats
         stats = {}
@@ -1060,7 +1593,7 @@ def job_sync_worker_events():
                             biz_name = row_temp["name"] if row_temp else f"Business #{biz_id}"
                             conn_temp.close()
                             
-                            _ntfy_t = os.getenv('NTFY_TOPIC', 'leadflow-chandan-secret')
+                            _ntfy_t = os.getenv('NTFY_TOPIC')
                             msg = ""
                             if actual_type == "open":
                                 msg = f"✉️ Email opened: {biz_name}"
@@ -1151,10 +1684,10 @@ def job_auto_send_leads():
         # Dynamic limit: 25 per active sender email (auto-scales when new email is added)
         max_auto_send = get_dynamic_send_limit()
         send_window_start = cfg.get("send_window_start", 9)
-        send_window_end = cfg.get("send_window_end", 11)
-        preferred_days = _json.loads(cfg.get("preferred_days", "[1,2,3]")) if cfg.get("preferred_days") else [1, 2, 3]
+        send_window_end = cfg.get("send_window_end", 14)
+        preferred_days = _json.loads(cfg.get("preferred_days", "[1,2,3,4]")) if cfg.get("preferred_days") else [1, 2, 3, 4]
 
-        
+
         # Enforce safe daily cold email limit to prevent spam blocking
         sent_today = get_emails_sent_today()
         if sent_today >= max_auto_send:
@@ -1213,25 +1746,49 @@ def job_auto_send_leads():
             """).fetchall()
             backlog_leads = [dict(r) for r in backlog_rows]
 
+            # ── Pool C: Win-backs (Opened but no reply, >30 days ago, high score) ──
+            winback_rows = conn.execute("""
+                SELECT b.*, c.email, c.owner_name, c.whatsapp, c.instagram
+                FROM businesses b
+                LEFT JOIN contacts c ON c.business_id = b.id
+                JOIN outreach o ON o.business_id = b.id
+                WHERE b.status = 'sent'
+                  AND o.channel = 'email'
+                  AND o.opened = 1
+                  AND b.lead_score >= 35
+                  AND (c.email IS NOT NULL AND c.email != '')
+                  AND o.sent_at < DATE('now', '-30 days')
+                ORDER BY b.lead_score DESC
+                LIMIT 50
+            """).fetchall()
+            winback_leads = [dict(r) for r in winback_rows]
+
         finally:
             conn.close()
 
-        # Score both pools with ICS
+        # Score all pools with ICS
         for c in fresh_leads:
             c["_ics"] = compute_ics(c, c)
             c["_is_fresh"] = True
         for c in backlog_leads:
             c["_ics"] = compute_ics(c, c)
             c["_is_fresh"] = False
+        for c in winback_leads:
+            c["_ics"] = compute_ics(c, c)
+            c["_is_fresh"] = False
+            c["_is_winback"] = True
 
-        # Sort each pool by ICS, then merge: fresh leads ALWAYS go first
+        # Sort each pool by ICS, then merge: fresh leads ALWAYS go first, then backlog, then win-backs
         fresh_leads.sort(key=lambda x: x["_ics"], reverse=True)
         backlog_leads.sort(key=lambda x: x["_ics"], reverse=True)
-        candidates = fresh_leads + backlog_leads
+        winback_leads.sort(key=lambda x: x["_ics"], reverse=True)
+        candidates = fresh_leads + backlog_leads + winback_leads
 
         if fresh_leads:
             log.info(f"[Scheduler] \U0001f195 {len(fresh_leads)} fresh leads scraped today — they get FIRST pick of today's slots")
-        log.info(f"[Scheduler] Candidate pool: {len(fresh_leads)} fresh + {len(backlog_leads)} backlog = {len(candidates)} total")
+        if winback_leads:
+            log.info(f"[Scheduler] \U0001f504 {len(winback_leads)} win-back candidates (opened >30d ago, no reply)")
+        log.info(f"[Scheduler] Candidate pool: {len(fresh_leads)} fresh + {len(backlog_leads)} backlog + {len(winback_leads)} winback = {len(candidates)} total")
 
         # Apply conversion-weighted niche budget and pick top leads
         niche_sent_cache = {}  # category -> emails sent today (DB lookup, cached)
@@ -1381,8 +1938,22 @@ def job_auto_send_leads():
                     # 2. Web Design Lead: Send audit report (if has site) or benefits (if no site)
                     has_site = bool(lead.get("website"))
                     booking_link = os.getenv("CALENDLY_URL") or os.getenv("BOOKING_URL") or "https://calendly.com"
+                    
+                    scraped = {}
+                    if has_site:
+                        from demo_generator import _scrape_site, get_competitor_name
+                        try:
+                            scraped = _scrape_site(lead["website"]) or {}
+                        except Exception:
+                            pass
+                        comp = get_competitor_name(lead.get("category", ""), lead.get("city", ""), lead.get("name", ""))
+                        if comp:
+                            scraped["top_competitor"] = comp
+                    
                     if has_site:
                         log.info(f"  -> Writing website audit pitch for {lead['name']}...")
+                        # Pass scraped to write_audit_pitch if we updated it, but currently it doesn't take it.
+                        # We'll rely on write_instagram_dm using it below.
                         draft_text = write_audit_pitch(lead, booking_link)
                     else:
                         log.info(f"  -> Writing no-website benefit pitch for {lead['name']}...")
@@ -1401,17 +1972,44 @@ def job_auto_send_leads():
                         
                         # Generate IG draft if they have an IG handle
                         if lead.get("instagram"):
-                            from ai_writer import write_instagram_dm
+                            from ai_writer import write_instagram_dm, ai_review_draft
                             log.info(f"  -> Building Instagram DM draft for {lead['name']}...")
-                            ig_draft = write_instagram_dm(lead, demo_url=lead.get("demo_tunnel_url",""))
+                            ig_draft = write_instagram_dm(lead, demo_url=lead.get("demo_tunnel_url",""), scraped=scraped or None)
                             if ig_draft:
-                                conn2.execute("DELETE FROM outreach WHERE business_id=? AND channel='instagram'", (lead["id"],))
-                                conn2.execute("""
-                                    INSERT INTO outreach (business_id, channel, draft, status)
-                                    VALUES (?, 'instagram', ?, 'draft')
-                                """, (lead["id"], ig_draft))
+                                # ── AI PRE-SEND REVIEW ──────────────────────────────
+                                approved, review_reason = ai_review_draft(
+                                    draft=ig_draft,
+                                    business_name=lead.get("name", ""),
+                                    ig_handle=lead.get("instagram", "")
+                                )
+                                if not approved:
+                                    log.warning(
+                                        f"  -> [AI Review] REJECTED draft for @{lead.get('instagram')} "
+                                        f"({lead['name']}): {review_reason}. Skipping queue."
+                                    )
+                                else:
+                                    log.info(f"  -> [AI Review] {review_reason}")
+                                    conn2.execute("DELETE FROM outreach WHERE business_id=? AND channel='instagram'", (lead["id"],))
+                                    conn2.execute("""
+                                        INSERT INTO outreach (business_id, channel, draft, status)
+                                        VALUES (?, 'instagram', ?, 'draft')
+                                    """, (lead["id"], ig_draft))
+                                # ────────────────────────────────────────────────────
+
                         
                         conn2.commit()
+
+                        # Generate follow-up sequence for web-design leads
+                        from ai_writer import write_follow_up_sequence
+                        from database import insert_follow_ups
+                        try:
+                            # Use email channel for web-design follow-ups by default
+                            sequences = write_follow_up_sequence(lead, lead.get("demo_tunnel_url", ""), channel="email")
+                            insert_follow_ups(lead["id"], sequences)
+                            log.info(f"  -> Queued {len(sequences)} follow-ups for {lead['name']}")
+                        except Exception as fu_err:
+                            log.error(f"  -> Failed queuing follow-ups for {lead['name']}: {fu_err}")
+
                         log.info(f"  -> Scheduled {lead['name']} for {slot} UTC")
                     finally:
                         conn2.close()
@@ -1531,9 +2129,9 @@ def job_auto_send_followups():
         max_auto_send = get_dynamic_send_limit()  # 25 per active sender, auto-scales
 
         send_window_start = cfg.get("send_window_start", 9)
-        send_window_end = cfg.get("send_window_end", 11)
-        preferred_days = _json.loads(cfg.get("preferred_days", "[1,2,3]")) if cfg.get("preferred_days") else [1, 2, 3]
-        
+        send_window_end = cfg.get("send_window_end", 14)
+        preferred_days = _json.loads(cfg.get("preferred_days", "[1,2,3,4]")) if cfg.get("preferred_days") else [1, 2, 3, 4]
+
         # Enforce safe daily cold email limit to prevent spam blocking
         sent_today = get_emails_sent_today()
         if sent_today >= max_auto_send:
@@ -1543,13 +2141,13 @@ def job_auto_send_followups():
         conn = get_conn()
         try:
             rows = conn.execute("""
-                SELECT f.*, c.email, b.demo_tunnel_url, b.city, b.country, b.timezone,
+                SELECT f.*, c.email, c.instagram, b.demo_tunnel_url, b.city, b.country, b.timezone,
                        b.assigned_sender_email
                 FROM follow_ups f
                 JOIN businesses b ON b.id = f.business_id
                 LEFT JOIN contacts c ON c.business_id = b.id
                 WHERE f.status = 'pending' AND datetime(f.scheduled_for) <= datetime('now')
-                  AND b.status IN ('sent', 'replied', 'interested')
+                  AND b.status NOT IN ('replied', 'opted_out', 'closed')
                 ORDER BY f.scheduled_for ASC
                 LIMIT 20
             """).fetchall()
@@ -1558,9 +2156,72 @@ def job_auto_send_followups():
             conn.close()
 
         for row in follow_ups:
-            if not row["email"] or not row["draft"]:
+            if not row["draft"]:
+                continue
+                
+            channel = row.get("channel", "email")
+            
+            # ── Instagram Follow-up Dispatch (via ADB) ──
+            if channel == "instagram":
+                handle = (row.get("instagram") or "").strip().lstrip("@")
+                if not handle:
+                    log.info(f"  -> Skipping Instagram follow-up {row['id']} because handle is empty.")
+                    conn_skip = get_conn()
+                    try:
+                        conn_skip.execute("UPDATE follow_ups SET status='skipped' WHERE id=?", (row["id"],))
+                        conn_skip.commit()
+                    finally:
+                        conn_skip.close()
+                    continue
+                
+                # Time window enforcement
+                if row.get("sequence_num", 1) == 1:
+                    tz = row.get("timezone") or detect_timezone(row.get("city", ""), row.get("country", ""))
+                    if not is_optimal_send_time(tz, send_window_start, send_window_end, preferred_days):
+                        log.info(f"  -> Deferring Instagram follow-up {row['id']} seq#1 — not optimal send time in {tz}")
+                        continue
+                
+                from instagram_sender import can_send_instagram, send_instagram_dm
+                if not can_send_instagram():
+                    log.info(f"  -> Deferring Instagram follow-up {row['id']} — daily sending limit reached")
+                    continue
+                
+                try:
+                    log.info(f"[Scheduler] Sending Instagram follow-up seq#{row['sequence_num']} to @{handle}")
+                    ok = send_instagram_dm(handle, row["draft"])
+                    if ok:
+                        conn_update = get_conn()
+                        try:
+                            conn_update.execute("UPDATE follow_ups SET status='sent', sent_at=datetime('now') WHERE id=?", (row["id"],))
+                            conn_update.commit()
+                        finally:
+                            conn_update.close()
+                        
+                        log.info(f"[Scheduler] ✅ Auto-sent Instagram follow-up {row['sequence_num']} to @{handle}")
+                        send_ntfy_sent_notification(f"IG Follow-up #{row['sequence_num']}", f"@{handle}", "Instagram", "Instagram DM")
+                        
+                        # Add a small buffer on top of ADB's delay
+                        time.sleep(5)
+                except Exception as ig_err:
+                    log.error(f"[Scheduler] Failed to send Instagram follow-up {row['id']}: {ig_err}")
+                continue
+
+            # ── Email Follow-up Dispatch ──
+            if not row["email"]:
                 continue
             try:
+                from database import is_suppressed
+                if is_suppressed(row["email"], row["business_id"]):
+                    log.info(f"  -> Skipping followup {row['id']} because email {row['email']} or domain is suppressed.")
+                    conn2 = get_conn()
+                    try:
+                        conn2.execute("UPDATE follow_ups SET status='skipped' WHERE id=?", (row["id"],))
+                        conn2.execute("UPDATE businesses SET status='skipped' WHERE id=?", (row["business_id"],))
+                        conn2.commit()
+                    finally:
+                        conn2.close()
+                    continue
+
                 # Validate email address before sending followup
                 from extractor import _clean_email
                 if not _clean_email(row["email"]):
@@ -1575,10 +2236,6 @@ def job_auto_send_followups():
                     continue
 
                 # ── Send-Time Check for Follow-ups (relaxed) ──
-                # Follow-ups go to leads who already showed interest — we send
-                # them regardless of send window so they are never left overdue.
-                # Only enforce time window for sequence #1 to avoid early-morning
-                # interruptions; subsequent follow-ups send any time.
                 if row.get("sequence_num", 1) == 1:
                     tz = row.get("timezone") or detect_timezone(row.get("city", ""), row.get("country", ""))
                     if not is_optimal_send_time(tz, send_window_start, send_window_end, preferred_days):
@@ -1833,6 +2490,355 @@ def job_daily_recap():
         log.error(f"[Scheduler] Error running daily recap job: {e}")
 
 
+def job_adb_keepalive():
+    """Every 10 min: reconnect ADB to Vivo; alert if unreachable for >1 cycle."""
+    import subprocess
+    from imap_sync import notify_chandan
+    adb_bin = "/opt/homebrew/bin/adb.orig"
+    vivo = "192.168.1.4:5555"
+    try:
+        # Attempt (re)connect
+        subprocess.run([adb_bin, "connect", vivo], timeout=10, capture_output=True)
+        # Verify shell responds
+        result = subprocess.run(
+            [adb_bin, "-s", vivo, "shell", "echo", "ok"],
+            timeout=10, capture_output=True, text=True
+        )
+        if result.returncode != 0 or result.stdout.strip() != "ok":
+            raise RuntimeError(f"shell check failed: {result.stderr.strip()}")
+        log.debug(f"[ADB keepalive] Vivo {vivo} online")
+    except Exception as e:
+        log.warning(f"[ADB keepalive] Vivo {vivo} unreachable: {e}")
+        try:
+            notify_chandan(
+                "Vivo ADB Offline",
+                f"Cannot reach Vivo at {vivo} via ADB.\nError: {e}\nCheck WiFi or Developer Options > Wireless Debugging.",
+                tags="warning",
+                priority="high"
+            )
+        except Exception:
+            pass
+
+
+def job_device_health():
+    """Every 6 hours: read battery stats via ADB and alert on problems."""
+    import subprocess
+    from imap_sync import notify_chandan
+    adb_bin = "/opt/homebrew/bin/adb.orig"
+    vivo = "192.168.1.4:5555"
+
+    # Quick connectivity check first
+    try:
+        result = subprocess.run(
+            [adb_bin, "-s", vivo, "shell", "echo", "ok"],
+            timeout=10, capture_output=True, text=True
+        )
+        if result.returncode != 0 or result.stdout.strip() != "ok":
+            notify_chandan(
+                "Vivo Offline - Health Check Failed",
+                f"Device {vivo} did not respond to ADB health check.",
+                tags="warning", priority="high"
+            )
+            return
+    except Exception as e:
+        notify_chandan(
+            "Vivo Offline - Health Check Error",
+            f"Error contacting {vivo}: {e}",
+            tags="warning", priority="high"
+        )
+        return
+
+    # Parse battery info
+    try:
+        out = subprocess.run(
+            [adb_bin, "-s", vivo, "shell", "dumpsys", "battery"],
+            timeout=15, capture_output=True, text=True
+        ).stdout
+        info = {}
+        for line in out.splitlines():
+            for key in ("level", "health", "temperature", "status"):
+                if key + ":" in line:
+                    info[key] = line.split(":", 1)[1].strip()
+
+        level = int(info.get("level", 0))
+        temp_raw = int(info.get("temperature", 0))
+        temp_c = temp_raw / 10
+        # status 2 = charging
+        is_charging = info.get("status", "0") == "2"
+        health_map = {"1": "Unknown", "2": "Good", "3": "Overheat", "4": "Dead",
+                      "5": "Over voltage", "6": "Failure", "7": "Cold"}
+        health = health_map.get(info.get("health", "1"), "Unknown")
+
+        alerts = []
+        if level <= 20 and not is_charging:
+            alerts.append(f"Battery at {level}% — plug in now to keep above 20%.")
+        if is_charging and level >= 62:
+            alerts.append(f"Battery at {level}% while charging — charge cap may not be active! Unplug now.")
+        if temp_c >= 42:
+            alerts.append(f"Battery temp critical: {temp_c}C — phone is overheating!")
+        elif temp_c >= 38:
+            alerts.append(f"Battery temp high: {temp_c}C — consider removing case.")
+        if health not in ("Good", "Unknown"):
+            alerts.append(f"Battery health degraded: {health}")
+
+        if alerts:
+            notify_chandan(
+                "Vivo Battery Alert",
+                f"Level: {level}% | Temp: {temp_c}C | Health: {health}\n\n" + "\n".join(alerts),
+                tags="battery,warning",
+                priority="high"
+            )
+            log.warning(f"[Device health] Alerts: {alerts}")
+        else:
+            log.info(f"[Device health] Vivo OK — {level}% | {temp_c}C | {health}")
+    except Exception as e:
+        log.warning(f"[Device health] Error reading battery info: {e}")
+
+
+@require_internet
+def job_classify_replies():
+    """
+    Every 15 min: find contacts with new reply_text that has no classification yet.
+    AI classifies as: interested / not_now / wrong_person / price_objection.
+    Routes: interested → urgent ntfy; not_now → 60-day FU; price_objection → ROI draft.
+    """
+    from database import get_conn, insert_follow_ups
+    from imap_sync import notify_chandan
+    from datetime import datetime as _dt, timedelta
+
+    conn = get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT b.id, b.name, b.category, b.city, b.website, b.demo_tunnel_url,
+                   b.lead_score, c.email, c.instagram, c.reply_text, c.reply_classification
+            FROM contacts c
+            JOIN businesses b ON b.id = c.business_id
+            WHERE c.reply_text IS NOT NULL AND c.reply_text != ''
+              AND (c.reply_classification IS NULL OR c.reply_classification = '')
+            LIMIT 20
+        """).fetchall()
+        leads = [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+    if not leads:
+        return
+
+    for lead in leads:
+        try:
+            reply = lead["reply_text"]
+            classification = _classify_reply_ai(reply, lead["name"])
+            if not classification:
+                continue
+
+            # Store classification
+            conn2 = get_conn()
+            conn2.execute(
+                "UPDATE contacts SET reply_classification=? WHERE business_id=?",
+                (classification, lead["id"])
+            )
+            conn2.commit()
+            conn2.close()
+
+            log.info(f"[ReplyClassify] {lead['name']} → {classification}")
+
+            if classification == "interested":
+                # Bump score, fire urgent ntfy
+                conn3 = get_conn()
+                conn3.execute(
+                    "UPDATE businesses SET lead_score=MIN(100, COALESCE(lead_score,50)+25), status='hot' WHERE id=?",
+                    (lead["id"],)
+                )
+                conn3.commit()
+                conn3.close()
+                notify_chandan(
+                    f"HOT REPLY: {lead['name']}",
+                    f"Replied INTERESTED 🔥\n\n\"{reply[:200]}\"\n\nMove to close now.",
+                    tags="fire,star",
+                    priority="urgent"
+                )
+
+            elif classification == "not_now":
+                # Schedule 60-day re-engage follow-up
+                channel = "email" if lead.get("email") else "instagram"
+                now = _dt.utcnow()
+                sequences = [{
+                    "num": 1,
+                    "channel": channel,
+                    "draft": "Hey, just circling back as promised — are you in a better place to look at this now?",
+                    "scheduled_for": (now + timedelta(days=60)).isoformat(),
+                    "followup_angle": "not_now_revisit",
+                }]
+                # Only insert if no such follow-up exists yet
+                conn4 = get_conn()
+                exists = conn4.execute(
+                    "SELECT id FROM follow_ups WHERE business_id=? AND followup_angle='not_now_revisit'",
+                    (lead["id"],)
+                ).fetchone()
+                conn4.close()
+                if not exists:
+                    insert_follow_ups(lead["id"], sequences)
+                    log.info(f"[ReplyClassify] Scheduled 60-day re-engage for {lead['name']}")
+
+            elif classification == "price_objection":
+                # Queue ROI-focused draft as urgent ntfy alert
+                roi_msg = (
+                    f"ROI OBJECTION — {lead['name']}\n\n"
+                    f"Reply: \"{reply[:150]}\"\n\n"
+                    "Suggested response: Share the ROI case study — avg 3x bookings in 90 days, "
+                    "monthly retainer pays for itself in 1 new client."
+                )
+                notify_chandan(
+                    f"Price Objection: {lead['name']}",
+                    roi_msg,
+                    tags="money,warning",
+                    priority="high"
+                )
+
+        except Exception as e:
+            log.error(f"[ReplyClassify] Error for {lead.get('name')}: {e}")
+
+
+def _classify_reply_ai(reply_text: str, business_name: str) -> str:
+    """Call AI to classify a reply into one of 4 categories."""
+    prompt = (
+        f"Classify this email/Instagram reply from '{business_name}' into EXACTLY one of these categories:\n"
+        "interested / not_now / wrong_person / price_objection\n\n"
+        "interested = they want to know more, asked for price, said yes, want to meet.\n"
+        "not_now = too busy, come back later, not the right time.\n"
+        "wrong_person = not the decision maker, forward to someone else.\n"
+        "price_objection = too expensive, can't afford it, mention of cost.\n\n"
+        f"Reply:\n\"{reply_text[:500]}\"\n\n"
+        "Respond with only the category name, nothing else."
+    )
+    try:
+        from ai_writer import _run
+        result = _run(prompt).strip().lower()
+        for cat in ("interested", "not_now", "wrong_person", "price_objection"):
+            if cat in result:
+                return cat
+    except Exception as e:
+        log.warning(f"[ReplyClassify] AI classify error: {e}")
+    return ""
+
+
+@require_internet
+def job_demo_expiry_urgency():
+    """
+    Daily: if demo was sent >7 days ago with no open/reply, queue
+    a 'your personalised preview expires in 48h' follow-up message.
+    """
+    from database import get_conn, insert_follow_ups
+    from datetime import datetime as _dt, timedelta
+
+    conn = get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT b.id, b.name, b.category, b.city, b.demo_tunnel_url,
+                   c.email, c.instagram,
+                   o.channel as original_channel, o.sent_at,
+                   o.opened
+            FROM businesses b
+            JOIN contacts c ON c.business_id = b.id
+            JOIN outreach o ON o.business_id = b.id AND o.status='sent'
+            WHERE b.demo_tunnel_url IS NOT NULL AND b.demo_tunnel_url != ''
+              AND b.status = 'sent'
+              AND (c.replied_at IS NULL OR c.replied_at = '')
+              AND (o.opened IS NULL OR o.opened = 0)
+              AND julianday('now') - julianday(o.sent_at) >= 7
+              AND b.id NOT IN (
+                  SELECT business_id FROM follow_ups WHERE followup_angle='demo_expiry'
+              )
+            LIMIT 15
+        """).fetchall()
+        leads = [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+    for lead in leads:
+        try:
+            channel = lead.get("original_channel") or ("email" if lead.get("email") else "instagram")
+            demo_url = lead.get("demo_tunnel_url", "")
+            msg = (
+                f"Hi {lead['name'].split()[0]} — just a heads up: the personalised website preview "
+                f"we built for {lead['name']} expires in 48 hours. "
+                f"Take a quick look before it's gone: {demo_url}"
+            )
+            now = _dt.utcnow()
+            sequences = [{
+                "num": 1,
+                "channel": channel,
+                "draft": msg,
+                "scheduled_for": (now + timedelta(minutes=15)).isoformat(),
+                "followup_angle": "demo_expiry",
+            }]
+            insert_follow_ups(lead["id"], sequences)
+            log.info(f"[DemoExpiry] Queued expiry urgency for {lead['name']}")
+        except Exception as e:
+            log.error(f"[DemoExpiry] Error for {lead.get('name')}: {e}")
+
+
+@require_internet
+def job_linkedin_enrichment():
+    """
+    Daily: for contacts with email but no linkedin_url, run a Serper search
+    to find their LinkedIn profile and store it.
+    """
+    from database import get_conn
+    import os, requests
+
+    serper_key = os.getenv("SERPER_API_KEY", "")
+    if not serper_key:
+        return
+
+    conn = get_conn()
+    try:
+        rows = conn.execute("""
+            SELECT b.id, b.name, c.owner_name
+            FROM businesses b
+            JOIN contacts c ON c.business_id = b.id
+            WHERE (c.linkedin_url IS NULL OR c.linkedin_url = '')
+              AND c.email IS NOT NULL AND c.email != ''
+            LIMIT 20
+        """).fetchall()
+        leads = [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+    for lead in leads:
+        try:
+            search_name = lead.get("owner_name") or lead["name"]
+            query = f'"{search_name}" site:linkedin.com/in'
+            resp = requests.post(
+                "https://google.serper.dev/search",
+                json={"q": query, "num": 3},
+                headers={"X-API-KEY": serper_key},
+                timeout=10
+            )
+            if resp.status_code != 200:
+                continue
+
+            results = resp.json().get("organic", [])
+            linkedin_url = ""
+            for r in results:
+                link = r.get("link", "")
+                if "linkedin.com/in/" in link:
+                    linkedin_url = link.split("?")[0]
+                    break
+
+            if linkedin_url:
+                conn2 = get_conn()
+                conn2.execute(
+                    "UPDATE contacts SET linkedin_url=? WHERE business_id=?",
+                    (linkedin_url, lead["id"])
+                )
+                conn2.commit()
+                conn2.close()
+                log.info(f"[LinkedIn] Enriched {lead['name']}: {linkedin_url}")
+        except Exception as e:
+            log.error(f"[LinkedIn] Error for {lead.get('name')}: {e}")
+
+
 def start_scheduler():
     """Start background scheduler. Called once on server startup."""
     cfg = _get_config()
@@ -1863,6 +2869,7 @@ def start_scheduler():
     # Beacon sync: keep beacon-config.json on GitHub Pages current with tunnel URL
     scheduler.add_job(job_sync_beacon,          "interval", minutes=5,  id="sync_beacon",          next_run_time=now_utc, replace_existing=True)
     # Cloudflare Worker event sync: pull tracking events from online worker buffer
+    scheduler.add_job(job_shadow_checks,        "interval", minutes=60, id="shadow_checks",        next_run_time=now_utc, replace_existing=True)
     scheduler.add_job(job_sync_worker_events,   "interval", minutes=5,  id="sync_worker_events",   next_run_time=now_utc, replace_existing=True)
     # Bot KV sync: push live stats + drafts to Cloudflare KV for Telegram bot webhook
     scheduler.add_job(job_process_ig_regens, "interval", minutes=1, id="process_ig_regens", next_run_time=now_utc, replace_existing=True)
@@ -1873,10 +2880,16 @@ def start_scheduler():
     scheduler.add_job(job_auto_followup_opened_leads, "interval", minutes=5, id="followup_opened_leads", next_run_time=now_utc, replace_existing=True)
     # Scroll-engaged leads: detect demo scroll-90 events and queue instant follow-up
     scheduler.add_job(job_check_scroll_engaged_leads, "interval", minutes=5, id="scroll_engaged_leads", next_run_time=now_utc, replace_existing=True)
+    # Demo-open nudge: ping Chandan if a lead opened the demo 2h ago but never tapped WA
+    scheduler.add_job(job_demo_open_nudge, "interval", minutes=15, id="demo_open_nudge", next_run_time=now_utc, replace_existing=True)
+    # Color-customizer leads: detect prospects who personalized demo colors → priority follow-up in 5 min
+    scheduler.add_job(job_check_color_customizer_leads, "interval", minutes=5, id="color_customizer_leads", next_run_time=now_utc, replace_existing=True)
     # Demo buffer: maintain 10 pre-generated demos ahead of send queue — runs every 15 min
     scheduler.add_job(job_pregen_demo_buffer, "interval", minutes=15, id="pregen_demo_buffer", next_run_time=now_utc, replace_existing=True)
     # Instagram DMs: safe rate-limited sends (20/day max) — check every 60 min
     scheduler.add_job(job_auto_send_instagram_dms, "interval", minutes=60, id="auto_send_instagram", next_run_time=now_utc, replace_existing=True)
+    # Instagram Unfollow: automatically prune old DMs that didn't reply — runs every 45 mins
+    scheduler.add_job(job_unfollow_ghosts, "interval", minutes=45, id="unfollow_ghosts", next_run_time=now_utc, replace_existing=True)
     # WhatsApp: Twilio or digest — check every 60 min
     scheduler.add_job(job_auto_send_whatsapp, "interval", minutes=60, id="auto_send_whatsapp", next_run_time=now_utc, replace_existing=True)
     # Dashboard Replication: Static compiler replica on GitHub/Cloudflare Pages — runs every 15 min
@@ -1888,6 +2901,10 @@ def start_scheduler():
     scheduler.add_job(job_check_bounces, "interval", minutes=10, id="bounce_verification", next_run_time=now_utc, replace_existing=True)
     # Daily performance recap alert: runs every day at 6 PM (18:00) local time
     scheduler.add_job(job_daily_recap, "cron", hour=18, minute=0, id="daily_recap", replace_existing=True)
+    # ADB keep-alive: reconnect to Vivo every 10 min, alert if offline
+    scheduler.add_job(job_adb_keepalive, "interval", minutes=10, id="adb_keepalive", next_run_time=now_utc, replace_existing=True)
+    # Device health: battery level/temp monitoring every 6 hours
+    scheduler.add_job(job_device_health, "interval", hours=6, id="device_health", next_run_time=now_utc, replace_existing=True)
     # AI IG/WA Draft Generation: Firestick only — Mac skips silently
     import generate_ig_drafts
     import generate_wa_drafts
@@ -1907,7 +2924,13 @@ def start_scheduler():
 
     scheduler.add_job(_firestick_only(generate_wa_drafts.generate_drafts), "interval", hours=4, id="generate_wa_drafts", next_run_time=now_utc, replace_existing=True)
     scheduler.add_job(_firestick_only(generate_ig_drafts.generate_drafts), "interval", hours=4, id="generate_ig_drafts", next_run_time=now_utc, replace_existing=True)
-    scheduler.add_job(_mac_only(job_check_instagram_replies), "interval", minutes=15, id="check_instagram_replies", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(job_check_instagram_replies, "interval", minutes=15, id="check_instagram_replies", next_run_time=now_utc, replace_existing=True)
+
+    scheduler.add_job(job_lead_score_decay,    "interval", days=7,     id="lead_score_decay",    next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(job_reengage_cold_leads, "interval", hours=24,   id="reengage_cold_leads", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(job_classify_replies,    "interval", minutes=15, id="classify_replies",    next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(job_demo_expiry_urgency, "interval", hours=24,   id="demo_expiry_urgency", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(job_linkedin_enrichment, "interval", hours=24,   id="linkedin_enrichment", next_run_time=now_utc, replace_existing=True)
 
     if not scheduler.running:
         scheduler.start()
@@ -1933,4 +2956,4 @@ def save_scheduler_config(niches: list, locations: list, enabled: bool, hour: in
         conn.close()
 
     # Reschedule with new config
-    scheduler.reschedule_job("daily_find", trigger="interval", minutes=10)
+    scheduler.reschedule_job("daily_find", trigger="cron", hour=hour, minute=0)

@@ -17,7 +17,19 @@ sys.path.append("/Users/chandan/leadflow")
 from vivo_ig_ui_sender import adb, unlock_screen, get_ui_coords, type_text_safe, confirm_message_typed
 
 DB_PATH = "/Users/chandan/leadflow/leadflow.db"
-DEVICE_IP = "192.168.1.4:5555"
+
+# Resolve device IP dynamically
+from pathlib import Path
+DEVICE_IP = "192.168.1.4:5555" # Default fallback
+try:
+    _ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
+    _ip_file_local = Path(__file__).parent / ".vivo_ip"
+    if _ip_file_home.exists():
+        DEVICE_IP = _ip_file_home.read_text().strip()
+    elif _ip_file_local.exists():
+        DEVICE_IP = _ip_file_local.read_text().strip()
+except Exception:
+    pass
 
 def adb_run(args):
     import subprocess
@@ -142,12 +154,13 @@ def respond_with_link(business, last_msg_text):
         adb_run(["shell", "input", "tap", str(coords_send[0]), str(coords_send[1])])
         time.sleep(2)
         
-        # Update Database
+        # Update Database — mark as replied and cancel pending follow-ups
         conn = get_db_connection()
-        conn.execute("UPDATE businesses SET ig_link_delivered = 1 WHERE id = ?", (business["id"],))
+        conn.execute("UPDATE businesses SET ig_link_delivered = 1, status = 'replied' WHERE id = ?", (business["id"],))
+        conn.execute("UPDATE follow_ups SET status = 'cancelled' WHERE business_id = ? AND status = 'pending'", (business["id"],))
         conn.commit()
         conn.close()
-        log.info(f"✅ Successfully delivered mockup link and updated DB for ID {business['id']}!")
+        log.info(f"✅ Successfully delivered mockup link, marked as replied, and cancelled pending follow-ups for ID {business['id']}!")
         return True
     else:
         log.error("Could not locate Send button in chat screen.")
@@ -328,18 +341,57 @@ def run_inbox_method():
 # ─────────────────────────────────────────────────────────────────────────────
 # Main Executor
 # ─────────────────────────────────────────────────────────────────────────────
+def acquire_phone_lock(ip: str, timeout_seconds: int = 180) -> bool:
+    """Atomic lock with wait-queue and 5-minute stale lock detection to prevent deadlocks."""
+    import time
+    start_time = time.time()
+    lock_cmd = f"adb -s {ip} shell mkdir /sdcard/ig_automation_lock 2>/dev/null"
+    
+    while time.time() - start_time < timeout_seconds:
+        if subprocess.run(lock_cmd, shell=True).returncode == 0:
+            return True # Lock acquired successfully
+            
+        # Lock exists. Check if it's a stale lock (older than 5 mins)
+        try:
+            cur_time_str = subprocess.run(f"adb -s {ip} shell date +%s", shell=True, capture_output=True, text=True).stdout.strip()
+            lock_time_str = subprocess.run(f"adb -s {ip} shell stat -c %Y /sdcard/ig_automation_lock", shell=True, capture_output=True, text=True).stdout.strip()
+            if cur_time_str.isdigit() and lock_time_str.isdigit():
+                if (int(cur_time_str) - int(lock_time_str)) > 300:
+                    log.warning("⚠️ STALE LOCK DETECTED: A previous script crashed. Force-clearing the lock.")
+                    subprocess.run(f"adb -s {ip} shell rmdir /sdcard/ig_automation_lock", shell=True)
+                    continue # Try acquiring again immediately
+        except Exception as e:
+            pass
+            
+        elapsed = int(time.time() - start_time)
+        log.info(f"Phone is currently busy. Waiting in queue for lock... ({elapsed}s elapsed)")
+        time.sleep(5)
+        
+    log.error(f"Timed out after {timeout_seconds}s waiting in queue for the phone lock.")
+    return False
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="LeadFlow Instagram DM Reply Responder & Link Deliverer")
-    parser.add_argument("--method", choices=["queue", "inbox", "both"], default="both",
-                        help="Specify checking method: queue, inbox, or both (default: both)")
+    parser = argparse.ArgumentParser(description="LeadFlow Instagram DM Reply Responder")
+    parser.add_argument("--method", choices=["queue", "inbox", "both"], default="both")
     args = parser.parse_args()
     
-    if args.method == "inbox":
-        run_inbox_method()
-    elif args.method == "queue":
-        run_queue_method()
-    else:
-        run_inbox_method()
-        time.sleep(3)
-        run_queue_method()
-    log.info("=== IG Reply Responder run completed successfully! ===")
+    # ATOMIC LOCK WITH STALE RECOVERY
+    import subprocess
+    if not acquire_phone_lock(DEVICE_IP):
+        log.warning(f"⚠️ SPLIT-BRAIN PREVENTION: Phone is currently locked by another automation script. Aborting IG Reply Responder.")
+        sys.exit(0)
+        
+    try:
+        if args.method == "inbox":
+            run_inbox_method()
+        elif args.method == "queue":
+            run_queue_method()
+        else:
+            run_inbox_method()
+            time.sleep(3)
+            run_queue_method()
+        log.info("=== IG Reply Responder run completed successfully! ===")
+    finally:
+        # ATOMIC LOCK RELEASE
+        log.info("Releasing physical phone lock...")
+        subprocess.run(f"adb -s {DEVICE_IP} shell rmdir /sdcard/ig_automation_lock 2>/dev/null", shell=True)

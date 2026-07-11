@@ -1,0 +1,1 @@
+{"data":null,"errors":[{"message":"account \"506e90eeec4d597dd3a1d6508423cc20\" cannot request a time range wider than 4w4d, but your query time range spans 131w2d4h23m53s158ms545us719ns","path":["viewer","accounts","0","workersInvocationsAdaptive"],"extensions":{"code":"quota","timestamp":"2026-07-08T04:23:53.1586458Z","ray_id":"a17c50e9af693ad7-BOM"}}]}

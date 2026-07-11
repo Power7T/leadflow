@@ -11,7 +11,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
 from rich.text import Text
 from rich import box
-from database import init_db, get_leads, update_business_status, insert_outreach, mark_sent, get_stats
+from database import init_db, get_leads, update_business_status, insert_outreach, mark_sent, get_stats, get_ab_stats
 from finder import run_finder
 from ai_writer import generate_all
 from sender import send_email, parse_subject_body
@@ -43,6 +43,22 @@ def show_stats():
     table.add_row("[green]Sent[/]", str(stats.get("sent", 0)))
     table.add_row("[bold green]Replied[/]", str(stats.get("replied", 0)))
     table.add_row("[dim]Skipped[/]", str(stats.get("skipped", 0)))
+
+    # A/B variant reply rates
+    try:
+        ab = get_ab_stats()
+        if ab:
+            table.add_row("", "")
+            table.add_row("[dim]IG A/B variants[/]", "")
+            for row in ab:
+                variant = row["variant"] or "?"
+                sent = row["sent"]
+                replied = row["replied"]
+                rate = f"{int(replied/sent*100)}%" if sent else "—"
+                table.add_row(f"  [cyan]Variant {variant}[/]", f"{replied}/{sent} replied ({rate})")
+    except Exception:
+        pass
+
     console.print(Panel(table, title="[bold]Pipeline Status[/]", border_style="dim"))
 
 
@@ -81,8 +97,12 @@ def review_lead(lead: dict) -> str:
         table.add_row("Google", f"{'★' * int(lead['google_rating'])} {lead['google_rating']} ({lead.get('google_reviews', 0)} reviews)")
     table.add_row("Website", lead.get("website") or "[red]None[/]")
     table.add_row("Site Score", f"[{score_color}]{score}/100[/]")
+    if lead.get("site_builder"):
+        table.add_row("[yellow]Builder[/]", f"[yellow]{lead['site_builder']}[/] ← pitch hook: DIY site, we can replace it")
     table.add_row("Gap", lead.get("gap", "—"))
     table.add_row("Pitch", PITCH_LABELS.get(lead.get("pitch_type", ""), "—"))
+    if lead.get("complaint_hook"):
+        table.add_row("[magenta]Reviews[/]", f"[magenta]{lead['complaint_hook']}[/]")
     table.add_row("", "")
     table.add_row("Email", lead.get("email") or "[dim]not found[/]")
     table.add_row("Instagram", f"@{lead['instagram']}" if lead.get("instagram") else "[dim]not found[/]")

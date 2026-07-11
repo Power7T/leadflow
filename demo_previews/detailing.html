@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Elite Premium Services | Premium Auto Detailing & Ceramic Coating</title>
+<meta name="description" content="Welcome to Elite Premium Services. The premier destination for professional auto detailing, multi-stage paint correction, and certified ceramic coating services.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+:root{
+  --bg-primary:#0A0A0C;
+  --bg-secondary:#121216;
+  --bg-tertiary:#1B1B22;
+  --accent-cyan:#00E5FF;
+  --accent-cyan-glow:rgba(0,229,255,0.15);
+  --accent-blue:#0051FF;
+  --text-white:#FFFFFF;
+  --text-gray:#A0A5B5;
+  --text-muted:#606575;
+  --glass-bg:rgba(18,18,22,0.92);
+  --glass-border:rgba(0,229,255,0.08);
+  --glass-border-hover:rgba(0,229,255,0.25);
+  --border-radius-sm:4px;
+  --border-radius-md:12px;
+  --border-radius-lg:20px;
+  --shadow-sm:0 4px 16px rgba(0,0,0,0.5);
+  --shadow-md:0 12px 32px rgba(0,0,0,0.7);
+  --shadow-lg:0 24px 64px rgba(0,0,0,0.9);
+  --shadow-cyan:0 0 30px rgba(0,229,255,0.2);
+  --transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);
+  --transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);
+  --transition-slow:0.8s cubic-bezier(0.25,1,0.5,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Outfit',sans-serif;overflow-x:hidden}
+body{overflow-x:hidden;line-height:1.6;cursor:none}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg-primary)}
+::-webkit-scrollbar-thumb{background:var(--bg-tertiary);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-cyan)}
+h1,h2,h3,h4,h5,h6{font-weight:800;letter-spacing:-0.02em;line-height:1.15;color:var(--text-white)}
+p{color:var(--text-gray);font-weight:300}
+a{text-decoration:none;color:inherit}
+.text-gradient-cyan{background:linear-gradient(135deg,#FFFFFF 0%,#00E5FF 50%,#0051FF 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.container{width:100%;max-width:1200px;margin:0 auto;padding:0 2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.95rem 2.2rem;font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;text-decoration:none;border-radius:var(--border-radius-sm);border:1px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}
+.btn-primary{background-color:var(--accent-cyan);color:#0A0A0C;box-shadow:var(--shadow-sm);font-weight:800}
+.btn-primary:hover{background:transparent;color:var(--accent-cyan);border-color:var(--accent-cyan);box-shadow:var(--shadow-cyan);transform:translateY(-2px)}
+.btn-secondary{background:transparent;border-color:var(--glass-border);color:var(--text-white)}
+.btn-secondary:hover{background:rgba(255,255,255,.03);border-color:var(--accent-cyan);transform:translateY(-2px)}
+section{padding:8.5rem 0;position:relative;overflow:hidden}
+.section-tag{font-family:'Outfit',sans-serif;font-weight:700;font-size:.7rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent-cyan);margin-bottom:1rem;display:inline-block;background:rgba(0,229,255,0.08);padding:4px 14px;border-radius:4px;border:1px solid rgba(0,229,255,0.15)}
+.section-title{font-size:3.2rem;margin-bottom:1.5rem}
+.section-desc{font-size:1.05rem;max-width:600px;margin-bottom:4rem}
+/* REVEAL */
+.reveal{opacity:0;transition:var(--transition-slow)}
+.reveal-slide-up{transform:translateY(40px)}
+.reveal-slide-left{transform:translateX(40px)}
+.reveal-slide-right{transform:translateX(-40px)}
+.reveal-scale-in{transform:scale(.97)}
+.reveal.revealed{opacity:1;transform:none}
+.delay-100{transition-delay:.1s}
+.delay-200{transition-delay:.2s}
+.delay-300{transition-delay:.3s}
+/* CURSOR */
+.custom-cursor-dot{position:fixed;width:6px;height:6px;background:var(--accent-cyan);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}
+.custom-cursor-ring{position:fixed;width:36px;height:36px;border:1px solid var(--accent-cyan);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.5}
+body.cursor-hover .custom-cursor-dot{width:4px;height:4px;background:#FFF}
+body.cursor-hover .custom-cursor-ring{width:50px;height:50px;border-color:#FFF;opacity:.3}
+@media(max-width:768px){.custom-cursor-dot,.custom-cursor-ring{display:none}body{cursor:auto}}
+/* SPOTLIGHT */
+.spotlight{position:absolute;width:550px;height:550px;background:radial-gradient(circle,var(--accent-cyan-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.4}
+/* CARBON GRID BACKGROUND */
+.carbon-grid{position:absolute;inset:0;background-size:40px 40px;background-image:linear-gradient(to right,rgba(255,255,255,0.01) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.01) 1px,transparent 1px);pointer-events:none;z-index:0}
+/* DEMO BANNER */
+.demo-banner{background:var(--accent-cyan);color:#0A0A0C;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.demo-banner a{color:#0A0A0C;text-decoration:underline;font-weight:800}
+.demo-banner .orig{font-size:11px;font-weight:400;opacity:.8}
+/* NAVBAR */
+.navbar{position:fixed;top:48px;left:0;width:100%;z-index:1000;transition:var(--transition-smooth)}
+.navbar.scrolled{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border);box-shadow:var(--shadow-sm)}
+.nav-container{display:flex;justify-content:space-between;align-items:center;height:95px;transition:var(--transition-smooth)}
+.navbar.scrolled .nav-container{height:75px}
+.logo{font-size:1.6rem;font-weight:900;color:var(--text-white);display:flex;align-items:center;gap:.6rem;letter-spacing:-1px}
+.logo span{color:var(--accent-cyan)}
+.logo-icon{width:24px;height:24px;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-blue));border-radius:4px;position:relative;flex-shrink:0}
+.logo-icon::after{content:'';position:absolute;width:6px;height:6px;background:var(--bg-primary);border-radius:1px;top:50%;left:50%;transform:translate(-50%,-50%)}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{color:var(--text-gray);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;transition:var(--transition-fast);position:relative;padding:.5rem 0}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:var(--accent-cyan);transition:var(--transition-smooth);transform:translateX(-50%)}
+.nav-links a:hover,.nav-links a.active{color:var(--text-white)}.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-actions{display:flex;align-items:center;gap:1.5rem}
+.hamburger{display:none;cursor:pointer;background:none;border:none;padding:.5rem}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text-white);margin:6px 0;transition:var(--transition-smooth)}
+.hamburger.active span:nth-child(1){transform:rotate(-45deg) translate(-5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(45deg) translate(-5px,-5px)}
+/* HERO */
+.hero{height:100vh;min-height:750px;display:flex;align-items:center;background:linear-gradient(rgba(10,10,12,0.7),rgba(10,10,12,0.95)),url('/static/detailing_hero.jpg') center/cover no-repeat;position:relative;padding-top:100px}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(10,10,12,.4) 50%,rgba(10,10,12,.8) 100%);z-index:1}
+.hero .container{position:relative;z-index:2}
+.hero-content{max-width:850px}
+.hero-tag{background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,0.2);color:var(--accent-cyan);padding:.4rem 1.2rem;border-radius:4px;font-weight:700;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}
+.hero-tag::before{content:'';width:4px;height:4px;background:var(--accent-cyan);border-radius:50%}
+.hero-name{font-size:4.8rem;line-height:1.1;margin-bottom:.5rem;font-weight:900}
+.hero-subtitle-wrapper{overflow:hidden;height:4.2rem;margin-bottom:1.8rem}
+.hero-subtitle-track{animation:slideUpDown 9s cubic-bezier(0.76,0,0.24,1) infinite}
+@keyframes slideUpDown{0%,25%{transform:translateY(0)}33%,58%{transform:translateY(-100%)}66%,91%{transform:translateY(-200%)}100%{transform:translateY(0)}}
+.hero-subtitle-track span{display:block;height:4.2rem;font-size:3.2rem;font-weight:900;line-height:1.3;color:var(--accent-cyan)}
+.hero-desc{font-size:1.05rem;color:var(--text-gray);margin-bottom:3rem;max-width:600px}
+.hero-btns{display:flex;gap:1.5rem;flex-wrap:wrap}
+/* STATS */
+.stats{padding:0;margin-top:-70px;position:relative;z-index:10}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:2.5rem;box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.stats-grid::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-cyan),transparent)}
+.stat-item{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
+.stat-item:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--bg-tertiary)}
+.stat-number{font-size:3rem;font-weight:800;line-height:1;margin-bottom:.3rem;color:var(--accent-cyan)}
+.stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:var(--text-gray);font-weight:600}
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:5.5rem;align-items:center}
+.about-features{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-top:3.5rem}
+.about-feature{display:flex;gap:1.2rem}
+.about-feature-icon{width:42px;height:42px;border:1px solid var(--glass-border);background:var(--bg-secondary);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;transition:var(--transition-smooth);color:var(--accent-cyan)}
+.about-feature:hover .about-feature-icon{border-color:var(--accent-cyan);box-shadow:var(--shadow-cyan)}
+.about-feature h4{font-size:1.1rem;margin-bottom:.4rem;font-weight:700}.about-feature p{font-size:.85rem;line-height:1.6;color:var(--text-gray)}
+.about-img-wrapper{position:relative;display:flex;justify-content:center;align-items:center}
+.about-image{width:100%;max-width:440px;aspect-ratio:0.85;border-radius:var(--border-radius-sm);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}
+.about-img-frame{position:absolute;width:calc(100% - 30px);max-width:440px;aspect-ratio:0.85;border:1px solid var(--accent-cyan);border-radius:var(--border-radius-sm);z-index:1;transform:translate(15px,15px);transition:var(--transition-smooth)}
+.about-img-wrapper:hover .about-img-frame{transform:translate(8px,8px)}
+.about-badge{position:absolute;bottom:25px;left:-25px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);backdrop-filter:blur(10px);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}
+.badge-icon{width:30px;height:30px;border-radius:50%;background:rgba(0,229,255,.1);display:flex;align-items:center;justify-content:center;color:var(--accent-cyan);font-size:0.9rem}
+.about-badge h5{font-size:1.1rem;margin-bottom:.1rem;font-weight:700}.about-badge p{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted)}
+/* SERVICES GRID */
+.programs-section{background:var(--bg-secondary)}
+.programs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}
+.program-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}
+.program-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-cyan-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}
+.program-card:hover{transform:translateY(-5px);border-color:var(--accent-cyan);box-shadow:var(--shadow-sm)}.program-card:hover::before{opacity:1}
+.program-icon{width:46px;height:46px;background:var(--bg-secondary);border-radius:4px;border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.3rem;transition:var(--transition-smooth);color:var(--accent-cyan);position:relative;z-index:1}
+.program-card:hover .program-icon{border-color:#FFF;background:#FFF;color:#0A0A0C}
+.program-card h3{font-size:1.35rem;margin-bottom:.8rem;position:relative;z-index:1;font-weight:700}
+.program-card p{font-size:.88rem;line-height:1.65;margin-bottom:2rem;position:relative;z-index:1;color:var(--text-gray)}
+.program-link{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:var(--accent-cyan);font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;transition:var(--transition-fast);position:relative;z-index:1}
+.program-card:hover .program-link{color:#FFF}
+/* PRICING PLANS */
+.pricing-section{padding:8.5rem 0}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2.2rem;margin-top:5rem}
+.price-card{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3.5rem 2.5rem;position:relative;transition:var(--transition-smooth);display:flex;flex-direction:column}
+.price-card.featured{border-color:var(--accent-cyan);box-shadow:var(--shadow-cyan)}
+.price-card.featured::after{content:'MOST POPULAR';position:absolute;top:20px;right:20px;background:var(--accent-cyan);color:#0A0A0C;font-size:.65rem;font-weight:800;letter-spacing:.15em;padding:4px 10px;border-radius:2px}
+.price-card h3{font-size:1.6rem;margin-bottom:.5rem}
+.price-desc{font-size:.85rem;color:var(--text-muted);margin-bottom:2rem}
+.price-amt{font-size:3rem;font-weight:900;color:var(--text-white);margin-bottom:2rem;display:flex;align-items:baseline}
+.price-amt span{font-size:1rem;color:var(--text-gray);font-weight:400;margin-left:.3rem}
+.price-features{list-style:none;margin-bottom:3rem;display:flex;flex-direction:column;gap:1rem}
+.price-features li{font-size:.9rem;color:var(--text-gray);display:flex;align-items:center;gap:.8rem}
+.price-features li::before{content:'✓';color:var(--accent-cyan);font-weight:800}
+.price-card .btn{width:100%}
+.price-card:hover{transform:translateY(-5px);border-color:var(--accent-cyan)}
+/* TESTIMONIALS */
+.testimonials-section{padding:8.5rem 0;background:var(--bg-secondary)}
+.t-slider-outer{overflow:hidden;margin-top:4rem}
+.t-slider{display:flex;gap:2rem;transition:transform .5s ease;cursor:grab}
+.t-slider.dragging{cursor:grabbing;transition:none}
+.t-card{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:3rem 2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px;box-shadow:var(--shadow-sm)}
+.t-stars{color:var(--accent-cyan);font-size:.9rem;margin-bottom:1.2rem;letter-spacing:1.5px}
+.t-card p{font-size:1.02rem;line-height:1.75;margin-bottom:2rem;font-style:italic;color:var(--text-white);font-weight:400}
+.t-author{font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}
+.t-author span{display:block;font-family:'Outfit',sans-serif;font-weight:400;font-size:.7rem;color:var(--text-muted);margin-top:.3rem;text-transform:none;letter-spacing:0}
+.t-controls{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:2.5rem}
+.t-btn{width:42px;height:42px;border-radius:4px;background:var(--bg-tertiary);border:1px solid var(--glass-border);color:var(--text-white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:var(--transition-fast)}
+.t-btn:hover{background:#FFF;color:#0A0A0C;border-color:#FFF}
+.t-dots{display:flex;gap:.6rem}
+.t-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}.t-dot.active{background:var(--accent-cyan);width:16px;border-radius:3px}
+/* CTA */
+.cta-section{padding:8.5rem 0}
+.cta-banner{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:6.5rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-md)}
+.cta-banner::before{content:'';position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent-cyan),transparent)}
+.cta-banner::after{content:'';position:absolute;bottom:-100px;right:-100px;width:350px;height:350px;background:radial-gradient(circle,var(--accent-cyan-glow),transparent 70%);pointer-events:none}
+.cta-banner h2{font-size:3.4rem;max-width:750px;margin:0 auto 1.5rem;font-weight:800;letter-spacing:-2px}
+.cta-banner p{font-size:1.05rem;max-width:550px;margin:0 auto 3rem}
+/* CONTACT */
+.contact-section{background:var(--bg-secondary)}
+.cinfo-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:3rem}
+.cinfo-item{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}
+.cinfo-item:hover{border-color:var(--accent-cyan);color:var(--text-white)}
+/* FOOTER */
+.footer{background:var(--bg-primary);border-top:1px solid var(--glass-border);padding:6.5rem 0 3rem}
+.footer-grid{display:grid;grid-template-columns:1.20fr .8fr .8fr;gap:4.5rem;margin-bottom:5.5rem}
+.footer-col h4{font-size:1.15rem;margin-bottom:2rem;padding-bottom:.5rem;position:relative;font-weight:700;text-transform:uppercase;letter-spacing:0.1em}
+.footer-col h4::after{content:'';position:absolute;bottom:0;left:0;width:24px;height:2px;background:var(--accent-cyan)}
+.footer-about p{font-size:.88rem;margin-top:1.2rem;margin-bottom:2rem;line-height:1.7}
+.social-links{display:flex;gap:1rem}
+.social-btn{width:40px;height:40px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:4px;color:var(--text-white);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:500;transition:var(--transition-smooth)}
+.social-btn:hover{background:#FFF;color:#0A0A0C;border-color:#FFF;transform:translateY(-2px)}
+.footer-links{list-style:none}.footer-links li{margin-bottom:.9rem}.footer-links a{color:var(--text-gray);font-size:.88rem;transition:var(--transition-fast)}.footer-links a:hover{color:var(--text-white);padding-left:5px}
+.footer-bottom{border-top:1px solid var(--glass-border);padding-top:3rem;display:flex;justify-content:space-between;align-items:center}
+.footer-bottom p{font-size:.8rem;color:var(--text-muted)}
+.footer-bottom a{color:var(--text-white);font-weight:700}
+@media(max-width:991px){.about-grid{grid-template-columns:1fr;gap:3.5rem}.about-img-wrapper{order:-1}.hamburger{display:block}.nav-links{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}.nav-links.active{right:0}.nav-actions{margin-right:3rem}.programs-grid,.pricing-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.hero-name{font-size:3.2rem}.hero-subtitle-track span{font-size:2.4rem}.hero-subtitle-wrapper{height:3rem}.section-title{font-size:2.4rem}.programs-grid,.pricing-grid{grid-template-columns:1fr}.t-card{flex:0 0 calc(100% - 1rem)}.stats-grid{grid-template-columns:repeat(2,1fr)}.cta-banner{padding:3.5rem 1.5rem}.cta-banner h2{font-size:2.2rem}.footer-grid{grid-template-columns:1fr;gap:2.5rem}.footer-bottom{flex-direction:column;gap:1rem;text-align:center}}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
+/* AHA MOMENT INTERACTIVE SECTION */
+.aha-section{padding:5rem 0;position:relative;background:var(--bg-secondary);overflow:hidden}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2rem}
+.aha-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 20px;border-radius:999px;cursor:pointer;font-size:0.85rem;font-weight:600;font-family:inherit;transition:all 0.25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:0 4px 16px rgba(224,90,38,0.3)}
+.aha-svg-wrap{width:100%;max-width:320px}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;margin-top:0.5rem;min-height:2rem}
+@media(max-width:768px){.aha-controls{gap:8px}.aha-btn{font-size:0.75rem;padding:7px 14px}}
+@keyframes shine-sweep{0%{opacity:0;transform:translateX(-40px)}50%{opacity:0.9}100%{opacity:0;transform:translateX(40px)}}
+</style>
+</head>
+<body>
+
+<div class="custom-cursor-dot" id="cursorDot"></div>
+<div class="custom-cursor-ring" id="cursorRing"></div>
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  ✨ FREE demo built for Elite Premium Services by Chandan Gosavi &mdash;
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
+  
+  <span class="orig">Based on <a href="http://https://example.com" target="_blank" style="color:inherit; text-decoration:underline;">http://www.https://example.com</a></span>
+  
+</div>
+
+<!-- Carbon Grid Background and Spotlights -->
+<div class="carbon-grid"></div>
+
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">
+      <div class="logo-icon"></div>
+      Elite Premium Services
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" class="active">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#programs">Services</a></li>
+      <li><a href="#pricing">Packages</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="#contact" class="btn btn-secondary" style="padding:.5rem 1.5rem;font-size:.75rem">Book Appt</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="spotlight" style="top:-100px;left:-150px"></div>
+  <div class="container">
+    <div class="hero-content reveal reveal-slide-up">
+      <div class="hero-tag">&#x2022; Elite Paint Care & Protection</div>
+      <h1 class="hero-name text-gradient-cyan">Elite Premium Services</h1>
+      <div class="hero-subtitle-wrapper">
+        <div class="hero-subtitle-track">
+          <span>CERAMIC COATINGS</span>
+          <span>PAINT CORRECTION</span>
+          <span>ELITE AUTO DETAILING</span>
+        </div>
+      </div>
+      
+      
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">5.0</span>
+        <span style="opacity:0.8; font-size:0.9rem;">(342 reviews)</span>
+      </div>
+      
+      <p class="hero-desc">At Elite Premium Services, we elevate your vehicle's presentation. Specializing in multi-stage paint correction, certified ceramic coatings, and high-end detailing, our passion drives us to deliver absolute perfection to every car we touch.</p>
+      <div class="hero-btns">
+        <a href="#contact" class="btn btn-primary">Request a Quote</a>
+        <a href="#pricing" class="btn btn-secondary">View Packages</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats bar -->
+<section class="stats" id="stats">
+  <div class="container">
+    <div class="stats-grid reveal reveal-scale-in">
+      <div class="stat-item">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Hand Washed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">9H</div>
+        <div class="stat-label">Ceramic Hardness</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">1,200+</div>
+        <div class="stat-label">Vehicles Restored</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">5.0★</div>
+        <div class="stat-label">Google Rating</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="about" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-content reveal reveal-slide-right">
+        <span class="section-tag">About the Studio</span>
+        <h2 class="section-title">Flawless Refinement<br><span class="text-gradient-cyan">Incredible Gloss</span> &amp; Depth</h2>
+        <p class="section-desc">We combine high-grade nano technology with master craftsmanship to offer an unmatched level of gloss, protection, and long-term durability for your vehicle.</p>
+        <div class="about-features">
+          <div class="about-feature">
+            <div class="about-feature-icon">🛡️</div>
+            <div><h4>Nanotech Coatings</h4><p>Certified application of industry-leading ceramic layers for permanent protection.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">🔍</div>
+            <div><h4>Paint Correction</h4><p>Multi-stage swirl removal restoring up to 95% of paint clarity and gloss.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">✨</div>
+            <div><h4>Precision Detailing</h4><p>Obsessive interior and exterior cleaning with premium, pH-balanced compounds.</p></div>
+          </div>
+          <div class="about-feature">
+            <div class="about-feature-icon">🔬</div>
+            <div><h4>Climate-Controlled</h4><p>Applied inside a strictly clean, temperature and dust-controlled booth.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="about-img-wrapper reveal reveal-slide-left">
+        <div class="about-img-frame"></div>
+        <img src="/static/detailing_about.jpg" alt="Elite Premium Services" class="about-image" onerror="this.parentElement.style.opacity='0.3'">
+        <div class="about-badge">
+          <div class="badge-icon">✓</div>
+          <div><h5>Certified Installer</h5><p>Professional Credentials</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services Grid -->
+<section class="programs-section" id="programs">
+  <div class="spotlight" style="top:0;right:-200px;background:radial-gradient(circle,rgba(0,81,255,0.12),transparent 70%)"></div>
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Our Services</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Premium Paint <span class="text-gradient-cyan">Refinement</span></h2>
+      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">Explore our professional protection and correction services designed for modern sport, luxury, and daily cars.</p>
+    </div>
+    <div class="programs-grid">
+      <div class="program-card reveal reveal-slide-up">
+        <div class="program-icon">💎</div>
+        <h3>Ceramic Coatings</h3>
+        <p>Premium 9H coating shields your paint from UV rays, acid rain, bird droppings, and light scratches.</p>
+        <a href="#contact" class="program-link">Get Quote &rarr;</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="program-icon">🚗</div>
+        <h3>Paint Correction</h3>
+        <p>Expert machine polishing removes swirls, scratches, oxidation, and buffer trails for a mirror gloss.</p>
+        <a href="#contact" class="program-link">Get Quote &rarr;</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="program-icon">🧼</div>
+        <h3>Interior Detailing</h3>
+        <p>Deep leather treatment, carpet extraction, dashboard sanitization, and interior scent restoration.</p>
+        <a href="#contact" class="program-link">Get Quote &rarr;</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up">
+        <div class="program-icon">🛞</div>
+        <h3>Wheel & Caliper Coat</h3>
+        <p>High-temperature ceramic coat for wheels and calipers to drastically reduce brake dust buildup.</p>
+        <a href="#contact" class="program-link">Get Quote &rarr;</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.1s">
+        <div class="program-icon">🧴</div>
+        <h3>Leather Protection</h3>
+        <p>Hydrophobic interior coatings to protect leather seats against stains, spills, and color transfer.</p>
+        <a href="#contact" class="program-link">Get Quote &rarr;</a>
+      </div>
+      <div class="program-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <div class="program-icon">🛡️</div>
+        <h3>Paint Protection Film</h3>
+        <p>Clear, self-healing urethane film to protect vulnerable high-impact zones against rock chips.</p>
+        <a href="#contact" class="program-link">Get Quote &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing Plans -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Pricing Packages</span>
+      <h2 class="section-title">Niche Selection <span class="text-gradient-cyan">Packages</span></h2>
+      <p class="section-desc" style="margin:0 auto">Select a professional package tailored to restore or protect your vehicle.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card reveal reveal-slide-up">
+        <h3>Elite Detail</h3>
+        <p class="price-desc">Complete deep clean inside & out</p>
+        <div class="price-amt">$249<span>/ start</span></div>
+        <ul class="price-features">
+          <li>100% Hand Wash & Clay Bar</li>
+          <li>Interior Deep Vacuum & Steam</li>
+          <li>Leather Clean & Condition</li>
+          <li>6-Month Paint Sealant Coat</li>
+          <li>Engine Bay Detail Spray</li>
+        </ul>
+        <a href="#contact" class="btn btn-secondary">Select Package</a>
+      </div>
+      <div class="price-card featured reveal reveal-slide-up" style="transition-delay:0.1s">
+        <h3>Paint Correction</h3>
+        <p class="price-desc">Restore clarity and paint depth</p>
+        <div class="price-amt">$599<span>/ start</span></div>
+        <ul class="price-features">
+          <li>Includes Elite Detail Package</li>
+          <li>Multi-Stage Paint Correction</li>
+          <li>Swirls & Scratch Removal</li>
+          <li>Mirror Gloss Reflection</li>
+          <li>1-Year Hydrophobic Coating</li>
+        </ul>
+        <a href="#contact" class="btn btn-primary">Select Package</a>
+      </div>
+      <div class="price-card reveal reveal-slide-up" style="transition-delay:0.2s">
+        <h3>Ceramic Shield</h3>
+        <p class="price-desc">Ultimate long-term paint protection</p>
+        <div class="price-amt">$999<span>/ start</span></div>
+        <ul class="price-features">
+          <li>Includes Full Paint Correction</li>
+          <li>Certified 9H Ceramic Coating</li>
+          <li>5-Year Paint Protection Warranty</li>
+          <li>Wheel & Caliper Coating</li>
+          <li>Glass Hydrophobic Shield</li>
+        </ul>
+        <a href="#contact" class="btn btn-secondary">Select Package</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AHA: Car Paint Condition Meter -->
+<section class="aha-section" id="paint-condition-meter">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Paint Assessment</span>
+      <h2 class="section-title" style="max-width:600px;margin:.5rem auto 0">From Dull to <span class="text-gradient-cyan">Mirror Finish</span></h2>
+      <p style="color:var(--text-muted);max-width:480px;margin:0 auto">Select a detailing package and watch your car's paint transform to a flawless shine.</p>
+      <div class="aha-controls">
+        <button class="aha-btn" data-detail="0" onclick="detailViz(0)">Light Wash</button>
+        <button class="aha-btn" data-detail="1" onclick="detailViz(1)">Clay Bar</button>
+        <button class="aha-btn active" data-detail="2" onclick="detailViz(2)">Paint Correction</button>
+        <button class="aha-btn" data-detail="3" onclick="detailViz(3)">Ceramic Coat</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg id="detail-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 0 20px rgba(0,188,212,0.35))">
+          <defs>
+            <linearGradient id="carGrad-dull" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2a2a2a"/>
+              <stop offset="100%" stop-color="#1a1a1a"/>
+            </linearGradient>
+            <linearGradient id="carGrad-clay" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#1a3a4a"/>
+              <stop offset="100%" stop-color="#0d2030"/>
+            </linearGradient>
+            <linearGradient id="carGrad-correct" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#003d5c"/>
+              <stop offset="100%" stop-color="#001f3f"/>
+            </linearGradient>
+            <linearGradient id="carGrad-ceramic" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#00bcd4"/>
+              <stop offset="30%" stop-color="#006080"/>
+              <stop offset="70%" stop-color="#001f3f"/>
+              <stop offset="100%" stop-color="#00bcd4"/>
+            </linearGradient>
+            <!-- Shine sweep gradient -->
+            <linearGradient id="shineGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="white" stop-opacity="0"/>
+              <stop offset="50%" stop-color="white" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="white" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Road / ground -->
+          <rect x="0" y="170" width="320" height="30" rx="0" fill="#111"/>
+          <line x1="0" y1="185" x2="320" y2="185" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="20,10"/>
+          <!-- Car body (simplified side profile) -->
+          <!-- Main body rectangle -->
+          <rect id="car-body" x="30" y="110" width="260" height="58" rx="10" fill="url(#carGrad-correct)"/>
+          <!-- Roof -->
+          <path id="car-roof" d="M95,110 L120,68 L220,68 L250,110 Z" fill="url(#carGrad-correct)"/>
+          <!-- Windows -->
+          <path d="M105,107 L125,74 L170,74 L165,107 Z" fill="rgba(0,188,212,0.2)" stroke="rgba(0,188,212,0.4)" stroke-width="1"/>
+          <path d="M168,107 L173,74 L215,74 L237,107 Z" fill="rgba(0,188,212,0.2)" stroke="rgba(0,188,212,0.4)" stroke-width="1"/>
+          <!-- Wheels -->
+          <circle cx="90" cy="168" r="22" fill="#111" stroke="#333" stroke-width="2"/>
+          <circle cx="90" cy="168" r="13" fill="#222" stroke="#555" stroke-width="1"/>
+          <circle cx="230" cy="168" r="22" fill="#111" stroke="#333" stroke-width="2"/>
+          <circle cx="230" cy="168" r="13" fill="#222" stroke="#555" stroke-width="1"/>
+          <!-- Headlight -->
+          <ellipse cx="285" cy="130" rx="8" ry="5" fill="rgba(0,188,212,0.15)" stroke="rgba(0,188,212,0.5)" stroke-width="1"/>
+          <!-- Shine sweep (mirror finish only) -->
+          <rect id="car-shine" x="30" y="68" width="260" height="100" rx="10" fill="url(#shineGrad)" opacity="0" style="animation:none"/>
+          <!-- Gloss label -->
+          <text id="detail-gloss" x="160" y="195" text-anchor="middle" fill="#00bcd4" font-size="11" font-weight="700" font-family="sans-serif">Paint Correction — High Gloss</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="detail-label">Paint Correction — Swirl Marks Removed</div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials-section" id="testimonials">
+  <div class="container">
+    <div style="text-align:center">
+      <span class="section-tag">Client Reviews</span>
+      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Supercar Standards, <span class="text-gradient-cyan">Five-Star Results</span></h2>
+    </div>
+    <div class="t-slider-outer">
+      <div class="t-slider" id="tSlider">
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"Brought my black Porsche 911 for paint correction and a 5-year ceramic coating. The swirls are completely gone, and the paint looks wetter than when I bought it!"</p>
+          <div class="t-author">Marcus G.<span>Porsche Owner</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"Extremely meticulous work. They spent 14 hours cleaning the interior and correcting my truck's paint. Absolute perfectionists who take pride in their work."</p>
+          <div class="t-author">Daniel K.<span>F-150 Raptor Owner</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"Superb service. The ceramic shield package makes washing the car a breeze. Dirt washes right off. Worth every single penny!"</p>
+          <div class="t-author">Elena S.<span>Tesla Model Y Owner</span></div>
+        </div>
+        <div class="t-card">
+          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p>"They detailed my classical Corvette interior and corrected the single-stage paint. Unbelievable attention to detail. Will never go anywhere else."</p>
+          <div class="t-author">Robert H.<span>Classic Car Collector</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="t-controls">
+      <button class="t-btn" id="tPrev">&larr;</button>
+      <div class="t-dots" id="tDots"></div>
+      <button class="t-btn" id="tNext">&rarr;</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-banner reveal reveal-scale-in">
+      <span class="section-tag">Claim Your Quote</span>
+      <h2>Claim Your Free Auto Detailing & Protection Consultation from<br><span class="text-gradient-cyan">Elite Premium Services</span> Today</h2>
+      <p>Schedule a quick inspection to receive an accurate, custom-tailored quote for your vehicle's needs.</p>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Schedule Proposal</a>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="contact-section" id="contact">
+  <div class="spotlight" style="bottom:-100px;left:-100px"></div>
+  <div class="container" style="text-align:center">
+    <span class="section-tag">Find Us</span>
+    <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-cyan">Elite Premium Services</span></h2>
+    <p>Schedule a correction walkthrough or ask about our protective ceramic options.</p>
+    <div class="cinfo-grid">
+      
+      
+      
+      
+      
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col footer-about">
+        <a href="#home" class="logo" style="font-size:1.5rem">
+          <div class="logo-icon"></div>
+          Elite Premium Services
+        </a>
+        <p>A leading studio for premium auto detailing, certified ceramic coatings, and high-end paint restoration services.</p>
+        <div class="social-links">
+          
+          
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About the Studio</a></li>
+          <li><a href="#programs">Services</a></li>
+          <li><a href="#contact">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul class="footer-links">
+          
+          
+          
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Elite Premium Services. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
+      <p>Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here &rarr;</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Custom cursor
+const dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'});
+(function animRing(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)})();
+document.querySelectorAll('a,button,.program-card,.price-card,.t-btn').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+});
+
+// Navbar scroll + active link
+const navbar=document.getElementById('navbar');
+const sections=document.querySelectorAll('section[id]');
+function onScroll(){
+  navbar.classList.toggle('scrolled',scrollY>50);
+  let cur='';
+  sections.forEach(s=>{if(scrollY>=s.offsetTop-200)cur=s.id});
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+}
+window.addEventListener('scroll',onScroll,{passive:true});
+
+// Hamburger
+const hamburger=document.getElementById('hamburger'),navLinks=document.getElementById('navLinks');
+hamburger.addEventListener('click',()=>{hamburger.classList.toggle('active');navLinks.classList.toggle('active')});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{hamburger.classList.remove('active');navLinks.classList.remove('active')}));
+
+// Scroll reveal
+const revObs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');revObs.unobserve(e.target)}},{threshold:0.1}));
+document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+// Testimonials slider
+(function(){
+  const slider=document.getElementById('tSlider'),dotsEl=document.getElementById('tDots');
+  const cards=Array.from(slider.children);
+  let cur=0,startX=0,dragX=0,isDrag=false;
+  function visible(){return window.innerWidth>991?3:window.innerWidth>600?2:1}
+  function buildDots(){
+    const pages=Math.ceil(cards.length/visible());
+    dotsEl.innerHTML='';
+    for(let i=0;i<pages;i++){
+      const d=document.createElement('div');d.className='t-dot'+(i===Math.floor(cur/visible())?' active':'');
+      d.addEventListener('click',()=>goto(i*visible()));dotsEl.appendChild(d);
+    }
+  }
+  function goto(n){
+    const max=cards.length-visible();cur=Math.max(0,Math.min(n,max));
+    const w=cards[0].offsetWidth+32;slider.style.transform=`translateX(${-cur*w}px)`;
+    buildDots();
+  }
+  document.getElementById('tPrev').addEventListener('click',()=>goto(cur-visible()));
+  document.getElementById('tNext').addEventListener('click',()=>goto(cur+visible()));
+  slider.addEventListener('mousedown',e=>{isDrag=true;startX=e.clientX;slider.classList.add('dragging')});
+  window.addEventListener('mousemove',e=>{if(isDrag)dragX=e.clientX-startX});
+  window.addEventListener('mouseup',()=>{
+    if(!isDrag)return;isDrag=false;slider.classList.remove('dragging');
+    const w=cards[0].offsetWidth+32;if(Math.abs(dragX)>w*.25)goto(dragX<0?cur+visible():cur-visible());else goto(cur);
+    dragX=0;
+  });
+  slider.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
+  slider.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-startX;
+    const w=cards[0].offsetWidth+32;if(Math.abs(dx)>w*.25)goto(dx<0?cur+visible():cur-visible());
+  },{passive:true});
+  buildDots();
+  window.addEventListener('resize',()=>goto(0));
+})();
+(function(){
+  var packs=[
+    {label:'Light Wash — Surface Clean Only',gloss:'Light Wash — Basic Clean',grad:'carGrad-dull',shine:0,glow:'rgba(80,80,80,0.2)'},
+    {label:'Clay Bar — Contaminants Removed',gloss:'Clay Bar — Smooth Finish',grad:'carGrad-clay',shine:0.1,glow:'rgba(0,100,150,0.25)'},
+    {label:'Paint Correction — Swirl Marks Removed',gloss:'Paint Correction — High Gloss',grad:'carGrad-correct',shine:0.25,glow:'rgba(0,188,212,0.35)'},
+    {label:'Ceramic Coat — Mirror Finish 💫',gloss:'Ceramic Coat — Mirror Finish',grad:'carGrad-ceramic',shine:0.8,glow:'rgba(0,188,212,0.6)'}
+  ];
+  window.detailViz=function(idx){
+    var p=packs[idx];
+    document.querySelectorAll('.aha-btn[data-detail]').forEach(function(b){b.classList.toggle('active',parseInt(b.dataset.detail)===idx);});
+    document.getElementById('car-body').setAttribute('fill','url(#'+p.grad+')');
+    document.getElementById('car-roof').setAttribute('fill','url(#'+p.grad+')');
+    var shine=document.getElementById('car-shine');
+    shine.style.opacity=p.shine;
+    if(idx===3){shine.style.animation='shine-sweep 2s ease-in-out infinite';}
+    else{shine.style.animation='none';}
+    document.getElementById('detail-gloss').textContent=p.gloss;
+    document.getElementById('detail-label').textContent=p.label;
+    document.getElementById('detail-svg').style.filter='drop-shadow(0 0 24px '+p.glow+')';
+  };
+  detailViz(2);
+})();
+</script>
+
+
+<!-- LEADFLOW CONVERSION LAYER WITH CONTROL PANEL -->
+<style>
+  /* Styling for the sticky CTA bar */
+  .lf-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:9998;
+    display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    padding:14px 20px;background:rgba(10,10,12,.92);backdrop-filter:blur(12px);
+    border-top:1px solid rgba(255,255,255,.12);
+    transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
+  .lf-cta-bar.show{transform:translateY(0)}
+  .lf-cta-bar p{margin:0;font-size:15px;font-weight:500}
+  .lf-cta-bar p b{color:#4d9fff}
+  
+  .lf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+    text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:999px;
+    transition:transform .15s,box-shadow .15s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-btn:hover{transform:translateY(-2px)}
+  .lf-btn-primary{background:linear-gradient(135deg,#4d9fff,#2563eb);color:#fff;
+    box-shadow:0 4px 15px rgba(77,159,255,.3)}
+  .lf-btn-ghost{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12)}
+  .lf-btn-ghost:hover{background:rgba(255,255,255,.1)}
+
+  /* Original Modal styles */
+  .lf-modal-bg{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:20px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-modal-bg.show{display:flex;animation:lf-fade .3s ease}
+  .lf-modal{position:relative;max-width:440px;width:100%;background:#0d0e12;color:#fff;
+    border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 28px;text-align:center;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:lf-pop .35s cubic-bezier(.2,.9,.3,1.2)}
+  .lf-modal h2{margin:0 0 12px;font-size:24px;line-height:1.25}
+  .lf-modal h2 b{color:#4d9fff}
+  .lf-modal p{margin:0 0 24px;font-size:15px;line-height:1.6;color:#a0aec0}
+  .lf-modal .lf-btn{width:100%;font-size:16px;padding:14px}
+  .lf-modal .lf-sub{margin-top:14px;font-size:12px;color:#718096}
+  .lf-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#718096;
+    font-size:24px;line-height:1;cursor:pointer}
+  .lf-x:hover{color:#fff}
+
+  /* Control Panel Toggle Launcher Button */
+  .lf-launcher{position:fixed;bottom:30px;left:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(37, 99, 235, 0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;animation:lf-pulse 2s infinite}
+  .lf-launcher:hover{transform:scale(1.1) rotate(15deg);box-shadow:0 12px 40px rgba(37, 99, 235, 0.6)}
+  .lf-launcher.open{transform:scale(0.9) rotate(-90deg);background:#1a202c;border-color:rgba(255,255,255,0.1)}
+  .lf-launcher.shift{bottom:90px}
+  
+  @keyframes lf-pulse{
+    0%{box-shadow:0 0 0 0 rgba(37,99,235,0.6)}
+    70%{box-shadow:0 0 0 14px rgba(37,99,235,0)}
+    100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}
+  }
+
+  /* Control Panel Sidebar Drawer */
+  .lf-drawer{position:fixed;top:0;left:-380px;width:350px;height:100vh;z-index:99995;
+    background:rgba(10,11,15,0.92);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border-right:1px solid rgba(255,255,255,0.08);box-shadow:20px 0 80px rgba(0,0,0,0.65);
+    transition:transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    display:flex;flex-direction:column}
+  .lf-drawer.open{transform:translateX(380px)}
+  
+  .lf-drawer-header{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}
+  .lf-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.1em;
+    background:rgba(59,130,246,0.12);color:#3b82f6;padding:4px 10px;border-radius:4px;
+    border:1px solid rgba(59,130,246,0.25);margin-bottom:12px;text-transform:uppercase}
+  .lf-drawer-header h3{margin:0;font-size:20px;font-weight:700}
+  .lf-drawer-header p{margin:4px 0 0;font-size:13px;color:#a0aec0}
+  
+  .lf-drawer-body{padding:24px;overflow-y:auto;flex-grow:1;display:flex;flex-direction:column;gap:24px}
+  .lf-section-title{font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;
+    letter-spacing:0.08em;margin-bottom:12px}
+  
+  /* Audit Card */
+  .lf-audit-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);
+    border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+  .lf-progress-bg{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-top:6px}
+  .lf-progress-bar{height:100%;border-radius:3px;transition:width 1s ease}
+
+  /* Customizer Card */
+  .lf-color-grid{display:flex;gap:10px;margin-top:8px}
+  .lf-color-btn{width:34px;height:34px;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;transition:transform 0.2s,border-color 0.2s;position:relative}
+  .lf-color-btn:hover{transform:scale(1.15)}
+  .lf-color-btn.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
+  .lf-color-tooltip{position:absolute;bottom:42px;left:50%;transform:translateX(-50%) translateY(5px);
+    background:#1a202c;color:#fff;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+  .lf-color-btn:hover .lf-color-tooltip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Feature list */
+  .lf-feat-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+  .lf-feat-item{font-size:13px;color:#cbd5e0;display:flex;align-items:center;gap:10px}
+  .lf-feat-icon{color:#10b981;font-size:14px}
+
+  /* Profile Card */
+  .lf-profile{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px}
+  .lf-avatar{width:40px;height:40px;border-radius:50%;background:#3b82f6;display:flex;
+    align-items:center;justify-content:center;font-size:18px;font-weight:700}
+  .lf-profile-info{display:flex;flex-direction:column}
+  .lf-profile-name{font-size:13px;font-weight:700;color:#fff}
+  .lf-profile-role{font-size:11px;color:#718096}
+
+  .lf-drawer-footer{padding:20px;border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;flex-direction:column;gap:10px}
+  .lf-drawer-footer .lf-btn{width:100%;font-size:15px;padding:12px;font-weight:700}
+  
+  /* Chatbot styles */
+  .lf-chat-launcher{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#10b981,#059669);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(16,185,129,0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;user-select:none}
+  .lf-chat-launcher:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(16,185,129,0.6)}
+  
+  .lf-chat-window{position:fixed;bottom:96px;right:30px;width:320px;height:420px;z-index:99995;
+    background:rgba(10,11,15,0.96);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.65);
+    display:none;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    overflow:hidden;transition:all 0.3s ease}
+  .lf-chat-window.open{display:flex}
+  
+  .lf-chat-header{padding:14px 16px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;justify-content:space-between;align-items:center}
+  .lf-chat-header h4{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .lf-chat-header h4::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981}
+  
+  .lf-chat-messages{flex-grow:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
+    font-size:12.5px;line-height:1.45}
+  
+  .lf-msg{max-width:82%;padding:8px 12px;border-radius:12px;margin-bottom:2px;word-break:break-word}
+  .lf-msg-user{align-self:flex-end;background:#2563eb;color:#fff;border-bottom-right-radius:2px}
+  .lf-msg-ai{align-self:flex-start;background:rgba(255,255,255,0.06);color:#e2e8f0;border-bottom-left-radius:2px;border:1px solid rgba(255,255,255,0.04)}
+  
+  .lf-chat-input-area{padding:10px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;gap:8px;align-items:center}
+  .lf-chat-input{flex-grow:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:999px;padding:6px 14px;color:#fff;font-size:12.5px;outline:none;transition:border-color 0.2s}
+  .lf-chat-input:focus{border-color:#10b981}
+  .lf-chat-send{background:#10b981;border:none;color:#fff;border-radius:50%;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:background 0.2s}
+  .lf-chat-send:hover{background:#059669}
+  
+  .lf-typing{display:none;align-self:flex-start;background:rgba(255,255,255,0.03);padding:6px 12px;border-radius:12px;font-size:11px;color:#718096;margin:0 16px 8px}
+  
+  /* Timeline styles for Sequence */
+  .lf-timeline{display:flex;flex-direction:column;gap:14px;position:relative;padding-left:14px;margin-top:10px}
+  .lf-timeline::before{content:'';position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:rgba(255,255,255,0.08)}
+  .lf-timeline-item{display:flex;gap:10px;position:relative}
+  .lf-timeline-badge{width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-top:4px;
+    position:absolute;left:-14px;border:2px solid #0a0b0f}
+  .lf-timeline-content h4{margin:0;font-size:12.5px;font-weight:700;color:#fff}
+  .lf-timeline-content p{margin:2px 0 0;font-size:10.5px;color:#718096;line-height:1.4}
+  
+  @keyframes lf-fade{from{opacity:0}to{opacity:1}}
+</style>
+
+<div class="lf-launcher" id="lfLauncher" aria-label="Toggle Customizer">🛠️</div>
+
+<div class="lf-drawer" id="lfDrawer">
+  <div class="lf-drawer-header">
+    <div class="lf-badge">Live Demo Controls</div>
+    <h3>Custom Presentation</h3>
+    <p>Prepared for <b>Elite Premium Services</b></p>
+  </div>
+  
+  <div class="lf-drawer-body">
+    <!-- Audit Section -->
+    <div>
+      <div class="lf-section-title">Speed & Performance Audit</div>
+      <div class="lf-audit-card">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>Your Current Website:</span>
+            <span style="font-weight:700;color:#ef4444">No Website / 0</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:10%;background:#ef4444"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>LeadFlow Modern Demo:</span>
+            <span style="font-weight:700;color:#10b981">98 / 100</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:98%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Selection -->
+    <div>
+      <div class="lf-section-title">Tailor Brand Colors</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 10px">Preview this template in other primary branding styles instantly:</p>
+      <div class="lf-color-grid">
+        <button class="lf-color-btn active" id="lf-color-orange" data-color="orange" style="background:#E05A26" aria-label="Orange">
+          <span class="lf-color-tooltip">Amber Orange</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-blue" data-color="blue" style="background:#2563eb" aria-label="Blue">
+          <span class="lf-color-tooltip">Electric Blue</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-green" data-color="green" style="background:#10b981" aria-label="Green">
+          <span class="lf-color-tooltip">Emerald Green</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-gold" data-color="gold" style="background:#d97706" aria-label="Gold">
+          <span class="lf-color-tooltip">Honey Gold</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-pink" data-color="pink" style="background:#db2777" aria-label="Pink">
+          <span class="lf-color-tooltip">Rose Pink</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div>
+      <div class="lf-section-title">Built-in Enhancements</div>
+      <ul class="lf-feat-list">
+        <li class="lf-feat-item"><span class="lf-feat-icon">⚡</span> 340% faster loading speed</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">📱</span> Responsive mobile-first layout</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🛠️</span> Interactive pricing & cost estimators</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🎯</span> Modern UX to capture 3x more bookings</li>
+      </ul>
+    </div>
+
+    <!-- Outreach Sequence Timeline -->
+    <div>
+      <div class="lf-section-title">Autonomous Outreach Engine</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 12px">How we follow up with your prospects automatically:</p>
+      <div class="lf-timeline">
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#3b82f6"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 1: Personalized Pitch</h4>
+            <p>Initial email sent with custom demo site link.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#10b981"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 3: WhatsApp Nudge</h4>
+            <p>Follow-up text sent if booking is pending.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#fbbf24"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 7: Social Follow-up</h4>
+            <p>Instagram DM sent to maximize response rate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Designer profile -->
+    <div style="margin-top:auto">
+      <div class="lf-section-title">Created By</div>
+      <div class="lf-profile">
+        <div class="lf-avatar">CG</div>
+        <div class="lf-profile-info">
+          <span class="lf-profile-name">Alex from Sitelink</span>
+          <span class="lf-profile-role">Web Developer & Architect</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="lf-drawer-footer">
+    <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_drawer">Claim Website &rarr;</a>
+    
+  </div>
+</div>
+
+<div class="lf-chat-launcher" id="lfChatLauncher" aria-label="Open Chat">💬</div>
+
+<div class="lf-chat-window" id="lfChatWindow">
+  <div class="lf-chat-header">
+    <h4 style="margin:0">AI Assistant</h4>
+    <button class="lf-x" id="lfChatClose" style="position:static;font-size:20px;padding:0;background:none;border:none;color:#718096;cursor:pointer" aria-label="Close Chat">&times;</button>
+  </div>
+  <div class="lf-chat-messages" id="lfChatMessages">
+    <div class="lf-msg lf-msg-ai">Hi there! I'm your AI business assistant. How can I help you today?</div>
+  </div>
+  <div class="lf-typing" id="lfChatTyping">AI is typing...</div>
+  <div class="lf-chat-input-area">
+    <input type="text" class="lf-chat-input" id="lfChatInput" placeholder="Type a message...">
+    <button class="lf-chat-send" id="lfChatSend" aria-label="Send message">➔</button>
+  </div>
+</div>
+
+<div class="lf-cta-bar" id="lfBar">
+  <p>👀 Like this design for <b>Elite Premium Services</b>?</p>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_bar">Book a free call →</a>
+  
+</div>
+
+<div class="lf-modal-bg" id="lfModal">
+  <div class="lf-modal">
+    <button class="lf-x" id="lfX" aria-label="Close">&times;</button>
+    <h2>Want this site live for <b>Elite Premium Services</b>?</h2>
+    <p>This demo was built specifically for you. Book a free 15-minute call and
+       I'll have it live on your domain — no obligation, no upfront cost.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:15px;flex-wrap:wrap">
+      <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_modal">Claim this website →</a>
+      
+    </div>
+    <div class="lf-sub">Built by Alex from Sitelink</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var BEACON="", BID="", sent={};
+  // Dynamically fetch the current server URL so beacon always works even after
+  // tunnel rotation — decoupled from the URL that was baked in at deploy-time.
+  (function loadBeacon(){
+    try{
+      fetch("https://power7t.github.io/leadflow-demos/beacon-config.json?_="+Date.now(),{cache:"no-store"})
+        .then(function(r){return r.json();})
+        .then(function(d){BEACON=d.url||"";})
+        .catch(function(){});
+    }catch(e){}
+  })();
+  function ping(ev){
+    if(sent[ev])return; sent[ev]=true;
+    function _do(){if(!BEACON)return;try{fetch(BEACON+"/api/engage?bid="+BID+"&ev="+ev,{mode:"no-cors",keepalive:true});}catch(e){}}
+    if(BEACON){_do();}else{setTimeout(_do,2500);} // wait for beacon config fetch
+  }
+  
+  // Customizer color switching
+  var colors = {
+    orange: { primary: '#E05A26', bright: '#FF6B35', glow: 'rgba(224,90,38,0.15)' },
+    blue: { primary: '#2563eb', bright: '#3b82f6', glow: 'rgba(37,99,235,0.15)' },
+    green: { primary: '#10b981', bright: '#34d399', glow: 'rgba(16,185,129,0.15)' },
+    gold: { primary: '#d97706', bright: '#fbbf24', glow: 'rgba(217,119,6,0.15)' },
+    pink: { primary: '#db2777', bright: '#f472b6', glow: 'rgba(219,39,119,0.15)' }
+  };
+  
+  function setAccent(key) {
+    var root = document.documentElement;
+    var p = colors[key];
+    if (!p) return;
+    
+    // Standard variables across templates
+    root.style.setProperty('--accent-orange', p.primary);
+    root.style.setProperty('--accent-orange-bright', p.bright);
+    root.style.setProperty('--accent-orange-glow', p.glow);
+    root.style.setProperty('--accent-cyan', p.primary);
+    root.style.setProperty('--accent-cyan-bright', p.bright);
+    root.style.setProperty('--accent-cyan-glow', p.glow);
+    root.style.setProperty('--accent-teal', p.primary);
+    root.style.setProperty('--accent-teal-glow', p.glow);
+    root.style.setProperty('--accent-gold', p.primary);
+    root.style.setProperty('--accent-gold-glow', p.glow);
+    root.style.setProperty('--accent-pink', p.primary);
+    root.style.setProperty('--accent-pink-glow', p.glow);
+    root.style.setProperty('--accent-wood', p.primary);
+    root.style.setProperty('--accent-wood-glow', p.glow);
+    root.style.setProperty('--accent-green', p.primary);
+    root.style.setProperty('--accent-green-glow', p.glow);
+    
+    document.querySelectorAll('.lf-color-btn').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+    var activeBtn = document.getElementById('lf-color-' + key);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    ping('customize_color_' + key);
+  }
+  
+  document.querySelectorAll('.lf-color-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var col = btn.getAttribute('data-color');
+      setAccent(col);
+    });
+  });
+
+  // Drawer toggling
+  var launcher = document.getElementById('lfLauncher');
+  var drawer = document.getElementById('lfDrawer');
+  
+  launcher.addEventListener('click', function(){
+    var isOpen = drawer.classList.contains('open');
+    if(isOpen) {
+      drawer.classList.remove('open');
+      launcher.classList.remove('open');
+      launcher.classList.remove('lf-panel-open');
+      launcher.innerHTML = '🛠️';
+      ping('drawer_closed');
+    } else {
+      drawer.classList.add('open');
+      launcher.classList.add('open');
+      launcher.classList.add('lf-panel-open');
+      launcher.innerHTML = '×';
+      ping('drawer_opened');
+    }
+  });
+
+  // Sticky CTA bar appears once they've scrolled in a bit
+  var bar=document.getElementById("lfBar"), barShown=false;
+  function onScroll(){
+    var sc=window.scrollY, h=document.body.scrollHeight-window.innerHeight;
+    var pct=h>0?sc/h:0;
+    if(pct>0.12&&!barShown){
+      bar.classList.add("show");
+      barShown=true;
+      launcher.classList.add("shift");
+      ping("scroll_in");
+    }
+    if(pct>0.9)ping("scroll_90");
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+
+  // Modal: exit-intent on desktop, timed on mobile, once per visit
+  var modal=document.getElementById("lfModal"), fired=false;
+  function openModal(){
+    if(fired||sessionStorage.getItem("lfSeen"))return;
+    fired=true; sessionStorage.setItem("lfSeen","1");
+    modal.classList.add("show"); ping("modal_shown");
+  }
+  function closeModal(){modal.classList.remove("show");}
+  document.getElementById("lfX").addEventListener("click",closeModal);
+  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+  if(matchMedia("(pointer:fine)").matches){
+    document.addEventListener("mouseout",function(e){if(e.clientY<=0)openModal();});
+  } else {
+    setTimeout(openModal,28000);
+  }
+  
+  // Chat window toggling
+  var chatLauncher = document.getElementById('lfChatLauncher');
+  var chatWindow = document.getElementById('lfChatWindow');
+  var chatClose = document.getElementById('lfChatClose');
+  var chatInput = document.getElementById('lfChatInput');
+  var chatSend = document.getElementById('lfChatSend');
+  var chatMessages = document.getElementById('lfChatMessages');
+  var chatTyping = document.getElementById('lfChatTyping');
+  
+  if (chatLauncher) {
+    chatLauncher.addEventListener('click', function(){
+      var isOpen = chatWindow.classList.contains('open');
+      if(isOpen) {
+        chatWindow.classList.remove('open');
+        ping('chat_closed');
+      } else {
+        chatWindow.classList.add('open');
+        ping('chat_opened');
+        chatInput.focus();
+      }
+    });
+  }
+  
+  if (chatClose) {
+    chatClose.addEventListener('click', function(){
+      chatWindow.classList.remove('open');
+    });
+  }
+  
+  var chatHistory = [];
+  
+  function sendChatMessage() {
+    var txt = chatInput.value.trim();
+    if(!txt) return;
+    chatInput.value = '';
+    
+    // Add User message
+    var userDiv = document.createElement('div');
+    userDiv.className = 'lf-msg lf-msg-user';
+    userDiv.textContent = txt;
+    chatMessages.appendChild(userDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    chatHistory.push({role: 'user', content: txt});
+    ping('chat_message_sent');
+    
+    // Show typing
+    chatTyping.style.display = 'block';
+    
+    // Send to server
+    function _doChat(){
+      if(!BEACON) {
+        setTimeout(_doChat, 1000);
+        return;
+      }
+      fetch(BEACON + "/leads/" + BID + "/chat", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: txt, history: chatHistory })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = data.reply || "Sorry, I'm having trouble connecting right now.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        chatHistory.push({role: 'assistant', content: data.reply || ''});
+      })
+      .catch(function(){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = "Sorry, I could not reach the server.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+    _doChat();
+  }
+  
+  if (chatSend) chatSend.addEventListener('click', sendChatMessage);
+  if (chatInput) {
+    chatInput.addEventListener('keypress', function(e){
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+
+  // Track high-intent clicks
+  document.querySelectorAll("[data-lf]").forEach(function(el){
+    el.addEventListener("click",function(){ping(el.getAttribute("data-lf"));});
+  });
+})();
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,1864 @@
+{
+  "result": [
+    {
+      "id": "418911b6-e9b3-41db-b8a9-8c10241babae",
+      "short_id": "418911b6",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://418911b6.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T18:52:33.643656Z",
+      "modified_on": "2026-07-07T18:52:34.881778Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T18:52:34.881778Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T18:52:33.643656Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T18:52:34.881778Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "dca42649-893a-4d13-82bb-a80be29dc4e9",
+      "short_id": "dca42649",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://dca42649.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T18:37:33.200571Z",
+      "modified_on": "2026-07-07T18:37:34.667631Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T18:37:34.667631Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T18:37:33.200571Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T18:37:34.667631Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "cae83571-3576-4405-bba3-c155a6029c63",
+      "short_id": "cae83571",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://cae83571.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T18:23:32.044483Z",
+      "modified_on": "2026-07-07T18:23:35.891262Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T18:23:35.891262Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T18:23:32.044483Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T18:23:35.891262Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "aac0315d-da70-4ac0-b0cb-6a1f39012de5",
+      "short_id": "aac0315d",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://aac0315d.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T18:07:33.595677Z",
+      "modified_on": "2026-07-07T18:07:34.955901Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T18:07:34.955901Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T18:07:33.595677Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T18:07:34.955901Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "488ce93e-8534-4734-884e-c78b9c0387a2",
+      "short_id": "488ce93e",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://488ce93e.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T17:52:37.582376Z",
+      "modified_on": "2026-07-07T17:52:39.101573Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T17:52:39.101573Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T17:52:37.582376Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T17:52:39.101573Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "cf62301e-65fe-4de6-b503-1c4a0b33b624",
+      "short_id": "cf62301e",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://cf62301e.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T17:37:43.004579Z",
+      "modified_on": "2026-07-07T17:37:44.511114Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T17:37:44.511114Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T17:37:43.004579Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T17:37:44.511114Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "7ca1f46f-6bde-4dc6-964a-513568331e3b",
+      "short_id": "7ca1f46f",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://7ca1f46f.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T17:23:26.487586Z",
+      "modified_on": "2026-07-07T17:23:27.808673Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T17:23:27.808673Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T17:23:26.487586Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T17:23:27.808673Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "99ed8b17-9c71-44bf-bb32-5cde18aca904",
+      "short_id": "99ed8b17",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://99ed8b17.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T17:07:34.93179Z",
+      "modified_on": "2026-07-07T17:07:37.138356Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T17:07:37.138356Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T17:07:34.93179Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T17:07:37.138356Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "54252cf8-00cb-4bf7-80a7-7128cac15b06",
+      "short_id": "54252cf8",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://54252cf8.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T16:37:36.98966Z",
+      "modified_on": "2026-07-07T16:37:38.199051Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T16:37:38.199051Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T16:37:36.98966Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T16:37:38.199051Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "619cc426-a29c-410e-9569-189115d4f5a8",
+      "short_id": "619cc426",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://619cc426.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T16:23:13.792086Z",
+      "modified_on": "2026-07-07T16:23:15.07123Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T16:23:15.07123Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T16:23:13.792086Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T16:23:15.07123Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "a7a43954-4256-4e77-9187-28fcd50ce4ce",
+      "short_id": "a7a43954",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://a7a43954.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T16:08:13.60583Z",
+      "modified_on": "2026-07-07T16:08:14.914221Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T16:08:14.914221Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T16:08:13.60583Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T16:08:14.914221Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "53c95263-6b6a-4538-90c4-c26ed293cc66",
+      "short_id": "53c95263",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://53c95263.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T15:53:01.46268Z",
+      "modified_on": "2026-07-07T15:53:04.301576Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T15:53:04.301576Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T15:53:01.46268Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T15:53:04.301576Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "dc4c94e2-a053-4928-af16-2222263b107a",
+      "short_id": "dc4c94e2",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://dc4c94e2.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T15:38:06.498221Z",
+      "modified_on": "2026-07-07T15:38:07.769007Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T15:38:07.769007Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T15:38:06.498221Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T15:38:07.769007Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "f47cf649-618d-4a58-b07f-2edb1e2b61e8",
+      "short_id": "f47cf649",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://f47cf649.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T15:22:58.473796Z",
+      "modified_on": "2026-07-07T15:22:59.878389Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T15:22:59.878389Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T15:22:58.473796Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T15:22:59.878389Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "4b3a05e2-329b-47c0-a0e2-cafade68e023",
+      "short_id": "4b3a05e2",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://4b3a05e2.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T14:52:40.435541Z",
+      "modified_on": "2026-07-07T14:52:41.590343Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T14:52:41.590343Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T14:52:40.435541Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T14:52:41.590343Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "a130a1da-b3fd-4a06-a3b7-f43401e722d4",
+      "short_id": "a130a1da",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://a130a1da.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T14:37:50.869008Z",
+      "modified_on": "2026-07-07T14:37:52.477126Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T14:37:52.477126Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T14:37:50.869008Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T14:37:52.477126Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "bffb2d7c-ac70-4921-bb0d-8830fce55d16",
+      "short_id": "bffb2d7c",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://bffb2d7c.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T14:23:01.762431Z",
+      "modified_on": "2026-07-07T14:23:03.574541Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T14:23:03.574541Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T14:23:01.762431Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T14:23:03.574541Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "f79d5092-c3b0-4737-a9ba-c11bde78949f",
+      "short_id": "f79d5092",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://f79d5092.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T14:08:02.605723Z",
+      "modified_on": "2026-07-07T14:08:05.382469Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T14:08:05.382469Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T14:08:02.605723Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T14:08:05.382469Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "deae3537-f08e-4272-be8a-5b60ddb21c0f",
+      "short_id": "deae3537",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://deae3537.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T13:53:07.817206Z",
+      "modified_on": "2026-07-07T13:53:09.17021Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T13:53:09.17021Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T13:53:07.817206Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T13:53:09.17021Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "bf3540ff-6887-4324-8df5-a106925606ee",
+      "short_id": "bf3540ff",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://bf3540ff.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T02:52:35.088494Z",
+      "modified_on": "2026-07-07T02:52:38.040807Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T02:52:38.040807Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T02:52:35.088494Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T02:52:38.040807Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "e400d36f-03e3-44ff-9bd7-38f738fd32dd",
+      "short_id": "e400d36f",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://e400d36f.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T02:37:46.565198Z",
+      "modified_on": "2026-07-07T02:37:48.513584Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T02:37:48.513584Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T02:37:46.565198Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T02:37:48.513584Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "2f286b8d-a6b8-4128-ac0a-0691a5351de2",
+      "short_id": "2f286b8d",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://2f286b8d.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T02:22:55.927667Z",
+      "modified_on": "2026-07-07T02:22:57.930514Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T02:22:57.930514Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T02:22:55.927667Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T02:22:57.930514Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "9ec81700-1c2c-440c-9658-bfe5b44f5d0b",
+      "short_id": "9ec81700",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://9ec81700.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T02:07:53.144239Z",
+      "modified_on": "2026-07-07T02:07:54.388694Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T02:07:54.388694Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T02:07:53.144239Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T02:07:54.388694Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "b25faeaf-3111-45d4-90be-d879f4f06d67",
+      "short_id": "b25faeaf",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://b25faeaf.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T01:52:54.896034Z",
+      "modified_on": "2026-07-07T01:52:56.253998Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T01:52:56.253998Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T01:52:54.896034Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T01:52:56.253998Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    },
+    {
+      "id": "ae6e2445-d4bb-4a38-a712-fda5253d5a71",
+      "short_id": "ae6e2445",
+      "project_id": "483f824a-0fc5-49a9-81b5-759df1ce1d12",
+      "project_name": "leadflow-demos",
+      "environment": "production",
+      "url": "https://ae6e2445.leadflow-demos.pages.dev",
+      "created_on": "2026-07-07T01:37:51.886333Z",
+      "modified_on": "2026-07-07T01:37:53.198966Z",
+      "latest_stage": {
+        "name": "deploy",
+        "started_on": null,
+        "ended_on": "2026-07-07T01:37:53.198966Z",
+        "status": "success"
+      },
+      "deployment_trigger": {
+        "type": "ad_hoc",
+        "metadata": {
+          "branch": "main",
+          "commit_hash": "4413ae60ab1b1c40a796929a755141df2b97a3dd",
+          "commit_message": "Add final ends-with-punctuation safety check to prevent truncated/cut-off drafts",
+          "commit_dirty": true
+        }
+      },
+      "stages": [
+        {
+          "name": "queued",
+          "started_on": "2026-07-07T01:37:51.886333Z",
+          "ended_on": null,
+          "status": "active"
+        },
+        {
+          "name": "initialize",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "clone_repo",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "build",
+          "started_on": null,
+          "ended_on": null,
+          "status": "idle"
+        },
+        {
+          "name": "deploy",
+          "started_on": null,
+          "ended_on": "2026-07-07T01:37:53.198966Z",
+          "status": "success"
+        }
+      ],
+      "build_config": {
+        "build_command": null,
+        "destination_dir": null,
+        "build_caching": null,
+        "root_dir": null,
+        "web_analytics_tag": null,
+        "web_analytics_token": null
+      },
+      "env_vars": {},
+      "compatibility_date": "2026-06-18",
+      "compatibility_flags": [],
+      "build_image_major_version": 3,
+      "usage_model": null,
+      "aliases": null,
+      "is_skipped": false,
+      "production_branch": "main",
+      "uses_functions": false
+    }
+  ],
+  "success": true,
+  "errors": [],
+  "messages": [],
+  "result_info": {
+    "page": 1,
+    "per_page": 25,
+    "count": 25,
+    "total_count": 423,
+    "total_pages": 17
+  }
+}

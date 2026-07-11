@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Elite Premium Services | Gourmet Culinary Experience</title>
+<meta name="description" content="Welcome to Elite Premium Services. Exquisite dining experience in Austin.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #120c06;
+  --bg-secondary: #1a1208;
+  --bg-tertiary: #24190e;
+  --accent: #d4a853;
+  --accent-glow: rgba(212, 168, 83, 0.3);
+  --text-white: #ffffff;
+  --text-gray: #c8c5c0;
+  --text-muted: #8c8882;
+  --glass-bg: rgba(26, 18, 8, 0.85);
+  --glass-border: rgba(212, 168, 83, 0.1);
+  --glass-border-hover: rgba(212, 168, 83, 0.4);
+  --border-radius-sm: 4px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 20px;
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.6);
+  --transition-smooth: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-primary);
+  color: var(--text-white);
+  font-family: 'Lato', sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+p {
+  color: var(--text-gray);
+  font-weight: 300;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* DEMO BANNER */
+.demo-banner {
+  background: var(--accent);
+  color: #000;
+  text-align: center;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.demo-banner a {
+  color: #000;
+  text-decoration: underline;
+  font-weight: 800;
+}
+.demo-banner .orig {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: .75;
+}
+
+/* NAVBAR */
+.navbar {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--glass-border);
+}
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 90px;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled .nav-container {
+  height: 70px;
+}
+.logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logo span {
+  color: var(--accent);
+}
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--text-gray);
+  font-weight: 400;
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
+  position: relative;
+  padding: 0.5rem 0;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: var(--transition-smooth);
+}
+.nav-links a:hover, .nav-links a.active {
+  color: #fff;
+}
+.nav-links a:hover::after, .nav-links a.active::after {
+  width: 100%;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 2rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-primary {
+  background-color: var(--accent);
+  color: #000;
+}
+.btn-primary:hover {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+  transform: translateY(-2px);
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: #fff;
+}
+.btn-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* HERO */
+.hero {
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(rgba(18,12,6,0.65), rgba(18,12,6,0.85)), url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400') center/cover no-repeat;
+  position: relative;
+  padding-top: 138px;
+}
+.hero-content {
+  max-width: 800px;
+}
+.hero-title {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+.hero-desc {
+  font-size: 1.2rem;
+  margin-bottom: 2.5rem;
+  max-width: 600px;
+}
+.hero-btns {
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* SECTION SPECIFICS */
+section {
+  padding: 8rem 0;
+  position: relative;
+}
+.section-tag {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  color: var(--accent);
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.section-title {
+  font-size: 2.8rem;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+/* MENU SECTION */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3rem 4rem;
+}
+.menu-item {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+.menu-img {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--border-radius-sm);
+  object-fit: cover;
+  border: 1px solid var(--glass-border);
+  transition: var(--transition-smooth);
+}
+.menu-item:hover .menu-img {
+  transform: scale(1.05);
+  border-color: var(--accent);
+}
+.menu-details {
+  flex-grow: 1;
+}
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+.menu-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+.menu-dots {
+  flex-grow: 1;
+  border-bottom: 1px dotted var(--text-muted);
+  margin: 0 1rem;
+}
+.menu-price {
+  font-family: 'Playfair Display', serif;
+  color: var(--accent);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.menu-desc {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+}
+
+/* ABOUT SECTION */
+.about {
+  background: var(--bg-secondary);
+}
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 5rem;
+  align-items: center;
+}
+.about-img {
+  width: 100%;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--glass-border);
+}
+
+/* TESTIMONIALS */
+.testimonials {
+  background: var(--bg-tertiary);
+}
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+.testimonial-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 2.5rem;
+  border-radius: var(--border-radius-md);
+  position: relative;
+}
+.testimonial-card::after {
+  content: '“';
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  font-family: 'Playfair Display', serif;
+  font-size: 5rem;
+  color: var(--accent);
+  opacity: 0.15;
+}
+.stars {
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.t-text {
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+.t-author {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* CONTACT */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.contact-item h4 {
+  font-size: 1.2rem;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+/* FOOTER */
+.footer {
+  background: #0a0603;
+  padding: 4rem 0 2rem;
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+}
+.footer-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 1.5rem;
+}
+
+/* RESPONSIVE */
+@media(max-width: 991px) {
+  .menu-grid, .about-grid, .testimonials-grid, .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .navbar {
+    top: 0;
+  }
+}
+/* AHA MOMENT */
+.aha-section{padding:5rem 0;position:relative;overflow:hidden;background:var(--bg-secondary,#100a04)}
+.aha-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(212,100,30,0.08) 0%,transparent 70%);pointer-events:none}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.aha-controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:.5rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#c4a888;padding:9px 22px;border-radius:4px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit;transition:all .25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent,#d4641e);border-color:var(--accent,#d4641e);color:#fff;box-shadow:0 4px 16px rgba(212,100,30,0.3)}
+.aha-svg-wrap{width:100%;max-width:300px;margin:0 auto}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;min-height:2rem;margin-top:.25rem}
+.aha-sub{font-size:.85rem;color:#8a7060;margin-top:.25rem}
+@keyframes steamAnim{0%{opacity:0.6;transform:translateY(0) scaleX(1)}50%{opacity:0.3;transform:translateY(-8px) scaleX(1.2)}100%{opacity:0;transform:translateY(-18px) scaleX(0.8)}}
+.steam-wisp{animation:steamAnim 2s ease-in-out infinite}
+</style>
+</head>
+<body>
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  ✨ FREE demo built for Elite Premium Services by Chandan Gosavi &mdash;
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
+  <span class="orig">Built using gourmet template</span>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">
+      Elite Premium Services<span>.</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.85rem">Reserve Table</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="home" class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <h1 class="hero-title">A Symphony of Flavors and Elegance</h1>
+      
+      
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">5.0</span>
+        <span style="opacity:0.8; font-size:0.9rem;">(342 reviews)</span>
+      </div>
+      
+      <p class="hero-desc">Indulge in a premium dining experience at Elite Premium Services. Every plate tells a story of passion, freshness, and culinary perfection.</p>
+      <div class="hero-btns">
+        <a href="#menu" class="btn btn-primary">Explore Menu</a>
+        <a href="#contact" class="btn btn-outline">Book Table</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Menu -->
+<section id="menu">
+  <div class="container">
+    <span class="section-tag">Chef's Selection</span>
+    <h2 class="section-title">Our Signature Dishes</h2>
+    <div class="menu-grid">
+      <div class="menu-item">
+        <img class="menu-img" src="https://images.unsplash.com/photo-1544025162-d76694265947?w=300" alt="Dish">
+        <div class="menu-details">
+          <div class="menu-header">
+            <span class="menu-name">Oak-Grilled Ribeye Steak</span>
+            <span class="menu-dots"></span>
+            <span class="menu-price">$45</span>
+          </div>
+          <p class="menu-desc">Aged prime beef, truffle butter, roasted garlic, micro-greens.</p>
+        </div>
+      </div>
+      <div class="menu-item">
+        <img class="menu-img" src="https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=300" alt="Dish">
+        <div class="menu-details">
+          <div class="menu-header">
+            <span class="menu-name">Seared Atlantic Scallops</span>
+            <span class="menu-dots"></span>
+            <span class="menu-price">$38</span>
+          </div>
+          <p class="menu-desc">Parsnip puree, crispy prosciutto, lemon herb reduction.</p>
+        </div>
+      </div>
+      <div class="menu-item">
+        <img class="menu-img" src="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=300" alt="Dish">
+        <div class="menu-details">
+          <div class="menu-header">
+            <span class="menu-name">Wild Mushroom Risotto</span>
+            <span class="menu-dots"></span>
+            <span class="menu-price">$29</span>
+          </div>
+          <p class="menu-desc">Arborio rice, porcini mushrooms, parmigiano-reggiano.</p>
+        </div>
+      </div>
+      <div class="menu-item">
+        <img class="menu-img" src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=300" alt="Dish">
+        <div class="menu-details">
+          <div class="menu-header">
+            <span class="menu-name">Decadent Chocolate Soufflé</span>
+            <span class="menu-dots"></span>
+            <span class="menu-price">$14</span>
+          </div>
+          <p class="menu-desc">Grand Marnier infusion, vanilla bean gelato, fresh berries.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section id="about" class="about">
+  <div class="container">
+    <div class="about-grid">
+      <div>
+        <span class="section-tag">Our Culinary Journey</span>
+        <h2 class="section-title">Passion for Freshness</h2>
+        <p style="margin-bottom: 1.5rem">At Elite Premium Services, we believe that exceptional dining begins with absolute quality. Our ingredients are sourced daily from local organic farms and sustainable fisheries, ensuring that every bite bursts with life and flavor.</p>
+        <p>Our kitchen is led by award-winning chefs dedicated to pushing the boundaries of taste while paying homage to timeless traditions. We invite you to sit back, savor, and enjoy an unforgettable evening with us.</p>
+      </div>
+      <div>
+        <img class="about-img" src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=600" alt="About our dining">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Chef's Table Aha Moment -->
+<section class="aha-section" id="chefs-table">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Chef's Table</span>
+      <h2 class="section-title">Taste Before You Arrive</h2>
+      <p style="max-width:500px;color:#8a7060">Select your cuisine style and see our signature plating — every dish is a work of art crafted fresh daily.</p>
+      <div class="aha-controls">
+        <button class="aha-btn active" data-dish="0">Filet Mignon</button>
+        <button class="aha-btn" data-dish="1">Seafood Platter</button>
+        <button class="aha-btn" data-dish="2">Pasta Royale</button>
+        <button class="aha-btn" data-dish="3">Wagyu Burger</button>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg viewBox="0 0 300 200" style="width:100%;height:auto">
+          <defs>
+            <radialGradient id="plateGrad" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#2a1a0a"/><stop offset="100%" stop-color="#1a0e06"/>
+            </radialGradient>
+            <radialGradient id="plateRim" cx="50%" cy="50%" r="50%">
+              <stop offset="70%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(255,255,255,0.06)"/>
+            </radialGradient>
+          </defs>
+          <!-- Background -->
+          <rect width="300" height="200" fill="#0a0604" rx="8"/>
+          <!-- Table surface -->
+          <ellipse cx="150" cy="185" rx="130" ry="20" fill="#150e06" opacity="0.8"/>
+          <!-- Plate shadow -->
+          <ellipse cx="150" cy="162" rx="72" ry="12" fill="rgba(0,0,0,0.5)"/>
+          <!-- Plate -->
+          <ellipse cx="150" cy="130" rx="80" ry="55" fill="#f5f0e8"/>
+          <ellipse cx="150" cy="130" rx="80" ry="55" fill="url(#plateRim)"/>
+          <!-- Inner plate -->
+          <ellipse cx="150" cy="130" rx="65" ry="44" fill="#f0ece4"/>
+          <!-- Food body (dynamic) -->
+          <ellipse id="dish-food" cx="150" cy="125" rx="40" ry="28" fill="#8b4513" style="transition:fill .35s ease,ry .35s ease"/>
+          <!-- Food top detail -->
+          <path id="dish-detail" d="M130,118 Q150,108 170,118 Q160,130 150,132 Q140,130 130,118 Z" fill="#a0522d" style="transition:fill .35s ease,d .35s ease"/>
+          <!-- Garnish -->
+          <ellipse id="dish-garnish" cx="150" cy="112" rx="8" ry="5" fill="#228b22" opacity="0.9" style="transition:fill .35s ease"/>
+          <!-- Sauce drizzle -->
+          <path id="dish-sauce" d="M120,130 Q135,125 150,130 Q165,135 180,130" fill="none" stroke="#8b0000" stroke-width="2" stroke-linecap="round" opacity="0.7" style="transition:stroke .35s ease"/>
+          <!-- Steam wisps -->
+          <g id="dish-steam" opacity="1" style="transition:opacity .4s ease">
+            <path class="steam-wisp" d="M140,100 Q135,90 140,80" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" style="animation-delay:0s"/>
+            <path class="steam-wisp" d="M150,96 Q148,85 152,74" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round" style="animation-delay:.6s"/>
+            <path class="steam-wisp" d="M162,100 Q167,90 162,80" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round" style="animation-delay:1.2s"/>
+          </g>
+          <!-- Price badge -->
+          <rect x="80" y="170" width="140" height="20" rx="4" fill="rgba(212,100,30,0.12)" stroke="rgba(212,100,30,0.3)" stroke-width="1"/>
+          <text id="dish-price" x="150" y="184" text-anchor="middle" fill="#d4641e" font-family="sans-serif" font-size="11" font-weight="700">Filet Mignon · Market Price</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="dish-label">8oz Prime Filet · Truffle Butter Finish</div>
+      <div class="aha-sub" id="dish-sub">Served Fri-Sun · Reservations recommended</div>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Reserve Your Table →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+  <div class="container">
+    <span class="section-tag">Guest Experiences</span>
+    <h2 class="section-title">What Our Patrons Say</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"One of the best dining experiences I've ever had. The attention to detail in every dish and the level of service was world-class."</p>
+        <p class="t-author">Sarah Jenkins</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"The seared scallops were cooked to absolute perfection. The atmosphere is warm, intimate, and feels very exclusive."</p>
+        <p class="t-author">Marcus Vance</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"Outstanding wine list, gorgeous presentation, and exceptional flavors. Elite Premium Services is our new go-to for special occasions."</p>
+        <p class="t-author">Elena Rostova</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <span class="section-tag">Reservations</span>
+        <h2 class="section-title">Join Us Tonight</h2>
+        <div class="contact-info">
+          <div class="contact-item">
+            <h4>Address</h4>
+            <p>City Center</p>
+          </div>
+          
+          <div class="contact-item">
+            <h4>Hours</h4>
+            <p>Mon - Sun: 5:00 PM - 11:00 PM</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <!-- Map Placeholder -->
+        <div style="width:100%;height:300px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">
+          <div style="text-align:center">
+            <span style="font-size:2rem;display:block;margin-bottom:0.5rem">📍</span>
+            Map location for Elite Premium Services
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 Elite Premium Services. All rights reserved.</p>
+    <p class="footer-text">Gourmet website concept designed by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
+  </div>
+</footer>
+
+<!-- Tracking Pixel -->
+
+
+<script>
+window.addEventListener('scroll', function() {
+  const navbar = document.getElementById('navbar');
+  if (window.scrollY > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+});
+// Chef's Table Aha Moment
+(function(){
+  const dishes = [
+    { label:"8oz Prime Filet \u00b7 Truffle Butter Finish", sub:'Served Fri-Sun \u00b7 Reservations recommended',
+      price:'Filet Mignon \u00b7 Market Price', food:'#8b4513', detail:'#a0522d', garnish:'#228b22',
+      sauce:'#8b0000', detailPath:'M130,118 Q150,108 170,118 Q160,130 150,132 Q140,130 130,118 Z', steam:1, ry:28 },
+    { label:"Lobster & Prawn \u00b7 Citrus Beurre Blanc", sub:'Fresh daily \u00b7 Market availability',
+      price:'Seafood Platter \u00b7 $89', food:'#e06030', detail:'#ff7040', garnish:'#3cb371',
+      sauce:'#ffd700', detailPath:'M125,115 Q150,105 175,115 Q168,128 150,134 Q132,128 125,115 Z', steam:1, ry:24 },
+    { label:"Pappardelle al Tartufo \u00b7 Aged Parmesan", sub:'Vegetarian option \u00b7 Gluten-free available',
+      price:'Pasta Royale \u00b7 $42', food:'#d4a870', detail:'#c49060', garnish:'#808000',
+      sauce:'#b22222', detailPath:'M128,120 Q140,110 160,112 Q170,120 165,130 Q150,136 135,132 Q124,126 128,120 Z', steam:1, ry:20 },
+    { label:"Wagyu Beef \u00b7 Brioche Bun \u00b7 Black Truffle", sub:'Signature item \u00b7 Every weekend',
+      price:'Wagyu Burger \u00b7 $58', food:'#5c3317', detail:'#8b6914', garnish:'#32cd32',
+      sauce:'#dc143c', detailPath:'M120,116 Q150,104 180,116 Q175,128 150,135 Q125,128 120,116 Z', steam:0.4, ry:32 }
+  ];
+  const btns = document.querySelectorAll('.aha-btn[data-dish]');
+  const food = document.getElementById('dish-food');
+  const detail = document.getElementById('dish-detail');
+  const garnish = document.getElementById('dish-garnish');
+  const sauce = document.getElementById('dish-sauce');
+  const steam = document.getElementById('dish-steam');
+  const priceEl = document.getElementById('dish-price');
+  const labelEl = document.getElementById('dish-label');
+  const subEl = document.getElementById('dish-sub');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const d = dishes[parseInt(btn.dataset.dish)];
+      food.setAttribute('fill', d.food);
+      food.setAttribute('ry', d.ry);
+      detail.setAttribute('fill', d.detail);
+      detail.setAttribute('d', d.detailPath);
+      garnish.setAttribute('fill', d.garnish);
+      sauce.setAttribute('stroke', d.sauce);
+      steam.style.opacity = d.steam;
+      priceEl.textContent = d.price;
+      labelEl.textContent = d.label;
+      subEl.textContent = d.sub;
+    });
+  });
+})();
+</script>
+
+<!-- LEADFLOW CONVERSION LAYER WITH CONTROL PANEL -->
+<style>
+  /* Styling for the sticky CTA bar */
+  .lf-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:9998;
+    display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    padding:14px 20px;background:rgba(10,10,12,.92);backdrop-filter:blur(12px);
+    border-top:1px solid rgba(255,255,255,.12);
+    transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
+  .lf-cta-bar.show{transform:translateY(0)}
+  .lf-cta-bar p{margin:0;font-size:15px;font-weight:500}
+  .lf-cta-bar p b{color:#4d9fff}
+  
+  .lf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+    text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:999px;
+    transition:transform .15s,box-shadow .15s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-btn:hover{transform:translateY(-2px)}
+  .lf-btn-primary{background:linear-gradient(135deg,#4d9fff,#2563eb);color:#fff;
+    box-shadow:0 4px 15px rgba(77,159,255,.3)}
+  .lf-btn-ghost{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12)}
+  .lf-btn-ghost:hover{background:rgba(255,255,255,.1)}
+
+  /* Original Modal styles */
+  .lf-modal-bg{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:20px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-modal-bg.show{display:flex;animation:lf-fade .3s ease}
+  .lf-modal{position:relative;max-width:440px;width:100%;background:#0d0e12;color:#fff;
+    border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 28px;text-align:center;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:lf-pop .35s cubic-bezier(.2,.9,.3,1.2)}
+  .lf-modal h2{margin:0 0 12px;font-size:24px;line-height:1.25}
+  .lf-modal h2 b{color:#4d9fff}
+  .lf-modal p{margin:0 0 24px;font-size:15px;line-height:1.6;color:#a0aec0}
+  .lf-modal .lf-btn{width:100%;font-size:16px;padding:14px}
+  .lf-modal .lf-sub{margin-top:14px;font-size:12px;color:#718096}
+  .lf-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#718096;
+    font-size:24px;line-height:1;cursor:pointer}
+  .lf-x:hover{color:#fff}
+
+  /* Control Panel Toggle Launcher Button */
+  .lf-launcher{position:fixed;bottom:30px;left:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(37, 99, 235, 0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;animation:lf-pulse 2s infinite}
+  .lf-launcher:hover{transform:scale(1.1) rotate(15deg);box-shadow:0 12px 40px rgba(37, 99, 235, 0.6)}
+  .lf-launcher.open{transform:scale(0.9) rotate(-90deg);background:#1a202c;border-color:rgba(255,255,255,0.1)}
+  .lf-launcher.shift{bottom:90px}
+  
+  @keyframes lf-pulse{
+    0%{box-shadow:0 0 0 0 rgba(37,99,235,0.6)}
+    70%{box-shadow:0 0 0 14px rgba(37,99,235,0)}
+    100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}
+  }
+
+  /* Control Panel Sidebar Drawer */
+  .lf-drawer{position:fixed;top:0;left:-380px;width:350px;height:100vh;z-index:99995;
+    background:rgba(10,11,15,0.92);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border-right:1px solid rgba(255,255,255,0.08);box-shadow:20px 0 80px rgba(0,0,0,0.65);
+    transition:transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    display:flex;flex-direction:column}
+  .lf-drawer.open{transform:translateX(380px)}
+  
+  .lf-drawer-header{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}
+  .lf-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.1em;
+    background:rgba(59,130,246,0.12);color:#3b82f6;padding:4px 10px;border-radius:4px;
+    border:1px solid rgba(59,130,246,0.25);margin-bottom:12px;text-transform:uppercase}
+  .lf-drawer-header h3{margin:0;font-size:20px;font-weight:700}
+  .lf-drawer-header p{margin:4px 0 0;font-size:13px;color:#a0aec0}
+  
+  .lf-drawer-body{padding:24px;overflow-y:auto;flex-grow:1;display:flex;flex-direction:column;gap:24px}
+  .lf-section-title{font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;
+    letter-spacing:0.08em;margin-bottom:12px}
+  
+  /* Audit Card */
+  .lf-audit-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);
+    border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+  .lf-progress-bg{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-top:6px}
+  .lf-progress-bar{height:100%;border-radius:3px;transition:width 1s ease}
+
+  /* Customizer Card */
+  .lf-color-grid{display:flex;gap:10px;margin-top:8px}
+  .lf-color-btn{width:34px;height:34px;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;transition:transform 0.2s,border-color 0.2s;position:relative}
+  .lf-color-btn:hover{transform:scale(1.15)}
+  .lf-color-btn.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
+  .lf-color-tooltip{position:absolute;bottom:42px;left:50%;transform:translateX(-50%) translateY(5px);
+    background:#1a202c;color:#fff;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+  .lf-color-btn:hover .lf-color-tooltip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Feature list */
+  .lf-feat-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+  .lf-feat-item{font-size:13px;color:#cbd5e0;display:flex;align-items:center;gap:10px}
+  .lf-feat-icon{color:#10b981;font-size:14px}
+
+  /* Profile Card */
+  .lf-profile{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px}
+  .lf-avatar{width:40px;height:40px;border-radius:50%;background:#3b82f6;display:flex;
+    align-items:center;justify-content:center;font-size:18px;font-weight:700}
+  .lf-profile-info{display:flex;flex-direction:column}
+  .lf-profile-name{font-size:13px;font-weight:700;color:#fff}
+  .lf-profile-role{font-size:11px;color:#718096}
+
+  .lf-drawer-footer{padding:20px;border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;flex-direction:column;gap:10px}
+  .lf-drawer-footer .lf-btn{width:100%;font-size:15px;padding:12px;font-weight:700}
+  
+  /* Chatbot styles */
+  .lf-chat-launcher{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#10b981,#059669);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(16,185,129,0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;user-select:none}
+  .lf-chat-launcher:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(16,185,129,0.6)}
+  
+  .lf-chat-window{position:fixed;bottom:96px;right:30px;width:320px;height:420px;z-index:99995;
+    background:rgba(10,11,15,0.96);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.65);
+    display:none;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    overflow:hidden;transition:all 0.3s ease}
+  .lf-chat-window.open{display:flex}
+  
+  .lf-chat-header{padding:14px 16px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;justify-content:space-between;align-items:center}
+  .lf-chat-header h4{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .lf-chat-header h4::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981}
+  
+  .lf-chat-messages{flex-grow:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
+    font-size:12.5px;line-height:1.45}
+  
+  .lf-msg{max-width:82%;padding:8px 12px;border-radius:12px;margin-bottom:2px;word-break:break-word}
+  .lf-msg-user{align-self:flex-end;background:#2563eb;color:#fff;border-bottom-right-radius:2px}
+  .lf-msg-ai{align-self:flex-start;background:rgba(255,255,255,0.06);color:#e2e8f0;border-bottom-left-radius:2px;border:1px solid rgba(255,255,255,0.04)}
+  
+  .lf-chat-input-area{padding:10px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;gap:8px;align-items:center}
+  .lf-chat-input{flex-grow:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:999px;padding:6px 14px;color:#fff;font-size:12.5px;outline:none;transition:border-color 0.2s}
+  .lf-chat-input:focus{border-color:#10b981}
+  .lf-chat-send{background:#10b981;border:none;color:#fff;border-radius:50%;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:background 0.2s}
+  .lf-chat-send:hover{background:#059669}
+  
+  .lf-typing{display:none;align-self:flex-start;background:rgba(255,255,255,0.03);padding:6px 12px;border-radius:12px;font-size:11px;color:#718096;margin:0 16px 8px}
+  
+  /* Timeline styles for Sequence */
+  .lf-timeline{display:flex;flex-direction:column;gap:14px;position:relative;padding-left:14px;margin-top:10px}
+  .lf-timeline::before{content:'';position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:rgba(255,255,255,0.08)}
+  .lf-timeline-item{display:flex;gap:10px;position:relative}
+  .lf-timeline-badge{width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-top:4px;
+    position:absolute;left:-14px;border:2px solid #0a0b0f}
+  .lf-timeline-content h4{margin:0;font-size:12.5px;font-weight:700;color:#fff}
+  .lf-timeline-content p{margin:2px 0 0;font-size:10.5px;color:#718096;line-height:1.4}
+  
+  @keyframes lf-fade{from{opacity:0}to{opacity:1}}
+</style>
+
+<div class="lf-launcher" id="lfLauncher" aria-label="Toggle Customizer">🛠️</div>
+
+<div class="lf-drawer" id="lfDrawer">
+  <div class="lf-drawer-header">
+    <div class="lf-badge">Live Demo Controls</div>
+    <h3>Custom Presentation</h3>
+    <p>Prepared for <b>Elite Premium Services</b></p>
+  </div>
+  
+  <div class="lf-drawer-body">
+    <!-- Audit Section -->
+    <div>
+      <div class="lf-section-title">Speed & Performance Audit</div>
+      <div class="lf-audit-card">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>Your Current Website:</span>
+            <span style="font-weight:700;color:#ef4444">No Website / 0</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:10%;background:#ef4444"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>LeadFlow Modern Demo:</span>
+            <span style="font-weight:700;color:#10b981">98 / 100</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:98%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Selection -->
+    <div>
+      <div class="lf-section-title">Tailor Brand Colors</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 10px">Preview this template in other primary branding styles instantly:</p>
+      <div class="lf-color-grid">
+        <button class="lf-color-btn active" id="lf-color-orange" data-color="orange" style="background:#E05A26" aria-label="Orange">
+          <span class="lf-color-tooltip">Amber Orange</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-blue" data-color="blue" style="background:#2563eb" aria-label="Blue">
+          <span class="lf-color-tooltip">Electric Blue</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-green" data-color="green" style="background:#10b981" aria-label="Green">
+          <span class="lf-color-tooltip">Emerald Green</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-gold" data-color="gold" style="background:#d97706" aria-label="Gold">
+          <span class="lf-color-tooltip">Honey Gold</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-pink" data-color="pink" style="background:#db2777" aria-label="Pink">
+          <span class="lf-color-tooltip">Rose Pink</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div>
+      <div class="lf-section-title">Built-in Enhancements</div>
+      <ul class="lf-feat-list">
+        <li class="lf-feat-item"><span class="lf-feat-icon">⚡</span> 340% faster loading speed</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">📱</span> Responsive mobile-first layout</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🛠️</span> Interactive pricing & cost estimators</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🎯</span> Modern UX to capture 3x more bookings</li>
+      </ul>
+    </div>
+
+    <!-- Outreach Sequence Timeline -->
+    <div>
+      <div class="lf-section-title">Autonomous Outreach Engine</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 12px">How we follow up with your prospects automatically:</p>
+      <div class="lf-timeline">
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#3b82f6"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 1: Personalized Pitch</h4>
+            <p>Initial email sent with custom demo site link.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#10b981"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 3: WhatsApp Nudge</h4>
+            <p>Follow-up text sent if booking is pending.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#fbbf24"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 7: Social Follow-up</h4>
+            <p>Instagram DM sent to maximize response rate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Designer profile -->
+    <div style="margin-top:auto">
+      <div class="lf-section-title">Created By</div>
+      <div class="lf-profile">
+        <div class="lf-avatar">CG</div>
+        <div class="lf-profile-info">
+          <span class="lf-profile-name">Alex from Sitelink</span>
+          <span class="lf-profile-role">Web Developer & Architect</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="lf-drawer-footer">
+    <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_drawer">Claim Website &rarr;</a>
+    
+  </div>
+</div>
+
+<div class="lf-chat-launcher" id="lfChatLauncher" aria-label="Open Chat">💬</div>
+
+<div class="lf-chat-window" id="lfChatWindow">
+  <div class="lf-chat-header">
+    <h4 style="margin:0">AI Assistant</h4>
+    <button class="lf-x" id="lfChatClose" style="position:static;font-size:20px;padding:0;background:none;border:none;color:#718096;cursor:pointer" aria-label="Close Chat">&times;</button>
+  </div>
+  <div class="lf-chat-messages" id="lfChatMessages">
+    <div class="lf-msg lf-msg-ai">Hi there! I'm your AI business assistant. How can I help you today?</div>
+  </div>
+  <div class="lf-typing" id="lfChatTyping">AI is typing...</div>
+  <div class="lf-chat-input-area">
+    <input type="text" class="lf-chat-input" id="lfChatInput" placeholder="Type a message...">
+    <button class="lf-chat-send" id="lfChatSend" aria-label="Send message">➔</button>
+  </div>
+</div>
+
+<div class="lf-cta-bar" id="lfBar">
+  <p>👀 Like this design for <b>Elite Premium Services</b>?</p>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_bar">Book a free call →</a>
+  
+</div>
+
+<div class="lf-modal-bg" id="lfModal">
+  <div class="lf-modal">
+    <button class="lf-x" id="lfX" aria-label="Close">&times;</button>
+    <h2>Want this site live for <b>Elite Premium Services</b>?</h2>
+    <p>This demo was built specifically for you. Book a free 15-minute call and
+       I'll have it live on your domain — no obligation, no upfront cost.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:15px;flex-wrap:wrap">
+      <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_modal">Claim this website →</a>
+      
+    </div>
+    <div class="lf-sub">Built by Alex from Sitelink</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var BEACON="", BID="", sent={};
+  // Dynamically fetch the current server URL so beacon always works even after
+  // tunnel rotation — decoupled from the URL that was baked in at deploy-time.
+  (function loadBeacon(){
+    try{
+      fetch("https://power7t.github.io/leadflow-demos/beacon-config.json?_="+Date.now(),{cache:"no-store"})
+        .then(function(r){return r.json();})
+        .then(function(d){BEACON=d.url||"";})
+        .catch(function(){});
+    }catch(e){}
+  })();
+  function ping(ev){
+    if(sent[ev])return; sent[ev]=true;
+    function _do(){if(!BEACON)return;try{fetch(BEACON+"/api/engage?bid="+BID+"&ev="+ev,{mode:"no-cors",keepalive:true});}catch(e){}}
+    if(BEACON){_do();}else{setTimeout(_do,2500);} // wait for beacon config fetch
+  }
+  
+  // Customizer color switching
+  var colors = {
+    orange: { primary: '#E05A26', bright: '#FF6B35', glow: 'rgba(224,90,38,0.15)' },
+    blue: { primary: '#2563eb', bright: '#3b82f6', glow: 'rgba(37,99,235,0.15)' },
+    green: { primary: '#10b981', bright: '#34d399', glow: 'rgba(16,185,129,0.15)' },
+    gold: { primary: '#d97706', bright: '#fbbf24', glow: 'rgba(217,119,6,0.15)' },
+    pink: { primary: '#db2777', bright: '#f472b6', glow: 'rgba(219,39,119,0.15)' }
+  };
+  
+  function setAccent(key) {
+    var root = document.documentElement;
+    var p = colors[key];
+    if (!p) return;
+    
+    // Standard variables across templates
+    root.style.setProperty('--accent-orange', p.primary);
+    root.style.setProperty('--accent-orange-bright', p.bright);
+    root.style.setProperty('--accent-orange-glow', p.glow);
+    root.style.setProperty('--accent-cyan', p.primary);
+    root.style.setProperty('--accent-cyan-bright', p.bright);
+    root.style.setProperty('--accent-cyan-glow', p.glow);
+    root.style.setProperty('--accent-teal', p.primary);
+    root.style.setProperty('--accent-teal-glow', p.glow);
+    root.style.setProperty('--accent-gold', p.primary);
+    root.style.setProperty('--accent-gold-glow', p.glow);
+    root.style.setProperty('--accent-pink', p.primary);
+    root.style.setProperty('--accent-pink-glow', p.glow);
+    root.style.setProperty('--accent-wood', p.primary);
+    root.style.setProperty('--accent-wood-glow', p.glow);
+    root.style.setProperty('--accent-green', p.primary);
+    root.style.setProperty('--accent-green-glow', p.glow);
+    
+    document.querySelectorAll('.lf-color-btn').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+    var activeBtn = document.getElementById('lf-color-' + key);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    ping('customize_color_' + key);
+  }
+  
+  document.querySelectorAll('.lf-color-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var col = btn.getAttribute('data-color');
+      setAccent(col);
+    });
+  });
+
+  // Drawer toggling
+  var launcher = document.getElementById('lfLauncher');
+  var drawer = document.getElementById('lfDrawer');
+  
+  launcher.addEventListener('click', function(){
+    var isOpen = drawer.classList.contains('open');
+    if(isOpen) {
+      drawer.classList.remove('open');
+      launcher.classList.remove('open');
+      launcher.classList.remove('lf-panel-open');
+      launcher.innerHTML = '🛠️';
+      ping('drawer_closed');
+    } else {
+      drawer.classList.add('open');
+      launcher.classList.add('open');
+      launcher.classList.add('lf-panel-open');
+      launcher.innerHTML = '×';
+      ping('drawer_opened');
+    }
+  });
+
+  // Sticky CTA bar appears once they've scrolled in a bit
+  var bar=document.getElementById("lfBar"), barShown=false;
+  function onScroll(){
+    var sc=window.scrollY, h=document.body.scrollHeight-window.innerHeight;
+    var pct=h>0?sc/h:0;
+    if(pct>0.12&&!barShown){
+      bar.classList.add("show");
+      barShown=true;
+      launcher.classList.add("shift");
+      ping("scroll_in");
+    }
+    if(pct>0.9)ping("scroll_90");
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+
+  // Modal: exit-intent on desktop, timed on mobile, once per visit
+  var modal=document.getElementById("lfModal"), fired=false;
+  function openModal(){
+    if(fired||sessionStorage.getItem("lfSeen"))return;
+    fired=true; sessionStorage.setItem("lfSeen","1");
+    modal.classList.add("show"); ping("modal_shown");
+  }
+  function closeModal(){modal.classList.remove("show");}
+  document.getElementById("lfX").addEventListener("click",closeModal);
+  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+  if(matchMedia("(pointer:fine)").matches){
+    document.addEventListener("mouseout",function(e){if(e.clientY<=0)openModal();});
+  } else {
+    setTimeout(openModal,28000);
+  }
+  
+  // Chat window toggling
+  var chatLauncher = document.getElementById('lfChatLauncher');
+  var chatWindow = document.getElementById('lfChatWindow');
+  var chatClose = document.getElementById('lfChatClose');
+  var chatInput = document.getElementById('lfChatInput');
+  var chatSend = document.getElementById('lfChatSend');
+  var chatMessages = document.getElementById('lfChatMessages');
+  var chatTyping = document.getElementById('lfChatTyping');
+  
+  if (chatLauncher) {
+    chatLauncher.addEventListener('click', function(){
+      var isOpen = chatWindow.classList.contains('open');
+      if(isOpen) {
+        chatWindow.classList.remove('open');
+        ping('chat_closed');
+      } else {
+        chatWindow.classList.add('open');
+        ping('chat_opened');
+        chatInput.focus();
+      }
+    });
+  }
+  
+  if (chatClose) {
+    chatClose.addEventListener('click', function(){
+      chatWindow.classList.remove('open');
+    });
+  }
+  
+  var chatHistory = [];
+  
+  function sendChatMessage() {
+    var txt = chatInput.value.trim();
+    if(!txt) return;
+    chatInput.value = '';
+    
+    // Add User message
+    var userDiv = document.createElement('div');
+    userDiv.className = 'lf-msg lf-msg-user';
+    userDiv.textContent = txt;
+    chatMessages.appendChild(userDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    chatHistory.push({role: 'user', content: txt});
+    ping('chat_message_sent');
+    
+    // Show typing
+    chatTyping.style.display = 'block';
+    
+    // Send to server
+    function _doChat(){
+      if(!BEACON) {
+        setTimeout(_doChat, 1000);
+        return;
+      }
+      fetch(BEACON + "/leads/" + BID + "/chat", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: txt, history: chatHistory })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = data.reply || "Sorry, I'm having trouble connecting right now.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        chatHistory.push({role: 'assistant', content: data.reply || ''});
+      })
+      .catch(function(){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = "Sorry, I could not reach the server.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+    _doChat();
+  }
+  
+  if (chatSend) chatSend.addEventListener('click', sendChatMessage);
+  if (chatInput) {
+    chatInput.addEventListener('keypress', function(e){
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+
+  // Track high-intent clicks
+  document.querySelectorAll("[data-lf]").forEach(function(el){
+    el.addEventListener("click",function(){ping(el.getAttribute("data-lf"));});
+  });
+})();
+</script>
+
+
+</body>
+</html>

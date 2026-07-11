@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elite Premium Services | Premium Moving & Relocation Services</title>
+  <meta name="description" content="Elite Premium Services offers stress-free local and long-distance moving, packing, storage, and office relocation services. Get your free quote today.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── Design Tokens ─────────────────────────────────────────── */
+    :root {
+      --bg:          #f8fafc;
+      --bg-white:    #ffffff;
+      --bg-card:     #f1f5f9;
+      --accent:      #7c3aed;
+      --accent-dark: #5b21b6;
+      --accent-mid:  #8b5cf6;
+      --accent-lite: #ede9fe;
+      --text:        #0f172a;
+      --text-muted:  #64748b;
+      --border:      #e2e8f0;
+      --shadow-sm:   0 2px 8px rgba(124,58,237,.08);
+      --shadow-md:   0 8px 30px rgba(0,0,0,.08);
+      --shadow-lg:   0 20px 60px rgba(0,0,0,.10);
+      --radius:      14px;
+      --radius-sm:   8px;
+      --transition:  0.3s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── Reset & Base ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; line-height: 1.2; }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; display: block; }
+    button { font-family: 'Inter', sans-serif; cursor: pointer; }
+    ul { list-style: none; }
+
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ── Buttons ──────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .85rem 2rem;
+      background: var(--accent); color: #fff;
+      font-family: 'Poppins', sans-serif; font-weight: 600; font-size: .95rem;
+      border: none; border-radius: var(--radius-sm);
+      cursor: pointer; transition: var(--transition);
+      letter-spacing: .02em;
+    }
+    .btn:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,.35); }
+    .btn-outline {
+      background: transparent; border: 2px solid var(--accent); color: var(--accent);
+    }
+    .btn-outline:hover { background: var(--accent); color: #fff; }
+    .btn-white { background: #fff; color: var(--accent); }
+    .btn-white:hover { background: var(--accent-lite); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+
+    /* ── Reveal animations ───────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+    .reveal-delay-4 { transition-delay: .4s; }
+    .reveal-delay-5 { transition-delay: .5s; }
+    .reveal-delay-6 { transition-delay: .6s; }
+
+    /* ── Section helpers ─────────────────────────────────────── */
+    .section-tag {
+      display: inline-block;
+      background: var(--accent-lite); color: var(--accent);
+      font-family: 'Poppins', sans-serif; font-size: .78rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: .35rem .9rem; border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      font-weight: 700; color: var(--text);
+      margin-bottom: .75rem;
+    }
+    .section-title span { color: var(--accent); }
+    .section-sub {
+      font-size: 1.05rem; color: var(--text-muted);
+      max-width: 580px; margin: 0 auto 3rem;
+    }
+    .section-header { text-align: center; }
+
+    /* ════════════════════════════════════════════════════════════
+       1. DEMO BANNER
+    ════════════════════════════════════════════════════════════ */
+    #demo-banner {
+      background: var(--text);
+      color: #e2e8f0;
+      text-align: center;
+      padding: .6rem 1rem;
+      font-size: .82rem;
+      font-weight: 500;
+      letter-spacing: .01em;
+      position: sticky; top: 0; z-index: 1000;
+    }
+    #demo-banner a {
+      color: #a78bfa;
+      font-weight: 700;
+      text-decoration: underline;
+      margin-left: .25rem;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       2. NAVBAR
+    ════════════════════════════════════════════════════════════ */
+    #navbar {
+      position: sticky; top: 37px; z-index: 999;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid transparent;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    #navbar.scrolled {
+      border-color: var(--border);
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 68px;
+    }
+    .nav-logo {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem; font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -.02em;
+    }
+    .nav-logo span { color: var(--text); }
+    .nav-links {
+      display: flex; align-items: center; gap: 2.25rem;
+    }
+    .nav-links a {
+      font-size: .92rem; font-weight: 500; color: var(--text-muted);
+      transition: color .2s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 2px; background: var(--accent);
+      transition: width .25s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta { display: flex; align-items: center; gap: 1rem; }
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; padding: 4px; cursor: pointer;
+    }
+    .hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: var(--text); border-radius: 2px;
+      transition: var(--transition);
+    }
+    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+    .mobile-menu {
+      display: none; flex-direction: column; gap: 0;
+      background: #fff; border-top: 1px solid var(--border);
+      padding: 0;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      padding: 1rem 1.5rem; font-size: .95rem; font-weight: 500;
+      color: var(--text); border-bottom: 1px solid var(--border);
+      transition: background .2s, color .2s;
+    }
+    .mobile-menu a:hover { background: var(--accent-lite); color: var(--accent); }
+    .mobile-menu .btn { margin: 1rem 1.5rem; }
+
+    /* ════════════════════════════════════════════════════════════
+       3. HERO
+    ════════════════════════════════════════════════════════════ */
+    #hero {
+      position: relative;
+      min-height: 88vh;
+      display: flex; align-items: center;
+      background: linear-gradient(135deg, rgba(15,23,42,.72) 0%, rgba(91,33,182,.55) 100%),
+                  url('https://power7t.github.io/leadflow-demos/moving-hero.jpg') center / cover no-repeat;
+      text-align: center;
+      padding: 5rem 0;
+      overflow: hidden;
+    }
+    #hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 80%, rgba(124,58,237,.35) 0%, transparent 70%);
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 780px; margin: 0 auto; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #e9d5ff; font-size: .83rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: .45rem 1.1rem; border-radius: 40px;
+      margin-bottom: 1.5rem;
+    }
+    .hero-eyebrow::before { content: '🚛'; font-style: normal; }
+    #hero h1 {
+      font-size: clamp(2.8rem, 6.5vw, 5rem);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: .5rem;
+      text-shadow: 0 2px 20px rgba(0,0,0,.3);
+    }
+    #hero h1 .highlight { color: #c4b5fd; }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: rgba(255,255,255,.8);
+      max-width: 560px; margin: 1rem auto 2.5rem;
+    }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hero-stats {
+      display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 3.5rem;
+      position: relative; z-index: 2;
+    }
+    .hero-stat {
+      text-align: center;
+      background: rgba(255,255,255,.10);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: var(--radius);
+      padding: 1.1rem 2rem;
+    }
+    .hero-stat .num {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem; font-weight: 800; color: #fff;
+    }
+    .hero-stat .lbl { font-size: .82rem; color: rgba(255,255,255,.7); margin-top: .2rem; }
+
+    /* ════════════════════════════════════════════════════════════
+       4. MOVE VOLUME ESTIMATOR WIDGET
+    ════════════════════════════════════════════════════════════ */
+    #estimator { padding: 5rem 0; }
+    .widget-card {
+      background: var(--bg-white);
+      border-radius: 20px;
+      box-shadow: 0 16px 60px rgba(124,58,237,.10), 0 2px 8px rgba(0,0,0,.05);
+      padding: 3rem 3.5rem;
+      border: 1px solid var(--border);
+    }
+    .widget-header { text-align: center; margin-bottom: 2.75rem; }
+    .widget-header h2 { font-size: 2.1rem; color: var(--accent); margin-bottom: .5rem; }
+    .widget-header p { color: var(--text-muted); font-size: 1rem; }
+    .widget-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .room-list { display: flex; flex-direction: column; gap: .75rem; }
+    .room-btn {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.25rem;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: .97rem; font-weight: 600; color: var(--text);
+      cursor: pointer; transition: var(--transition);
+      width: 100%;
+    }
+    .room-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-lite);
+      color: var(--accent);
+      transform: translateX(4px);
+    }
+    .room-btn .room-icon { font-size: 1.3rem; margin-right: .5rem; }
+    .room-btn .add-badge {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent-lite); color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 700;
+      transition: var(--transition);
+    }
+    .room-btn:hover .add-badge { background: var(--accent); color: #fff; }
+    .reset-btn {
+      margin-top: .5rem;
+      background: #fff1f2; border: 1.5px solid #fecdd3; color: #be123c;
+      display: flex; justify-content: center; align-items: center; gap: .4rem;
+      padding: .75rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600; font-size: .92rem;
+      cursor: pointer; transition: var(--transition); width: 100%;
+    }
+    .reset-btn:hover { background: #ffe4e6; border-color: #fb7185; }
+    .fill-meter {
+      margin-top: 1.75rem;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem;
+    }
+    .fill-label { font-size: .85rem; font-weight: 600; color: var(--text-muted); }
+    #fillPct {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.5rem; font-weight: 800; color: var(--accent);
+      transition: color .3s;
+    }
+    .truck-wrap { position: relative; }
+    .truck-svg { width: 100%; height: auto; filter: drop-shadow(0 4px 16px rgba(124,58,237,.15)); }
+    .truck-caption {
+      text-align: center; margin-top: 1rem;
+      font-size: .82rem; color: var(--text-muted); font-weight: 500;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       5. SERVICES
+    ════════════════════════════════════════════════════════════ */
+    #services { padding: 5rem 0; background: var(--bg-white); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 0;
+    }
+    .service-card {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      transition: var(--transition);
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-mid));
+      transform: scaleX(0); transform-origin: left;
+      transition: transform .35s ease;
+    }
+    .service-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-5px);
+      background: var(--bg-white);
+    }
+    .service-card:hover::before { transform: scaleX(1); }
+    .service-icon {
+      font-size: 2.2rem;
+      margin-bottom: 1.1rem;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 56px; height: 56px;
+      background: var(--accent-lite);
+      border-radius: 14px;
+      transition: var(--transition);
+    }
+    .service-card:hover .service-icon { background: var(--accent); filter: saturate(0) brightness(10); }
+    .service-card h3 {
+      font-size: 1.08rem; font-weight: 700; margin-bottom: .5rem;
+    }
+    .service-card p { font-size: .9rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* ════════════════════════════════════════════════════════════
+       6. ABOUT
+    ════════════════════════════════════════════════════════════ */
+    #about { padding: 5rem 0; }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .about-img-wrap { position: relative; }
+    .about-img {
+      width: 100%; aspect-ratio: 4/3; object-fit: cover;
+      border-radius: 20px;
+      box-shadow: 0 24px 60px rgba(124,58,237,.15);
+    }
+    .about-img-badge {
+      position: absolute; bottom: -1.5rem; right: -1.5rem;
+      background: var(--accent); color: #fff;
+      padding: 1.25rem 1.75rem;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(124,58,237,.4);
+      text-align: center;
+    }
+    .about-img-badge .big { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 800; display: block; }
+    .about-img-badge .small { font-size: .78rem; font-weight: 600; opacity: .85; }
+    .about-content .section-tag { margin-bottom: .75rem; }
+    .about-content .section-title { text-align: left; margin-bottom: 1rem; }
+    .about-lead {
+      color: var(--text-muted); font-size: 1rem; margin-bottom: 2rem; line-height: 1.8;
+    }
+    .about-bullets { display: flex; flex-direction: column; gap: .9rem; margin-bottom: 2rem; }
+    .about-bullet {
+      display: flex; align-items: flex-start; gap: 1rem;
+    }
+    .bullet-icon {
+      flex-shrink: 0;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--accent-lite);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .bullet-text strong { display: block; font-size: .97rem; font-weight: 700; margin-bottom: .15rem; }
+    .bullet-text span { font-size: .88rem; color: var(--text-muted); }
+
+    /* ════════════════════════════════════════════════════════════
+       7. TESTIMONIALS
+    ════════════════════════════════════════════════════════════ */
+    #testimonials { padding: 5rem 0; background: var(--bg-white); }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .testimonial-card {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      display: flex; flex-direction: column; gap: 1.25rem;
+      transition: var(--transition);
+    }
+    .testimonial-card:hover { box-shadow: var(--shadow-md); transform: translateY(-4px); border-color: #c4b5fd; }
+    .stars { color: #f59e0b; font-size: 1.1rem; letter-spacing: .1rem; }
+    .testimonial-card blockquote {
+      font-size: .97rem; line-height: 1.75; color: var(--text);
+      font-style: italic;
+    }
+    .testimonial-author { display: flex; align-items: center; gap: .85rem; margin-top: auto; }
+    .author-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-mid), var(--accent-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .author-name { font-weight: 700; font-size: .92rem; }
+    .author-loc { font-size: .8rem; color: var(--text-muted); margin-top: .1rem; }
+
+    /* ════════════════════════════════════════════════════════════
+       8. CTA BAND
+    ════════════════════════════════════════════════════════════ */
+    #cta-band {
+      background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 50%, var(--accent-mid) 100%);
+      padding: 5.5rem 0;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    #cta-band::before {
+      content: '';
+      position: absolute; top: -60%; left: -10%;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,255,255,.07) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    #cta-band::after {
+      content: '';
+      position: absolute; bottom: -50%; right: -5%;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .cta-inner { position: relative; z-index: 2; }
+    .cta-eyebrow {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      color: #e9d5ff; font-size: .8rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: .4rem 1rem; border-radius: 20px; margin-bottom: 1.25rem;
+    }
+    #cta-band h2 {
+      font-size: clamp(2rem, 4.5vw, 3.25rem);
+      color: #fff; margin-bottom: 1rem; font-weight: 800;
+    }
+    #cta-band p { color: rgba(255,255,255,.78); font-size: 1.05rem; margin-bottom: 2.5rem; }
+    .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ════════════════════════════════════════════════════════════
+       9. CONTACT
+    ════════════════════════════════════════════════════════════ */
+    #contact { padding: 5rem 0; }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+    .contact-info { display: flex; flex-direction: column; gap: 1.75rem; }
+    .contact-item {
+      display: flex; align-items: flex-start; gap: 1.1rem;
+      padding: 1.5rem;
+      background: var(--bg-white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      transition: var(--transition);
+    }
+    .contact-item:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
+    .contact-item-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--accent-lite);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .contact-item-body strong { display: block; font-size: .85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .25rem; }
+    .contact-item-body a, .contact-item-body p { font-size: 1rem; font-weight: 600; color: var(--text); }
+    .contact-item-body a:hover { color: var(--accent); }
+    .contact-form {
+      background: var(--bg-white);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+    }
+    .contact-form h3 { font-size: 1.4rem; margin-bottom: 1.5rem; color: var(--text); }
+    .form-group { margin-bottom: 1.1rem; }
+    .form-group label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .4rem; color: var(--text-muted); }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: .8rem 1rem;
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: .95rem; color: var(--text);
+      background: var(--bg); outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-lite);
+    }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* ════════════════════════════════════════════════════════════
+       10. FOOTER
+    ════════════════════════════════════════════════════════════ */
+    #footer {
+      background: var(--text);
+      color: rgba(255,255,255,.65);
+      padding: 3rem 0 1.5rem;
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .footer-brand .nav-logo { color: #a78bfa; }
+    .footer-brand p { font-size: .88rem; line-height: 1.7; margin-top: .75rem; }
+    .footer-col h4 {
+      font-family: 'Poppins', sans-serif;
+      font-size: .88rem; font-weight: 700;
+      color: #fff; text-transform: uppercase; letter-spacing: .07em;
+      margin-bottom: 1rem;
+    }
+    .footer-col ul { display: flex; flex-direction: column; gap: .55rem; }
+    .footer-col ul li a {
+      font-size: .88rem; color: rgba(255,255,255,.55);
+      transition: color .2s;
+    }
+    .footer-col ul li a:hover { color: #a78bfa; }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 1.5rem;
+      font-size: .82rem;
+      flex-wrap: wrap; gap: .5rem;
+    }
+    .footer-bottom a { color: #a78bfa; }
+
+    /* ════════════════════════════════════════════════════════════
+       RESPONSIVE
+    ════════════════════════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .footer-top { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 900px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .testimonials-grid { grid-template-columns: 1fr 1fr; }
+      .about-grid { grid-template-columns: 1fr; }
+      .about-img-badge { right: 1rem; }
+      .widget-grid { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .nav-links, .nav-cta .btn { display: none; }
+      .hamburger { display: flex; }
+      .services-grid { grid-template-columns: 1fr; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr; gap: 1.5rem; }
+      .hero-stats { gap: 1rem; }
+      .hero-stat { padding: .85rem 1.25rem; }
+      .form-row { grid-template-columns: 1fr; }
+      .widget-card { padding: 1.75rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ 1. DEMO BANNER ══════════════════════════════════════════ -->
+  <div id="demo-banner">
+    Free demo built for Elite Premium Services &mdash;
+    <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener">Hire me</a>
+  </div>
+
+  <!-- ══ 2. NAVBAR ═══════════════════════════════════════════════ -->
+  <nav id="navbar" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="#" class="nav-logo" id="nav-logo">Elite Premium Services</a>
+
+      <ul class="nav-links" role="list">
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#estimator">Get Estimate</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+
+      <div class="nav-cta">
+        <a href="#estimator" class="btn" id="nav-quote-btn">Get Quote</a>
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobile-menu" role="navigation" aria-label="Mobile navigation">
+      <a href="#hero">Home</a>
+      <a href="#estimator">Get Estimate</a>
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#estimator" class="btn">Get Quote</a>
+    </div>
+  </nav>
+
+  <!-- ══ 3. HERO ═════════════════════════════════════════════════ -->
+  <section id="hero" aria-label="Hero section">
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-eyebrow">Trusted Local &amp; Long-Distance Movers</span>
+        <h1>Stress-Free<br><span class="highlight">Relocation.</span></h1>
+        <p class="hero-sub">
+          Professional movers you can trust. We pack, load, transport, and unpack
+          with absolute care — on time, every time.
+        </p>
+        <div class="hero-actions">
+          <a href="#estimator" class="btn" id="hero-cta-primary">
+            🚛 Get My Free Quote
+          </a>
+          <a href="#services" class="btn btn-outline" id="hero-cta-secondary"
+             style="border-color:rgba(255,255,255,.6);color:#fff;">
+            Our Services
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="num">2,500+</div>
+          <div class="lbl">Happy Moves</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">10 yrs</div>
+          <div class="lbl">In Business</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">4.9 ★</div>
+          <div class="lbl">Average Rating</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">100%</div>
+          <div class="lbl">Insured Moves</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 4. MOVE VOLUME ESTIMATOR ════════════════════════════════ -->
+  <section id="estimator" aria-label="Move volume estimator">
+    <div class="container">
+      <div class="widget-card reveal">
+        <div class="widget-header">
+          <span class="section-tag">Interactive Tool</span>
+          <h2>Move Volume Estimator</h2>
+          <p>Select the rooms you're moving to see how much truck space you'll need.</p>
+        </div>
+
+        <div class="widget-grid">
+          <!-- Controls -->
+          <div>
+            <div class="room-list">
+              <button class="room-btn" id="btn-bedroom" onclick="addVolume(20)" aria-label="Add bedroom">
+                <span><span class="room-icon">🛏️</span> Bedroom</span>
+                <span class="add-badge">+</span>
+              </button>
+              <button class="room-btn" id="btn-living" onclick="addVolume(30)" aria-label="Add living room">
+                <span><span class="room-icon">🛋️</span> Living Room</span>
+                <span class="add-badge">+</span>
+              </button>
+              <button class="room-btn" id="btn-kitchen" onclick="addVolume(25)" aria-label="Add kitchen">
+                <span><span class="room-icon">🍳</span> Kitchen</span>
+                <span class="add-badge">+</span>
+              </button>
+              <button class="room-btn" id="btn-bathroom" onclick="addVolume(10)" aria-label="Add bathroom">
+                <span><span class="room-icon">🛁</span> Bathroom</span>
+                <span class="add-badge">+</span>
+              </button>
+              <button class="room-btn" id="btn-office" onclick="addVolume(15)" aria-label="Add home office">
+                <span><span class="room-icon">💼</span> Home Office</span>
+                <span class="add-badge">+</span>
+              </button>
+              <button class="reset-btn" id="btn-reset" onclick="resetVolume()" aria-label="Reset estimator">
+                ↺ Reset
+              </button>
+            </div>
+
+            <div class="fill-meter">
+              <div>
+                <div class="fill-label">Estimated Truck Fill</div>
+                <div id="fillPct" aria-live="polite">0%</div>
+              </div>
+              <div id="truckMsg" style="font-size:.85rem;color:var(--text-muted);text-align:right;max-width:130px;line-height:1.4;"></div>
+            </div>
+          </div>
+
+          <!-- SVG Truck -->
+          <div class="truck-wrap">
+            <svg class="truck-svg" viewBox="0 0 440 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Truck fill animation">
+              <!-- Road shadow -->
+              <ellipse cx="220" cy="218" rx="190" ry="8" fill="rgba(0,0,0,.07)"/>
+
+              <!-- Truck body outline -->
+              <rect x="30" y="45" width="270" height="145" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+
+              <!-- Fill clip & area -->
+              <defs>
+                <clipPath id="truckClip">
+                  <rect x="32" y="47" width="266" height="141" rx="3"/>
+                </clipPath>
+              </defs>
+              <g clip-path="url(#truckClip)">
+                <!-- Background texture lines -->
+                <rect x="32" y="47" width="266" height="141" fill="#f1f5f9"/>
+                <line x1="32" y1="94" x2="298" y2="94" stroke="#e2e8f0" stroke-width="1.5"/>
+                <line x1="32" y1="141" x2="298" y2="141" stroke="#e2e8f0" stroke-width="1.5"/>
+                <line x1="120" y1="47" x2="120" y2="188" stroke="#e2e8f0" stroke-width="1.5"/>
+                <line x1="210" y1="47" x2="210" y2="188" stroke="#e2e8f0" stroke-width="1.5"/>
+                <!-- Fill rect — grows upward -->
+                <rect id="truckFill" x="32" y="188" width="266" height="0"
+                      fill="url(#fillGrad)" style="transition:y .55s cubic-bezier(.4,0,.2,1),height .55s cubic-bezier(.4,0,.2,1);"/>
+                <!-- Shimmer overlay on fill -->
+                <rect id="truckShimmer" x="32" y="188" width="266" height="0"
+                      fill="url(#shimmerGrad)" opacity=".4" style="transition:y .55s cubic-bezier(.4,0,.2,1),height .55s cubic-bezier(.4,0,.2,1);"/>
+              </g>
+
+              <!-- Gradients -->
+              <defs>
+                <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#a78bfa"/>
+                  <stop offset="100%" stop-color="#7c3aed"/>
+                </linearGradient>
+                <linearGradient id="shimmerGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="transparent"/>
+                  <stop offset="50%" stop-color="rgba(255,255,255,.3)"/>
+                  <stop offset="100%" stop-color="transparent"/>
+                </linearGradient>
+              </defs>
+
+              <!-- Door line -->
+              <line x1="298" y1="45" x2="298" y2="190" stroke="#94a3b8" stroke-width="3"/>
+
+              <!-- Truck cabin -->
+              <path d="M 300 80 L 340 80 L 368 115 L 370 190 L 300 190 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2.5"/>
+              <!-- Cabin window -->
+              <path d="M 305 85 L 338 85 L 360 112 L 305 112 Z" fill="#93c5fd" opacity=".7"/>
+              <!-- Cabin detail lines -->
+              <line x1="300" y1="112" x2="370" y2="112" stroke="#94a3b8" stroke-width="1.5"/>
+
+              <!-- Headlight -->
+              <rect x="362" y="155" width="10" height="14" rx="3" fill="#fcd34d"/>
+
+              <!-- Wheels -->
+              <circle cx="95" cy="197" r="20" fill="#334155"/>
+              <circle cx="95" cy="197" r="11" fill="#94a3b8"/>
+              <circle cx="95" cy="197" r="5" fill="#475569"/>
+              <circle cx="240" cy="197" r="20" fill="#334155"/>
+              <circle cx="240" cy="197" r="11" fill="#94a3b8"/>
+              <circle cx="240" cy="197" r="5" fill="#475569"/>
+              <circle cx="345" cy="197" r="17" fill="#334155"/>
+              <circle cx="345" cy="197" r="9" fill="#94a3b8"/>
+              <circle cx="345" cy="197" r="4" fill="#475569"/>
+
+              <!-- Axle -->
+              <rect x="30" y="186" width="345" height="6" rx="3" fill="#94a3b8"/>
+
+              <!-- Company name on truck -->
+              <text x="164" y="125" text-anchor="middle" font-family="Poppins,sans-serif" font-size="13" font-weight="700" fill="#7c3aed" opacity=".6">Elite Premium Services</text>
+            </svg>
+            <p class="truck-caption" id="truckCaption">Add rooms above to fill the truck 🚛</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 5. SERVICES ═════════════════════════════════════════════ -->
+  <section id="services" aria-label="Our moving services">
+    <div style="background:var(--bg-white); padding: 5rem 0;">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">What We Offer</span>
+        <h2 class="section-title">Everything You Need for a <span>Perfect Move</span></h2>
+        <p class="section-sub">From a single room to a full office relocation, Elite Premium Services handles every detail.</p>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card reveal reveal-delay-1">
+          <div class="service-icon">🏠</div>
+          <h3>Local Moving</h3>
+          <p>Fast, affordable moves within your city. Our team arrives on time and treats every item with care.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-2">
+          <div class="service-icon">🗺️</div>
+          <h3>Long Distance</h3>
+          <p>Relocating across state lines? We offer GPS-tracked, door-to-door long-distance moving solutions.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-3">
+          <div class="service-icon">📦</div>
+          <h3>Packing Service</h3>
+          <p>Professional packers use premium materials to ensure zero damage from wrap to delivery.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-4">
+          <div class="service-icon">🏢</div>
+          <h3>Office Relocation</h3>
+          <p>Minimal downtime, maximum efficiency. We move your business without missing a beat.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-5">
+          <div class="service-icon">🪑</div>
+          <h3>Furniture Assembly</h3>
+          <p>Disassemble and reassemble any furniture — IKEA, custom-built, or antique — handled with expertise.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-6">
+          <div class="service-icon">🏪</div>
+          <h3>Storage Solutions</h3>
+          <p>Climate-controlled, secure short and long-term storage while you get settled into your new space.</p>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ══ 6. ABOUT ════════════════════════════════════════════════ -->
+  <section id="about" aria-label="About us">
+    <div class="container about-grid">
+      <div class="about-img-wrap reveal">
+        <img src="https://power7t.github.io/leadflow-demos/moving-about.jpg" alt="Elite Premium Services professional moving team" class="about-img" loading="lazy">
+        <div class="about-img-badge">
+          <span class="big">10+</span>
+          <span class="small">Years of<br>Excellence</span>
+        </div>
+      </div>
+
+      <div class="about-content reveal reveal-delay-2">
+        <span class="section-tag">About Elite Premium Services</span>
+        <h2 class="section-title">Moving Made <span>Easy</span></h2>
+        <p class="about-lead">
+          At Elite Premium Services, we believe moving should be a fresh start — not a source of stress.
+          Our trained, background-checked crew handles your belongings as if they were their own,
+          backed by industry-leading insurance and our iron-clad on-time guarantee.
+        </p>
+
+        <div class="about-bullets">
+          <div class="about-bullet">
+            <div class="bullet-icon">✅</div>
+            <div class="bullet-text">
+              <strong>Professional &amp; Vetted Team</strong>
+              <span>Every crew member is background-checked, trained, and uniformed.</span>
+            </div>
+          </div>
+          <div class="about-bullet">
+            <div class="bullet-icon">🛡️</div>
+            <div class="bullet-text">
+              <strong>Fully Insured Moves</strong>
+              <span>Comprehensive coverage protects your belongings from start to finish.</span>
+            </div>
+          </div>
+          <div class="about-bullet">
+            <div class="bullet-icon">⏱️</div>
+            <div class="bullet-text">
+              <strong>On-Time Guarantee</strong>
+              <span>We show up when we say we will — or your next service is on us.</span>
+            </div>
+          </div>
+          <div class="about-bullet">
+            <div class="bullet-icon">💰</div>
+            <div class="bullet-text">
+              <strong>Transparent Pricing</strong>
+              <span>No hidden fees, no surprise charges. Your quote is your final price.</span>
+            </div>
+          </div>
+        </div>
+
+        <a href="#estimator" class="btn" id="about-cta-btn">Get Your Free Estimate →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 7. TESTIMONIALS ═════════════════════════════════════════ -->
+  <section id="testimonials" aria-label="Customer testimonials">
+    <div style="background:var(--bg-white); padding: 5rem 0;">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Reviews</span>
+        <h2 class="section-title">What Our Customers <span>Say</span></h2>
+        <p class="section-sub">Real experiences from people who trusted Elite Premium Services with their most important moves.</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card reveal reveal-delay-1">
+          <div class="stars">★★★★★</div>
+          <blockquote>
+            "Elite Premium Services made our cross-town move completely painless. The crew was on time,
+            incredibly careful with our furniture, and done in half the time we expected.
+            We couldn't be happier!"
+          </blockquote>
+          <div class="testimonial-author">
+            <div class="author-avatar">SR</div>
+            <div>
+              <div class="author-name">Sarah R.</div>
+              <div class="author-loc">Local Move · 3 months ago</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card reveal reveal-delay-2">
+          <div class="stars">★★★★★</div>
+          <blockquote>
+            "I was nervous about our long-distance move, but Elite Premium Services handled everything
+            from packing to delivery flawlessly. Real-time tracking gave us so much peace of mind.
+            Highly recommend!"
+          </blockquote>
+          <div class="testimonial-author">
+            <div class="author-avatar">MK</div>
+            <div>
+              <div class="author-name">Marcus K.</div>
+              <div class="author-loc">Long Distance · 5 months ago</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card reveal reveal-delay-3">
+          <div class="stars">★★★★★</div>
+          <blockquote>
+            "Our office relocation could have been a nightmare, but Elite Premium Services planned
+            every detail. Zero downtime, everything set up perfectly. Their team is
+            worth every penny — professional through and through."
+          </blockquote>
+          <div class="testimonial-author">
+            <div class="author-avatar">JL</div>
+            <div>
+              <div class="author-name">Jennifer L.</div>
+              <div class="author-loc">Office Relocation · 2 months ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ══ 8. CTA BAND ════════════════════════════════════════════ -->
+  <section id="cta-band" aria-label="Call to action">
+    <div class="container cta-inner">
+      <span class="cta-eyebrow">Limited Slots Available</span>
+      <h2>Ready to Move?</h2>
+      <p>Join 2,500+ happy customers who chose Elite Premium Services for their stress-free relocation.</p>
+      <div class="cta-actions">
+        <a href="#estimator" class="btn btn-white" id="cta-quote-btn" style="font-size:1.1rem;padding:1rem 2.5rem;">
+          🚛 Get Your Free Quote
+        </a>
+        <a href="tel:" class="btn" id="cta-call-btn"
+           style="background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);font-size:1.1rem;padding:1rem 2.5rem;">
+          📞 Call Us Now
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 9. CONTACT ══════════════════════════════════════════════ -->
+  <section id="contact" aria-label="Contact us">
+    <div class="container">
+      <div class="section-header reveal" style="margin-bottom:3rem;">
+        <span class="section-tag">Get In Touch</span>
+        <h2 class="section-title">Let's Plan <span>Your Move</span></h2>
+        <p class="section-sub">Reach out for a free, no-obligation quote. We respond within the hour.</p>
+      </div>
+
+      <div class="contact-grid">
+        <div class="contact-info reveal">
+          <div class="contact-item">
+            <div class="contact-item-icon">📞</div>
+            <div class="contact-item-body">
+              <strong>Phone</strong>
+              <a href="tel:"></a>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">📍</div>
+            <div class="contact-item-body">
+              <strong>Service Area</strong>
+              <p>Greater Metro &amp; Surrounding Counties</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">🕐</div>
+            <div class="contact-item-body">
+              <strong>Hours</strong>
+              <p>Mon–Sat: 7:00 AM – 8:00 PM</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">⚡</div>
+            <div class="contact-item-body">
+              <strong>Response Time</strong>
+              <p>We reply within 60 minutes</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-form reveal reveal-delay-2">
+          <h3>Request a Free Quote</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contact-name">Your Name</label>
+              <input type="text" id="contact-name" placeholder="Jane Smith" autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label for="contact-phone">Phone Number</label>
+              <input type="tel" id="contact-phone" placeholder="(555) 000-0000" autocomplete="tel">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="contact-email">Email Address</label>
+            <input type="email" id="contact-email" placeholder="jane@example.com" autocomplete="email">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contact-from">Moving From</label>
+              <input type="text" id="contact-from" placeholder="Current city / zip">
+            </div>
+            <div class="form-group">
+              <label for="contact-to">Moving To</label>
+              <input type="text" id="contact-to" placeholder="Destination city / zip">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="contact-service">Service Type</label>
+            <select id="contact-service">
+              <option value="">Select a service…</option>
+              <option>Local Moving</option>
+              <option>Long Distance</option>
+              <option>Packing Service</option>
+              <option>Office Relocation</option>
+              <option>Furniture Assembly</option>
+              <option>Storage Solutions</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="contact-msg">Additional Details</label>
+            <textarea id="contact-msg" placeholder="Tell us about your move…"></textarea>
+          </div>
+          <button type="submit" class="btn" id="contact-submit-btn" style="width:100%;justify-content:center;font-size:1rem;">
+            Send My Request →
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 10. FOOTER ══════════════════════════════════════════════ -->
+  <footer id="footer" aria-label="Site footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="nav-logo">Elite Premium Services</div>
+          <p>Professional moving services you can count on. Local, long-distance, commercial — we do it all with care and precision.</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Services</h4>
+          <ul>
+            <li><a href="#services">Local Moving</a></li>
+            <li><a href="#services">Long Distance</a></li>
+            <li><a href="#services">Packing</a></li>
+            <li><a href="#services">Office Relocation</a></li>
+            <li><a href="#services">Storage</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#testimonials">Reviews</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#estimator">Get Estimate</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="tel:"></a></li>
+            <li><a href="#contact">Request a Quote</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; 2025 Elite Premium Services. All rights reserved.</span>
+        <span>Demo built by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener">LeadFlow</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ══ 11. JAVASCRIPT ══════════════════════════════════════════ -->
+  <script>
+    /* ── Truck Estimator ──────────────────────────────────────── */
+    let pct = 0;
+    const fillPctEl    = document.getElementById('fillPct');
+    const truckFillEl  = document.getElementById('truckFill');
+    const shimmerEl    = document.getElementById('truckShimmer');
+    const truckMsgEl   = document.getElementById('truckMsg');
+    const captionEl    = document.getElementById('truckCaption');
+    const TRUCK_H      = 141;  // height of clip region
+    const TRUCK_BOTTOM = 188;  // bottom y of clip region
+
+    function updateTruck() {
+      fillPctEl.textContent = pct + '%';
+      const h = (pct / 100) * TRUCK_H;
+      const y = TRUCK_BOTTOM - h;
+
+      truckFillEl.setAttribute('height', h);
+      truckFillEl.setAttribute('y', y);
+      shimmerEl.setAttribute('height', h);
+      shimmerEl.setAttribute('y', y);
+
+      // Color pct display based on fill level
+      if (pct === 0)       { fillPctEl.style.color = 'var(--text)'; }
+      else if (pct < 50)   { fillPctEl.style.color = '#059669'; }
+      else if (pct < 85)   { fillPctEl.style.color = 'var(--accent)'; }
+      else                 { fillPctEl.style.color = '#dc2626'; }
+
+      // Advisory messages
+      if (pct === 0)        { truckMsgEl.textContent = ''; captionEl.textContent = 'Add rooms above to fill the truck 🚛'; }
+      else if (pct <= 30)   { truckMsgEl.textContent = 'Small truck should do!'; captionEl.textContent = 'Looks like a light load 👍'; }
+      else if (pct <= 60)   { truckMsgEl.textContent = 'Medium truck recommended.'; captionEl.textContent = 'Getting there… keep adding rooms'; }
+      else if (pct <= 85)   { truckMsgEl.textContent = 'Large truck needed.'; captionEl.textContent = 'That\'s a full load! 📦'; }
+      else                  { truckMsgEl.textContent = 'You may need 2 trucks!'; captionEl.textContent = '🚛🚛 Two trucks recommended!'; }
+    }
+
+    function addVolume(amt) {
+      pct = Math.min(100, Math.max(0, pct + amt));
+      updateTruck();
+    }
+
+    function resetVolume() {
+      pct = 0;
+      updateTruck();
+    }
+
+    /* ── Navbar scroll shadow ─────────────────────────────────── */
+    const navbar = document.getElementById('navbar');
+    const banner = document.getElementById('demo-banner');
+
+    function handleNavScroll() {
+      const scrolled = window.scrollY > 20;
+      navbar.classList.toggle('scrolled', scrolled);
+    }
+    window.addEventListener('scroll', handleNavScroll, { passive: true });
+
+    /* ── Hamburger menu ───────────────────────────────────────── */
+    const hamburger   = document.getElementById('hamburger');
+    const mobileMenu  = document.getElementById('mobile-menu');
+
+    hamburger.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      hamburger.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close mobile menu on link click
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    /* ── IntersectionObserver scroll reveals ─────────────────── */
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer  = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+    revealEls.forEach(el => observer.observe(el));
+
+    /* ── Contact form submit (demo) ───────────────────────────── */
+    const submitBtn = document.getElementById('contact-submit-btn');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        submitBtn.textContent = '✓ Request Sent!';
+        submitBtn.style.background = '#059669';
+        submitBtn.disabled = true;
+        setTimeout(() => {
+          submitBtn.textContent = 'Send My Request →';
+          submitBtn.style.background = '';
+          submitBtn.disabled = false;
+        }, 3000);
+      });
+    }
+  </script>
+
+
+<!-- LEADFLOW CONVERSION LAYER WITH CONTROL PANEL -->
+<style>
+  /* Styling for the sticky CTA bar */
+  .lf-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:9998;
+    display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    padding:14px 20px;background:rgba(10,10,12,.92);backdrop-filter:blur(12px);
+    border-top:1px solid rgba(255,255,255,.12);
+    transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
+  .lf-cta-bar.show{transform:translateY(0)}
+  .lf-cta-bar p{margin:0;font-size:15px;font-weight:500}
+  .lf-cta-bar p b{color:#4d9fff}
+  
+  .lf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+    text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:999px;
+    transition:transform .15s,box-shadow .15s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-btn:hover{transform:translateY(-2px)}
+  .lf-btn-primary{background:linear-gradient(135deg,#4d9fff,#2563eb);color:#fff;
+    box-shadow:0 4px 15px rgba(77,159,255,.3)}
+  .lf-btn-ghost{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12)}
+  .lf-btn-ghost:hover{background:rgba(255,255,255,.1)}
+
+  /* Original Modal styles */
+  .lf-modal-bg{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:20px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-modal-bg.show{display:flex;animation:lf-fade .3s ease}
+  .lf-modal{position:relative;max-width:440px;width:100%;background:#0d0e12;color:#fff;
+    border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 28px;text-align:center;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:lf-pop .35s cubic-bezier(.2,.9,.3,1.2)}
+  .lf-modal h2{margin:0 0 12px;font-size:24px;line-height:1.25}
+  .lf-modal h2 b{color:#4d9fff}
+  .lf-modal p{margin:0 0 24px;font-size:15px;line-height:1.6;color:#a0aec0}
+  .lf-modal .lf-btn{width:100%;font-size:16px;padding:14px}
+  .lf-modal .lf-sub{margin-top:14px;font-size:12px;color:#718096}
+  .lf-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#718096;
+    font-size:24px;line-height:1;cursor:pointer}
+  .lf-x:hover{color:#fff}
+
+  /* Control Panel Toggle Launcher Button */
+  .lf-launcher{position:fixed;bottom:30px;left:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(37, 99, 235, 0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;animation:lf-pulse 2s infinite}
+  .lf-launcher:hover{transform:scale(1.1) rotate(15deg);box-shadow:0 12px 40px rgba(37, 99, 235, 0.6)}
+  .lf-launcher.open{transform:scale(0.9) rotate(-90deg);background:#1a202c;border-color:rgba(255,255,255,0.1)}
+  .lf-launcher.shift{bottom:90px}
+  
+  @keyframes lf-pulse{
+    0%{box-shadow:0 0 0 0 rgba(37,99,235,0.6)}
+    70%{box-shadow:0 0 0 14px rgba(37,99,235,0)}
+    100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}
+  }
+
+  /* Control Panel Sidebar Drawer */
+  .lf-drawer{position:fixed;top:0;left:-380px;width:350px;height:100vh;z-index:99995;
+    background:rgba(10,11,15,0.92);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border-right:1px solid rgba(255,255,255,0.08);box-shadow:20px 0 80px rgba(0,0,0,0.65);
+    transition:transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    display:flex;flex-direction:column}
+  .lf-drawer.open{transform:translateX(380px)}
+  
+  .lf-drawer-header{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}
+  .lf-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.1em;
+    background:rgba(59,130,246,0.12);color:#3b82f6;padding:4px 10px;border-radius:4px;
+    border:1px solid rgba(59,130,246,0.25);margin-bottom:12px;text-transform:uppercase}
+  .lf-drawer-header h3{margin:0;font-size:20px;font-weight:700}
+  .lf-drawer-header p{margin:4px 0 0;font-size:13px;color:#a0aec0}
+  
+  .lf-drawer-body{padding:24px;overflow-y:auto;flex-grow:1;display:flex;flex-direction:column;gap:24px}
+  .lf-section-title{font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;
+    letter-spacing:0.08em;margin-bottom:12px}
+  
+  /* Audit Card */
+  .lf-audit-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);
+    border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+  .lf-progress-bg{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-top:6px}
+  .lf-progress-bar{height:100%;border-radius:3px;transition:width 1s ease}
+
+  /* Customizer Card */
+  .lf-color-grid{display:flex;gap:10px;margin-top:8px}
+  .lf-color-btn{width:34px;height:34px;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;transition:transform 0.2s,border-color 0.2s;position:relative}
+  .lf-color-btn:hover{transform:scale(1.15)}
+  .lf-color-btn.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
+  .lf-color-tooltip{position:absolute;bottom:42px;left:50%;transform:translateX(-50%) translateY(5px);
+    background:#1a202c;color:#fff;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+  .lf-color-btn:hover .lf-color-tooltip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Feature list */
+  .lf-feat-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+  .lf-feat-item{font-size:13px;color:#cbd5e0;display:flex;align-items:center;gap:10px}
+  .lf-feat-icon{color:#10b981;font-size:14px}
+
+  /* Profile Card */
+  .lf-profile{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px}
+  .lf-avatar{width:40px;height:40px;border-radius:50%;background:#3b82f6;display:flex;
+    align-items:center;justify-content:center;font-size:18px;font-weight:700}
+  .lf-profile-info{display:flex;flex-direction:column}
+  .lf-profile-name{font-size:13px;font-weight:700;color:#fff}
+  .lf-profile-role{font-size:11px;color:#718096}
+
+  .lf-drawer-footer{padding:20px;border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;flex-direction:column;gap:10px}
+  .lf-drawer-footer .lf-btn{width:100%;font-size:15px;padding:12px;font-weight:700}
+  
+  /* Chatbot styles */
+  .lf-chat-launcher{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#10b981,#059669);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(16,185,129,0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;user-select:none}
+  .lf-chat-launcher:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(16,185,129,0.6)}
+  
+  .lf-chat-window{position:fixed;bottom:96px;right:30px;width:320px;height:420px;z-index:99995;
+    background:rgba(10,11,15,0.96);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.65);
+    display:none;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    overflow:hidden;transition:all 0.3s ease}
+  .lf-chat-window.open{display:flex}
+  
+  .lf-chat-header{padding:14px 16px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;justify-content:space-between;align-items:center}
+  .lf-chat-header h4{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .lf-chat-header h4::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981}
+  
+  .lf-chat-messages{flex-grow:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
+    font-size:12.5px;line-height:1.45}
+  
+  .lf-msg{max-width:82%;padding:8px 12px;border-radius:12px;margin-bottom:2px;word-break:break-word}
+  .lf-msg-user{align-self:flex-end;background:#2563eb;color:#fff;border-bottom-right-radius:2px}
+  .lf-msg-ai{align-self:flex-start;background:rgba(255,255,255,0.06);color:#e2e8f0;border-bottom-left-radius:2px;border:1px solid rgba(255,255,255,0.04)}
+  
+  .lf-chat-input-area{padding:10px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;gap:8px;align-items:center}
+  .lf-chat-input{flex-grow:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:999px;padding:6px 14px;color:#fff;font-size:12.5px;outline:none;transition:border-color 0.2s}
+  .lf-chat-input:focus{border-color:#10b981}
+  .lf-chat-send{background:#10b981;border:none;color:#fff;border-radius:50%;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:background 0.2s}
+  .lf-chat-send:hover{background:#059669}
+  
+  .lf-typing{display:none;align-self:flex-start;background:rgba(255,255,255,0.03);padding:6px 12px;border-radius:12px;font-size:11px;color:#718096;margin:0 16px 8px}
+  
+  /* Timeline styles for Sequence */
+  .lf-timeline{display:flex;flex-direction:column;gap:14px;position:relative;padding-left:14px;margin-top:10px}
+  .lf-timeline::before{content:'';position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:rgba(255,255,255,0.08)}
+  .lf-timeline-item{display:flex;gap:10px;position:relative}
+  .lf-timeline-badge{width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-top:4px;
+    position:absolute;left:-14px;border:2px solid #0a0b0f}
+  .lf-timeline-content h4{margin:0;font-size:12.5px;font-weight:700;color:#fff}
+  .lf-timeline-content p{margin:2px 0 0;font-size:10.5px;color:#718096;line-height:1.4}
+  
+  @keyframes lf-fade{from{opacity:0}to{opacity:1}}
+</style>
+
+<div class="lf-launcher" id="lfLauncher" aria-label="Toggle Customizer">🛠️</div>
+
+<div class="lf-drawer" id="lfDrawer">
+  <div class="lf-drawer-header">
+    <div class="lf-badge">Live Demo Controls</div>
+    <h3>Custom Presentation</h3>
+    <p>Prepared for <b>Elite Premium Services</b></p>
+  </div>
+  
+  <div class="lf-drawer-body">
+    <!-- Audit Section -->
+    <div>
+      <div class="lf-section-title">Speed & Performance Audit</div>
+      <div class="lf-audit-card">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>Your Current Website:</span>
+            <span style="font-weight:700;color:#ef4444">No Website / 0</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:10%;background:#ef4444"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>LeadFlow Modern Demo:</span>
+            <span style="font-weight:700;color:#10b981">98 / 100</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:98%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Selection -->
+    <div>
+      <div class="lf-section-title">Tailor Brand Colors</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 10px">Preview this template in other primary branding styles instantly:</p>
+      <div class="lf-color-grid">
+        <button class="lf-color-btn active" id="lf-color-orange" data-color="orange" style="background:#E05A26" aria-label="Orange">
+          <span class="lf-color-tooltip">Amber Orange</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-blue" data-color="blue" style="background:#2563eb" aria-label="Blue">
+          <span class="lf-color-tooltip">Electric Blue</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-green" data-color="green" style="background:#10b981" aria-label="Green">
+          <span class="lf-color-tooltip">Emerald Green</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-gold" data-color="gold" style="background:#d97706" aria-label="Gold">
+          <span class="lf-color-tooltip">Honey Gold</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-pink" data-color="pink" style="background:#db2777" aria-label="Pink">
+          <span class="lf-color-tooltip">Rose Pink</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div>
+      <div class="lf-section-title">Built-in Enhancements</div>
+      <ul class="lf-feat-list">
+        <li class="lf-feat-item"><span class="lf-feat-icon">⚡</span> 340% faster loading speed</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">📱</span> Responsive mobile-first layout</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🛠️</span> Interactive pricing & cost estimators</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🎯</span> Modern UX to capture 3x more bookings</li>
+      </ul>
+    </div>
+
+    <!-- Outreach Sequence Timeline -->
+    <div>
+      <div class="lf-section-title">Autonomous Outreach Engine</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 12px">How we follow up with your prospects automatically:</p>
+      <div class="lf-timeline">
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#3b82f6"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 1: Personalized Pitch</h4>
+            <p>Initial email sent with custom demo site link.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#10b981"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 3: WhatsApp Nudge</h4>
+            <p>Follow-up text sent if booking is pending.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#fbbf24"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 7: Social Follow-up</h4>
+            <p>Instagram DM sent to maximize response rate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Designer profile -->
+    <div style="margin-top:auto">
+      <div class="lf-section-title">Created By</div>
+      <div class="lf-profile">
+        <div class="lf-avatar">CG</div>
+        <div class="lf-profile-info">
+          <span class="lf-profile-name">Alex from Sitelink</span>
+          <span class="lf-profile-role">Web Developer & Architect</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="lf-drawer-footer">
+    <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_drawer">Claim Website &rarr;</a>
+    
+  </div>
+</div>
+
+<div class="lf-chat-launcher" id="lfChatLauncher" aria-label="Open Chat">💬</div>
+
+<div class="lf-chat-window" id="lfChatWindow">
+  <div class="lf-chat-header">
+    <h4 style="margin:0">AI Assistant</h4>
+    <button class="lf-x" id="lfChatClose" style="position:static;font-size:20px;padding:0;background:none;border:none;color:#718096;cursor:pointer" aria-label="Close Chat">&times;</button>
+  </div>
+  <div class="lf-chat-messages" id="lfChatMessages">
+    <div class="lf-msg lf-msg-ai">Hi there! I'm your AI business assistant. How can I help you today?</div>
+  </div>
+  <div class="lf-typing" id="lfChatTyping">AI is typing...</div>
+  <div class="lf-chat-input-area">
+    <input type="text" class="lf-chat-input" id="lfChatInput" placeholder="Type a message...">
+    <button class="lf-chat-send" id="lfChatSend" aria-label="Send message">➔</button>
+  </div>
+</div>
+
+<div class="lf-cta-bar" id="lfBar">
+  <p>👀 Like this design for <b>Elite Premium Services</b>?</p>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_bar">Book a free call →</a>
+  
+</div>
+
+<div class="lf-modal-bg" id="lfModal">
+  <div class="lf-modal">
+    <button class="lf-x" id="lfX" aria-label="Close">&times;</button>
+    <h2>Want this site live for <b>Elite Premium Services</b>?</h2>
+    <p>This demo was built specifically for you. Book a free 15-minute call and
+       I'll have it live on your domain — no obligation, no upfront cost.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:15px;flex-wrap:wrap">
+      <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_modal">Claim this website →</a>
+      
+    </div>
+    <div class="lf-sub">Built by Alex from Sitelink</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var BEACON="", BID="", sent={};
+  // Dynamically fetch the current server URL so beacon always works even after
+  // tunnel rotation — decoupled from the URL that was baked in at deploy-time.
+  (function loadBeacon(){
+    try{
+      fetch("https://power7t.github.io/leadflow-demos/beacon-config.json?_="+Date.now(),{cache:"no-store"})
+        .then(function(r){return r.json();})
+        .then(function(d){BEACON=d.url||"";})
+        .catch(function(){});
+    }catch(e){}
+  })();
+  function ping(ev){
+    if(sent[ev])return; sent[ev]=true;
+    function _do(){if(!BEACON)return;try{fetch(BEACON+"/api/engage?bid="+BID+"&ev="+ev,{mode:"no-cors",keepalive:true});}catch(e){}}
+    if(BEACON){_do();}else{setTimeout(_do,2500);} // wait for beacon config fetch
+  }
+  
+  // Customizer color switching
+  var colors = {
+    orange: { primary: '#E05A26', bright: '#FF6B35', glow: 'rgba(224,90,38,0.15)' },
+    blue: { primary: '#2563eb', bright: '#3b82f6', glow: 'rgba(37,99,235,0.15)' },
+    green: { primary: '#10b981', bright: '#34d399', glow: 'rgba(16,185,129,0.15)' },
+    gold: { primary: '#d97706', bright: '#fbbf24', glow: 'rgba(217,119,6,0.15)' },
+    pink: { primary: '#db2777', bright: '#f472b6', glow: 'rgba(219,39,119,0.15)' }
+  };
+  
+  function setAccent(key) {
+    var root = document.documentElement;
+    var p = colors[key];
+    if (!p) return;
+    
+    // Standard variables across templates
+    root.style.setProperty('--accent-orange', p.primary);
+    root.style.setProperty('--accent-orange-bright', p.bright);
+    root.style.setProperty('--accent-orange-glow', p.glow);
+    root.style.setProperty('--accent-cyan', p.primary);
+    root.style.setProperty('--accent-cyan-bright', p.bright);
+    root.style.setProperty('--accent-cyan-glow', p.glow);
+    root.style.setProperty('--accent-teal', p.primary);
+    root.style.setProperty('--accent-teal-glow', p.glow);
+    root.style.setProperty('--accent-gold', p.primary);
+    root.style.setProperty('--accent-gold-glow', p.glow);
+    root.style.setProperty('--accent-pink', p.primary);
+    root.style.setProperty('--accent-pink-glow', p.glow);
+    root.style.setProperty('--accent-wood', p.primary);
+    root.style.setProperty('--accent-wood-glow', p.glow);
+    root.style.setProperty('--accent-green', p.primary);
+    root.style.setProperty('--accent-green-glow', p.glow);
+    
+    document.querySelectorAll('.lf-color-btn').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+    var activeBtn = document.getElementById('lf-color-' + key);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    ping('customize_color_' + key);
+  }
+  
+  document.querySelectorAll('.lf-color-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var col = btn.getAttribute('data-color');
+      setAccent(col);
+    });
+  });
+
+  // Drawer toggling
+  var launcher = document.getElementById('lfLauncher');
+  var drawer = document.getElementById('lfDrawer');
+  
+  launcher.addEventListener('click', function(){
+    var isOpen = drawer.classList.contains('open');
+    if(isOpen) {
+      drawer.classList.remove('open');
+      launcher.classList.remove('open');
+      launcher.classList.remove('lf-panel-open');
+      launcher.innerHTML = '🛠️';
+      ping('drawer_closed');
+    } else {
+      drawer.classList.add('open');
+      launcher.classList.add('open');
+      launcher.classList.add('lf-panel-open');
+      launcher.innerHTML = '×';
+      ping('drawer_opened');
+    }
+  });
+
+  // Sticky CTA bar appears once they've scrolled in a bit
+  var bar=document.getElementById("lfBar"), barShown=false;
+  function onScroll(){
+    var sc=window.scrollY, h=document.body.scrollHeight-window.innerHeight;
+    var pct=h>0?sc/h:0;
+    if(pct>0.12&&!barShown){
+      bar.classList.add("show");
+      barShown=true;
+      launcher.classList.add("shift");
+      ping("scroll_in");
+    }
+    if(pct>0.9)ping("scroll_90");
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+
+  // Modal: exit-intent on desktop, timed on mobile, once per visit
+  var modal=document.getElementById("lfModal"), fired=false;
+  function openModal(){
+    if(fired||sessionStorage.getItem("lfSeen"))return;
+    fired=true; sessionStorage.setItem("lfSeen","1");
+    modal.classList.add("show"); ping("modal_shown");
+  }
+  function closeModal(){modal.classList.remove("show");}
+  document.getElementById("lfX").addEventListener("click",closeModal);
+  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+  if(matchMedia("(pointer:fine)").matches){
+    document.addEventListener("mouseout",function(e){if(e.clientY<=0)openModal();});
+  } else {
+    setTimeout(openModal,28000);
+  }
+  
+  // Chat window toggling
+  var chatLauncher = document.getElementById('lfChatLauncher');
+  var chatWindow = document.getElementById('lfChatWindow');
+  var chatClose = document.getElementById('lfChatClose');
+  var chatInput = document.getElementById('lfChatInput');
+  var chatSend = document.getElementById('lfChatSend');
+  var chatMessages = document.getElementById('lfChatMessages');
+  var chatTyping = document.getElementById('lfChatTyping');
+  
+  if (chatLauncher) {
+    chatLauncher.addEventListener('click', function(){
+      var isOpen = chatWindow.classList.contains('open');
+      if(isOpen) {
+        chatWindow.classList.remove('open');
+        ping('chat_closed');
+      } else {
+        chatWindow.classList.add('open');
+        ping('chat_opened');
+        chatInput.focus();
+      }
+    });
+  }
+  
+  if (chatClose) {
+    chatClose.addEventListener('click', function(){
+      chatWindow.classList.remove('open');
+    });
+  }
+  
+  var chatHistory = [];
+  
+  function sendChatMessage() {
+    var txt = chatInput.value.trim();
+    if(!txt) return;
+    chatInput.value = '';
+    
+    // Add User message
+    var userDiv = document.createElement('div');
+    userDiv.className = 'lf-msg lf-msg-user';
+    userDiv.textContent = txt;
+    chatMessages.appendChild(userDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    chatHistory.push({role: 'user', content: txt});
+    ping('chat_message_sent');
+    
+    // Show typing
+    chatTyping.style.display = 'block';
+    
+    // Send to server
+    function _doChat(){
+      if(!BEACON) {
+        setTimeout(_doChat, 1000);
+        return;
+      }
+      fetch(BEACON + "/leads/" + BID + "/chat", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: txt, history: chatHistory })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = data.reply || "Sorry, I'm having trouble connecting right now.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        chatHistory.push({role: 'assistant', content: data.reply || ''});
+      })
+      .catch(function(){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = "Sorry, I could not reach the server.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+    _doChat();
+  }
+  
+  if (chatSend) chatSend.addEventListener('click', sendChatMessage);
+  if (chatInput) {
+    chatInput.addEventListener('keypress', function(e){
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+
+  // Track high-intent clicks
+  document.querySelectorAll("[data-lf]").forEach(function(el){
+    el.addEventListener("click",function(){ping(el.getAttribute("data-lf"));});
+  });
+})();
+</script>
+
+
+</body>
+</html>

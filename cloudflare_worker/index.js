@@ -7,7 +7,7 @@
  * 4. Put your Worker's URL in your .env under LEADFLOW_PUBLIC_URL.
  */
 
-const SECRET_TOKEN = "lf_sec_9e21808ccce4d37"; // Securely auto-generated
+const SECRET_TOKEN = ""; // Read from env.SECRET_TOKEN binding — never hardcode
 
 const PIXEL_GIF = new Uint8Array([
   0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00, 0x00, 0xff, 0xff, 0xff,
@@ -772,25 +772,25 @@ export default {
 
     // ── Demo Data Upload API ─────────────────────────────────────────────────────
     if (url.pathname === "/api/demo") {
-      const headerToken = request.headers.get("X-Secret-Token") || url.searchParams.get("token");
-      const configuredToken = env.SECRET_TOKEN || SECRET_TOKEN;
-
-      if (headerToken !== configuredToken) {
-        return new Response("Unauthorized", { status: 401 });
-      }
-
-      if (method !== "POST") {
+      if (request.method !== "POST") {
         return new Response("Method Not Allowed", { status: 405 });
       }
-
+      const token = request.headers.get("X-Secret-Token");
+      if (token !== env.SECRET_TOKEN) {
+        return new Response("Unauthorized", { status: 401 });
+      }
       const slug = url.searchParams.get("slug");
       if (!slug) {
-        return new Response("Missing slug", { status: 400 });
+        return new Response("Missing Slug", { status: 400 });
       }
-
       const payload = await request.json();
+      if (!payload || !payload.business) {
+        return new Response("Invalid Payload", { status: 400 });
+      }
+      
+      const lookupKey = payload.business.id || slug;
+      await env.LEADFLOW_KV.put(`demo:data:${lookupKey}`, JSON.stringify(payload));
       await env.LEADFLOW_KV.put(`demo:data:${slug}`, JSON.stringify(payload));
-
       return new Response(JSON.stringify({ success: true, message: `Demo data for ${slug} saved` }), {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
       });
@@ -801,6 +801,29 @@ export default {
       let slug = url.pathname.substring(6); // remove "/demo/"
       if (!slug) {
         return new Response("Missing Slug", { status: 400 });
+      }
+
+      // Check if we have pre-rendered HTML first
+      let preRendered = await env.LEADFLOW_KV.get(`demo:html:${slug}`);
+      if (preRendered) {
+         // Click tracking/notification block
+         const utm = url.searchParams.get("utm");
+         if (utm === "ig" || utm === "wa") {
+            const ua = (request.headers.get("user-agent") || "").toLowerCase();
+            const isBot = ua.includes("bot") || ua.includes("telegram") || ua.includes("instagram") || ua.includes("facebook") || ua.includes("whatsapp") || ua.includes("preview") || ua.includes("crawler") || ua.includes("spider") || ua.includes("slurp");
+            if (!isBot) {
+               let bizName = "A prospect";
+               let rawData = await env.LEADFLOW_KV.get(`demo:data:${slug}`);
+               if (rawData) {
+                  try { bizName = JSON.parse(rawData).business?.name || "A prospect"; } catch(e) {}
+               }
+               const icon = utm === "wa" ? "📱" : "📸";
+               await notifyNtfy(`${icon} ${utm.toUpperCase()} Prospect Clicked: ${bizName} just opened their custom demo!`, env, `Leadflow ${utm.toUpperCase()} Click`);
+            }
+         }
+         return new Response(preRendered, {
+            headers: { "Content-Type": "text/html; charset=utf-8", "Access-Control-Allow-Origin": "*" }
+         });
       }
 
       // If the URL is pretty (e.g., "the-garage-chicago-gym-99"), extract the ID from the end
@@ -1036,12 +1059,12 @@ export default {
       if (method === "POST") {
         const body = await request.json().catch(() => ({}));
         const transactions = body.transactions || [];
-        
+
         for (const tx of transactions) {
           // Generate a unique chronological ID: timestamp_random
           const txId = `${Date.now()}_${Math.floor(Math.random() * 10000)}`;
           tx.seq = txId;
-          await env.LEADFLOW_KV.put(`sync:log:${txId}`, JSON.stringify(tx));
+          await env.LEADFLOW_KV.put(`sync:log:${txId}`, JSON.stringify(tx), { metadata: tx });
         }
 
         return new Response(JSON.stringify({ success: true, count: transactions.length }), {
@@ -1049,22 +1072,27 @@ export default {
         });
       } else {
         const since = url.searchParams.get("since") || "0";
-        
-        // List sync log keys
-        const list = await env.LEADFLOW_KV.list({ prefix: "sync:log:" });
+
+        // List sync log keys with metadata packed
+        const list = await env.LEADFLOW_KV.list({ prefix: "sync:log:", includeMetadata: true });
         const results = [];
 
         for (const key of list.keys) {
           // Key name: sync:log:<timestamp>_<random>
           const txId = key.name.substring(9); // remove "sync:log:"
-          
+
           if (txId > since) {
-            const val = await env.LEADFLOW_KV.get(key.name);
-            if (val) {
-              try {
-                results.push(JSON.parse(val));
-              } catch (e) {
-                results.push({ raw: val, seq: txId });
+            if (key.metadata) {
+              results.push(key.metadata);
+            } else {
+              // Fallback to read value directly if metadata is absent
+              const val = await env.LEADFLOW_KV.get(key.name);
+              if (val) {
+                try {
+                  results.push(JSON.parse(val));
+                } catch (e) {
+                  results.push({ raw: val, seq: txId });
+                }
               }
             }
           }

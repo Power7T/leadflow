@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Elite Premium Services | Luxury Real Estate Brokers</title>
+<meta name="description" content="Welcome to Elite Premium Services. Discover high-end properties, luxury homes, and premium estates in Austin.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #05070d;
+  --bg-secondary: #0a0e1a;
+  --bg-tertiary: #101626;
+  --accent: #c9a84c;
+  --accent-glow: rgba(201, 168, 76, 0.3);
+  --text-white: #ffffff;
+  --text-gray: #b0b8c8;
+  --text-muted: #5e687e;
+  --glass-bg: rgba(10, 14, 26, 0.85);
+  --glass-border: rgba(201, 168, 76, 0.08);
+  --glass-border-hover: rgba(201, 168, 76, 0.35);
+  --border-radius-sm: 4px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 20px;
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
+  --transition-smooth: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-primary);
+  color: var(--text-white);
+  font-family: 'Raleway', sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+p {
+  color: var(--text-gray);
+  font-weight: 300;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* DEMO BANNER */
+.demo-banner {
+  background: var(--accent);
+  color: #000;
+  text-align: center;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.demo-banner a {
+  color: #000;
+  text-decoration: underline;
+  font-weight: 800;
+}
+.demo-banner .orig {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: .75;
+}
+
+/* NAVBAR */
+.navbar {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--glass-border);
+}
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 90px;
+  transition: var(--transition-smooth);
+}
+.navbar.scrolled .nav-container {
+  height: 70px;
+}
+.logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logo span {
+  color: var(--accent);
+}
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--text-gray);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
+  position: relative;
+  padding: 0.5rem 0;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: var(--transition-smooth);
+}
+.nav-links a:hover, .nav-links a.active {
+  color: #fff;
+}
+.nav-links a:hover::after, .nav-links a.active::after {
+  width: 100%;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 2.2rem;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-primary {
+  background-color: var(--accent);
+  color: #000;
+}
+.btn-primary:hover {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+  transform: translateY(-2px);
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: #fff;
+}
+.btn-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* HERO */
+.hero {
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(rgba(5,7,13,0.65), rgba(5,7,13,0.85)), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1400') center/cover no-repeat;
+  position: relative;
+  padding-top: 138px;
+}
+.hero-content {
+  max-width: 800px;
+}
+.hero-title {
+  font-size: 4.2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+.hero-desc {
+  font-size: 1.25rem;
+  margin-bottom: 3rem;
+  max-width: 600px;
+}
+.hero-btns {
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* STATIC SEARCH BAR */
+.search-bar {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 1rem 2rem;
+  border-radius: var(--border-radius-md);
+  margin-top: 3rem;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  box-shadow: var(--shadow-lg);
+  max-width: 900px;
+}
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex-grow: 1;
+}
+.search-field label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.search-field span {
+  font-size: 1rem;
+}
+.search-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--glass-border);
+}
+
+/* SECTION SPECIFICS */
+section {
+  padding: 8rem 0;
+  position: relative;
+}
+.section-tag {
+  font-family: 'Raleway', sans-serif;
+  color: var(--accent);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.section-title {
+  font-size: 2.8rem;
+  margin-bottom: 3rem;
+}
+
+/* FEATURED PROPERTIES */
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3rem;
+}
+.property-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  transition: var(--transition-smooth);
+}
+.property-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+}
+.prop-img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+.prop-details {
+  padding: 2rem;
+}
+.prop-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.prop-name {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+.prop-address {
+  font-size: 0.9rem;
+  color: var(--text-gray);
+  margin-bottom: 1.5rem;
+}
+.prop-meta {
+  display: flex;
+  gap: 2rem;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 1.2rem;
+  font-size: 0.9rem;
+}
+
+/* STATS / WHY US SECTION */
+.why-us {
+  background: var(--bg-secondary);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4rem;
+  text-align: center;
+}
+.stat-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 4rem;
+  color: var(--accent);
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.stat-label {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  color: var(--text-gray);
+}
+
+/* TESTIMONIALS */
+.testimonials {
+  background: var(--bg-tertiary);
+}
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+.testimonial-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 2.5rem;
+  border-radius: var(--border-radius-md);
+}
+.stars {
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.t-text {
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+.t-author {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* CONTACT */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.contact-item h4 {
+  font-size: 1.2rem;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+/* FOOTER */
+.footer {
+  background: #030406;
+  padding: 4rem 0 2rem;
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+}
+.footer-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 1.5rem;
+}
+
+/* RESPONSIVE */
+@media(max-width: 991px) {
+  .properties-grid, .stats-grid, .testimonials-grid, .contact-grid, .search-bar {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .search-divider {
+    display: none;
+  }
+  .navbar {
+    top: 0;
+  }
+}
+/* AHA MOMENT */
+.aha-section{padding:5rem 0;position:relative;overflow:hidden;background:#050810}
+.aha-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(180,150,60,0.07) 0%,transparent 70%);pointer-events:none}
+.aha-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.5rem}
+.aha-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:.5rem}
+.aha-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#aaa;padding:9px 22px;border-radius:4px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit;transition:all .25s ease}
+.aha-btn.active,.aha-btn:hover{background:var(--accent,#b8975a);border-color:var(--accent,#b8975a);color:#000;box-shadow:0 4px 16px rgba(184,151,90,0.35)}
+.aha-slider-row{display:flex;flex-direction:column;gap:1rem;width:100%;max-width:380px;margin:0 auto}
+.aha-slider-label{display:flex;justify-content:space-between;font-size:.85rem;color:#aaa;margin-bottom:2px}
+.aha-slider{width:100%;accent-color:var(--accent,#b8975a)}
+.aha-svg-wrap{width:100%;max-width:300px;margin:0 auto}
+.aha-label{font-size:1.1rem;font-weight:700;color:#fff;min-height:2rem;margin-top:.25rem}
+.aha-sub{font-size:.85rem;color:#718096;margin-top:.25rem}
+</style>
+</head>
+<body>
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  ✨ FREE demo built for Elite Premium Services by Chandan Gosavi &mdash;
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
+  <span class="orig">Built using luxury real estate template</span>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="#home" class="logo">
+      Elite Premium Services<span>.</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#properties">Properties</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="btn btn-outline" style="padding: 0.5rem 1.2rem; font-size: 0.85rem">Contact Agent</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="home" class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <h1 class="hero-title">Exclusive Properties. Exquisite Lifestyles.</h1>
+      
+      
+      <div class="hero-rating-injection" style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="color:#fbbf24; font-size:1.2rem; letter-spacing:2px;">★★★★★</span>
+        <span style="font-weight:700;">5.0</span>
+        <span style="opacity:0.8; font-size:0.9rem;">(342 reviews)</span>
+      </div>
+      
+      <p class="hero-desc">Discover outstanding luxury homes and premium estates tailored to your desires with Elite Premium Services. Exceptional service, absolute discretion.</p>
+      
+      <!-- Static Search Bar UI -->
+      <div class="search-bar">
+        <div class="search-field">
+          <label>Location</label>
+          <span>Austin</span>
+        </div>
+        <div class="search-divider"></div>
+        <div class="search-field">
+          <label>Property Type</label>
+          <span>Luxury Villa / Estate</span>
+        </div>
+        <div class="search-divider"></div>
+        <div class="search-field">
+          <label>Price Range</label>
+          <span>$1.5M - $10M+</span>
+        </div>
+        <button class="btn btn-primary" style="padding:0.8rem 1.5rem">Search</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Properties -->
+<section id="properties">
+  <div class="container">
+    <span class="section-tag">Featured Listings</span>
+    <h2 class="section-title">Luxurious Estates</h2>
+    <div class="properties-grid">
+      <div class="property-card">
+        <img class="prop-img" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600" alt="Villa">
+        <div class="prop-details">
+          <span class="prop-price">$4,850,000</span>
+          <h3 class="prop-name">The Sunset Crest Villa</h3>
+          <p class="prop-address">Exclusive Ridge View Drive</p>
+          <div class="prop-meta">
+            <span>🛏️ 5 Beds</span>
+            <span>🛁 6 Baths</span>
+            <span>📐 6,500 sqft</span>
+          </div>
+        </div>
+      </div>
+      <div class="property-card">
+        <img class="prop-img" src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600" alt="Villa">
+        <div class="prop-details">
+          <span class="prop-price">$6,200,000</span>
+          <h3 class="prop-name">Waterfront Modern Residence</h3>
+          <p class="prop-address">Marina Bay Bayfront Drive</p>
+          <div class="prop-meta">
+            <span>🛏️ 4 Beds</span>
+            <span>🛁 5 Baths</span>
+            <span>📐 7,200 sqft</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats / Why Us -->
+<section id="about" class="why-us">
+  <div class="container">
+    <div class="stats-grid">
+      <div>
+        <div class="stat-number">500+</div>
+        <div class="stat-label">Luxury Homes Sold</div>
+      </div>
+      <div>
+        <div class="stat-number">12+</div>
+        <div class="stat-label">Years Clinical Excellence</div>
+      </div>
+      <div>
+        <div class="stat-number">98%</div>
+        <div class="stat-label">Client Satisfaction</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Property Value Estimator Aha Moment -->
+<section class="aha-section" id="value-estimator">
+  <div class="container">
+    <div class="aha-inner">
+      <span class="section-tag">Live Estimator</span>
+      <h2 class="section-title">What's Your Property Worth?</h2>
+      <p style="max-width:500px;color:#718096">Adjust the sliders below to see a live value estimate. Our agents specialize in maximizing your return.</p>
+      <div class="aha-slider-row">
+        <div>
+          <div class="aha-slider-label"><span>Bedrooms</span><span id="re-beds">3 bed</span></div>
+          <input type="range" class="aha-slider" id="reBedsSlider" min="1" max="6" value="3">
+        </div>
+        <div>
+          <div class="aha-slider-label"><span>Square Footage</span><span id="re-sqft">1,800 sqft</span></div>
+          <input type="range" class="aha-slider" id="reSqftSlider" min="600" max="6000" step="100" value="1800">
+        </div>
+        <div>
+          <div class="aha-slider-label"><span>Condition</span><span id="re-cond">Good</span></div>
+          <input type="range" class="aha-slider" id="reCondSlider" min="1" max="3" value="2">
+        </div>
+      </div>
+      <div class="aha-svg-wrap">
+        <svg viewBox="0 0 300 180" style="width:100%;height:auto">
+          <defs>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#050810"/><stop offset="100%" stop-color="#0c1428"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="180" fill="url(#skyGrad)" rx="8"/>
+          <!-- Stars -->
+          <circle cx="30" cy="20" r="1" fill="#fff" opacity="0.4"/><circle cx="80" cy="14" r="1.2" fill="#fff" opacity="0.5"/>
+          <circle cx="200" cy="22" r="1" fill="#fff" opacity="0.3"/><circle cx="260" cy="10" r="1.5" fill="#fff" opacity="0.6"/>
+          <!-- Moon -->
+          <circle cx="250" cy="30" r="14" fill="#b8975a" opacity="0.18"/>
+          <circle cx="258" cy="26" r="10" fill="#050810"/>
+          <!-- Ground -->
+          <rect x="0" y="148" width="300" height="32" fill="#0a1020" rx="0"/>
+          <!-- House body -->
+          <rect id="re-house" x="60" y="90" width="180" height="60" fill="#101830" stroke="rgba(184,151,90,0.2)" stroke-width="1" rx="3" style="transition:fill .4s ease"/>
+          <!-- Roof -->
+          <polygon id="re-roof" points="45,90 255,90 150,35" fill="#0d1525" stroke="rgba(184,151,90,0.35)" stroke-width="1.5" style="transition:fill .4s ease,points .4s ease"/>
+          <!-- Chimney -->
+          <rect id="re-chimney" x="190" y="40" width="14" height="25" fill="#0d1525" style="display:none"/>
+          <!-- Door -->
+          <rect x="135" y="115" width="30" height="35" rx="2" fill="#070e1a" stroke="rgba(184,151,90,0.3)" stroke-width="1"/>
+          <circle cx="162" cy="132" r="2" fill="#b8975a"/>
+          <!-- Windows -->
+          <rect id="re-win1" x="75" y="105" width="32" height="24" rx="3" fill="#1a2a1a" stroke="rgba(184,151,90,0.2)" stroke-width="1" style="transition:fill .4s ease"/>
+          <rect id="re-win2" x="193" y="105" width="32" height="24" rx="3" fill="#1a2a1a" stroke="rgba(184,151,90,0.2)" stroke-width="1" style="transition:fill .4s ease"/>
+          <!-- Window crosses -->
+          <line x1="91" y1="105" x2="91" y2="129" stroke="rgba(184,151,90,0.15)" stroke-width="1"/>
+          <line x1="75" y1="117" x2="107" y2="117" stroke="rgba(184,151,90,0.15)" stroke-width="1"/>
+          <line x1="209" y1="105" x2="209" y2="129" stroke="rgba(184,151,90,0.15)" stroke-width="1"/>
+          <line x1="193" y1="117" x2="225" y2="117" stroke="rgba(184,151,90,0.15)" stroke-width="1"/>
+          <!-- Value badge -->
+          <rect x="65" y="155" width="170" height="20" rx="4" fill="rgba(184,151,90,0.12)" stroke="rgba(184,151,90,0.3)" stroke-width="1"/>
+          <text id="re-price" x="150" y="169" text-anchor="middle" fill="#b8975a" font-family="sans-serif" font-size="11" font-weight="700">Est. Value: $420,000</text>
+        </svg>
+      </div>
+      <div class="aha-label" id="re-label">3 Bed · 1,800 sqft · Good Condition</div>
+      <div class="aha-sub">Speak to an agent for your free professional valuation</div>
+      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Get Free Valuation →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+  <div class="container">
+    <span class="section-tag">Client Reviews</span>
+    <h2 class="section-title">Trust &amp; Prestige</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"Unbelievable transaction support. They found our dream waterfront villa and made the whole closing seamless and secure."</p>
+        <p class="t-author">Marcus Jenkins</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"The level of discretion, local market knowledge, and absolute focus on client satisfaction was second to none."</p>
+        <p class="t-author">Eleanor Vance</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="t-text">"Outstanding brokers. Highly experienced, hyper-focused, and extremely professional."</p>
+        <p class="t-author">Robert Carter</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div>
+        <span class="section-tag">Contact Us</span>
+        <h2 class="section-title">Schedule A Private Viewing</h2>
+        <div class="contact-info">
+          <div class="contact-item">
+            <h4>Brokerage Address</h4>
+            <p>Luxury Hub Square</p>
+          </div>
+          
+          <div class="contact-item">
+            <h4>Hours</h4>
+            <p>Mon - Sat: 9:00 AM - 6:00 PM (Appointments only)</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <!-- Map Placeholder -->
+        <div style="width:100%;height:300px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">
+          <div style="text-align:center">
+            <span style="font-size:2rem;display:block;margin-bottom:0.5rem">📍</span>
+            Brokerage location for Elite Premium Services
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 Elite Premium Services. All rights reserved.</p>
+    <p class="footer-text">Luxury Real Estate website concept designed by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" style="color:var(--accent);text-decoration:underline">Chandan Gosavi</a></p>
+  </div>
+</footer>
+
+<!-- Tracking Pixel -->
+
+
+<script>
+window.addEventListener('scroll', function() {
+  const navbar = document.getElementById('navbar');
+  if (window.scrollY > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+});
+// Property Value Estimator Aha Moment
+(function(){
+  const bedsSlider = document.getElementById('reBedsSlider');
+  const sqftSlider = document.getElementById('reSqftSlider');
+  const condSlider = document.getElementById('reCondSlider');
+  const bedsLabel = document.getElementById('re-beds');
+  const sqftLabel = document.getElementById('re-sqft');
+  const condLabel = document.getElementById('re-cond');
+  const priceEl = document.getElementById('re-price');
+  const mainLabel = document.getElementById('re-label');
+  const houseEl = document.getElementById('re-house');
+  const win1 = document.getElementById('re-win1');
+  const win2 = document.getElementById('re-win2');
+  const roofEl = document.getElementById('re-roof');
+  const chimney = document.getElementById('re-chimney');
+  const condLabels = ['Fair','Good','Excellent'];
+  const condMults = [0.85, 1.0, 1.18];
+  const condFills = ['#101020','#101830','#0a1a2a'];
+  const condWin = ['#1a1a0a','#1a2a1a','#1a2a3a'];
+  const condRoof = ['#0d1020','#0d1525','#0a1a28'];
+
+  function update(){
+    const beds = parseInt(bedsSlider.value);
+    const sqft = parseInt(sqftSlider.value);
+    const cond = parseInt(condSlider.value) - 1;
+    bedsLabel.textContent = beds + ' bed';
+    sqftLabel.textContent = sqft.toLocaleString() + ' sqft';
+    condLabel.textContent = condLabels[cond];
+    const basePrice = sqft * 200 * condMults[cond] + beds * 18000;
+    priceEl.textContent = 'Est. Value: $' + Math.round(basePrice / 1000) * 1000 .toLocaleString();
+    mainLabel.textContent = beds + ' Bed \u00b7 ' + sqft.toLocaleString() + ' sqft \u00b7 ' + condLabels[cond];
+    houseEl.setAttribute('fill', condFills[cond]);
+    win1.setAttribute('fill', condWin[cond]);
+    win2.setAttribute('fill', condWin[cond]);
+    roofEl.setAttribute('fill', condRoof[cond]);
+    chimney.style.display = beds >= 4 ? 'block' : 'none';
+  }
+  bedsSlider.addEventListener('input', update);
+  sqftSlider.addEventListener('input', update);
+  condSlider.addEventListener('input', update);
+  update();
+})();
+</script>
+
+<!-- LEADFLOW CONVERSION LAYER WITH CONTROL PANEL -->
+<style>
+  /* Styling for the sticky CTA bar */
+  .lf-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:9998;
+    display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    padding:14px 20px;background:rgba(10,10,12,.92);backdrop-filter:blur(12px);
+    border-top:1px solid rgba(255,255,255,.12);
+    transform:translateY(120%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff}
+  .lf-cta-bar.show{transform:translateY(0)}
+  .lf-cta-bar p{margin:0;font-size:15px;font-weight:500}
+  .lf-cta-bar p b{color:#4d9fff}
+  
+  .lf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+    text-decoration:none;font-size:14px;font-weight:700;padding:10px 20px;border-radius:999px;
+    transition:transform .15s,box-shadow .15s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-btn:hover{transform:translateY(-2px)}
+  .lf-btn-primary{background:linear-gradient(135deg,#4d9fff,#2563eb);color:#fff;
+    box-shadow:0 4px 15px rgba(77,159,255,.3)}
+  .lf-btn-ghost{background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.12)}
+  .lf-btn-ghost:hover{background:rgba(255,255,255,.1)}
+
+  /* Original Modal styles */
+  .lf-modal-bg{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:20px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  .lf-modal-bg.show{display:flex;animation:lf-fade .3s ease}
+  .lf-modal{position:relative;max-width:440px;width:100%;background:#0d0e12;color:#fff;
+    border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 28px;text-align:center;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:lf-pop .35s cubic-bezier(.2,.9,.3,1.2)}
+  .lf-modal h2{margin:0 0 12px;font-size:24px;line-height:1.25}
+  .lf-modal h2 b{color:#4d9fff}
+  .lf-modal p{margin:0 0 24px;font-size:15px;line-height:1.6;color:#a0aec0}
+  .lf-modal .lf-btn{width:100%;font-size:16px;padding:14px}
+  .lf-modal .lf-sub{margin-top:14px;font-size:12px;color:#718096}
+  .lf-x{position:absolute;top:14px;right:16px;background:none;border:none;color:#718096;
+    font-size:24px;line-height:1;cursor:pointer}
+  .lf-x:hover{color:#fff}
+
+  /* Control Panel Toggle Launcher Button */
+  .lf-launcher{position:fixed;bottom:30px;left:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(37, 99, 235, 0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;animation:lf-pulse 2s infinite}
+  .lf-launcher:hover{transform:scale(1.1) rotate(15deg);box-shadow:0 12px 40px rgba(37, 99, 235, 0.6)}
+  .lf-launcher.open{transform:scale(0.9) rotate(-90deg);background:#1a202c;border-color:rgba(255,255,255,0.1)}
+  .lf-launcher.shift{bottom:90px}
+  
+  @keyframes lf-pulse{
+    0%{box-shadow:0 0 0 0 rgba(37,99,235,0.6)}
+    70%{box-shadow:0 0 0 14px rgba(37,99,235,0)}
+    100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}
+  }
+
+  /* Control Panel Sidebar Drawer */
+  .lf-drawer{position:fixed;top:0;left:-380px;width:350px;height:100vh;z-index:99995;
+    background:rgba(10,11,15,0.92);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border-right:1px solid rgba(255,255,255,0.08);box-shadow:20px 0 80px rgba(0,0,0,0.65);
+    transition:transform 0.45s cubic-bezier(0.16,1,0.3,1);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    display:flex;flex-direction:column}
+  .lf-drawer.open{transform:translateX(380px)}
+  
+  .lf-drawer-header{padding:28px 24px 20px;border-bottom:1px solid rgba(255,255,255,0.06);position:relative}
+  .lf-badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.1em;
+    background:rgba(59,130,246,0.12);color:#3b82f6;padding:4px 10px;border-radius:4px;
+    border:1px solid rgba(59,130,246,0.25);margin-bottom:12px;text-transform:uppercase}
+  .lf-drawer-header h3{margin:0;font-size:20px;font-weight:700}
+  .lf-drawer-header p{margin:4px 0 0;font-size:13px;color:#a0aec0}
+  
+  .lf-drawer-body{padding:24px;overflow-y:auto;flex-grow:1;display:flex;flex-direction:column;gap:24px}
+  .lf-section-title{font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;
+    letter-spacing:0.08em;margin-bottom:12px}
+  
+  /* Audit Card */
+  .lf-audit-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);
+    border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:14px}
+  .lf-progress-bg{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-top:6px}
+  .lf-progress-bar{height:100%;border-radius:3px;transition:width 1s ease}
+
+  /* Customizer Card */
+  .lf-color-grid{display:flex;gap:10px;margin-top:8px}
+  .lf-color-btn{width:34px;height:34px;border-radius:50%;border:2px solid transparent;
+    cursor:pointer;transition:transform 0.2s,border-color 0.2s;position:relative}
+  .lf-color-btn:hover{transform:scale(1.15)}
+  .lf-color-btn.active{border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
+  .lf-color-tooltip{position:absolute;bottom:42px;left:50%;transform:translateX(-50%) translateY(5px);
+    background:#1a202c;color:#fff;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+  .lf-color-btn:hover .lf-color-tooltip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* Feature list */
+  .lf-feat-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+  .lf-feat-item{font-size:13px;color:#cbd5e0;display:flex;align-items:center;gap:10px}
+  .lf-feat-icon{color:#10b981;font-size:14px}
+
+  /* Profile Card */
+  .lf-profile{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px}
+  .lf-avatar{width:40px;height:40px;border-radius:50%;background:#3b82f6;display:flex;
+    align-items:center;justify-content:center;font-size:18px;font-weight:700}
+  .lf-profile-info{display:flex;flex-direction:column}
+  .lf-profile-name{font-size:13px;font-weight:700;color:#fff}
+  .lf-profile-role{font-size:11px;color:#718096}
+
+  .lf-drawer-footer{padding:20px;border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;flex-direction:column;gap:10px}
+  .lf-drawer-footer .lf-btn{width:100%;font-size:15px;padding:12px;font-weight:700}
+  
+  /* Chatbot styles */
+  .lf-chat-launcher{position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;
+    background:linear-gradient(135deg,#10b981,#059669);border:1px solid rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:99990;
+    box-shadow:0 8px 32px rgba(16,185,129,0.45);transition:all 0.3s cubic-bezier(0.2,0.8,0.2,1);
+    color:#fff;font-size:22px;user-select:none}
+  .lf-chat-launcher:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(16,185,129,0.6)}
+  
+  .lf-chat-window{position:fixed;bottom:96px;right:30px;width:320px;height:420px;z-index:99995;
+    background:rgba(10,11,15,0.96);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border:1px solid rgba(255,255,255,0.08);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.65);
+    display:none;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;
+    overflow:hidden;transition:all 0.3s ease}
+  .lf-chat-window.open{display:flex}
+  
+  .lf-chat-header{padding:14px 16px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex;justify-content:space-between;align-items:center}
+  .lf-chat-header h4{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .lf-chat-header h4::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981}
+  
+  .lf-chat-messages{flex-grow:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
+    font-size:12.5px;line-height:1.45}
+  
+  .lf-msg{max-width:82%;padding:8px 12px;border-radius:12px;margin-bottom:2px;word-break:break-word}
+  .lf-msg-user{align-self:flex-end;background:#2563eb;color:#fff;border-bottom-right-radius:2px}
+  .lf-msg-ai{align-self:flex-start;background:rgba(255,255,255,0.06);color:#e2e8f0;border-bottom-left-radius:2px;border:1px solid rgba(255,255,255,0.04)}
+  
+  .lf-chat-input-area{padding:10px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);
+    display:flex;gap:8px;align-items:center}
+  .lf-chat-input{flex-grow:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:999px;padding:6px 14px;color:#fff;font-size:12.5px;outline:none;transition:border-color 0.2s}
+  .lf-chat-input:focus{border-color:#10b981}
+  .lf-chat-send{background:#10b981;border:none;color:#fff;border-radius:50%;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:background 0.2s}
+  .lf-chat-send:hover{background:#059669}
+  
+  .lf-typing{display:none;align-self:flex-start;background:rgba(255,255,255,0.03);padding:6px 12px;border-radius:12px;font-size:11px;color:#718096;margin:0 16px 8px}
+  
+  /* Timeline styles for Sequence */
+  .lf-timeline{display:flex;flex-direction:column;gap:14px;position:relative;padding-left:14px;margin-top:10px}
+  .lf-timeline::before{content:'';position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:rgba(255,255,255,0.08)}
+  .lf-timeline-item{display:flex;gap:10px;position:relative}
+  .lf-timeline-badge{width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-top:4px;
+    position:absolute;left:-14px;border:2px solid #0a0b0f}
+  .lf-timeline-content h4{margin:0;font-size:12.5px;font-weight:700;color:#fff}
+  .lf-timeline-content p{margin:2px 0 0;font-size:10.5px;color:#718096;line-height:1.4}
+  
+  @keyframes lf-fade{from{opacity:0}to{opacity:1}}
+</style>
+
+<div class="lf-launcher" id="lfLauncher" aria-label="Toggle Customizer">🛠️</div>
+
+<div class="lf-drawer" id="lfDrawer">
+  <div class="lf-drawer-header">
+    <div class="lf-badge">Live Demo Controls</div>
+    <h3>Custom Presentation</h3>
+    <p>Prepared for <b>Elite Premium Services</b></p>
+  </div>
+  
+  <div class="lf-drawer-body">
+    <!-- Audit Section -->
+    <div>
+      <div class="lf-section-title">Speed & Performance Audit</div>
+      <div class="lf-audit-card">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>Your Current Website:</span>
+            <span style="font-weight:700;color:#ef4444">No Website / 0</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:10%;background:#ef4444"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#a0aec0">
+            <span>LeadFlow Modern Demo:</span>
+            <span style="font-weight:700;color:#10b981">98 / 100</span>
+          </div>
+          <div class="lf-progress-bg">
+            <div class="lf-progress-bar" style="width:98%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.4)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme Selection -->
+    <div>
+      <div class="lf-section-title">Tailor Brand Colors</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 10px">Preview this template in other primary branding styles instantly:</p>
+      <div class="lf-color-grid">
+        <button class="lf-color-btn active" id="lf-color-orange" data-color="orange" style="background:#E05A26" aria-label="Orange">
+          <span class="lf-color-tooltip">Amber Orange</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-blue" data-color="blue" style="background:#2563eb" aria-label="Blue">
+          <span class="lf-color-tooltip">Electric Blue</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-green" data-color="green" style="background:#10b981" aria-label="Green">
+          <span class="lf-color-tooltip">Emerald Green</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-gold" data-color="gold" style="background:#d97706" aria-label="Gold">
+          <span class="lf-color-tooltip">Honey Gold</span>
+        </button>
+        <button class="lf-color-btn" id="lf-color-pink" data-color="pink" style="background:#db2777" aria-label="Pink">
+          <span class="lf-color-tooltip">Rose Pink</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div>
+      <div class="lf-section-title">Built-in Enhancements</div>
+      <ul class="lf-feat-list">
+        <li class="lf-feat-item"><span class="lf-feat-icon">⚡</span> 340% faster loading speed</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">📱</span> Responsive mobile-first layout</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🛠️</span> Interactive pricing & cost estimators</li>
+        <li class="lf-feat-item"><span class="lf-feat-icon">🎯</span> Modern UX to capture 3x more bookings</li>
+      </ul>
+    </div>
+
+    <!-- Outreach Sequence Timeline -->
+    <div>
+      <div class="lf-section-title">Autonomous Outreach Engine</div>
+      <p style="font-size:12px;color:#a0aec0;margin:0 0 12px">How we follow up with your prospects automatically:</p>
+      <div class="lf-timeline">
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#3b82f6"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 1: Personalized Pitch</h4>
+            <p>Initial email sent with custom demo site link.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#10b981"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 3: WhatsApp Nudge</h4>
+            <p>Follow-up text sent if booking is pending.</p>
+          </div>
+        </div>
+        <div class="lf-timeline-item">
+          <div class="lf-timeline-badge" style="background:#fbbf24"></div>
+          <div class="lf-timeline-content">
+            <h4>Day 7: Social Follow-up</h4>
+            <p>Instagram DM sent to maximize response rate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Designer profile -->
+    <div style="margin-top:auto">
+      <div class="lf-section-title">Created By</div>
+      <div class="lf-profile">
+        <div class="lf-avatar">CG</div>
+        <div class="lf-profile-info">
+          <span class="lf-profile-name">Alex from Sitelink</span>
+          <span class="lf-profile-role">Web Developer & Architect</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="lf-drawer-footer">
+    <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_drawer">Claim Website &rarr;</a>
+    
+  </div>
+</div>
+
+<div class="lf-chat-launcher" id="lfChatLauncher" aria-label="Open Chat">💬</div>
+
+<div class="lf-chat-window" id="lfChatWindow">
+  <div class="lf-chat-header">
+    <h4 style="margin:0">AI Assistant</h4>
+    <button class="lf-x" id="lfChatClose" style="position:static;font-size:20px;padding:0;background:none;border:none;color:#718096;cursor:pointer" aria-label="Close Chat">&times;</button>
+  </div>
+  <div class="lf-chat-messages" id="lfChatMessages">
+    <div class="lf-msg lf-msg-ai">Hi there! I'm your AI business assistant. How can I help you today?</div>
+  </div>
+  <div class="lf-typing" id="lfChatTyping">AI is typing...</div>
+  <div class="lf-chat-input-area">
+    <input type="text" class="lf-chat-input" id="lfChatInput" placeholder="Type a message...">
+    <button class="lf-chat-send" id="lfChatSend" aria-label="Send message">➔</button>
+  </div>
+</div>
+
+<div class="lf-cta-bar" id="lfBar">
+  <p>👀 Like this design for <b>Elite Premium Services</b>?</p>
+  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_bar">Book a free call →</a>
+  
+</div>
+
+<div class="lf-modal-bg" id="lfModal">
+  <div class="lf-modal">
+    <button class="lf-x" id="lfX" aria-label="Close">&times;</button>
+    <h2>Want this site live for <b>Elite Premium Services</b>?</h2>
+    <p>This demo was built specifically for you. Book a free 15-minute call and
+       I'll have it live on your domain — no obligation, no upfront cost.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:15px;flex-wrap:wrap">
+      <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank" rel="noopener" class="lf-btn lf-btn-primary" data-lf="cta_book_modal">Claim this website →</a>
+      
+    </div>
+    <div class="lf-sub">Built by Alex from Sitelink</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var BEACON="", BID="", sent={};
+  // Dynamically fetch the current server URL so beacon always works even after
+  // tunnel rotation — decoupled from the URL that was baked in at deploy-time.
+  (function loadBeacon(){
+    try{
+      fetch("https://power7t.github.io/leadflow-demos/beacon-config.json?_="+Date.now(),{cache:"no-store"})
+        .then(function(r){return r.json();})
+        .then(function(d){BEACON=d.url||"";})
+        .catch(function(){});
+    }catch(e){}
+  })();
+  function ping(ev){
+    if(sent[ev])return; sent[ev]=true;
+    function _do(){if(!BEACON)return;try{fetch(BEACON+"/api/engage?bid="+BID+"&ev="+ev,{mode:"no-cors",keepalive:true});}catch(e){}}
+    if(BEACON){_do();}else{setTimeout(_do,2500);} // wait for beacon config fetch
+  }
+  
+  // Customizer color switching
+  var colors = {
+    orange: { primary: '#E05A26', bright: '#FF6B35', glow: 'rgba(224,90,38,0.15)' },
+    blue: { primary: '#2563eb', bright: '#3b82f6', glow: 'rgba(37,99,235,0.15)' },
+    green: { primary: '#10b981', bright: '#34d399', glow: 'rgba(16,185,129,0.15)' },
+    gold: { primary: '#d97706', bright: '#fbbf24', glow: 'rgba(217,119,6,0.15)' },
+    pink: { primary: '#db2777', bright: '#f472b6', glow: 'rgba(219,39,119,0.15)' }
+  };
+  
+  function setAccent(key) {
+    var root = document.documentElement;
+    var p = colors[key];
+    if (!p) return;
+    
+    // Standard variables across templates
+    root.style.setProperty('--accent-orange', p.primary);
+    root.style.setProperty('--accent-orange-bright', p.bright);
+    root.style.setProperty('--accent-orange-glow', p.glow);
+    root.style.setProperty('--accent-cyan', p.primary);
+    root.style.setProperty('--accent-cyan-bright', p.bright);
+    root.style.setProperty('--accent-cyan-glow', p.glow);
+    root.style.setProperty('--accent-teal', p.primary);
+    root.style.setProperty('--accent-teal-glow', p.glow);
+    root.style.setProperty('--accent-gold', p.primary);
+    root.style.setProperty('--accent-gold-glow', p.glow);
+    root.style.setProperty('--accent-pink', p.primary);
+    root.style.setProperty('--accent-pink-glow', p.glow);
+    root.style.setProperty('--accent-wood', p.primary);
+    root.style.setProperty('--accent-wood-glow', p.glow);
+    root.style.setProperty('--accent-green', p.primary);
+    root.style.setProperty('--accent-green-glow', p.glow);
+    
+    document.querySelectorAll('.lf-color-btn').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+    var activeBtn = document.getElementById('lf-color-' + key);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    ping('customize_color_' + key);
+  }
+  
+  document.querySelectorAll('.lf-color-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var col = btn.getAttribute('data-color');
+      setAccent(col);
+    });
+  });
+
+  // Drawer toggling
+  var launcher = document.getElementById('lfLauncher');
+  var drawer = document.getElementById('lfDrawer');
+  
+  launcher.addEventListener('click', function(){
+    var isOpen = drawer.classList.contains('open');
+    if(isOpen) {
+      drawer.classList.remove('open');
+      launcher.classList.remove('open');
+      launcher.classList.remove('lf-panel-open');
+      launcher.innerHTML = '🛠️';
+      ping('drawer_closed');
+    } else {
+      drawer.classList.add('open');
+      launcher.classList.add('open');
+      launcher.classList.add('lf-panel-open');
+      launcher.innerHTML = '×';
+      ping('drawer_opened');
+    }
+  });
+
+  // Sticky CTA bar appears once they've scrolled in a bit
+  var bar=document.getElementById("lfBar"), barShown=false;
+  function onScroll(){
+    var sc=window.scrollY, h=document.body.scrollHeight-window.innerHeight;
+    var pct=h>0?sc/h:0;
+    if(pct>0.12&&!barShown){
+      bar.classList.add("show");
+      barShown=true;
+      launcher.classList.add("shift");
+      ping("scroll_in");
+    }
+    if(pct>0.9)ping("scroll_90");
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+
+  // Modal: exit-intent on desktop, timed on mobile, once per visit
+  var modal=document.getElementById("lfModal"), fired=false;
+  function openModal(){
+    if(fired||sessionStorage.getItem("lfSeen"))return;
+    fired=true; sessionStorage.setItem("lfSeen","1");
+    modal.classList.add("show"); ping("modal_shown");
+  }
+  function closeModal(){modal.classList.remove("show");}
+  document.getElementById("lfX").addEventListener("click",closeModal);
+  modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});
+  if(matchMedia("(pointer:fine)").matches){
+    document.addEventListener("mouseout",function(e){if(e.clientY<=0)openModal();});
+  } else {
+    setTimeout(openModal,28000);
+  }
+  
+  // Chat window toggling
+  var chatLauncher = document.getElementById('lfChatLauncher');
+  var chatWindow = document.getElementById('lfChatWindow');
+  var chatClose = document.getElementById('lfChatClose');
+  var chatInput = document.getElementById('lfChatInput');
+  var chatSend = document.getElementById('lfChatSend');
+  var chatMessages = document.getElementById('lfChatMessages');
+  var chatTyping = document.getElementById('lfChatTyping');
+  
+  if (chatLauncher) {
+    chatLauncher.addEventListener('click', function(){
+      var isOpen = chatWindow.classList.contains('open');
+      if(isOpen) {
+        chatWindow.classList.remove('open');
+        ping('chat_closed');
+      } else {
+        chatWindow.classList.add('open');
+        ping('chat_opened');
+        chatInput.focus();
+      }
+    });
+  }
+  
+  if (chatClose) {
+    chatClose.addEventListener('click', function(){
+      chatWindow.classList.remove('open');
+    });
+  }
+  
+  var chatHistory = [];
+  
+  function sendChatMessage() {
+    var txt = chatInput.value.trim();
+    if(!txt) return;
+    chatInput.value = '';
+    
+    // Add User message
+    var userDiv = document.createElement('div');
+    userDiv.className = 'lf-msg lf-msg-user';
+    userDiv.textContent = txt;
+    chatMessages.appendChild(userDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    chatHistory.push({role: 'user', content: txt});
+    ping('chat_message_sent');
+    
+    // Show typing
+    chatTyping.style.display = 'block';
+    
+    // Send to server
+    function _doChat(){
+      if(!BEACON) {
+        setTimeout(_doChat, 1000);
+        return;
+      }
+      fetch(BEACON + "/leads/" + BID + "/chat", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: txt, history: chatHistory })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = data.reply || "Sorry, I'm having trouble connecting right now.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        chatHistory.push({role: 'assistant', content: data.reply || ''});
+      })
+      .catch(function(){
+        chatTyping.style.display = 'none';
+        var aiDiv = document.createElement('div');
+        aiDiv.className = 'lf-msg lf-msg-ai';
+        aiDiv.textContent = "Sorry, I could not reach the server.";
+        chatMessages.appendChild(aiDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
+    }
+    _doChat();
+  }
+  
+  if (chatSend) chatSend.addEventListener('click', sendChatMessage);
+  if (chatInput) {
+    chatInput.addEventListener('keypress', function(e){
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+
+  // Track high-intent clicks
+  document.querySelectorAll("[data-lf]").forEach(function(el){
+    el.addEventListener("click",function(){ping(el.getAttribute("data-lf"));});
+  });
+})();
+</script>
+
+
+</body>
+</html>

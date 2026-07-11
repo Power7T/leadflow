@@ -9,7 +9,7 @@ from urllib.parse import urlparse, urlunparse
 from rich.console import Console
 from dotenv import load_dotenv
 from database import insert_business, insert_contacts
-from analyzer import score_website, detect_gap
+from analyzer import score_website, score_website_with_details, detect_gap
 from extractor import extract_contacts
 from scorer import score_lead
 from multi_finder import check_domain_available
@@ -195,12 +195,27 @@ def get_place_details(place_id: str) -> dict:
     url = f"https://places.googleapis.com/v1/places/{place_id}"
     headers = {
         "X-Goog-Api-Key": get_maps_key(),
-        "X-Goog-FieldMask": "id,displayName,formattedAddress,websiteUri,internationalPhoneNumber,rating,userRatingCount,reviews"
+        "X-Goog-FieldMask": "id,displayName,formattedAddress,websiteUri,internationalPhoneNumber,rating,userRatingCount,reviews,photos,regularOpeningHours,editorialSummary"
     }
     resp = requests.get(url, headers=headers, timeout=10)
     if resp.status_code != 200:
         return {}
     p = resp.json()
+    photo_count = len(p.get("photos", []))
+    has_hours = bool(p.get("regularOpeningHours"))
+    has_description = bool(p.get("editorialSummary", {}).get("text", ""))
+    gmb_gaps = []
+    if photo_count < 5:
+        gmb_gaps.append(f"only {photo_count} photo{'s' if photo_count != 1 else ''} on Google")
+    if not has_hours:
+        gmb_gaps.append("no opening hours listed")
+    if not has_description:
+        gmb_gaps.append("no business description")
+    gmb_gap_hook = (
+        "Their Google Business Profile is incomplete — " + ", ".join(gmb_gaps) + ". "
+        "A polished profile with photos, hours, and a description gets 7× more clicks."
+        if gmb_gaps else ""
+    )
     return {
         "place_id": p.get("id"),
         "name": p.get("displayName", {}).get("text", "Unknown"),
@@ -214,6 +229,7 @@ def get_place_details(place_id: str) -> dict:
         "formatted_phone_number": p.get("internationalPhoneNumber", ""),
         "user_ratings_total": p.get("userRatingCount", 0),
         "reviews_list": p.get("reviews", []),
+        "gmb_gap_hook": gmb_gap_hook,
     }
 
 
@@ -221,13 +237,28 @@ async def get_place_details_async(place_id: str) -> dict:
     url = f"https://places.googleapis.com/v1/places/{place_id}"
     headers = {
         "X-Goog-Api-Key": get_maps_key(),
-        "X-Goog-FieldMask": "id,displayName,formattedAddress,websiteUri,internationalPhoneNumber,rating,userRatingCount,reviews"
+        "X-Goog-FieldMask": "id,displayName,formattedAddress,websiteUri,internationalPhoneNumber,rating,userRatingCount,reviews,photos,regularOpeningHours,editorialSummary"
     }
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         async with session.get(url, headers=headers, timeout=10, ssl=False) as resp:
             if resp.status != 200:
                 return {}
             p = await resp.json()
+            photo_count = len(p.get("photos", []))
+            has_hours = bool(p.get("regularOpeningHours"))
+            has_description = bool(p.get("editorialSummary", {}).get("text", ""))
+            gmb_gaps = []
+            if photo_count < 5:
+                gmb_gaps.append(f"only {photo_count} photo{'s' if photo_count != 1 else ''} on Google")
+            if not has_hours:
+                gmb_gaps.append("no opening hours listed")
+            if not has_description:
+                gmb_gaps.append("no business description")
+            gmb_gap_hook = (
+                "Their Google Business Profile is incomplete — " + ", ".join(gmb_gaps) + ". "
+                "A polished profile with photos, hours, and a description gets 7× more clicks."
+                if gmb_gaps else ""
+            )
             return {
                 "place_id": p.get("id"),
                 "name": p.get("displayName", {}).get("text", "Unknown"),
@@ -241,6 +272,7 @@ async def get_place_details_async(place_id: str) -> dict:
                 "formatted_phone_number": p.get("internationalPhoneNumber", ""),
                 "user_ratings_total": p.get("userRatingCount", 0),
                 "reviews_list": p.get("reviews", []),
+                "gmb_gap_hook": gmb_gap_hook,
             }
 
 
@@ -484,7 +516,7 @@ def run_finder(
             name = biz.get("name", "Unknown")
             console.print(f"[dim]Processing:[/] {name}...", end=" ")
             website = clean_website_url(biz.get("website", ""))
-            score = score_website(website) if website else 0
+            score, site_builder = score_website_with_details(website) if website else (0, "")
             
             # Detect if this is a high-ticket SaaS campaign target
             cat_lower = niche.lower()
@@ -517,6 +549,8 @@ def run_finder(
                 continue
             biz["website"] = website
             biz["website_score"] = score
+            biz["site_builder"] = site_builder
+            biz["complaint_hook"] = ""
             biz["category"] = niche
             biz["has_google_ads"] = contacts.pop("has_google_ads", 0)
             biz["social_active"] = contacts.pop("social_active", 0)
@@ -576,6 +610,7 @@ def run_finder(
         rating = place.get("rating")
         reviews = place.get("reviews") or place.get("user_ratings_total") or 0
         reviews_list = place.get("reviews_list", [])
+        gmb_gap_hook = place.get("gmb_gap_hook", "")
 
         if not is_synthetic and raw_website == "" and phone == "" and address == "":
             details = get_place_details(place["place_id"])
@@ -585,11 +620,13 @@ def run_finder(
             rating = details.get("rating")
             reviews = details.get("user_ratings_total") or 0
             reviews_list = details.get("reviews_list", [])
+            gmb_gap_hook = gmb_gap_hook or details.get("gmb_gap_hook", "")
 
         # Fetch details to get reviews list if not already fetched and there are reviews
         if not is_synthetic and not reviews_list and reviews > 0:
             details = get_place_details(place["place_id"])
             reviews_list = details.get("reviews_list", [])
+            gmb_gap_hook = gmb_gap_hook or details.get("gmb_gap_hook", "")
 
         # Skip big chains — not our clients
         if is_chain_or_too_big(name, reviews):
@@ -600,7 +637,7 @@ def run_finder(
         # Clean URL — strip UTM, reject social links
         website = clean_website_url(raw_website)
 
-        score = score_website(website) if website else 0
+        score, site_builder = score_website_with_details(website) if website else (0, "")
         
         # Detect if this is a high-ticket SaaS campaign target
         cat_lower = niche.lower()
@@ -619,21 +656,25 @@ def run_finder(
         else:
             gap, pitch_type = detect_gap(website, score)
 
-        # Enhance gap with digital-solvable review complaints if any exist
-        solvable_reviews_gap = extract_solvable_complaints_ai(reviews_list, name) if reviews_list else ""
-        if solvable_reviews_gap:
-            gap = f"Customers complained: {solvable_reviews_gap}"
+        # Extract digital-only review complaints as a separate pitch hook (never overwrites gap)
+        complaint_hook = extract_solvable_complaints_ai(reviews_list, name) if reviews_list else ""
+
+        # Competitor lookup — score their site so we only pitch if theirs beats ours
+        from demo_generator import get_competitor_info
+        competitor_info = get_competitor_info(niche, city, name) if website else {}
 
         parts = address.split(",")
         city = parts[-3].strip() if len(parts) >= 3 else ""
         country = parts[-1].strip() if parts else ""
 
+        from scheduler import city_to_timezone
         business_data = {
             "name": name,
             "category": niche,
             "address": address,
             "city": city,
             "country": country,
+            "timezone": city_to_timezone(city),
             "phone": phone,
             "website": website,
             "website_score": score,
@@ -641,6 +682,13 @@ def run_finder(
             "google_reviews": reviews,
             "gap": gap,
             "pitch_type": pitch_type,
+            "site_builder": site_builder,
+            "complaint_hook": complaint_hook,
+            "gmb_gap_hook": gmb_gap_hook,
+            "competitor_name": competitor_info.get("name", ""),
+            "competitor_url": competitor_info.get("url", ""),
+            "competitor_score": competitor_info.get("score", 0),
+            "place_id": place.get("place_id", "") if not is_synthetic else "",
         }
 
         # Domain availability for businesses with no website
