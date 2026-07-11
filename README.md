@@ -187,3 +187,8 @@ A file named `SECRETS_BACKUP_YYYY_MM_DD.txt` can be generated to securely snapsh
 **Note:** This file is explicitly ignored in `.gitignore`. **NEVER commit your backup files to version control.**
 
 **To Restore:** Simply copy the values from your backup text file into a new `.env` and `cloudflare_worker/wrangler.toml` file, run `npx wrangler deploy`, and launch `server.py`.
+
+### 11. Optimized Demo Generation & Routing
+- **Zero-Bloat Templates:** Demo HTML templates are heavily optimized. Massive base64 background images have been stripped and replaced with dynamic Handlebars tags (`{{ hero_img }}`).
+- **Local Asset Mapping:** `demo_generator.py` dynamically routes premium static assets (`/static/*_hero.jpg`) depending on the highly specific niche (e.g. Electricians, Orthodontists, Flooring) before falling back to generic high-converting Unsplash assets.
+- **Fail-Safe Relay Networking:** The internal `scheduler.py` uses dynamic fallbacks (`CF_WORKER_URL` → `LEADFLOW_PUBLIC_URL` → hardcoded default) with configurable LAN IPs for Split-brain active-active checks, ensuring zero downtime if a `.env` variable is temporarily missing.
