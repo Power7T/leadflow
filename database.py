@@ -272,6 +272,9 @@ def init_db():
         ("followup_angle", "TEXT"),
         ("tracking_id", "TEXT"),
         ("message_id", "TEXT"),
+        ("opened", "INTEGER DEFAULT 0"),
+        ("clicked", "INTEGER DEFAULT 0"),
+        ("replied", "INTEGER DEFAULT 0"),
     ]:
         try:
             conn.execute(f"ALTER TABLE follow_ups ADD COLUMN {col} {definition}")
@@ -294,6 +297,30 @@ def init_db():
             conn.execute(_idx)
         except Exception:
             pass
+    # ── Tier scoring fix: retro-assign tier=0 businesses to correct tier ─────
+    # Tier 1 = high-value/high-margin niches (premium pricing, fast decisions)
+    # Tier 2 = standard-value niches (mid pricing)
+    # Tier 0 = all others (low confidence or niche not recognized)
+    try:
+        tier1_keywords = ["roof", "hvac", "solar", "lawyer", "attorney",
+                          "med spa", "medspa", "remodel", "dentist", "orthodont",
+                          "plumb", "plumber"]
+        tier2_keywords = ["electric", "gym", "fitness", "yoga", "accountant",
+                          "cpa", "real estate", "chiro", "landscap", "tree service",
+                          "arborist", "detailing", "auto detailing", "mover", "moving"]
+        for kw in tier1_keywords:
+            conn.execute(
+                "UPDATE businesses SET tier=1 WHERE tier=0 AND LOWER(category) LIKE ?",
+                (f"%{kw}%",)
+            )
+        for kw in tier2_keywords:
+            conn.execute(
+                "UPDATE businesses SET tier=2 WHERE tier=0 AND LOWER(category) LIKE ?",
+                (f"%{kw}%",)
+            )
+    except Exception:
+        pass
+
     conn.commit()
     conn.close()
 
@@ -368,6 +395,23 @@ def insert_business(data: dict) -> int:
                     conn.close()
                     return cand["id"]
 
+    # Auto-assign tier based on category (Tier 1 = premium, Tier 2 = standard, 0 = other)
+    _cat_lower = (data.get("category") or "").lower()
+    # Tier 1 = highest-converting categories from A/B test data.
+    # gym/fitness/accountant/cpa promoted from Tier 2 after analysis showed
+    # they outperform declared Tier 1 categories (gym leads: high reply + demo rate).
+    _tier1_kws = ["roof", "hvac", "solar", "lawyer", "attorney", "med spa", "medspa",
+                  "remodel", "dentist", "orthodont", "plumb", "plumber",
+                  "gym", "fitness", "yoga", "accountant", "cpa"]
+    _tier2_kws = ["electric", "real estate", "chiro", "landscap", "tree service", "arborist",
+                  "detailing", "auto detailing", "mover", "moving"]
+    if any(kw in _cat_lower for kw in _tier1_kws):
+        _tier = 1
+    elif any(kw in _cat_lower for kw in _tier2_kws):
+        _tier = 2
+    else:
+        _tier = 0
+
     bind_data = {
         "name": name,
         "category": data.get("category", ""),
@@ -399,6 +443,7 @@ def insert_business(data: dict) -> int:
         "competitor_url": data.get("competitor_url", ""),
         "competitor_score": data.get("competitor_score", 0),
         "gmb_gap_hook": data.get("gmb_gap_hook", ""),
+        "tier": _tier,
     }
 
     cur = conn.execute("""
@@ -406,12 +451,12 @@ def insert_business(data: dict) -> int:
             website, website_score, google_rating, google_reviews, gap, pitch_type,
             lead_score, domain_available, source, maps_url, has_google_ads, social_active, intent_score,
             maps_rank, competitor_deficit, visual_preview_url, site_builder, complaint_hook, place_id, timezone,
-            competitor_name, competitor_url, competitor_score, gmb_gap_hook)
+            competitor_name, competitor_url, competitor_score, gmb_gap_hook, tier)
         VALUES (:name, :category, :address, :city, :country, :phone,
             :website, :website_score, :google_rating, :google_reviews, :gap, :pitch_type,
             :lead_score, :domain_available, :source, :maps_url, :has_google_ads, :social_active, :intent_score,
             :maps_rank, :competitor_deficit, :visual_preview_url, :site_builder, :complaint_hook, :place_id, :timezone,
-            :competitor_name, :competitor_url, :competitor_score, :gmb_gap_hook)
+            :competitor_name, :competitor_url, :competitor_score, :gmb_gap_hook, :tier)
     """, bind_data)
     conn.commit()
     bid = cur.lastrowid
@@ -595,7 +640,7 @@ def get_all_leads_for_kanban() -> list:
         LEFT JOIN outreach o ON o.business_id = b.id
         WHERE b.status NOT IN ('skipped', 'opted_out')
         GROUP BY b.id
-        ORDER BY b.lead_score DESC, b.found_at DESC
+        ORDER BY COALESCE(b.lead_score, 0) DESC, b.found_at DESC
     """).fetchall()
     conn.close()
     return [dict(r) for r in rows]
@@ -734,7 +779,9 @@ def record_tracking_event(tracking_id: str, business_id: int, event_type: str, m
                 WHERE tracking_id=?
             """, (tracking_id,))
             updated = cursor.rowcount
-        
+            # Also mark follow_up as opened if this tracking_id belongs to one
+            conn.execute("UPDATE follow_ups SET opened=1 WHERE tracking_id=?", (tracking_id,))
+
         # If tracking_id wasn't in outreach (e.g. it was in follow_ups) or tracking_id is empty, update by business_id
         if not updated and business_id:
             conn.execute("""
@@ -746,6 +793,7 @@ def record_tracking_event(tracking_id: str, business_id: int, event_type: str, m
         if tracking_id:
             cursor = conn.execute("UPDATE outreach SET clicked=1 WHERE tracking_id=?", (tracking_id,))
             updated = cursor.rowcount
+            conn.execute("UPDATE follow_ups SET clicked=1 WHERE tracking_id=?", (tracking_id,))
         if not updated and business_id:
             conn.execute("UPDATE outreach SET clicked=1 WHERE business_id=? AND channel='email'", (business_id,))
 
@@ -753,9 +801,16 @@ def record_tracking_event(tracking_id: str, business_id: int, event_type: str, m
     if event_type == "click" or event_type.startswith("engage") or (event_type == "open" and not tracking_id):
         if business_id:
             conn.execute("UPDATE businesses SET demo_viewed=1 WHERE id=?", (business_id,))
-            
+
     conn.commit()
     conn.close()
+
+    # Wire open events into A/B test opens_a/opens_b tracking (uses its own conn)
+    if event_type == "open" and tracking_id:
+        try:
+            record_ab_open(tracking_id)
+        except Exception:
+            pass
 
 
 def insert_follow_ups(business_id: int, sequences: list[dict]):

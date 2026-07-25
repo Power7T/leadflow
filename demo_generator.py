@@ -400,7 +400,7 @@ def _pick_real_testimonials(reviews_list: list, count: int = 4) -> list[str]:
 
 
 def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = False) -> str:
-    """Iron Peak–style gym demo. Exact same design, real gym info swapped in."""
+    """APEX GYM–style gym demo. pms5566/gym-website template, real gym info swapped in."""
     name      = business.get("name", "Your Gym")
     address   = business.get("address", "")
     phone     = business.get("phone", "")
@@ -412,642 +412,617 @@ def generate_gym_demo_html(business: dict, scraped: dict, use_stock: bool = Fals
     maps_url  = business.get("maps_url", "")
     category  = business.get("category", "")
 
-    # Split name for logo two-tone styling
-    parts   = name.strip().split()
-    logo_p1 = parts[0].upper() if parts else name.upper()
-    logo_p2 = " ".join(parts[1:]).upper() if len(parts) > 1 else ""
-
     about_text = (scraped.get("about_text") or scraped.get("description") or
-        f"{name} is a premier fitness facility committed to helping every member achieve their health and performance goals. "
-        "Whether you're a beginner or an elite athlete, our coaches and equipment are here to support your journey.")
+        f"{name} is a premier fitness facility committed to helping every member achieve "
+        "their health and performance goals. Whether you're a beginner or an elite athlete, "
+        "our coaches and equipment are here to support your journey.")
 
-    # ── Image allocation ─────────────────────────────────────────────────────────
-    # Always use the template's built-in stock photos — never the prospect's images.
-    _IPG = "https://pms5566.github.io/Iron-Peak-Gym/images/"
-    hero_img     = _IPG + "hero-bg.png"
-    about_img    = _IPG + "about.png"
-    gallery_imgs = _fetch_gmaps_photos(business.get("place_id", ""), n=4) if not use_stock else []
+    # Rating display
+    rating_str = str(rating) if rating else "5.0"
+    reviews_str = str(reviews) if reviews else ""
 
-    # Build hero CSS background (no background-attachment:fixed — janky on mobile).
-    hero_bg = (
-        f"linear-gradient(rgba(8,9,12,0.55),rgba(8,9,12,0.85)),url('{hero_img}') center/cover no-repeat"
-    )
+    # CDN base for all template images
+    _CDN = "https://pms5566.github.io/gym-website/images/"
 
-    # hero_bg computed below after fallback images are resolved
-
-    # About image HTML
-    about_img_html = (
-        f'<img src="{about_img}" alt="{name}" class="about-image" onerror="this.parentElement.style.opacity=\'0.3\'">'
-        if about_img else
-        '<div class="about-image" style="background:linear-gradient(135deg,#1a0a05,#08090C);display:flex;align-items:center;justify-content:center;font-size:6rem;border-radius:24px;">🏋️</div>'
-    )
-
-    # Gallery section from scraped photos
-    if gallery_imgs:
-        gallery_items = "".join(
-            f'<div class="gallery-item reveal reveal-scale-in" style="transition-delay:{i*0.1:.1f}s">'
-            f'<img src="{img}" alt="{name} photo {i+1}" loading="lazy" onerror="this.parentElement.style.display=\'none\'">'
-            f'</div>'
-            for i, img in enumerate(gallery_imgs)
-        )
-        gallery_section = (
-            f'<section class="gallery-section" id="gallery"><div class="container">'
-            f'<div style="text-align:center;margin-bottom:4rem"><span class="section-tag">Our Space</span>'
-            f'<h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">Inside {name}</h2></div>'
-            f'<div class="gallery-grid">{gallery_items}</div></div></section>'
-        )
-    else:
-        gallery_section = ""
-
-    category_lower = (category or "gym").lower()
-    
-    if "chiropractor" in category_lower or "chiropractic" in category_lower:
-        default_svcs = [
-            ("Spinal Adjustments", "Gentle, precise alignments to relieve nerve pressure and restore mobility."),
-            ("Pain Management", "Comprehensive care plans to alleviate chronic back, neck, and joint pain."),
-            ("Sports Recovery", "Specialized therapies to help athletes heal faster and perform at their peak."),
-            ("Posture Correction", "Targeted plans to correct spinal curvature and improve daily posture."),
-            ("Massage Therapy", "Deep tissue relaxation to complement and enhance your chiropractic adjustments."),
-            ("Wellness Consultations", "Holistic advice on ergonomics, nutrition, and long-term joint health.")
-        ]
-        icons = ["🦴","🧘","🏃","🛌","💆","📈"]
-        prog_tag = "Our Treatments"
-        prog_title = "Engineered For <span class=\"text-gradient-orange\">Pain Relief</span>"
-        prog_desc = "Discover targeted treatments structured to improve mobility, alleviate pain, and restore your well-being."
-        testi_tag = "Patient Reviews"
-        testi_title = "Real Healing, <span class=\"text-gradient-orange\">Real Relief</span>"
-        testi_1 = f"\"Coming to {name} was life-changing. The doctors are incredibly knowledgeable and I am finally pain-free after years of back issues.\""
-        testi_2 = f"\"The atmosphere at {name} is incredibly welcoming. They took the time to explain my x-rays and the adjustments have drastically improved my sleep.\""
-        testi_3 = f"\"I've tried many clinics, but {name} is on a different level. The personalized recovery plan got me back to running in just a few weeks.\""
-        testi_4 = f"\"Best investment I've made in my health. The staff is supportive, the clinic is modern, and the adjustments provide instant relief.\""
-        phrase1_def = "PAIN RELIEF"
-        phrase2 = "SPINAL HEALTH"
-        phrase3 = "TRUE WELLNESS"
-        page_title = f"{name} | Expert Chiropractic Care"
-        page_desc = f"Welcome to {name}. Premium chiropractic facility in your city."
-    else:
-        default_svcs = [
-            ("Strength Training","Build muscle and power through progressive overload and compound movements."),
-            ("HIIT & Cardio","Torch fat and boost cardiovascular fitness with high-intensity circuits."),
-            ("Personal Training","One-on-one coaching sessions tailored entirely to your body and goals."),
-            ("Yoga & Recovery","Improve flexibility and restore your body between intense training sessions."),
-            ("Group Classes","High-energy group sessions that push you further than training alone."),
-            ("Nutrition Coaching","Expert nutrition plans to fuel performance and maximise your results."),
-        ]
-        icons = ["🏋️","🔥","🥊","🧘","🏃","💪"]
-        prog_tag = "Our Programs"
-        prog_title = "Engineered For <span class=\"text-gradient-orange\">Extraordinary</span> Results"
-        prog_desc = "Discover programs structured to improve strength, conditioning, agility and mental resilience."
-        testi_tag = "What Members Say"
-        testi_title = "Real Stories, <span class=\"text-gradient-orange\">Real Results</span>"
-        testi_1 = f"\"Joining {name} was the best decision I made. The coaches are incredible and the equipment is top-notch. I've seen results I never thought possible.\""
-        testi_2 = f"\"The atmosphere at {name} is unmatched. Everyone is motivated and the trainers really push you to your limits while keeping it safe and fun.\""
-        testi_3 = f"\"I've tried many gyms but {name} is on a different level. The personal training sessions changed my physique completely in just 6 months.\""
-        testi_4 = f"\"Best investment I've made in my health. The group classes are energetic, the staff is supportive and the facilities are always clean and modern.\""
-        phrase1_def = "PEAK POWER"
-        phrase2 = "INNER BEAST"
-        phrase3 = "TRUE POTENTIAL"
-        page_title = f"{name} | Elevate Your Performance"
-        page_desc = f"Welcome to {name}. Premium fitness facility in your city."
-
-    # Override hardcoded testimonials with real 4-5★ Google reviews if available
-    real_testis = _pick_real_testimonials(business.get("reviews_list", []))
-    if len(real_testis) >= 1:
-        testi_1 = real_testis[0]
-    if len(real_testis) >= 2:
-        testi_2 = real_testis[1]
-    if len(real_testis) >= 3:
-        testi_3 = real_testis[2]
-    if len(real_testis) >= 4:
-        testi_4 = real_testis[3]
-
-    # Program cards — use scraped services or defaults
-    services = (scraped.get("services") or [])[:6]
-    
-    if services:
-        prog_cards = ""
-        for i, svc in enumerate(services):
-            icon  = icons[i % len(icons)]
-            delay = f"transition-delay:{(i%3)*0.1:.1f}s" if i % 3 > 0 else ""
-            title = svc["title"] if isinstance(svc, dict) else str(svc)
-            desc  = (svc.get("desc") or f"Expert {title.lower()} and world-class care.") if isinstance(svc, dict) else f"World-class {title.lower()} at {name}."
-            prog_cards += (
-                f'<div class="program-card reveal reveal-slide-up" style="{delay}">'
-                f'<div class="program-icon">{icon}</div>'
-                f'<h3>{title}</h3>'
-                f'<p>{desc}</p>'
-                f'<a href="#contact" class="program-link">Get Started →</a></div>'
+    # Testimonials — prefer real Google reviews, fall back to template default cards
+    real_quotes = _pick_real_testimonials(scraped.get("reviews", []), count=5)
+    if real_quotes:
+        testi_cards_html = ""
+        for q in real_quotes:
+            testi_cards_html += (
+                '<div class="testi-card">' +
+                '<div class="testi-stars">★★★★★</div>' +
+                f'<blockquote>{q}</blockquote>' +
+                '<div class="testi-author">' +
+                '<div class="ta-ava">🙋</div>' +
+                f'<div><b>Happy Member</b><span>Verified Review</span></div>' +
+                '</div></div>'
             )
     else:
-        prog_cards = "".join(
-            f'<div class="program-card reveal reveal-slide-up" style="{"transition-delay:"+str(i%3*0.1)+"s" if i%3>0 else ""}">'
-            f'<div class="program-icon">{icons[i]}</div><h3>{title}</h3><p>{desc}</p>'
-            f'<a href="#contact" class="program-link">Get Started →</a></div>'
-            for i, (title, desc) in enumerate(default_svcs)
+        testi_cards_html = (
+            '<div class="testi-card">' +
+            '<div class="testi-stars">★★★★★</div>' +
+            f'<blockquote>"{name} changed my life. The trainers are incredibly supportive and the facility is top-notch.</blockquote>' +
+            '<div class="testi-author"><div class="ta-ava">🙋‍♀️</div>' +
+            '<div><b>Happy Member</b><span>Verified Review</span></div></div></div>'
+            '<div class="testi-card">' +
+            '<div class="testi-stars">★★★★★</div>' +
+            '<blockquote>Best gym in the area. Amazing community, expert coaches, and premium equipment.</blockquote>' +
+            '<div class="testi-author"><div class="ta-ava">🙋‍♂️</div>' +
+            '<div><b>Loyal Member</b><span>Verified Review</span></div></div></div>'
+            '<div class="testi-card">' +
+            '<div class="testi-stars">★★★★★</div>' +
+            f'<blockquote>The classes here are unmatched. I&#8217;ve never been in better shape since joining {name}.</blockquote>' +
+            '<div class="testi-author"><div class="ta-ava">🙋‍♀️</div>' +
+            '<div><b>Dedicated Member</b><span>Verified Review</span></div></div></div>'
         )
 
-    # Stats
-    review_stat = f"{reviews:,}+" if reviews else "500+"
-    rating_val  = f"{rating}" if rating else "5.0"
+    # Contact info lines
+    address_line = f"📍 {address}" if address else "📍 Visit us in-gym"
+    phone_line   = f"📞 {phone}"    if phone   else ""
+    email_line   = f"✉️ {email}"    if email   else ""
 
-    # Contact items
-    contact_items = ""
-    if phone:
-        contact_items += f'<a href="tel:{phone}" class="cinfo-item">\U0001f4de {phone}</a>'
-    if email:
-        contact_items += f'<a href="mailto:{email}" class="cinfo-item">✉ {email}</a>'
-    if address:
-        contact_items += f'<div class="cinfo-item">\U0001f4cd {address.split(",")[0]}</div>'
-    if instagram:
-        contact_items += f'<a href="https://instagram.com/{instagram}" target="_blank" class="cinfo-item">\U0001f4f8 @{instagram}</a>'
-    if maps_url:
-        contact_items += f'<a href="{maps_url}" target="_blank" class="cinfo-item">\U0001f5fa View on Google Maps</a>'
+    # Pixel tracker
+    pixel_html = _track_pixel(business)
 
-    ig_link  = f'<a href="https://instagram.com/{instagram}" target="_blank" class="social-btn">IG</a>' if instagram else ""
-    map_btn  = f'<a href="{maps_url}" target="_blank" class="social-btn">\U0001f4cd</a>' if maps_url else ""
+    # ─── Assemble HTML ────────────────────────────────────────────────────────
+    # CSS and JS are inlined via concatenation (not f-strings) to avoid
+    # escaping the thousands of { } braces in the stylesheet and JS template literals.
 
-    orig_note  = f'Based on {website}' if website else 'Built from Google Maps data'
-    addr_parts = [a.strip() for a in address.split(",")]
-    city       = addr_parts[1] if len(addr_parts) > 1 else (addr_parts[0] if addr_parts else "your city")
-
-    # Cycling hero text — use scraped hero_text as first phrase if available
-    phrase1 = (scraped.get("hero_text") or phrase1_def).upper()[:30]
-
-    return f"""<!DOCTYPE html>
+    part_head = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>{page_title}</title>
-<meta name="description" content="{page_desc}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
-:root{{--bg-primary:#08090C;--bg-secondary:#101217;--bg-tertiary:#161A22;--accent-orange:#FF4D24;--accent-orange-glow:rgba(255,77,36,0.45);--accent-teal:#00F2FE;--accent-teal-glow:rgba(0,242,254,0.3);--text-white:#FFFFFF;--text-gray:#A2A7B6;--text-muted:#626775;--glass-bg:rgba(16,18,23,0.75);--glass-border:rgba(255,255,255,0.05);--glass-border-hover:rgba(255,77,36,0.3);--border-radius-sm:8px;--border-radius-md:16px;--border-radius-lg:24px;--shadow-sm:0 4px 12px rgba(0,0,0,0.3);--shadow-md:0 12px 32px rgba(0,0,0,0.5);--shadow-lg:0 24px 64px rgba(0,0,0,0.7);--shadow-orange:0 0 30px rgba(255,77,36,0.35);--transition-fast:0.2s cubic-bezier(0.25,1,0.5,1);--transition-smooth:0.4s cubic-bezier(0.25,1,0.5,1);--transition-slow:0.8s cubic-bezier(0.25,1,0.5,1)}}
-*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
-html{{scroll-behavior:smooth;background-color:var(--bg-primary);color:var(--text-white);font-family:'Inter',sans-serif;overflow-x:hidden}}
-body{{overflow-x:hidden;line-height:1.6;cursor:none}}
-::-webkit-scrollbar{{width:8px}}::-webkit-scrollbar-track{{background:var(--bg-primary)}}::-webkit-scrollbar-thumb{{background:var(--bg-tertiary);border-radius:4px}}::-webkit-scrollbar-thumb:hover{{background:var(--accent-orange)}}
-h1,h2,h3,h4,h5,h6{{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-0.02em;line-height:1.1;color:var(--text-white)}}
-p{{color:var(--text-gray);font-weight:400}}
-a{{text-decoration:none;color:inherit}}
-.text-gradient-orange{{background:linear-gradient(135deg,#FF8E53 0%,#FF4D24 50%,#C41F00 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}}
-.text-gradient-teal{{background:linear-gradient(135deg,#00F2FE 0%,#4FACFE 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}}
-.container{{width:100%;max-width:1300px;margin:0 auto;padding:0 2rem}}
-.btn{{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.9rem 2.2rem;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;text-decoration:none;border-radius:var(--border-radius-sm);border:2px solid transparent;cursor:pointer;transition:var(--transition-smooth);overflow:hidden}}
-.btn-primary{{background-color:var(--accent-orange);color:#fff;box-shadow:var(--shadow-sm)}}.btn-primary:hover{{background:transparent;border-color:var(--accent-orange);box-shadow:var(--shadow-orange);transform:translateY(-3px)}}
-.btn-secondary{{background:transparent;border-color:var(--glass-border);color:#fff}}.btn-secondary:hover{{background:rgba(255,255,255,.05);border-color:#fff;transform:translateY(-3px)}}
-section{{padding:8rem 0;position:relative;overflow:hidden}}
-.section-tag{{font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:.15em;color:var(--accent-orange);margin-bottom:1rem;display:inline-block}}
-.section-title{{font-size:2.8rem;margin-bottom:1.5rem}}
-.section-desc{{font-size:1.1rem;max-width:600px;margin-bottom:4rem}}
-/* REVEAL */
-.reveal{{opacity:0;transition:var(--transition-slow)}}.reveal-slide-up{{transform:translateY(60px)}}.reveal-slide-left{{transform:translateX(60px)}}.reveal-slide-right{{transform:translateX(-60px)}}.reveal-scale-in{{transform:scale(.9)}}.reveal.revealed{{opacity:1;transform:none}}
-.delay-100{{transition-delay:.1s}}.delay-200{{transition-delay:.2s}}.delay-300{{transition-delay:.3s}}.delay-400{{transition-delay:.4s}}.delay-500{{transition-delay:.5s}}
-/* CURSOR */
-.custom-cursor-dot{{position:fixed;width:8px;height:8px;background:var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s}}
-.custom-cursor-ring{{position:fixed;width:40px;height:40px;border:1.5px solid var(--accent-orange);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,opacity .3s;opacity:.6}}
-body.cursor-hover .custom-cursor-dot{{width:6px;height:6px;background:var(--accent-teal)}}
-body.cursor-hover .custom-cursor-ring{{width:60px;height:60px;border-color:var(--accent-teal);opacity:.4}}
-@media(max-width:768px){{.custom-cursor-dot,.custom-cursor-ring{{display:none}}body{{cursor:auto}}}}
-/* SPOTLIGHT */
-.spotlight{{position:absolute;width:600px;height:600px;background:radial-gradient(circle,var(--accent-orange-glow) 0%,transparent 70%);pointer-events:none;z-index:0;opacity:.5}}
-/* DEMO BANNER */
-.demo-banner{{background:var(--accent-orange);color:#000;text-align:center;padding:12px 20px;font-size:13px;font-weight:700;position:sticky;top:0;z-index:10000;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}}
-.demo-banner a{{color:#000;text-decoration:underline;font-weight:800}}
-.demo-banner .orig{{font-size:11px;font-weight:400;opacity:.65}}
-/* NAVBAR */
-.navbar{{position:fixed;top:48px;left:0;width:100%;z-index:1000;transition:var(--transition-smooth)}}
-.navbar.scrolled{{background:var(--glass-bg);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:1px solid var(--glass-border)}}
-.nav-container{{display:flex;justify-content:space-between;align-items:center;height:85px;transition:var(--transition-smooth)}}
-.navbar.scrolled .nav-container{{height:70px}}
-.logo{{font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:900;color:#fff;display:flex;align-items:center;gap:.5rem}}
-.logo span{{color:var(--accent-orange)}}
-.logo-icon{{width:32px;height:32px;background:linear-gradient(135deg,var(--accent-orange),#C41F00);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);position:relative;flex-shrink:0;box-shadow:var(--shadow-orange)}}
-.logo-icon::after{{content:'';position:absolute;width:14px;height:14px;background:#fff;clip-path:polygon(50% 15%,85% 85%,15% 85%);top:50%;left:50%;transform:translate(-50%,-55%)}}
-.nav-links{{display:flex;gap:2.5rem;list-style:none}}
-.nav-links a{{color:var(--text-gray);font-weight:500;font-size:.95rem;transition:var(--transition-fast);position:relative;padding:.5rem 0}}
-.nav-links a::after{{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--accent-orange);transition:var(--transition-smooth)}}
-.nav-links a:hover,.nav-links a.active{{color:#fff}}.nav-links a:hover::after,.nav-links a.active::after{{width:100%}}
-.nav-actions{{display:flex;align-items:center;gap:1.5rem}}
-.hamburger{{display:none;cursor:pointer;background:none;border:none;padding:.5rem}}
-.hamburger span{{display:block;width:25px;height:2px;background:#fff;margin:6px 0;transition:var(--transition-smooth)}}
-.hamburger.active span:nth-child(1){{transform:rotate(-45deg) translate(-5px,6px)}}.hamburger.active span:nth-child(2){{opacity:0}}.hamburger.active span:nth-child(3){{transform:rotate(45deg) translate(-5px,-6px)}}
-/* HERO */
-.hero{{height:100vh;min-height:700px;display:flex;align-items:center;background:{hero_bg};position:relative;padding-top:133px}}
-.hero::before{{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(8,9,12,.4) 50%,rgba(8,9,12,.75) 100%);z-index:1}}
-.hero .container{{position:relative;z-index:2}}
-.hero-content{{max-width:800px}}
-.hero-tag{{background:rgba(255,77,36,.15);border:1px solid var(--accent-orange);color:#fff;padding:.4rem 1.2rem;border-radius:50px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.5rem;margin-bottom:2rem}}
-.hero-tag::before{{content:'';width:6px;height:6px;background:var(--accent-orange);border-radius:50%;box-shadow:0 0 8px var(--accent-orange);animation:pulse 1.5s infinite}}
-@keyframes pulse{{0%,100%{{transform:scale(1);opacity:1}}50%{{transform:scale(1.6);opacity:.5}}}}
-.hero-name{{font-size:4.5rem;line-height:.95;text-transform:uppercase;margin-bottom:.5rem}}
-.hero-subtitle-wrapper{{overflow:hidden;height:5rem;margin-bottom:1.5rem}}
-.hero-subtitle-track{{animation:slideUpDown 9s cubic-bezier(0.76,0,0.24,1) infinite}}
-@keyframes slideUpDown{{0%,25%{{transform:translateY(0)}}33%,58%{{transform:translateY(-100%)}}66%,91%{{transform:translateY(-200%)}}100%{{transform:translateY(0)}}}}
-.hero-subtitle-track span{{display:block;height:5rem;font-family:'Outfit',sans-serif;font-size:4.5rem;font-weight:900;line-height:1.1;text-transform:uppercase}}
-.hero-desc{{font-size:1.2rem;color:var(--text-gray);margin-bottom:3rem;max-width:600px}}
-.hero-btns{{display:flex;gap:1.5rem;flex-wrap:wrap}}
-/* STATS */
-.stats{{padding:0;margin-top:-60px;position:relative;z-index:10}}
-.stats-grid{{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.5rem;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}}
-.stats-grid::before{{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--accent-orange),var(--accent-teal))}}
-.stat-item{{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}}
-.stat-item:not(:last-child)::after{{content:'';position:absolute;right:0;top:15%;height:70%;width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.1),transparent)}}
-.stat-number{{font-family:'Outfit',sans-serif;font-size:3.2rem;font-weight:900;line-height:1;margin-bottom:.5rem;letter-spacing:-.03em}}
-.stat-label{{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-gray);font-weight:500}}
-/* ABOUT */
-.about-grid{{display:grid;grid-template-columns:1.1fr .9fr;gap:5rem;align-items:center}}
-.about-features{{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3rem}}
-.about-feature{{display:flex;gap:1rem}}
-.about-feature-icon{{width:48px;height:48px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.4rem;transition:var(--transition-smooth)}}
-.about-feature:hover .about-feature-icon{{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:var(--shadow-orange)}}
-.about-feature h4{{font-size:1.05rem;margin-bottom:.4rem}}.about-feature p{{font-size:.9rem;line-height:1.5}}
-.about-img-wrapper{{position:relative;display:flex;justify-content:center;align-items:center}}
-.about-image{{width:100%;max-width:460px;aspect-ratio:1;border-radius:var(--border-radius-lg);object-fit:cover;position:relative;z-index:2;box-shadow:var(--shadow-lg);border:1px solid var(--glass-border)}}
-.about-img-frame{{position:absolute;width:calc(100% - 40px);max-width:460px;aspect-ratio:1;border:2px solid var(--accent-orange);border-radius:var(--border-radius-lg);z-index:1;transform:translate(20px,20px);transition:var(--transition-smooth)}}
-.about-img-wrapper:hover .about-img-frame{{transform:translate(10px,10px)}}
-.about-badge{{position:absolute;bottom:30px;left:-15px;background:var(--bg-secondary);border:1px solid var(--glass-border);backdrop-filter:blur(10px);border-radius:var(--border-radius-md);padding:1rem 1.5rem;display:flex;align-items:center;gap:.8rem;z-index:3;box-shadow:var(--shadow-md)}}
-.badge-icon{{width:36px;height:36px;border-radius:50%;background:rgba(255,77,36,.12);display:flex;align-items:center;justify-content:center;color:var(--accent-orange);font-size:1.1rem}}
-.about-badge h5{{font-size:1.1rem;margin-bottom:.1rem}}.about-badge p{{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}}
-/* GALLERY */
-.gallery-section{{background:var(--bg-secondary)}}
-.gallery-grid{{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}}
-.gallery-item{{aspect-ratio:1;border-radius:var(--border-radius-md);overflow:hidden;border:1px solid var(--glass-border)}}
-.gallery-item img{{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}}
-.gallery-item:hover img{{transform:scale(1.06)}}
-/* PROGRAMS */
-.programs-section{{background:var(--bg-secondary)}}
-.programs-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:5rem}}
-.program-card{{background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:var(--transition-smooth);display:flex;flex-direction:column}}
-.program-card::before{{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,var(--accent-orange-glow),transparent 60%);opacity:0;transition:var(--transition-smooth)}}
-.program-card:hover{{transform:translateY(-8px);border-color:var(--glass-border-hover);box-shadow:var(--shadow-md)}}.program-card:hover::before{{opacity:1}}
-.program-icon{{width:60px;height:60px;background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;font-size:1.8rem;transition:var(--transition-smooth);position:relative;z-index:1}}
-.program-card:hover .program-icon{{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:var(--shadow-orange);transform:scale(1.08)}}
-.program-card h3{{font-size:1.45rem;margin-bottom:.8rem;position:relative;z-index:1}}.program-card p{{font-size:.95rem;line-height:1.6;margin-bottom:2rem;position:relative;z-index:1}}
-.program-link{{margin-top:auto;display:inline-flex;align-items:center;gap:.5rem;color:#fff;font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;text-transform:uppercase;letter-spacing:.05em;transition:var(--transition-fast);position:relative;z-index:1}}
-.program-card:hover .program-link{{color:var(--accent-orange)}}
-/* TESTIMONIALS */
-.testimonials-section{{padding:8rem 0}}
-.t-slider-outer{{overflow:hidden;margin-top:4rem}}
-.t-slider{{display:flex;gap:2rem;transition:transform .5s ease;cursor:grab}}
-.t-slider.dragging{{cursor:grabbing;transition:none}}
-.t-card{{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-md);padding:2.5rem;flex:0 0 calc(33.333% - 1.33rem);min-width:280px}}
-.t-stars{{color:var(--accent-orange);font-size:1rem;margin-bottom:1.2rem;letter-spacing:2px}}
-.t-card p{{font-size:.95rem;line-height:1.7;margin-bottom:1.8rem;font-style:italic}}
-.t-author{{font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem}}
-.t-author span{{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.8rem;color:var(--text-muted);margin-top:.3rem}}
-.t-controls{{display:flex;align-items:center;justify-content:center;gap:1.5rem;margin-top:2.5rem}}
-.t-btn{{width:44px;height:44px;border-radius:50%;background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:var(--transition-fast)}}
-.t-btn:hover{{background:var(--accent-orange);border-color:var(--accent-orange)}}
-.t-dots{{display:flex;gap:.6rem}}
-.t-dot{{width:8px;height:8px;border-radius:50%;background:var(--text-muted);cursor:pointer;transition:var(--transition-fast)}}.t-dot.active{{background:var(--accent-orange);width:20px;border-radius:4px}}
-/* CTA */
-.cta-section{{padding:8rem 0}}
-.cta-banner{{background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--border-radius-lg);padding:6rem 4rem;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}}
-.cta-banner::before{{content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--accent-orange),var(--accent-teal))}}
-.cta-banner::after{{content:'';position:absolute;bottom:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,var(--accent-orange-glow),transparent 70%);pointer-events:none}}
-.cta-banner h2{{font-size:3.2rem;max-width:700px;margin:0 auto 1.5rem;text-transform:uppercase}}
-.cta-banner p{{font-size:1.1rem;max-width:550px;margin:0 auto 3rem}}
-/* CONTACT */
-.contact-section{{background:var(--bg-secondary)}}
-.cinfo-grid{{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:3rem}}
-.cinfo-item{{display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--glass-border);border-radius:var(--border-radius-sm);padding:16px 24px;color:var(--text-gray);font-size:.95rem;transition:var(--transition-fast)}}
-.cinfo-item:hover{{border-color:var(--accent-orange);color:#fff}}
-/* FOOTER */
-.footer{{background:#050608;border-top:1px solid var(--glass-border);padding:6rem 0 3rem}}
-.footer-grid{{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:4rem;margin-bottom:5rem}}
-.footer-col h4{{font-size:1.1rem;margin-bottom:2rem;padding-bottom:.5rem;position:relative}}
-.footer-col h4::after{{content:'';position:absolute;bottom:0;left:0;width:28px;height:2px;background:var(--accent-orange)}}
-.footer-about p{{font-size:.9rem;margin-top:1.2rem;margin-bottom:2rem}}
-.social-links{{display:flex;gap:1rem}}
-.social-btn{{width:42px;height:42px;border-radius:var(--border-radius-sm);background:var(--bg-secondary);border:1px solid var(--glass-border);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;transition:var(--transition-smooth);text-decoration:none}}
-.social-btn:hover{{background:var(--accent-orange);border-color:var(--accent-orange);transform:translateY(-3px)}}
-.footer-links{{list-style:none}}.footer-links li{{margin-bottom:.9rem}}.footer-links a{{color:var(--text-gray);font-size:.9rem;transition:var(--transition-fast)}}.footer-links a:hover{{color:#fff;padding-left:5px}}
-.footer-bottom{{border-top:1px solid var(--glass-border);padding-top:3rem;display:flex;justify-content:space-between;align-items:center}}
-.footer-bottom p{{font-size:.85rem;color:var(--text-muted)}}
-.footer-bottom a{{color:var(--accent-orange)}}
-@media(max-width:991px){{.about-grid{{grid-template-columns:1fr;gap:3rem}}.about-img-wrapper{{order:-1}}.hamburger{{display:block}}.nav-links{{position:fixed;top:0;right:-100%;width:300px;height:100vh;background:var(--bg-secondary);border-left:1px solid var(--glass-border);flex-direction:column;padding:100px 2.5rem;gap:2rem;transition:var(--transition-smooth);z-index:1000}}.nav-links.active{{right:0}}.nav-actions{{margin-right:3rem}}.gallery-grid{{grid-template-columns:repeat(2,1fr)}}}}
-@media(max-width:768px){{.hero-name,.hero-subtitle-track span{{font-size:2.8rem}}.hero-subtitle-wrapper{{height:3.5rem}}.section-title{{font-size:2.1rem}}.programs-grid{{grid-template-columns:1fr}}.t-card{{flex:0 0 calc(100% - 1rem)}}.stats-grid{{grid-template-columns:repeat(2,1fr)}}.cta-banner{{padding:3.5rem 1.5rem}}.cta-banner h2{{font-size:2.2rem}}.footer-grid{{grid-template-columns:1fr;gap:2.5rem}}.footer-bottom{{flex-direction:column;gap:1rem;text-align:center}}.gallery-grid{{grid-template-columns:repeat(2,1fr)}}}}
-@media(max-width:480px){{.hero-name,.hero-subtitle-track span{{font-size:2.2rem}}.stats-grid{{grid-template-columns:1fr 1fr}}}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{name} — Flex Beyond Limits</title>
+  <meta name="description" content="{name} — Where elite fitness meets cutting-edge training. Join our members transforming their bodies and lives.">
+  <meta name="keywords" content="gym, fitness, workout, personal training, HIIT, strength training, yoga, boxing">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+"""
+
+    part_css = '/* =====================================================\n   APEX GYM — style.css\n   Design inspired by ManFlex, Maove, RPA, UIXSHUVO,\n   MURA, ApeFit, and Gym App UI\n   ===================================================== */\n\n/* ===== TOKENS ===== */\n:root {\n  --bg:        #0A0A0A;\n  --bg-s:      #111111;\n  --bg-c:      #181818;\n  --bg-ch:     #1f1f1f;\n  --lime:      #C8FF00;\n  --lime-dim:  rgba(200,255,0,.12);\n  --lime-glow: rgba(200,255,0,.20);\n  --orange:    #FF6B35;\n  --white:     #FFFFFF;\n  --grey:      #AAAAAA;\n  --muted:     #555555;\n  --border:    rgba(255,255,255,.07);\n  --border-l:  rgba(200,255,0,.25);\n  --shadow:    0 8px 40px rgba(0,0,0,.5);\n  --r-sm:      8px;\n  --r-md:      14px;\n  --r-lg:      20px;\n  --r-xl:      28px;\n  --tr:        all .3s cubic-bezier(.4,0,.2,1);\n  --nav-h:     116px;\n  --bn-h:      76px;\n  --font-d:    \'Bebas Neue\', sans-serif;\n  --font-b:    \'Inter\', sans-serif;\n}\n\n/* ===== RESET ===== */\n*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }\nhtml { scroll-behavior: smooth; font-size: 16px; }\nbody {\n  font-family: var(--font-b);\n  background: var(--bg);\n  color: var(--white);\n  line-height: 1.6;\n  overflow-x: hidden;\n  -webkit-font-smoothing: antialiased;\n}\nimg  { max-width: 100%; display: block; }\na    { text-decoration: none; color: inherit; }\nbutton { cursor: pointer; border: none; outline: none; font-family: var(--font-b); }\nul   { list-style: none; }\n\n/* ===== SCROLLBAR ===== */\n::-webkit-scrollbar        { width: 3px; }\n::-webkit-scrollbar-track  { background: var(--bg); }\n::-webkit-scrollbar-thumb  { background: var(--lime); border-radius: 2px; }\n\n/* ===== LAYOUT ===== */\n.container {\n  max-width: 1160px;\n  margin: 0 auto;\n  padding: 0 24px;\n}\n.section     { padding: 96px 0; }\n.section-alt { background: var(--bg-s); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }\n.desk-only   { display: inline-flex; }\n\n/* ===== TYPOGRAPHY HELPERS ===== */\n.sec-label {\n  font-size: 11px;\n  font-weight: 700;\n  letter-spacing: 4px;\n  text-transform: uppercase;\n  color: var(--lime);\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  margin-bottom: 12px;\n}\n.sec-label::before {\n  content: \'\';\n  display: inline-block;\n  width: 28px; height: 2px;\n  background: var(--lime);\n}\n.sec-title {\n  font-family: var(--font-d);\n  font-size: clamp(36px, 5.5vw, 64px);\n  line-height: 1;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n}\n.sec-title span { color: var(--lime); }\n.sec-sub {\n  font-size: 15px;\n  color: var(--grey);\n  max-width: 520px;\n  line-height: 1.75;\n  margin-top: 14px;\n}\n.lime-text { color: var(--lime); }\n\n/* ===== BUTTONS ===== */\n.btn-primary {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  background: var(--lime);\n  color: #0A0A0A;\n  font-weight: 800;\n  font-size: 13px;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  padding: 13px 26px;\n  border-radius: 50px;\n  border: 2px solid var(--lime);\n  transition: var(--tr);\n  white-space: nowrap;\n}\n.btn-primary:hover {\n  background: transparent;\n  color: var(--lime);\n  box-shadow: 0 0 28px var(--lime-glow);\n  transform: translateY(-2px);\n}\n.btn-ghost {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  background: transparent;\n  color: var(--white);\n  font-weight: 600;\n  font-size: 13px;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  padding: 13px 26px;\n  border-radius: 50px;\n  border: 2px solid var(--border);\n  transition: var(--tr);\n  white-space: nowrap;\n}\n.btn-ghost:hover {\n  border-color: var(--lime);\n  color: var(--lime);\n  transform: translateY(-2px);\n}\n.btn-lg  { padding: 16px 32px; font-size: 14px; }\n.btn-sm  { padding: 10px 20px; font-size: 12px; }\n\n/* ===== SCROLL ANIMATIONS ===== */\n.anim-up    { opacity: 0; transform: translateY(36px); transition: opacity .65s ease, transform .65s ease; transition-delay: var(--d, 0s); }\n.anim-left  { opacity: 0; transform: translateX(-36px); transition: opacity .7s ease, transform .7s ease; }\n.anim-right { opacity: 0; transform: translateX(36px); transition: opacity .7s ease, transform .7s ease; }\n.anim-up.vis, .anim-left.vis, .anim-right.vis { opacity: 1; transform: none; }\n\n/* ===== NAVBAR ===== */\n.navbar {\n  position: fixed;\n  top: 0; left: 0; right: 0;\n  z-index: 1000;\n  height: var(--nav-h);\n  display: flex;\n  align-items: center;\n  padding: 0 24px;\n  background: transparent;\n  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);\n}\n.navbar-inner {\n  max-width: 1160px;\n  margin: 0 auto;\n  width: 100%;\n  display: grid;\n  grid-template-columns: 1.2fr 0.6fr 1.2fr;\n  align-items: center;\n  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);\n}\n.navbar-links {\n  display: flex;\n  align-items: center;\n  gap: 18px;\n  justify-content: flex-start;\n}\n.navbar-links a {\n  font-size: 12px;\n  font-weight: 700;\n  letter-spacing: 1.5px;\n  text-transform: uppercase;\n  color: #CCCCCC;\n  transition: var(--tr);\n  position: relative;\n}\n.navbar-links a::after {\n  content: \'\';\n  position: absolute;\n  bottom: -4px; left: 0;\n  width: 0; height: 2px;\n  background: var(--lime);\n  transition: width .3s ease;\n}\n.navbar-links a:hover { color: var(--white); }\n.navbar-links a:hover::after { width: 100%; }\n\n.navbar-logo {\n  font-family: var(--font-d);\n  font-size: 52px;\n  letter-spacing: 3px;\n  display: flex;\n  align-items: center;\n  gap: 4px;\n  color: var(--white);\n  justify-self: center;\n}\n.navbar-logo span { color: #88D600; }\n.logo-bolt { font-size: 18px; margin-right: 2px; color: #88D600; }\n.nav-logo-img {\n  height: 84px;\n  width: auto;\n  margin-right: 14px;\n  display: block;\n}\n.footer-logo-img {\n  height: 76px;\n  width: auto;\n  margin-right: 14px;\n  display: block;\n}\n.drawer-logo-img {\n  height: 64px;\n  width: auto;\n  margin-right: 14px;\n  display: block;\n}\n\n.navbar-cta {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  justify-self: flex-end;\n}\n.nav-contact-btn {\n  background: transparent;\n  color: var(--white);\n  font-weight: 700;\n  font-size: 11px;\n  letter-spacing: 1.5px;\n  text-transform: uppercase;\n  padding: 10px 20px;\n  border-radius: 50px;\n  border: 2px solid var(--white);\n  transition: var(--tr);\n  white-space: nowrap;\n}\n.nav-contact-btn:hover {\n  background: var(--lime);\n  border-color: var(--lime);\n  color: #0A0A0A;\n}\n.nav-profile-icon {\n  width: 36px;\n  height: 36px;\n  border-radius: 50%;\n  border: 1.5px solid var(--white);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  color: var(--white);\n  transition: var(--tr);\n}\n.nav-profile-icon:hover {\n  background: var(--lime);\n  border-color: var(--lime);\n  color: #0A0A0A;\n}\n.nav-profile-icon svg {\n  width: 16px;\n  height: 16px;\n}\n\n.hamburger {\n  display: none;\n  flex-direction: column;\n  gap: 5px;\n  background: none;\n  padding: 6px;\n}\n.hamburger span {\n  display: block;\n  width: 22px; height: 2px;\n  background: var(--white);\n  border-radius: 2px;\n  transition: var(--tr);\n}\n.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }\n.hamburger.open span:nth-child(2) { opacity: 0; }\n.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }\n\n/* MOBILE MENU */\n.mobile-menu {\n  position: fixed;\n  top: var(--nav-h); left: 0; right: 0;\n  background: rgba(17, 17, 17, 0.97);\n  backdrop-filter: blur(20px);\n  -webkit-backdrop-filter: blur(20px);\n  padding: 20px 28px 32px;\n  z-index: 999;\n  transform: translateY(-110%);\n  transition: transform .38s cubic-bezier(.4,0,.2,1);\n  border-bottom: 1px solid rgba(255, 255, 255, 0.08);\n}\n.mobile-menu.open { transform: translateY(0); }\n.mobile-menu a {\n  display: block;\n  padding: 15px 0;\n  font-family: var(--font-d);\n  font-size: 28px;\n  letter-spacing: 2px;\n  color: var(--grey);\n  border-bottom: 1px solid rgba(255, 255, 255, 0.06);\n  transition: var(--tr);\n}\n.mobile-menu a:hover, .mobile-menu .mm-cta { color: var(--lime); }\n.mm-overlay {\n  display: none;\n  position: fixed;\n  inset: 0;\n  background: rgba(0,0,0,.6);\n  z-index: 998;\n}\n.mm-overlay.show { display: block; }\n\n/* ===== HERO ===== */\n.hero {\n  min-height: 100vh;\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding-top: var(--nav-h);\n  overflow: hidden;\n}\n.hero-bg {\n  position: absolute;\n  inset: 0;\n  background: linear-gradient(135deg, #0A0A0A 0%, #0f0f0f 100%);\n}\n.hero-glow {\n  position: absolute;\n  border-radius: 50%;\n  filter: blur(80px);\n  pointer-events: none;\n}\n.hero-glow.g1 {\n  width: 600px; height: 400px;\n  top: 10%; right: 5%;\n  background: radial-gradient(ellipse, rgba(200,255,0,.08) 0%, transparent 70%);\n}\n.hero-glow.g2 {\n  width: 400px; height: 300px;\n  bottom: 10%; left: 5%;\n  background: radial-gradient(ellipse, rgba(255,107,53,.06) 0%, transparent 70%);\n}\n.hero-grid-bg {\n  position: absolute;\n  inset: 0;\n  background-image: linear-gradient(rgba(200,255,0,.025) 1px, transparent 1px),\n                    linear-gradient(90deg, rgba(200,255,0,.025) 1px, transparent 1px);\n  background-size: 56px 56px;\n}\n.hero-content {\n  position: relative;\n  z-index: 2;\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 64px;\n  align-items: center;\n  padding-top: 40px;\n  padding-bottom: 60px;\n  width: 100%;\n}\n.hero-badge {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  background: var(--lime-dim);\n  border: 1px solid var(--border-l);\n  padding: 7px 16px;\n  border-radius: 50px;\n  font-size: 11px;\n  font-weight: 700;\n  letter-spacing: 2px;\n  text-transform: uppercase;\n  color: var(--lime);\n  margin-bottom: 22px;\n}\n.badge-dot {\n  width: 6px; height: 6px;\n  background: var(--lime);\n  border-radius: 50%;\n  animation: blink 2s ease-in-out infinite;\n}\n@keyframes blink {\n  0%,100% { opacity: 1; transform: scale(1); }\n  50%      { opacity: .4; transform: scale(.75); }\n}\n.hero-title {\n  font-family: var(--font-d);\n  font-size: clamp(58px, 9vw, 108px);\n  line-height: .92;\n  letter-spacing: 2px;\n  text-transform: uppercase;\n  margin-bottom: 22px;\n  display: flex;\n  flex-direction: column;\n}\n.hero-title span { display: block; }\n.ht-white   { color: var(--white); }\n.ht-lime    { color: var(--lime); }\n.ht-outline {\n  color: transparent;\n  -webkit-text-stroke: 2px var(--white);\n}\n.hero-desc {\n  font-size: 15px;\n  color: var(--grey);\n  line-height: 1.8;\n  max-width: 440px;\n  margin-bottom: 32px;\n}\n.hero-actions {\n  display: flex;\n  align-items: center;\n  gap: 14px;\n  flex-wrap: wrap;\n  margin-bottom: 44px;\n}\n.hero-stats {\n  display: flex;\n  align-items: center;\n  gap: 28px;\n}\n.hs { display: flex; flex-direction: column; }\n.hs-num {\n  font-family: var(--font-d);\n  font-size: 34px;\n  color: var(--lime);\n  line-height: 1;\n}\n.hs-lbl {\n  font-size: 11px;\n  letter-spacing: 1.5px;\n  text-transform: uppercase;\n  color: var(--muted);\n  margin-top: 3px;\n}\n.hs-div { width: 1px; height: 38px; background: var(--border); }\n\n/* Hero Card */\n.hero-visual {\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  opacity: 0;\n  transform: translateY(24px);\n  transform-style: preserve-3d;\n  animation: heroVisIn .9s ease .4s forwards;\n}\n@keyframes heroVisIn {\n  to { opacity: 1; transform: none; }\n}\n.hero-mockup {\n  position: relative;\n  width: 100%;\n  max-width: 480px;\n  transform: perspective(800px) rotateY(-8deg) rotateX(4deg);\n  transition: transform 0.5s ease;\n  z-index: 1;\n}\n.hero-mockup:hover {\n  transform: perspective(800px) rotateY(0deg) rotateX(0deg);\n}\n.dashboard-img {\n  width: 100%;\n  height: auto;\n  border-radius: var(--r-xl);\n  box-shadow: 0 20px 48px rgba(0,0,0,0.6);\n  display: block;\n}\n\n/* Floating badges */\n.hero-float {\n  position: absolute;\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: var(--r-md);\n  padding: 10px 14px;\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  box-shadow: var(--shadow);\n  white-space: nowrap;\n  z-index: 2;\n}\n.hf-tr { top: -24px; right: -56px; animation: floatUD-tr 3s ease-in-out infinite; }\n.hf-bl { bottom: -24px; left: -56px; animation: floatUD-bl 3s ease-in-out infinite; }\n@keyframes floatUD-tr {\n  0%,100% { transform: translateY(0) translateZ(50px); }\n  50%      { transform: translateY(-7px) translateZ(50px); }\n}\n@keyframes floatUD-bl {\n  0%,100% { transform: translateY(0) translateZ(50px); }\n  50%      { transform: translateY(7px) translateZ(50px); }\n}\n.hf-ico {\n  width: 34px; height: 34px;\n  background: var(--lime-dim);\n  border-radius: 8px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 16px;\n  flex-shrink: 0;\n}\n.hf-text { display: flex; flex-direction: column; }\n.hf-text strong { font-size: 13px; font-weight: 700; }\n.hf-text span   { font-size: 11px; color: var(--muted); }\n\n/* Hero scroll hint */\n.hero-scroll {\n  position: absolute;\n  bottom: 28px; left: 50%;\n  transform: translateX(-50%);\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  gap: 8px;\n  z-index: 2;\n}\n.hero-scroll span { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }\n.hs-line {\n  width: 1px; height: 40px;\n  background: linear-gradient(to bottom, var(--lime), transparent);\n  animation: lineGrow 2s ease-in-out infinite;\n}\n@keyframes lineGrow {\n  0%,100% { transform: scaleY(1); opacity: 1; }\n  50%      { transform: scaleY(.5); opacity: .3; }\n}\n\n/* Hero text entrance */\n#heroText {\n  opacity: 0;\n  transform: translateY(28px);\n  animation: heroTextIn .8s ease .1s forwards;\n}\n@keyframes heroTextIn {\n  to { opacity: 1; transform: none; }\n}\n\n/* ===== MARQUEE ===== */\n.marquee-band {\n  overflow: hidden;\n  background: var(--bg-s);\n  border-top: 1px solid var(--border);\n  border-bottom: 1px solid var(--border);\n  padding: 18px 0;\n}\n.marquee-track {\n  display: flex;\n  gap: 56px;\n  animation: marquee 24s linear infinite;\n  white-space: nowrap;\n  width: max-content;\n}\n.marquee-track span {\n  font-family: var(--font-d);\n  font-size: 17px;\n  letter-spacing: 3px;\n  color: var(--muted);\n  flex-shrink: 0;\n}\n@keyframes marquee {\n  from { transform: translateX(0); }\n  to   { transform: translateX(-50%); }\n}\n\n/* ===== SECTION HEADER ===== */\n.sec-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-end;\n  margin-bottom: 44px;\n  gap: 20px;\n}\n.sec-head.center { flex-direction: column; align-items: center; text-align: center; margin-bottom: 50px; }\n\n/* ===== CLASSES GRID ===== */\n.classes-grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 18px;\n}\n.cc {\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: var(--r-lg);\n  padding: 32px 26px 26px;\n  position: relative;\n  overflow: hidden;\n  cursor: pointer;\n  transition: var(--tr);\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-end;\n  min-height: 320px;\n}\n.cc-bg {\n  position: absolute;\n  inset: 0;\n  background-size: cover;\n  background-position: center;\n  opacity: 0.16;\n  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;\n  z-index: 0;\n}\n.cc:hover .cc-bg {\n  transform: scale(1.08);\n  opacity: 0.38;\n}\n.cc-overlay {\n  position: absolute;\n  inset: 0;\n  background: linear-gradient(to top, rgba(10,10,10,0.96) 20%, rgba(10,10,10,0.5) 70%, transparent 100%);\n  z-index: 1;\n  transition: var(--tr);\n}\n.cc:hover .cc-overlay {\n  background: linear-gradient(to top, rgba(10,10,10,0.92) 20%, rgba(10,10,10,0.3) 75%, rgba(200,255,0,0.04) 100%);\n}\n.cc::before {\n  content: \'\';\n  position: absolute;\n  inset: 0;\n  background: linear-gradient(135deg, var(--lime-dim) 0%, transparent 70%);\n  opacity: 0;\n  transition: opacity .3s ease;\n  z-index: 2;\n}\n.cc:hover {\n  border-color: var(--border-l);\n  transform: translateY(-6px);\n  box-shadow: var(--shadow), 0 0 24px rgba(200,255,0,.08);\n}\n.cc:hover::before { opacity: 1; }\n.cc-icon {\n  width: 52px; height: 52px;\n  background: var(--lime-dim);\n  border-radius: var(--r-md);\n  display: flex; align-items: center; justify-content: center;\n  font-size: 24px;\n  margin-bottom: 18px;\n  transition: var(--tr);\n  position: relative; z-index: 3;\n}\n.cc:hover .cc-icon { background: var(--lime); }\n.cc-name {\n  font-family: var(--font-d);\n  font-size: 24px;\n  letter-spacing: 1px;\n  margin-bottom: 8px;\n  position: relative; z-index: 3;\n}\n.cc-desc {\n  font-size: 13px;\n  color: var(--grey);\n  line-height: 1.65;\n  margin-bottom: 18px;\n  position: relative; z-index: 3;\n}\n.cc-foot {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  position: relative; z-index: 3;\n}\n.cc-dur { font-size: 13px; color: var(--lime); font-weight: 700; margin-right: auto; }\n.cc-lvl {\n  font-size: 10px;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  color: var(--muted);\n  background: rgba(255,255,255,.05);\n  padding: 3px 10px;\n  border-radius: 50px;\n}\n.cc-arr {\n  width: 32px; height: 32px;\n  background: var(--lime);\n  border-radius: 50%;\n  display: flex; align-items: center; justify-content: center;\n  color: #0A0A0A;\n  font-size: 16px;\n  font-weight: 800;\n  transition: var(--tr);\n}\n.cc:hover .cc-arr { transform: rotate(45deg); }\n.cc-featured {\n  background: linear-gradient(135deg, #141a00 0%, #0e1200 100%);\n  border-color: var(--border-l);\n}\n\n/* ===== STATS BAND ===== */\n.stats-band {\n  background: var(--bg-s);\n  border-top: 1px solid var(--border);\n  border-bottom: 1px solid var(--border);\n  padding: 70px 0;\n}\n.stats-grid {\n  display: grid;\n  grid-template-columns: repeat(4, 1fr);\n  gap: 1px;\n  background: var(--border);\n}\n.si {\n  background: var(--bg-s);\n  padding: 40px 28px;\n  text-align: center;\n  position: relative;\n  overflow: hidden;\n  transition: var(--tr);\n}\n.si::before {\n  content: \'\';\n  position: absolute;\n  inset: 0;\n  background: var(--lime-dim);\n  opacity: 0;\n  transition: opacity .3s;\n}\n.si:hover::before { opacity: 1; }\n.si-num {\n  font-family: var(--font-d);\n  font-size: 58px;\n  color: var(--lime);\n  line-height: 1;\n  margin-bottom: 8px;\n  position: relative; z-index: 1;\n}\n.si-lbl {\n  font-size: 12px;\n  color: var(--grey);\n  letter-spacing: 2px;\n  text-transform: uppercase;\n  position: relative; z-index: 1;\n}\n\n/* ===== ABOUT ===== */\n.about-grid {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 72px;\n  align-items: center;\n}\n.about-left { position: relative; }\n.about-main-card {\n  background: linear-gradient(135deg, #171700 0%, #101000 100%);\n  border: 1px solid var(--border-l);\n  border-radius: var(--r-xl);\n  padding: 36px;\n  position: relative;\n  overflow: hidden;\n}\n.amc-glow {\n  position: absolute;\n  top: -30%; left: -20%;\n  width: 240px; height: 240px;\n  background: radial-gradient(circle, rgba(200,255,0,.08) 0%, transparent 70%);\n  pointer-events: none;\n}\n.amc-quote {\n  font-family: var(--font-d);\n  font-size: clamp(26px, 3.5vw, 36px);\n  line-height: 1.1;\n  letter-spacing: 1px;\n  margin-bottom: 18px;\n  position: relative; z-index: 1;\n}\n.amc-quote span { color: var(--lime); }\n.amc-author {\n  font-size: 11px;\n  color: var(--muted);\n  letter-spacing: 2.5px;\n  text-transform: uppercase;\n  position: relative; z-index: 1;\n}\n.about-side-card {\n  position: absolute;\n  bottom: -22px; right: -22px;\n  background: var(--bg-c);\n  border: 1px solid var(--border-l);\n  border-radius: var(--r-lg);\n  padding: 18px 22px;\n  box-shadow: var(--shadow);\n}\n.asc-val {\n  font-family: var(--font-d);\n  font-size: 38px;\n  color: var(--lime);\n  line-height: 1;\n}\n.asc-lbl {\n  font-size: 11px;\n  color: var(--muted);\n  letter-spacing: 1.5px;\n  text-transform: uppercase;\n  margin-top: 4px;\n}\n.about-feats {\n  display: flex;\n  flex-direction: column;\n  gap: 14px;\n  margin-top: 32px;\n}\n.af {\n  display: flex;\n  align-items: flex-start;\n  gap: 14px;\n  padding: 14px 16px;\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: var(--r-md);\n  transition: var(--tr);\n}\n.af:hover { border-color: var(--border-l); transform: translateX(5px); }\n.af-ico {\n  width: 40px; height: 40px;\n  background: var(--lime-dim);\n  border-radius: 9px;\n  display: flex; align-items: center; justify-content: center;\n  font-size: 18px;\n  flex-shrink: 0;\n}\n.af b   { display: block; font-size: 14px; font-weight: 700; margin-bottom: 3px; }\n.af p   { font-size: 13px; color: var(--grey); line-height: 1.5; margin: 0; }\n\n/* ===== TRAINERS ===== */\n.trainers-grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 22px;\n}\n.tc {\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: var(--r-xl);\n  overflow: hidden;\n  transition: var(--tr);\n  cursor: pointer;\n}\n.tc:hover { border-color: var(--border-l); transform: translateY(-7px); box-shadow: var(--shadow), 0 0 36px rgba(200,255,0,.08); }\n.tc-img {\n  height: 280px;\n  background: linear-gradient(160deg, #1a2200 0%, #0f0f0f 100%);\n  position: relative;\n  overflow: hidden;\n}\n.tc-img img {\n  width: 100%;\n  height: 100%;\n  object-fit: cover;\n  object-position: center 15%;\n  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);\n}\n.tc:hover .tc-img img {\n  transform: scale(1.06);\n}\n.tc-ov {\n  position: absolute;\n  inset: 0;\n  background: linear-gradient(to top, rgba(10,10,10,.85) 0%, rgba(10,10,10,.25) 50%, transparent 100%);\n  z-index: 1;\n}\n.tc-tags {\n  position: absolute;\n  bottom: 14px; left: 14px;\n  display: flex; gap: 6px; flex-wrap: wrap;\n  z-index: 2;\n}\n.tc-tags span {\n  background: rgba(200,255,0,.2);\n  border: 1px solid rgba(200,255,0,.35);\n  color: var(--lime);\n  font-size: 10px;\n  font-weight: 700;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  padding: 3px 8px;\n  border-radius: 50px;\n}\n.tc-body { padding: 18px 22px 22px; }\n.tc-name { font-family: var(--font-d); font-size: 22px; letter-spacing: 1px; margin-bottom: 3px; }\n.tc-role { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }\n.tc-stats { display: flex; gap: 18px; }\n.tc-stats span { font-size: 13px; color: var(--grey); }\n.tc-stats b { color: var(--lime); }\n\n/* ===== SCHEDULE ===== */\n.sched-tabs {\n  display: flex;\n  gap: 8px;\n  margin-bottom: 24px;\n  overflow-x: auto;\n  scrollbar-width: none;\n  padding-bottom: 2px;\n}\n.sched-tabs::-webkit-scrollbar { display: none; }\n.sched-tab {\n  padding: 9px 20px;\n  border-radius: 50px;\n  font-size: 13px;\n  font-weight: 600;\n  letter-spacing: 1px;\n  white-space: nowrap;\n  cursor: pointer;\n  transition: var(--tr);\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  color: var(--grey);\n}\n.sched-tab.active {\n  background: var(--lime);\n  color: #0A0A0A;\n  border-color: var(--lime);\n}\n.sched-list { display: flex; flex-direction: column; gap: 10px; }\n.sched-item {\n  display: flex;\n  align-items: center;\n  gap: 18px;\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: var(--r-md);\n  padding: 16px 22px;\n  transition: var(--tr);\n  cursor: pointer;\n}\n.sched-item:hover { border-color: var(--border-l); background: var(--bg-ch); }\n.sched-time { font-family: var(--font-d); font-size: 18px; color: var(--lime); min-width: 72px; }\n.sched-div  { width: 1px; height: 36px; background: var(--border); }\n.sched-info { flex: 1; }\n.sched-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }\n.sched-trainer { font-size: 12px; color: var(--muted); }\n.sched-spots { font-size: 12px; color: var(--lime); font-weight: 600; white-space: nowrap; }\n.sched-btn {\n  padding: 7px 14px;\n  background: var(--lime-dim);\n  border: 1px solid var(--border-l);\n  border-radius: 50px;\n  font-size: 11px;\n  font-weight: 700;\n  color: var(--lime);\n  transition: var(--tr);\n  white-space: nowrap;\n}\n.sched-btn:hover { background: var(--lime); color: #0A0A0A; }\n\n/* ===== PRICING ===== */\n.pricing-grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 20px;\n  margin-top: 50px;\n}\n.pc {\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: var(--r-xl);\n  padding: 32px;\n  position: relative;\n  overflow: hidden;\n  transition: var(--tr);\n}\n.pc:hover:not(.pc-pop) { border-color: var(--border-l); transform: translateY(-5px); }\n.pc-pop {\n  background: linear-gradient(150deg, #131a00 0%, #0c1100 100%);\n  border-color: var(--lime);\n  transform: scale(1.035);\n  box-shadow: 0 0 40px rgba(200,255,0,.12);\n}\n.pc-badge {\n  position: absolute;\n  top: 18px; right: 18px;\n  background: var(--lime);\n  color: #0A0A0A;\n  font-size: 10px;\n  font-weight: 800;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  padding: 3px 10px;\n  border-radius: 50px;\n}\n.pc-tier { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }\n.pc-price { display: flex; align-items: baseline; gap: 2px; margin-bottom: 4px; }\n.pc-cur { font-size: 18px; font-weight: 700; color: var(--lime); }\n.pc-amt { font-family: var(--font-d); font-size: 58px; line-height: 1; }\n.pc-per { font-size: 13px; color: var(--muted); }\n.pc-desc { font-size: 13px; color: var(--grey); margin-bottom: 22px; padding-bottom: 22px; border-bottom: 1px solid var(--border); line-height: 1.6; }\n.pc-feats { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }\n.pf {\n  font-size: 13px;\n  color: var(--grey);\n  display: flex;\n  align-items: center;\n  gap: 10px;\n}\n.pf::before {\n  content: \'✓\';\n  width: 18px; height: 18px;\n  background: var(--lime-dim);\n  border-radius: 50%;\n  display: flex; align-items: center; justify-content: center;\n  color: var(--lime);\n  font-size: 10px;\n  font-weight: 800;\n  flex-shrink: 0;\n}\n.pf.no { color: var(--muted); }\n.pf.no::before {\n  content: \'✗\';\n  background: rgba(255,255,255,.04);\n  color: var(--muted);\n}\n.pc-btn {\n  width: 100%;\n  padding: 13px;\n  border-radius: 50px;\n  font-weight: 700;\n  font-size: 13px;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  transition: var(--tr);\n}\n.pc-btn.solid { background: var(--lime); color: #0A0A0A; border: 2px solid var(--lime); }\n.pc-btn.solid:hover { background: transparent; color: var(--lime); }\n.pc-btn.ghost { background: transparent; color: var(--white); border: 2px solid var(--border); }\n.pc-btn.ghost:hover { border-color: var(--lime); color: var(--lime); }\n\n/* ===== TESTIMONIALS ===== */\n.testi-wrap { overflow: hidden; }\n.testi-track {\n  display: flex;\n  gap: 20px;\n  transition: transform .5s cubic-bezier(.4,0,.2,1);\n}\n.testi-card {\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: var(--r-xl);\n  padding: 28px;\n  flex: 0 0 calc(33.333% - 14px);\n  transition: var(--tr);\n}\n.testi-card:hover { border-color: var(--border-l); }\n.testi-stars { color: var(--lime); font-size: 15px; letter-spacing: 2px; margin-bottom: 16px; }\n.testi-card blockquote {\n  font-size: 14px;\n  color: var(--grey);\n  line-height: 1.75;\n  margin-bottom: 22px;\n  font-style: italic;\n  quotes: "\\201C" "\\201D";\n  position: relative;\n  padding-left: 22px;\n}\n.testi-card blockquote::before {\n  content: \'"\';\n  font-family: var(--font-d);\n  font-size: 52px;\n  color: var(--lime);\n  line-height: .5;\n  position: absolute;\n  left: 0; top: 8px;\n  font-style: normal;\n}\n.testi-author {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n}\n.ta-ava {\n  width: 44px; height: 44px;\n  border-radius: 50%;\n  background: var(--bg-s);\n  border: 2px solid var(--border-l);\n  display: flex; align-items: center; justify-content: center;\n  font-size: 20px;\n  flex-shrink: 0;\n}\n.testi-author b    { display: block; font-size: 14px; }\n.testi-author span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }\n.testi-dots {\n  display: flex;\n  justify-content: center;\n  gap: 10px;\n  margin-top: 28px;\n}\n.td {\n  width: 8px; height: 8px;\n  border-radius: 50%;\n  background: var(--muted);\n  cursor: pointer;\n  transition: var(--tr);\n  border: none;\n}\n.td.active { width: 24px; border-radius: 4px; background: var(--lime); }\n\n/* ===== CTA ===== */\n.cta-box {\n  background: linear-gradient(140deg, #101a00 0%, #0a0a0a 50%, #0d0010 100%);\n  border: 1px solid var(--border);\n  border-radius: var(--r-xl);\n  padding: 72px 56px;\n  text-align: center;\n  position: relative;\n  overflow: hidden;\n}\n.cta-glow {\n  position: absolute;\n  top: -40%; left: 50%;\n  transform: translateX(-50%);\n  width: 500px; height: 300px;\n  background: radial-gradient(ellipse, rgba(200,255,0,.12) 0%, transparent 70%);\n  pointer-events: none;\n}\n.cta-grid-bg {\n  position: absolute;\n  inset: 0;\n  background-image: linear-gradient(rgba(200,255,0,.025) 1px, transparent 1px),\n                    linear-gradient(90deg, rgba(200,255,0,.025) 1px, transparent 1px);\n  background-size: 38px 38px;\n}\n.cta-inner { position: relative; z-index: 1; }\n.cta-title {\n  font-family: var(--font-d);\n  font-size: clamp(36px, 5.5vw, 62px);\n  line-height: 1;\n  letter-spacing: 2px;\n  text-transform: uppercase;\n  margin-bottom: 18px;\n}\n.cta-title span { color: var(--lime); }\n.cta-desc {\n  font-size: 15px;\n  color: var(--grey);\n  max-width: 460px;\n  margin: 0 auto 30px;\n  line-height: 1.7;\n}\n.cta-form {\n  display: flex;\n  gap: 10px;\n  max-width: 440px;\n  margin: 0 auto;\n}\n.cta-input {\n  flex: 1;\n  background: rgba(255,255,255,.06);\n  border: 1px solid var(--border);\n  border-radius: 50px;\n  padding: 14px 20px;\n  font-family: var(--font-b);\n  font-size: 14px;\n  color: var(--white);\n  outline: none;\n  transition: var(--tr);\n}\n.cta-input::placeholder { color: var(--muted); }\n.cta-input:focus { border-color: var(--lime); background: rgba(200,255,0,.05); }\n.cta-fine { font-size: 12px; color: var(--muted); margin-top: 14px; }\n\n/* ===== FOOTER ===== */\n.footer { padding: 72px 0 36px; border-top: 1px solid var(--border); }\n.footer-grid {\n  display: grid;\n  grid-template-columns: 2fr 1fr 1fr 1fr;\n  gap: 52px;\n  margin-bottom: 52px;\n}\n.fb p { font-size: 13px; color: var(--grey); line-height: 1.7; margin-top: 8px; max-width: 260px; }\n.fb-socials { display: flex; gap: 8px; margin-top: 20px; }\n.soc {\n  width: 36px; height: 36px;\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: 9px;\n  display: flex; align-items: center; justify-content: center;\n  font-size: 11px;\n  font-weight: 700;\n  text-transform: uppercase;\n  transition: var(--tr);\n  color: var(--grey);\n}\n.soc:hover { background: var(--lime-dim); border-color: var(--border-l); color: var(--lime); transform: translateY(-2px); }\n.ft { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--white); margin-bottom: 18px; }\n.fl { display: flex; flex-direction: column; gap: 10px; }\n.fl a { font-size: 13px; color: var(--grey); transition: var(--tr); display: inline-block; }\n.fl a:hover { color: var(--lime); transform: translateX(4px); }\n.footer-bottom {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding-top: 28px;\n  border-top: 1px solid var(--border);\n  font-size: 12px;\n  color: var(--muted);\n}\n.footer-bottom div { display: flex; gap: 22px; }\n.footer-bottom a { color: var(--muted); transition: var(--tr); }\n.footer-bottom a:hover { color: var(--lime); }\n\n/* ===== BOTTOM NAV ===== */\n.bottom-nav {\n  display: none;\n  position: fixed;\n  bottom: 0; left: 0; right: 0;\n  z-index: 990;\n  background: rgba(17,17,17,.97);\n  backdrop-filter: blur(18px);\n  -webkit-backdrop-filter: blur(18px);\n  border-top: 1px solid var(--border);\n  padding: 8px 10px 0;\n  /* Pushes content above system nav bar on both Android & iOS */\n  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));\n}\n.bottom-nav > * {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-around;\n  align-items: center;\n  width: 100%;\n}\n.bn {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  gap: 3px;\n  padding: 7px 10px;\n  border-radius: 12px;\n  background: none;\n  border: none;\n  color: var(--muted);\n  transition: var(--tr);\n  -webkit-tap-highlight-color: transparent;\n  flex: 1;\n}\n.bn > span:first-child { font-size: 20px; line-height: 1; }\n.bn > span:last-child  { font-size: 9px; letter-spacing: .5px; text-transform: uppercase; font-weight: 600; }\n.bn.active { background: var(--lime-dim); color: var(--lime); }\n\n/* ===== SCROLL-TO-TOP ===== */\n.scroll-top {\n  position: fixed;\n  bottom: 88px; right: 22px;\n  width: 44px; height: 44px;\n  background: var(--lime);\n  color: #0A0A0A;\n  border-radius: 50%;\n  display: flex; align-items: center; justify-content: center;\n  font-size: 18px;\n  font-weight: 800;\n  z-index: 900;\n  opacity: 0;\n  transform: translateY(16px);\n  transition: var(--tr);\n  box-shadow: 0 4px 18px rgba(200,255,0,.3);\n  border: none;\n}\n.scroll-top.vis { opacity: 1; transform: translateY(0); }\n.scroll-top:hover { transform: translateY(-3px); }\n\n/* ===== GALLERY ===== */\n.gallery-grid {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  grid-auto-rows: 260px;\n  gap: 18px;\n}\n.gallery-item {\n  position: relative;\n  overflow: hidden;\n  border-radius: var(--r-lg);\n  border: 1px solid var(--border);\n  cursor: pointer;\n  background: var(--bg-c);\n}\n.gallery-item.tall {\n  grid-row: span 2;\n}\n.gallery-item img {\n  width: 100%;\n  height: 100%;\n  object-fit: cover;\n  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);\n}\n.gallery-item:hover img {\n  transform: scale(1.08);\n}\n.gi-overlay {\n  position: absolute;\n  inset: 0;\n  background: linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.3) 60%, transparent 100%);\n  display: flex;\n  align-items: flex-end;\n  padding: 24px;\n  opacity: 0;\n  transition: opacity 0.3s ease;\n  z-index: 1;\n}\n.gallery-item:hover .gi-overlay {\n  opacity: 1;\n}\n.gi-content {\n  transform: translateY(14px);\n  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);\n  width: 100%;\n}\n.gallery-item:hover .gi-content {\n  transform: translateY(0);\n}\n.gi-tag {\n  display: inline-block;\n  background: var(--lime);\n  color: #0A0A0A;\n  font-size: 10px;\n  font-weight: 800;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  padding: 2px 8px;\n  border-radius: 4px;\n  margin-bottom: 8px;\n}\n.gi-title {\n  font-family: var(--font-d);\n  font-size: 22px;\n  letter-spacing: 1px;\n  line-height: 1.1;\n  text-transform: uppercase;\n}\n\n/* ===== RESPONSIVE ===== */\n@media (max-width: 1024px) {\n  .classes-grid  { grid-template-columns: repeat(2, 1fr); }\n  .stats-grid    { grid-template-columns: repeat(2, 1fr); }\n  .gallery-grid  { grid-template-columns: repeat(2, 1fr); }\n  .footer-grid   { grid-template-columns: 1fr 1fr; gap: 36px; }\n}\n\n@media (max-width: 768px) {\n  :root { --nav-h: 60px; }\n  .section { padding: 64px 0; }\n\n  /* Nav */\n  .navbar-inner {\n    display: flex !important;\n    justify-content: space-between !important;\n    align-items: center !important;\n  }\n  .navbar-links, .navbar-cta { display: none !important; }\n  .hamburger { display: flex !important; }\n  .navbar.scrolled {\n    background: rgba(10, 10, 10, 0.95) !important;\n    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;\n  }\n\n  /* Hero */\n  .hero-content {\n    grid-template-columns: 1fr;\n    gap: 36px;\n    padding-top: 28px;\n    padding-bottom: 90px;\n  }\n  .hero-text { text-align: center; }\n  .hero-badge { justify-content: center; display: inline-flex; }\n  .hero-desc  { margin-left: auto; margin-right: auto; }\n  .hero-actions { justify-content: center; }\n  .hero-stats   { justify-content: center; }\n  .hero-visual  { justify-content: center; }\n  .hf-tr, .hf-bl { display: none; }\n  .hero-card { max-width: 100%; }\n  .hero-scroll { display: none; }\n\n  /* ===== SECTION GLOBAL ===== */\n  .section { padding: 64px 0; }\n  .sec-head { flex-direction: column; align-items: flex-start; gap: 16px; }\n  .sec-head.center { align-items: center; text-align: center; }\n  .sec-title { font-size: clamp(32px, 8vw, 52px); }\n  .sec-sub { font-size: 14px; }\n  .desk-only { display: none; }\n\n  /* ===== CLASSES ===== */\n  .classes-grid {\n    grid-template-columns: 1fr;\n    gap: 16px;\n  }\n  .cc { height: 260px; }\n  .cc-featured { height: 300px; }\n\n  /* ===== STATS BAND ===== */\n  .stats-grid { grid-template-columns: 1fr 1fr; gap: 24px; }\n  .si-num { font-size: 44px; }\n\n  /* ===== ABOUT ===== */\n  .about-grid {\n    grid-template-columns: 1fr;\n    gap: 40px;\n  }\n  .about-left { order: 2; }\n  .about-right { order: 1; }\n  .about-main-card { padding: 32px 24px; }\n  .amc-quote { font-size: 20px; }\n  .about-side-card {\n    position: static;\n    margin-top: 14px;\n    display: inline-block;\n  }\n  .about-feats { gap: 20px; }\n  .af { gap: 12px; }\n\n  /* ===== TRAINERS ===== */\n  .trainers-grid {\n    grid-template-columns: 1fr;\n    gap: 20px;\n  }\n  .tc-img { height: 280px; }\n  .tc-body { padding: 16px 20px; }\n  .tc-name { font-size: 18px; }\n\n  /* ===== SCHEDULE ===== */\n  .sched-tabs {\n    display: flex;\n    flex-wrap: wrap;\n    gap: 8px;\n    justify-content: center;\n    margin-bottom: 24px;\n  }\n  .sched-tab {\n    padding: 8px 16px;\n    font-size: 13px;\n    flex: 1 1 calc(25% - 8px);\n    min-width: 60px;\n    text-align: center;\n  }\n  .sched-item {\n    flex-direction: column;\n    align-items: flex-start;\n    gap: 8px;\n    padding: 16px 18px;\n  }\n  .si-time { font-size: 13px; width: auto; }\n  .si-info { gap: 4px; }\n  .si-name { font-size: 15px; }\n  .si-trainer { font-size: 12px; }\n  .si-badge { align-self: flex-start; font-size: 11px; }\n\n  /* ===== GALLERY ===== */\n  .gallery-grid {\n    grid-template-columns: 1fr 1fr;\n    grid-auto-rows: 200px;\n    gap: 12px;\n  }\n  .gallery-item.tall { grid-row: span 1; }\n  .gi-overlay { opacity: 1; }\n  .gi-content { transform: translateY(0); }\n  .gi-title { font-size: 14px; }\n  .gi-tag { font-size: 10px; padding: 3px 8px; }\n\n  /* ===== PRICING ===== */\n  .pricing-grid {\n    grid-template-columns: 1fr;\n    gap: 20px;\n    max-width: 480px;\n    margin: 0 auto;\n  }\n  .pc { padding: 32px 24px; }\n  .pc-pop { transform: scale(1); }\n  .pc-amt { font-size: 52px; }\n  .pc-name { font-size: 18px; }\n\n  /* ===== TESTIMONIALS ===== */\n  .testi-card { flex: 0 0 100%; }\n\n  /* ===== CTA ===== */\n  .cta-box  { padding: 52px 24px; }\n  .cta-form { flex-direction: column; }\n  .cta-title { font-size: 34px; }\n\n  /* ===== FOOTER ===== */\n  .footer-grid { grid-template-columns: 1fr; gap: 16px; }\n  .footer-grid > div {\n    border-bottom: 1px solid rgba(255, 255, 255, 0.06);\n    padding-bottom: 12px;\n  }\n  .footer-grid > div:last-child {\n    border-bottom: none;\n  }\n  .footer-grid .ft {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    cursor: pointer;\n    margin-bottom: 0 !important;\n    padding: 8px 0;\n  }\n  .footer-grid .ft::after {\n    content: \'+\';\n    font-size: 18px;\n    color: var(--lime);\n    transition: transform 0.3s ease;\n  }\n  .footer-grid .ft.active::after {\n    content: \'−\';\n    transform: rotate(180deg);\n  }\n  .footer-grid .fl {\n    max-height: 0;\n    overflow: hidden;\n    transition: max-height 0.3s ease-out;\n    margin-top: 0;\n  }\n  .footer-grid .ft.active + .fl {\n    max-height: 300px;\n    margin-top: 12px;\n  }\n  .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }\n\n  /* ===== BOTTOM NAV ===== */\n  .bottom-nav { display: block; }\n  body { padding-bottom: var(--bn-h); }\n  .scroll-top { bottom: calc(var(--bn-h) + 12px); }\n}\n\n/* ===== TABLET (641px – 768px) ===== */\n@media (min-width: 641px) and (max-width: 768px) {\n  .classes-grid   { display: grid !important; grid-template-columns: 1fr 1fr; gap: 16px; }\n  .cc             { flex: unset !important; height: 280px !important; }\n  .cc-featured    { grid-column: span 2; height: 300px !important; }\n  .trainers-grid  { display: grid !important; grid-template-columns: 1fr 1fr; gap: 20px; }\n  .tc             { flex: unset !important; }\n  .gallery-grid   { display: grid !important; grid-template-columns: 1fr 1fr; grid-auto-rows: 220px; gap: 14px; }\n  .gallery-item   { flex: unset !important; height: unset !important; }\n  .gallery-item.tall { grid-row: span 2; }\n  .pricing-grid   { display: grid !important; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 100% !important; width: auto !important; margin: 0 !important; }\n  .pc             { flex: unset !important; transform: none; }\n  .pc-pop         { transform: scale(1.02); }\n  .stats-grid     { grid-template-columns: repeat(4, 1fr); }\n  .sched-tab      { flex: 1 1 auto; }\n  .about-grid     { grid-template-columns: 1fr 1fr; gap: 32px; }\n  .about-left     { order: 1; }\n  .about-right    { order: 2; }\n}\n\n@media (max-width: 640px) {\n  /* ── Typography adjustments ─────────────────────── */\n  .hero-title  { font-size: 42px; }\n  .si-num      { font-size: 40px; }\n  .pc-amt      { font-size: 44px; }\n  .cta-title   { font-size: 30px; }\n  .sec-title   { font-size: 32px; }\n  .container   { padding: 0 16px; }\n  .gallery-item.tall { grid-row: span 1; }\n  .sched-tab   { flex: 1 1 calc(33% - 8px); }\n\n  /* ── Parent section: allow horizontal bleed for carousels ─ */\n  #classes .container,\n  #trainers .container,\n  #gallery .container,\n  #pricing .container {\n    overflow: visible !important;\n  }\n\n  /* ── SHARED CAROUSEL WRAPPER ─────────────────────── */\n  .classes-grid,\n  .trainers-grid,\n  .gallery-grid,\n  .pricing-grid {\n    display: flex !important;\n    flex-direction: row !important;\n    flex-wrap: nowrap !important;\n    overflow-x: auto !important;\n    overflow-y: visible !important;\n    scroll-snap-type: x mandatory !important;\n    scroll-behavior: smooth !important;\n    -webkit-overflow-scrolling: touch !important;\n    gap: 14px !important;\n    padding: 8px 16px 24px !important;\n    margin: 0 -16px !important;\n    width: calc(100% + 32px) !important;\n    max-width: unset !important;\n    grid-template-columns: unset !important;\n    align-items: stretch !important;\n    box-sizing: border-box !important;\n  }\n\n  /* Hide scrollbar on all carousels */\n  .classes-grid::-webkit-scrollbar,\n  .trainers-grid::-webkit-scrollbar,\n  .gallery-grid::-webkit-scrollbar,\n  .pricing-grid::-webkit-scrollbar {\n    display: none !important;\n  }\n\n  /* ── CLASSES CAROUSEL ────────────────────────────── */\n  .cc {\n    flex: 0 0 78vw !important;\n    width: 78vw !important;\n    max-width: 280px !important;\n    height: 300px !important;\n    min-height: unset !important;\n    scroll-snap-align: start !important;\n    border-radius: 16px !important;\n    overflow: hidden !important;\n  }\n  .cc-featured {\n    flex: 0 0 85vw !important;\n    width: 85vw !important;\n    max-width: 310px !important;\n    height: 300px !important;\n  }\n  .cc-bg   { height: 100% !important; }\n  .cc-overlay { border-radius: 0 !important; }\n\n  /* ── TRAINERS CAROUSEL ───────────────────────────── */\n  .tc {\n    flex: 0 0 72vw !important;\n    width: 72vw !important;\n    max-width: 280px !important;\n    min-width: unset !important;\n    scroll-snap-align: start !important;\n    overflow: hidden !important;\n    border-radius: 16px !important;\n  }\n  .tc-img-wrap { height: 200px !important; }\n  .tc-info     { padding: 16px !important; }\n\n  /* ── GALLERY (FACILITY) CAROUSEL ─────────────────── */\n  .gallery-item {\n    flex: 0 0 80vw !important;\n    width: 80vw !important;\n    max-width: 300px !important;\n    height: 240px !important;\n    min-height: unset !important;\n    scroll-snap-align: start !important;\n    border-radius: 14px !important;\n    overflow: hidden !important;\n  }\n  .gallery-item img {\n    width: 100% !important;\n    height: 100% !important;\n    object-fit: cover !important;\n    display: block !important;\n  }\n\n  /* ── PRICING CAROUSEL ────────────────────────────── */\n  .pricing-grid {\n    align-items: flex-start !important;\n    padding-bottom: 28px !important;\n  }\n  .pc {\n    flex: 0 0 82vw !important;\n    width: 82vw !important;\n    max-width: 300px !important;\n    scroll-snap-align: start !important;\n    padding: 24px 20px !important;\n    transform: none !important;\n    border-radius: 18px !important;\n    box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;\n  }\n  .pc-pop {\n    transform: none !important;\n    border-width: 2px !important;\n  }\n  .pc-amt { font-size: 44px !important; }\n}\n\n/* ===== TOAST NOTIFICATION ===== */\n.toast {\n  position: fixed;\n  top: calc(var(--nav-h) + 12px);\n  right: 20px;\n  background: var(--bg-c);\n  border: 1px solid var(--border-l);\n  border-radius: var(--r-md);\n  padding: 14px 20px;\n  font-size: 14px;\n  box-shadow: var(--shadow);\n  z-index: 2000;\n  transform: translateX(110%);\n  transition: transform .35s cubic-bezier(.34,1.56,.64,1);\n  max-width: 280px;\n}\n.toast.show { transform: translateX(0); }\n.toast-icon { margin-right: 6px; }\n\n/* ===== SPLIT SCREEN HERO (DESKTOP) ===== */\n@media (min-width: 769px) {\n  /* Mobile-only elements must be completely hidden on desktop */\n  .mobile-menu,\n  .mm-overlay,\n  .hamburger {\n    display: none !important;\n  }\n\n  .hero {\n    display: flex;\n    align-items: stretch;\n    min-height: 100vh;\n    padding-top: var(--nav-h);\n  }\n  .hero-content {\n    max-width: 100% !important;\n    width: 100%;\n    padding: 0 !important;\n    display: grid !important;\n    grid-template-columns: 1.15fr 0.85fr;\n    gap: 0 !important;\n    align-items: stretch;\n  }\n  .hero-text {\n    padding-left: max(24px, calc((100vw - 1160px) / 2 + 24px));\n    padding-right: 80px;\n    padding-top: 80px;\n    padding-bottom: 80px;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n  }\n  .hero-visual {\n    height: 100%;\n    width: 100%;\n    min-height: 100vh;\n    padding: 0;\n    margin: 0;\n  }\n  .hero-mockup {\n    width: 100%;\n    height: 100%;\n    max-width: 100%;\n    transform: none !important;\n    border: none;\n    border-radius: 0;\n    padding: 0;\n    box-shadow: none;\n  }\n  .dashboard-img {\n    width: 100%;\n    height: 100%;\n    object-fit: cover;\n    border-radius: 0;\n    box-shadow: none;\n  }\n  .hf-tr {\n    top: 40px;\n    right: 40px;\n  }\n  .hf-bl {\n    bottom: 40px;\n    left: 40px;\n  }\n\n\n  /* ALWAYS: .navbar is a transparent shell, positioned to center the capsule */\n  .navbar {\n    top: 0;\n    left: 0;\n    right: 0;\n    transform: none;\n    width: 100%;\n    height: var(--nav-h);\n    background: transparent !important;\n    backdrop-filter: none !important;\n    -webkit-backdrop-filter: none !important;\n    border: none !important;\n    box-shadow: none !important;\n    border-radius: 0 !important;\n    padding: 0 24px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n\n  /* BEFORE SCROLL: .navbar-inner is a floating dark glass capsule */\n  .navbar-inner {\n    width: 100%;\n    max-width: 1100px;\n    height: 72px;\n    margin: 0 auto;\n    padding: 0 32px;\n    background: rgba(17, 17, 17, 0.82);\n    backdrop-filter: blur(14px);\n    -webkit-backdrop-filter: blur(14px);\n    border-radius: 50px;\n    border: 1px solid rgba(255, 255, 255, 0.08);\n    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);\n    display: grid;\n    grid-template-columns: 1.2fr 0.6fr 1.2fr;\n    align-items: center;\n  }\n\n  /* AFTER SCROLL: capsule gets lime border glow */\n  .navbar.scrolled .navbar-inner {\n    background: rgba(17, 17, 17, 0.95);\n    backdrop-filter: blur(20px);\n    -webkit-backdrop-filter: blur(20px);\n    border: 1px solid rgba(136, 214, 0, 0.45);\n    box-shadow: 0 16px 40px rgba(0,0,0,0.7), 0 0 16px rgba(136,214,0,0.12);\n  }\n}\n\n/* ===== PROFILE DRAWER ===== */\n.profile-drawer {\n  position: fixed;\n  top: 0; right: 0; bottom: 0;\n  width: 100%;\n  max-width: 380px;\n  background: rgba(17, 17, 17, 0.95);\n  backdrop-filter: blur(24px);\n  -webkit-backdrop-filter: blur(24px);\n  border-left: 1px solid var(--border);\n  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.7);\n  z-index: 2000;\n  transform: translateX(110%);\n  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);\n  display: flex;\n  flex-direction: column;\n}\n.profile-drawer.open {\n  transform: translateX(0);\n}\n.pd-header {\n  padding: 24px;\n  border-bottom: 1px solid var(--border);\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n}\n.pd-header h3 {\n  font-family: var(--font-d);\n  font-size: 24px;\n  letter-spacing: 1px;\n  text-transform: uppercase;\n  color: var(--white);\n}\n.pd-close {\n  background: none;\n  border: none;\n  font-size: 32px;\n  color: var(--grey);\n  cursor: pointer;\n  transition: var(--tr);\n  line-height: 1;\n}\n.pd-close:hover {\n  color: var(--lime);\n}\n.pd-body {\n  flex: 1;\n  padding: 24px;\n  overflow-y: auto;\n  display: flex;\n  flex-direction: column;\n  gap: 24px;\n}\n.pd-user-info {\n  display: flex;\n  align-items: center;\n  gap: 16px;\n}\n.pd-avatar {\n  width: 56px;\n  height: 56px;\n  border-radius: 50%;\n  background: var(--lime-dim);\n  border: 2px solid var(--border-l);\n  color: var(--lime);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-weight: 800;\n  font-size: 18px;\n}\n.pd-name {\n  font-size: 16px;\n  font-weight: 700;\n  color: var(--white);\n}\n.pd-badge {\n  display: inline-block;\n  font-size: 10px;\n  font-weight: 700;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  color: var(--lime);\n  background: rgba(200, 255, 0, 0.1);\n  padding: 2px 8px;\n  border-radius: 4px;\n  margin-top: 2px;\n}\n.pd-stats-card {\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: var(--r-md);\n  padding: 20px;\n}\n.pd-stats-row {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  text-align: center;\n  gap: 10px;\n  padding-bottom: 18px;\n  border-bottom: 1px solid var(--border);\n}\n.pd-stat-lbl {\n  font-size: 10px;\n  color: var(--muted);\n  text-transform: uppercase;\n  letter-spacing: 1px;\n}\n.pd-stat-val {\n  font-family: var(--font-d);\n  font-size: 22px;\n  color: var(--lime);\n  margin-top: 4px;\n}\n.pd-barcode-zone {\n  padding-top: 18px;\n  text-align: center;\n}\n.pd-barcode {\n  display: flex;\n  align-items: stretch;\n  justify-content: center;\n  height: 38px;\n  gap: 2px;\n  background: #FFF;\n  padding: 6px 12px;\n  border-radius: 4px;\n  margin-bottom: 6px;\n}\n.pd-bar-line {\n  background: #000;\n}\n.pd-barcode-num {\n  font-family: monospace;\n  font-size: 11px;\n  color: var(--grey);\n  letter-spacing: 1.5px;\n}\n.pd-menu {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n.pd-menu-title {\n  font-size: 11px;\n  font-weight: 700;\n  text-transform: uppercase;\n  color: var(--muted);\n  letter-spacing: 1.5px;\n  margin-bottom: 8px;\n}\n.pd-menu a {\n  padding: 12px 16px;\n  background: var(--bg-c);\n  border: 1px solid var(--border);\n  border-radius: var(--r-sm);\n  font-size: 13px;\n  color: var(--grey);\n  display: flex;\n  align-items: center;\n  transition: var(--tr);\n}\n.pd-menu a:hover {\n  border-color: var(--border-l);\n  color: var(--lime);\n  transform: translateX(4px);\n}\n.pd-logout-btn {\n  margin-top: auto;\n  width: 100%;\n  padding: 12px;\n  background: rgba(255, 107, 53, 0.1);\n  border: 1px solid rgba(255, 107, 53, 0.2);\n  border-radius: var(--r-sm);\n  color: var(--orange);\n  font-weight: 700;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n  font-size: 12px;\n  transition: var(--tr);\n}\n.pd-logout-btn:hover {\n  background: var(--orange);\n  color: #FFFFFF;\n}\n.pd-overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.5);\n  backdrop-filter: blur(4px);\n  -webkit-backdrop-filter: blur(4px);\n  z-index: 1999;\n  opacity: 0;\n  pointer-events: none;\n  transition: opacity 0.3s ease;\n}\n.pd-overlay.show {\n  opacity: 1;\n  pointer-events: auto;\n}\n\n\n\n'
+
+    part_mid = f"""  </style>
 </head>
 <body>
 
-<!-- Custom cursor -->
-<div class="custom-cursor-dot" id="cursorDot"></div>
-<div class="custom-cursor-ring" id="cursorRing"></div>
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+      <ul class="navbar-links">
+        <li><a href="#classes">Classes</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#trainers">Trainers</a></li>
+        <li><a href="#schedule">Schedule</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
 
-<!-- Demo banner -->
-<div class="demo-banner">
-  ✨ FREE demo built for {name} by Chandan Gosavi &mdash;
-  <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">hire me to take it live &rarr;</a>
-  <span class="orig">{orig_note}</span>
-</div>
+      <a href="#home" class="navbar-logo">
+        <img src="{_CDN}logo-emblem-dark.png" alt="{name} Logo" class="nav-logo-img">
+        {name}
+      </a>
 
-<!-- Spotlights -->
-<div class="spotlight" style="top:-100px;left:-150px"></div>
-<div class="spotlight" style="top:40%;right:-200px;background:radial-gradient(circle,var(--accent-teal-glow),transparent 70%)"></div>
-<div class="spotlight" style="bottom:10%;left:-100px"></div>
-
-<!-- Navbar -->
-<nav class="navbar" id="navbar">
-  <div class="container nav-container">
-    <a href="#home" class="logo">
-      <div class="logo-icon"></div>
-      {logo_p1}{'<span>' + logo_p2 + '</span>' if logo_p2 else ''}
-    </a>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="#home" class="active">Home</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="#programs">Programs</a></li>
-      {'<li><a href="#gallery">Gallery</a></li>' if gallery_imgs else ''}
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-    <div class="nav-actions">
-      <a href="#contact" class="btn btn-secondary" style="padding:.6rem 1.5rem;font-size:.85rem">Join Now</a>
-    </div>
-    <button class="hamburger" id="hamburger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</nav>
-
-<!-- Hero -->
-<section class="hero" id="home">
-  <div class="container">
-    <div class="hero-content reveal reveal-slide-up">
-      <div class="hero-tag">&#x2022; Redefine Your Limits</div>
-      <h1 class="hero-name text-gradient-orange">{name}</h1>
-      <div class="hero-subtitle-wrapper">
-        <div class="hero-subtitle-track">
-          <span>{phrase1}</span>
-          <span>{phrase2}</span>
-          <span>{phrase3}</span>
-        </div>
-      </div>
-      <p class="hero-desc">{about_text[:200]}{"…" if len(about_text) > 200 else ""}</p>
-      <div class="hero-btns">
-        <a href="#contact" class="btn btn-primary">Get Started Today</a>
-        <a href="#programs" class="btn btn-secondary">Explore Programs</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Stats bar -->
-<section class="stats" id="stats">
-  <div class="container">
-    <div class="stats-grid reveal reveal-scale-in">
-      <div class="stat-item">
-        <div class="stat-number text-gradient-orange" data-target="{review_stat}">{review_stat}</div>
-        <div class="stat-label">Google Reviews</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number text-gradient-orange">{rating_val}&#9733;</div>
-        <div class="stat-label">Google Rating</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number text-gradient-orange">24/7</div>
-        <div class="stat-label">Access Available</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number text-gradient-orange">100%</div>
-        <div class="stat-label">Committed to You</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- About -->
-<section class="about" id="about">
-  <div class="container">
-    <div class="about-grid">
-      <div class="about-content reveal reveal-slide-right">
-        <span class="section-tag">Who We Are</span>
-        <h2 class="section-title">Where Strength Is<br><span class="text-gradient-orange">Forged</span> &amp; Limits Shattered</h2>
-        <p class="section-desc">{about_text}</p>
-        <div class="about-features">
-          <div class="about-feature">
-            <div class="about-feature-icon">\U0001f3cb️</div>
-            <div><h4>Elite Equipment</h4><p>State-of-the-art machines and free weights for every level.</p></div>
-          </div>
-          <div class="about-feature">
-            <div class="about-feature-icon">⏰</div>
-            <div><h4>Flexible Hours</h4><p>Open early mornings, late nights &amp; weekends.</p></div>
-          </div>
-          <div class="about-feature">
-            <div class="about-feature-icon">\U0001f465</div>
-            <div><h4>Expert Coaches</h4><p>Certified trainers to guide every step of your journey.</p></div>
-          </div>
-          <div class="about-feature">
-            <div class="about-feature-icon">\U0001f4aa</div>
-            <div><h4>Real Results</h4><p>Proven programs built around your goals, not ours.</p></div>
-          </div>
-        </div>
-      </div>
-      <div class="about-img-wrapper reveal reveal-slide-left">
-        <div class="about-img-frame"></div>
-        {about_img_html}
-        <div class="about-badge">
-          <div class="badge-icon">✓</div>
-          <div><h5>{rating_val}&#9733; Rated</h5><p>On Google Maps</p></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-{gallery_section}
-
-<!-- Programs -->
-<section class="programs-section" id="programs">
-  <div class="container">
-    <div style="text-align:center">
-      <span class="section-tag">{prog_tag}</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">{prog_title}</h2>
-      <p class="section-desc" style="max-width:580px;margin:1.5rem auto 0">{prog_desc}</p>
-    </div>
-    <div class="programs-grid">{{prog_cards}}</div>
-  </div>
-</section>
-
-<!-- Testimonials -->
-<section class="testimonials-section" id="testimonials">
-  <div class="container">
-    <div style="text-align:center">
-      <span class="section-tag">{testi_tag}</span>
-      <h2 class="section-title" style="max-width:700px;margin:.5rem auto 0">{testi_title}</h2>
-    </div>
-    <div class="t-slider-outer">
-      <div class="t-slider" id="tSlider">
-        <div class="t-card">
-          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>{testi_1}</p>
-          <div class="t-author">Sarah M.<span>Member since 2023</span></div>
-        </div>
-        <div class="t-card">
-          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>{testi_2}</p>
-          <div class="t-author">James K.<span>Member since 2022</span></div>
-        </div>
-        <div class="t-card">
-          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>{testi_3}</p>
-          <div class="t-author">Priya R.<span>Member since 2024</span></div>
-        </div>
-        <div class="t-card">
-          <div class="t-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-          <p>{testi_4}</p>
-          <div class="t-author">Ahmed N.<span>Member since 2023</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="t-controls">
-      <button class="t-btn" id="tPrev">&larr;</button>
-      <div class="t-dots" id="tDots"></div>
-      <button class="t-btn" id="tNext">&rarr;</button>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <div class="container">
-    <div class="cta-banner reveal reveal-scale-in">
-      <span class="section-tag">Are You Ready?</span>
-      <h2>Start Your Journey at<br><span class="text-gradient-orange">{name}</span> Today</h2>
-      <p>Take the first step. Contact us now and let's build the strongest version of you.</p>
-      <a href="#contact" class="btn btn-primary" style="margin-top:.5rem">Contact Us Now</a>
-    </div>
-  </div>
-</section>
-
-<!-- Contact -->
-<section class="contact-section" id="contact">
-  <div class="container" style="text-align:center">
-    <span class="section-tag">Find Us</span>
-    <h2 class="section-title" style="margin:.5rem auto 1rem">Get in Touch with <span class="text-gradient-orange">{name}</span></h2>
-    <p>We'd love to hear from you. Walk in, call, or message us anytime.</p>
-    <div class="cinfo-grid">{contact_items or '<div class="cinfo-item">\U0001f4ec Contact us today</div>'}</div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer class="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-col footer-about">
-        <a href="#home" class="logo" style="font-size:1.5rem">
-          <div class="logo-icon"></div>
-          {logo_p1}{'<span>' + logo_p2 + '</span>' if logo_p2 else ''}
+      <div class="navbar-cta">
+        <a href="#contact" class="nav-contact-btn">Contact Us</a>
+        <a href="javascript:void(0)" onclick="openProfileDrawer(event)" class="nav-profile-icon" aria-label="Profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </a>
-        <p>A premier fitness facility committed to building strength, endurance, and an unstoppable mindset in {city}.</p>
-        <div class="social-links">{ig_link}{map_btn}</div>
       </div>
-      <div class="footer-col">
-        <h4>Quick Links</h4>
-        <ul class="footer-links">
-          <li><a href="#home">Home</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#programs">Programs</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
+
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#classes"  onclick="closeMobileMenu()">Classes</a>
+    <a href="#about"    onclick="closeMobileMenu()">About Us</a>
+    <a href="#trainers" onclick="closeMobileMenu()">Trainers</a>
+    <a href="#schedule" onclick="closeMobileMenu()">Schedule</a>
+    <a href="#gallery"  onclick="closeMobileMenu()">Gallery</a>
+    <a href="#pricing"  onclick="closeMobileMenu()">Pricing</a>
+    <a href="#contact"  onclick="closeMobileMenu()" class="mm-cta">Join Now Free &#8594;</a>
+  </div>
+  <div class="mm-overlay" id="mmOverlay" onclick="closeMobileMenu()"></div>
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <div class="hero-glow g1"></div>
+      <div class="hero-glow g2"></div>
+      <div class="hero-grid-bg"></div>
+    </div>
+    <div class="hero-content container">
+      <div class="hero-text" id="heroText">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Now Open &middot; 5AM &ndash; 11PM Daily
+        </div>
+        <h1 class="hero-title">
+          <span class="ht-white">STRONGER</span>
+          <span class="ht-lime">EVERY</span>
+          <span class="ht-outline">DAY</span>
+          <span class="ht-white">FITTER</span>
+        </h1>
+        <p class="hero-desc">
+          Where fitness meets inspiration. Every drop of sweat tells a story of determination.
+          Join our members who chose {name} to transform their bodies and lives.
+        </p>
+        <div class="hero-actions">
+          <a href="#pricing" class="btn-primary btn-lg">Start Today &#8594;</a>
+          <a href="#about"   class="btn-ghost btn-lg">&#9654; How It Works</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hs">
+            <span class="hs-num" data-count="1200" data-suffix="+">0</span>
+            <span class="hs-lbl">Members</span>
+          </div>
+          <div class="hs-div"></div>
+          <div class="hs">
+            <span class="hs-num" data-count="10" data-suffix="+">0</span>
+            <span class="hs-lbl">Trainers</span>
+          </div>
+          <div class="hs-div"></div>
+          <div class="hs">
+            <span class="hs-num" data-count="{int(float(rating_str)*10) if rating else 50}" data-suffix="">0</span>
+            <span class="hs-lbl">★ Google Rating</span>
+          </div>
+        </div>
       </div>
-      <div class="footer-col">
-        <h4>Contact</h4>
-        <ul class="footer-links">
-          {f'<li>{phone}</li>' if phone else ''}
-          {f'<li>{email}</li>' if email else ''}
-          {f'<li>{address}</li>' if address else ''}
-        </ul>
+
+      <div class="hero-visual" id="heroVisual">
+        <div class="hero-mockup">
+          <img src="{_CDN}gym-full.png" alt="{name} Facility" class="dashboard-img">
+        </div>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 {name}. Demo by <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Chandan Gosavi</a></p>
-      <p>Want this live? <a href="https://www.fiverr.com/s/e6zGy4g" target="_blank">Order here &rarr;</a></p>
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <div class="hs-line"></div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-band" aria-hidden="true">
+    <div class="marquee-track">
+      <span>&#128170; STRENGTH TRAINING</span><span>&#9889; HIIT CARDIO</span>
+      <span>&#129336; YOGA &amp; MINDFULNESS</span><span>&#129354; COMBAT SPORTS</span>
+      <span>&#128692; CYCLING STUDIO</span><span>&#128100; PERSONAL COACHING</span>
+      <span>&#129367; NUTRITION PLANS</span><span>&#128705; RECOVERY ZONE</span>
+      <span>&#128170; STRENGTH TRAINING</span><span>&#9889; HIIT CARDIO</span>
+      <span>&#129336; YOGA &amp; MINDFULNESS</span><span>&#129354; COMBAT SPORTS</span>
+      <span>&#128692; CYCLING STUDIO</span><span>&#128100; PERSONAL COACHING</span>
+      <span>&#129367; NUTRITION PLANS</span><span>&#128705; RECOVERY ZONE</span>
     </div>
   </div>
-</footer>
 
-<script>
-// Custom cursor
-const dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px'}});
-(function animRing(){{rx+=(mx-rx)*.15;ry+=(my-ry)*.15;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}})();
-document.querySelectorAll('a,button,.program-card,.t-btn,.gallery-item').forEach(el=>{{
-  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
-  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
-}});
+  <!-- CLASSES -->
+  <section class="section" id="classes">
+    <div class="container">
+      <div class="sec-head anim-up">
+        <div>
+          <div class="sec-label">What We Offer</div>
+          <h2 class="sec-title">OUR <span>CLASSES</span></h2>
+          <p class="sec-sub">Find your perfect class &mdash; from high-intensity cardio to mindful recovery.</p>
+        </div>
+        <a href="#schedule" class="btn-ghost btn-sm desk-only">View Schedule &#8594;</a>
+      </div>
+      <div class="classes-grid">
+        <div class="cc anim-up" style="--d:.05s">
+          <div class="cc-bg" style="background-image: url('{_CDN}athlete.png');"></div>
+          <div class="cc-overlay"></div>
+          <div class="cc-icon">&#127947;&#65039;</div>
+          <div class="cc-name">Strength &amp; Power</div>
+          <div class="cc-desc">Build raw strength with compound lifting using free weights and machines.</div>
+          <div class="cc-foot"><span class="cc-dur">60 min</span><span class="cc-lvl">All Levels</span><span class="cc-arr">&#8594;</span></div>
+        </div>
+        <div class="cc anim-up" style="--d:.10s">
+          <div class="cc-bg" style="background-image: url('{_CDN}hiit.png');"></div>
+          <div class="cc-overlay"></div>
+          <div class="cc-icon">&#9889;</div>
+          <div class="cc-name">HIIT Cardio</div>
+          <div class="cc-desc">Torch calories and elevate your metabolism for 24+ hours post-workout.</div>
+          <div class="cc-foot"><span class="cc-dur">45 min</span><span class="cc-lvl">Intermediate</span><span class="cc-arr">&#8594;</span></div>
+        </div>
+        <div class="cc cc-featured anim-up" style="--d:.15s">
+          <div class="cc-bg" style="background-image: url('{_CDN}boxing.png');"></div>
+          <div class="cc-overlay"></div>
+          <div class="cc-icon">&#129354;</div>
+          <div class="cc-name">Combat HIIT</div>
+          <div class="cc-desc">Boxing fused with HIIT cardio &mdash; sharpen reflexes while burning serious fat.</div>
+          <div class="cc-foot"><span class="cc-dur">50 min</span><span class="cc-lvl">Advanced</span><span class="cc-arr">&#8594;</span></div>
+        </div>
+        <div class="cc anim-up" style="--d:.20s">
+          <div class="cc-bg" style="background-image: url('{_CDN}yoga.png');"></div>
+          <div class="cc-overlay"></div>
+          <div class="cc-icon">&#129336;</div>
+          <div class="cc-name">Yoga &amp; Flow</div>
+          <div class="cc-desc">Restore mobility and build core strength with dynamic yoga sessions.</div>
+          <div class="cc-foot"><span class="cc-dur">60 min</span><span class="cc-lvl">Beginner</span><span class="cc-arr">&#8594;</span></div>
+        </div>
+        <div class="cc anim-up" style="--d:.25s">
+          <div class="cc-bg" style="background-image: url('{_CDN}spin.png');"></div>
+          <div class="cc-overlay"></div>
+          <div class="cc-icon">&#128692;</div>
+          <div class="cc-name">Spin Studio</div>
+          <div class="cc-desc">Indoor cycling with immersive music &amp; LED lighting. Burn 600+ calories.</div>
+          <div class="cc-foot"><span class="cc-dur">45 min</span><span class="cc-lvl">All Levels</span><span class="cc-arr">&#8594;</span></div>
+        </div>
+        <div class="cc anim-up" style="--d:.30s">
+          <div class="cc-bg" style="background-image: url('{_CDN}interior.png');"></div>
+          <div class="cc-overlay"></div>
+          <div class="cc-icon">&#127939;</div>
+          <div class="cc-name">Functional Fit</div>
+          <div class="cc-desc">Train movements not muscles. Improve performance with athletic drills.</div>
+          <div class="cc-foot"><span class="cc-dur">55 min</span><span class="cc-lvl">All Levels</span><span class="cc-arr">&#8594;</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-// Navbar scroll + active link
-const navbar=document.getElementById('navbar');
-const sections=document.querySelectorAll('section[id]');
-function onScroll(){{
-  navbar.classList.toggle('scrolled',scrollY>50);
-  let cur='';
-  sections.forEach(s=>{{if(scrollY>=s.offsetTop-200)cur=s.id}});
-  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
-}}
-window.addEventListener('scroll',onScroll,{{passive:true}});
+  <!-- STATS -->
+  <div class="stats-band">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="si anim-up" style="--d:.00s"><div class="si-num" data-count="1200" data-suffix="+">0</div><div class="si-lbl">Active Members</div></div>
+        <div class="si anim-up" style="--d:.08s"><div class="si-num" data-count="10"   data-suffix="+">0</div><div class="si-lbl">Expert Trainers</div></div>
+        <div class="si anim-up" style="--d:.16s"><div class="si-num" data-count="98"   data-suffix="%">0</div><div class="si-lbl">Satisfaction Rate</div></div>
+        <div class="si anim-up" style="--d:.24s"><div class="si-num" data-count="30"   data-suffix="+">0</div><div class="si-lbl">Weekly Classes</div></div>
+      </div>
+    </div>
+  </div>
 
-// Hamburger
-const hamburger=document.getElementById('hamburger'),navLinks=document.getElementById('navLinks');
-hamburger.addEventListener('click',()=>{{hamburger.classList.toggle('active');navLinks.classList.toggle('active')}});
-navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{{hamburger.classList.remove('active');navLinks.classList.remove('active')}}));
+  <!-- ABOUT -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-left anim-left">
+          <div class="about-main-card">
+            <div class="amc-quote">&ldquo;Built for those who choose<br><span>POWER</span>, Purpose &amp; Progress.&rdquo;</div>
+            <div class="amc-author">&mdash; {name.upper()} PHILOSOPHY</div>
+            <div class="amc-glow"></div>
+          </div>
+          <div class="about-side-card">
+            <div class="asc-val">10+</div>
+            <div class="asc-lbl">Years of Excellence</div>
+          </div>
+        </div>
+        <div class="about-right anim-right">
+          <div class="sec-label">Who We Are</div>
+          <h2 class="sec-title">ELEVATE YOUR<br><span>FITNESS</span> JOURNEY</h2>
+          <p class="sec-sub">{about_text}</p>
+          <div class="about-feats">
+            <div class="af"><div class="af-ico">&#9881;&#65039;</div><div><b>Cutting-Edge Equipment</b><p>Premium machines and free weights for every muscle group.</p></div></div>
+            <div class="af"><div class="af-ico">&#128101;</div><div><b>Expert Guidance</b><p>Certified coaches with proven methods to accelerate your results.</p></div></div>
+            <div class="af"><div class="af-ico">&#127775;</div><div><b>Atmosphere &amp; Community</b><p>A motivating environment where every member feels supported.</p></div></div>
+            <div class="af"><div class="af-ico">&#128336;</div><div><b>Flexible Hours</b><p>Open 5AM&ndash;11PM daily. Your schedule never stops your fitness.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-// Scroll reveal
-const revObs=new IntersectionObserver(entries=>entries.forEach(e=>{{if(e.isIntersecting){{e.target.classList.add('revealed');revObs.unobserve(e.target)}}}},{{threshold:0.1}}));
-document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+  <!-- TRAINERS -->
+  <section class="section section-alt" id="trainers">
+    <div class="container">
+      <div class="sec-head center anim-up">
+        <div class="sec-label" style="justify-content:center">Meet The Team</div>
+        <h2 class="sec-title">OUR <span>EXPERT</span> TRAINERS</h2>
+        <p class="sec-sub" style="max-width:500px;margin:12px auto 0">Certified professionals who bring passion and personalized attention to every session.</p>
+      </div>
+      <div class="trainers-grid">
+        <div class="tc anim-up" style="--d:.05s">
+          <div class="tc-img">
+            <img src="{_CDN}athlete.png" alt="Head Strength Coach">
+            <div class="tc-ov"></div>
+            <div class="tc-tags"><span>Strength</span><span>Powerlifting</span></div>
+          </div>
+          <div class="tc-body"><div class="tc-name">MARCUS REEVES</div><div class="tc-role">Head Strength Coach</div><div class="tc-stats"><span><b>8yr</b> Exp.</span><span><b>200+</b> Clients</span><span><b>4.9&#9733;</b></span></div></div>
+        </div>
+        <div class="tc anim-up" style="--d:.15s">
+          <div class="tc-img">
+            <img src="{_CDN}hiit.png" alt="HIIT Specialist">
+            <div class="tc-ov"></div>
+            <div class="tc-tags"><span>HIIT</span><span>Cardio</span></div>
+          </div>
+          <div class="tc-body"><div class="tc-name">SARAH CHEN</div><div class="tc-role">HIIT &amp; Cardio Specialist</div><div class="tc-stats"><span><b>6yr</b> Exp.</span><span><b>180+</b> Clients</span><span><b>4.8&#9733;</b></span></div></div>
+        </div>
+        <div class="tc anim-up" style="--d:.25s">
+          <div class="tc-img">
+            <img src="{_CDN}boxing.png" alt="Combat Sports Coach">
+            <div class="tc-ov"></div>
+            <div class="tc-tags"><span>Boxing</span><span>MMA</span></div>
+          </div>
+          <div class="tc-body"><div class="tc-name">DEREK STONE</div><div class="tc-role">Combat Sports Coach</div><div class="tc-stats"><span><b>10yr</b> Exp.</span><span><b>150+</b> Clients</span><span><b>5.0&#9733;</b></span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-// Testimonials slider
-(function(){{
-  const slider=document.getElementById('tSlider'),dotsEl=document.getElementById('tDots');
-  const cards=Array.from(slider.children);
-  let cur=0,startX=0,dragX=0,isDrag=false;
-  function visible(){{return window.innerWidth>991?3:window.innerWidth>600?2:1}}
-  function buildDots(){{
-    const pages=Math.ceil(cards.length/visible());
-    dotsEl.innerHTML='';
-    for(let i=0;i<pages;i++){{
-      const d=document.createElement('div');d.className='t-dot'+(i===Math.floor(cur/visible())?' active':'');
-      d.addEventListener('click',()=>goto(i*visible()));dotsEl.appendChild(d);
-    }}
-  }}
-  function goto(n){{
-    const max=cards.length-visible();cur=Math.max(0,Math.min(n,max));
-    const w=cards[0].offsetWidth+32;slider.style.transform=`translateX(${{-cur*w}}px)`;
-    buildDots();
-  }}
-  document.getElementById('tPrev').addEventListener('click',()=>goto(cur-visible()));
-  document.getElementById('tNext').addEventListener('click',()=>goto(cur+visible()));
-  slider.addEventListener('mousedown',e=>{{isDrag=true;startX=e.clientX;slider.classList.add('dragging')}});
-  window.addEventListener('mousemove',e=>{{if(isDrag)dragX=e.clientX-startX}});
-  window.addEventListener('mouseup',()=>{{
-    if(!isDrag)return;isDrag=false;slider.classList.remove('dragging');
-    const w=cards[0].offsetWidth+32;if(Math.abs(dragX)>w*.25)goto(dragX<0?cur+visible():cur-visible());else goto(cur);
-    dragX=0;
-  }});
-  slider.addEventListener('touchstart',e=>{{startX=e.touches[0].clientX}},{{passive:true}});
-  slider.addEventListener('touchend',e=>{{
-    const dx=e.changedTouches[0].clientX-startX;
-    const w=cards[0].offsetWidth+32;if(Math.abs(dx)>w*.25)goto(dx<0?cur+visible():cur-visible());
-  }},{{passive:true}});
-  buildDots();
-  window.addEventListener('resize',()=>goto(0));
-}})();
-</script>
+  <!-- SCHEDULE -->
+  <section class="section" id="schedule">
+    <div class="container">
+      <div class="sec-head anim-up">
+        <div>
+          <div class="sec-label">Book Your Session</div>
+          <h2 class="sec-title">WEEKLY <span>SCHEDULE</span></h2>
+          <p class="sec-sub">Reserve your spot. Classes fill fast &mdash; don&#8217;t miss out.</p>
+        </div>
+      </div>
+      <div class="sched-tabs" id="schedTabs">
+        <button class="sched-tab active" data-day="mon">Mon</button>
+        <button class="sched-tab" data-day="tue">Tue</button>
+        <button class="sched-tab" data-day="wed">Wed</button>
+        <button class="sched-tab" data-day="thu">Thu</button>
+        <button class="sched-tab" data-day="fri">Fri</button>
+        <button class="sched-tab" data-day="sat">Sat</button>
+        <button class="sched-tab" data-day="sun">Sun</button>
+      </div>
+      <div class="sched-list anim-up" id="schedList"></div>
+    </div>
+  </section>
 
+  <!-- GALLERY -->
+  <section class="section section-alt" id="gallery">
+    <div class="container">
+      <div class="sec-head center anim-up">
+        <div class="sec-label" style="justify-content:center">Virtual Tour</div>
+        <h2 class="sec-title">OUR <span>FACILITY</span></h2>
+        <p class="sec-sub" style="max-width:500px;margin:12px auto 0">Take a virtual tour of our premium spaces, top-of-the-line equipment, and dynamic fitness studios.</p>
+      </div>
+      <div class="gallery-grid">
+        <div class="gallery-item anim-up tall" style="--d:.05s">
+          <img src="{_CDN}interior.png" alt="{name} Weight Room">
+          <div class="gi-overlay"><div class="gi-content"><span class="gi-tag">Strength Zone</span><h3 class="gi-title">Main Weight Floor</h3></div></div>
+        </div>
+        <div class="gallery-item anim-up" style="--d:.10s">
+          <img src="{_CDN}athlete.png" alt="Athlete Training">
+          <div class="gi-overlay"><div class="gi-content"><span class="gi-tag">Coaching</span><h3 class="gi-title">Personal Training Zone</h3></div></div>
+        </div>
+        <div class="gallery-item anim-up" style="--d:.15s">
+          <img src="{_CDN}boxing.png" alt="Boxing training">
+          <div class="gi-overlay"><div class="gi-content"><span class="gi-tag">Combat Studio</span><h3 class="gi-title">Heavy Bag Arena</h3></div></div>
+        </div>
+        <div class="gallery-item anim-up" style="--d:.20s">
+          <img src="{_CDN}yoga.png" alt="Yoga Class">
+          <div class="gi-overlay"><div class="gi-content"><span class="gi-tag">Mindfulness</span><h3 class="gi-title">Zen Yoga Studio</h3></div></div>
+        </div>
+        <div class="gallery-item anim-up tall" style="--d:.25s">
+          <img src="{_CDN}spin.png" alt="Spin Studio">
+          <div class="gi-overlay"><div class="gi-content"><span class="gi-tag">Cycling</span><h3 class="gi-title">Velo Spin Theater</h3></div></div>
+        </div>
+        <div class="gallery-item anim-up" style="--d:.30s">
+          <img src="{_CDN}hiit.png" alt="HIIT Class">
+          <div class="gi-overlay"><div class="gi-content"><span class="gi-tag">HIIT Studio</span><h3 class="gi-title">Group Circuit Arena</h3></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-{cta_block(business)}
+  <!-- PRICING -->
+  <section class="section section-alt" id="pricing">
+    <div class="container">
+      <div class="sec-head center anim-up">
+        <div class="sec-label" style="justify-content:center">Simple Pricing</div>
+        <h2 class="sec-title">CHOOSE YOUR <span>PLAN</span></h2>
+        <p class="sec-sub" style="max-width:460px;margin:12px auto 0">No hidden fees. Cancel anytime. Start your transformation today.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pc anim-up" style="--d:.05s">
+          <div class="pc-tier">Daily Pass</div>
+          <div class="pc-price"><span class="pc-cur">$</span><span class="pc-amt" data-count="12">12</span><span class="pc-per">/day</span></div>
+          <div class="pc-desc">Perfect for visitors or occasional training with no commitment.</div>
+          <div class="pc-feats">
+            <div class="pf yes">Full gym access</div>
+            <div class="pf yes">Locker rooms &amp; showers</div>
+            <div class="pf yes">1 Group class</div>
+            <div class="pf no">Personal trainer session</div>
+            <div class="pf no">Nutrition consultation</div>
+          </div>
+          <button class="pc-btn ghost" onclick="selectPlan('Daily Pass')">Get Day Pass</button>
+        </div>
+        <div class="pc pc-pop anim-up" style="--d:.15s">
+          <div class="pc-badge">Most Popular</div>
+          <div class="pc-tier">Monthly</div>
+          <div class="pc-price"><span class="pc-cur">$</span><span class="pc-amt" data-count="89">89</span><span class="pc-per">/month</span></div>
+          <div class="pc-desc">Our most popular plan. Unlimited access to transform your fitness.</div>
+          <div class="pc-feats">
+            <div class="pf yes">Unlimited gym access</div>
+            <div class="pf yes">All group classes</div>
+            <div class="pf yes">2 PT sessions/month</div>
+            <div class="pf yes">Nutrition plan access</div>
+            <div class="pf no">Private coaching</div>
+          </div>
+          <button class="pc-btn solid" onclick="selectPlan('Monthly')">Start Monthly</button>
+        </div>
+        <div class="pc anim-up" style="--d:.25s">
+          <div class="pc-tier">Yearly Elite</div>
+          <div class="pc-price"><span class="pc-cur">$</span><span class="pc-amt" data-count="799">799</span><span class="pc-per">/year</span></div>
+          <div class="pc-desc">Best value for serious athletes. Save $270+ vs monthly billing.</div>
+          <div class="pc-feats">
+            <div class="pf yes">Everything in Monthly</div>
+            <div class="pf yes">Weekly PT sessions</div>
+            <div class="pf yes">Private coaching</div>
+            <div class="pf yes">Body composition scans</div>
+            <div class="pf yes">Priority class booking</div>
+          </div>
+          <button class="pc-btn ghost" onclick="selectPlan('Yearly Elite')">Go Elite &#8594;</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
-{_track_pixel(business)}
+  <!-- TESTIMONIALS -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="sec-head anim-up">
+        <div>
+          <div class="sec-label">Real Results</div>
+          <h2 class="sec-title">FROM OUR <span>MEMBERS</span></h2>
+        </div>
+      </div>
+      <div class="testi-wrap">
+        <div class="testi-track" id="testiTrack">
+"""
 
+    part_testimonials = testi_cards_html
+
+    part_after_testi = f"""        </div>
+      </div>
+      <div class="testi-dots" id="testiDots">
+        <button class="td active" data-i="0"></button>
+        <button class="td" data-i="1"></button>
+        <button class="td" data-i="2"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA / CONTACT -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="cta-box anim-up">
+        <div class="cta-glow"></div>
+        <div class="cta-grid-bg"></div>
+        <div class="cta-inner">
+          <div class="sec-label" style="justify-content:center;margin-bottom:14px">Join The Movement</div>
+          <h2 class="cta-title">LET&#8217;S BUILD YOUR<br><span>BEST SELF</span></h2>
+          <p class="cta-desc">Get your free first session and see why members choose {name}. No commitment required.</p>
+          <form class="cta-form" onsubmit="handleCTA(event)">
+            <input type="email" class="cta-input" id="ctaEmail" placeholder="Enter your email address" required>
+            <button type="submit" class="btn-primary btn-lg">Get Started &#8594;</button>
+          </form>
+          <p class="cta-fine">Free first session &middot; No credit card &middot; Cancel anytime</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer" id="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="fb">
+          <div class="navbar-logo" style="font-size:22px;margin-bottom:12px;color:#FFFFFF;display:flex;align-items:center;">
+            <img src="{_CDN}logo-emblem-dark.png" alt="{name} Logo" class="footer-logo-img">
+            {name}
+          </div>
+          <p>Join our community of dedicated athletes. Transform your body. Transform your life.</p>
+          <div class="fb-socials">
+            <a href="{'https://instagram.com/' + instagram.lstrip('@') if instagram else '#'}" class="soc" aria-label="Instagram" {"target=_blank rel=noopener" if instagram else ""}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+            <a href="{website if website else '#'}" class="soc" aria-label="Website" {"target=_blank rel=noopener" if website else ""}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            </a>
+            <a href="{maps_url if maps_url else '#'}" class="soc" aria-label="Google Maps" {"target=_blank rel=noopener" if maps_url else ""}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div>
+          <div class="ft">Quick Links</div>
+          <ul class="fl"><li><a href="#home">Home</a></li><li><a href="#classes">Classes</a></li><li><a href="#about">About Us</a></li><li><a href="#trainers">Trainers</a></li><li><a href="#schedule">Schedule</a></li></ul>
+        </div>
+        <div>
+          <div class="ft">Programs</div>
+          <ul class="fl"><li><a href="#classes">Strength Training</a></li><li><a href="#classes">HIIT Cardio</a></li><li><a href="#classes">Yoga &amp; Flow</a></li><li><a href="#classes">Combat HIIT</a></li><li><a href="#classes">Personal Training</a></li></ul>
+        </div>
+        <div>
+          <div class="ft">Contact</div>
+          <ul class="fl">
+            <li><a href="{maps_url if maps_url else '#'}" {"target=_blank rel=noopener" if maps_url else ""}>{address_line}</a></li>
+            {'<li><a href="tel:' + phone + '">' + phone_line + '</a></li>' if phone else ''}
+            {'<li><a href="mailto:' + email + '">' + email_line + '</a></li>' if email else ''}
+            <li><a href="#">&#128336; Mon&ndash;Sun: 5AM&ndash;11PM</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2025 {name}. All Rights Reserved.</span>
+        <div><a href="#">Privacy Policy</a><a href="#">Terms</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottomNav">
+    <div style="display:flex;justify-content:space-around;align-items:center;width:100%">
+      <button class="bn active" id="bn-home"     onclick="bnNav(this,'#home')">
+        <span>&#127968;</span><span>Home</span>
+      </button>
+      <button class="bn"        id="bn-classes"  onclick="bnNav(this,'#classes')">
+        <span>&#127947;&#65039;</span><span>Classes</span>
+      </button>
+      <button class="bn"        id="bn-schedule" onclick="bnNav(this,'#schedule')">
+        <span>&#128197;</span><span>Schedule</span>
+      </button>
+      <button class="bn"        id="bn-pricing"  onclick="bnNav(this,'#pricing')">
+        <span>&#128179;</span><span>Plans</span>
+      </button>
+      <button class="bn"        id="bn-contact"  onclick="bnNav(this,'#contact')">
+        <span>&#128100;</span><span>Join</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- SCROLL TO TOP -->
+  <button class="scroll-top" id="scrollTop" onclick="window.scrollTo({{top:0,behavior:'smooth'}})">&#8593;</button>
+
+  <!-- PROFILE DRAWER -->
+  <div class="profile-drawer" id="profileDrawer">
+    <div class="pd-header">
+      <div class="navbar-logo" style="font-size:18px;color:#FFFFFF;display:flex;align-items:center;">
+        <img src="{_CDN}logo-emblem-dark.png" alt="{name} Logo" class="drawer-logo-img">
+        {name}
+      </div>
+      <button class="pd-close" onclick="closeProfileDrawer()">&#215;</button>
+    </div>
+    <div class="pd-body">
+      <div class="pd-user-info">
+        <div class="pd-avatar">{''.join(c for c in name.upper() if c.isalpha())[:2]}</div>
+        <div>
+          <h4 class="pd-name">{name}</h4>
+          <span class="pd-badge">Elite Member</span>
+        </div>
+      </div>
+      <div class="pd-menu">
+        <div class="pd-menu-title">Quick Actions</div>
+        <a href="#contact" onclick="closeProfileDrawer()">&#128197; Book a Free Session</a>
+        <a href="#classes" onclick="closeProfileDrawer()">&#127947;&#65039; View Classes</a>
+        <a href="#pricing" onclick="closeProfileDrawer()">&#128179; Membership Plans</a>
+        <a href="#schedule" onclick="closeProfileDrawer()">&#128336; Weekly Schedule</a>
+      </div>
+    </div>
+  </div>
+  <div class="pd-overlay" id="pdOverlay" onclick="closeProfileDrawer()"></div>
+
+  {pixel_html}
+
+  <script>
+"""
+
+    part_js = '/* =====================================================\n   APEX GYM — app.js\n   ===================================================== */\n\n\'use strict\';\n\n/* ===== SCHEDULE DATA ===== */\nconst SCHEDULE = {\n  mon: [\n    { time:\'06:00\', name:\'Power Surge HIIT\',       trainer:\'Sarah Chen\',    spots:\'4 spots left\' },\n    { time:\'08:00\', name:\'Strength Foundations\',   trainer:\'Marcus Reeves\', spots:\'8 spots left\' },\n    { time:\'10:00\', name:\'Yoga Flow\',              trainer:\'Anya Patel\',    spots:\'12 spots left\' },\n    { time:\'12:00\', name:\'Lunch Burn HIIT\',        trainer:\'Sarah Chen\',    spots:\'2 spots left\' },\n    { time:\'17:00\', name:\'Combat HIIT\',            trainer:\'Derek Stone\',   spots:\'6 spots left\' },\n    { time:\'19:00\', name:\'Evening Strength\',       trainer:\'Marcus Reeves\', spots:\'10 spots left\' },\n  ],\n  tue: [\n    { time:\'06:00\', name:\'Morning Cardio Blast\',   trainer:\'Sarah Chen\',    spots:\'5 spots left\' },\n    { time:\'09:00\', name:\'Functional Fitness\',     trainer:\'Anya Patel\',    spots:\'9 spots left\' },\n    { time:\'11:00\', name:\'Boxing Fundamentals\',    trainer:\'Derek Stone\',   spots:\'3 spots left\' },\n    { time:\'17:30\', name:\'Power Yoga\',             trainer:\'Anya Patel\',    spots:\'7 spots left\' },\n    { time:\'19:00\', name:\'Advanced HIIT\',          trainer:\'Sarah Chen\',    spots:\'1 spot left\'  },\n  ],\n  wed: [\n    { time:\'06:00\', name:\'Strength & Power\',       trainer:\'Marcus Reeves\', spots:\'6 spots left\' },\n    { time:\'08:30\', name:\'Spin Studio\',            trainer:\'Jenny Liu\',     spots:\'10 spots left\' },\n    { time:\'12:00\', name:\'Combat HIIT\',            trainer:\'Derek Stone\',   spots:\'4 spots left\' },\n    { time:\'17:00\', name:\'Yoga & Stretch\',         trainer:\'Anya Patel\',    spots:\'14 spots left\' },\n    { time:\'19:00\', name:\'Night Burn HIIT\',        trainer:\'Sarah Chen\',    spots:\'8 spots left\' },\n  ],\n  thu: [\n    { time:\'07:00\', name:\'Morning Power\',          trainer:\'Marcus Reeves\', spots:\'5 spots left\' },\n    { time:\'09:30\', name:\'Cardio Dance\',           trainer:\'Jenny Liu\',     spots:\'11 spots left\' },\n    { time:\'12:00\', name:\'Core & Stability\',       trainer:\'Anya Patel\',    spots:\'9 spots left\' },\n    { time:\'18:00\', name:\'Kickboxing HIIT\',        trainer:\'Derek Stone\',   spots:\'2 spots left\' },\n    { time:\'20:00\', name:\'Strength Session\',       trainer:\'Marcus Reeves\', spots:\'6 spots left\' },\n  ],\n  fri: [\n    { time:\'06:00\', name:\'Friday Fire HIIT\',       trainer:\'Sarah Chen\',    spots:\'3 spots left\' },\n    { time:\'08:00\', name:\'Spin Studio\',            trainer:\'Jenny Liu\',     spots:\'7 spots left\' },\n    { time:\'10:00\', name:\'Strength Training\',      trainer:\'Marcus Reeves\', spots:\'8 spots left\' },\n    { time:\'12:00\', name:\'Boxing Class\',           trainer:\'Derek Stone\',   spots:\'5 spots left\' },\n    { time:\'17:00\', name:\'Yoga Recovery\',          trainer:\'Anya Patel\',    spots:\'12 spots left\' },\n  ],\n  sat: [\n    { time:\'08:00\', name:\'Weekend Warrior\',        trainer:\'Marcus Reeves\', spots:\'2 spots left\' },\n    { time:\'10:00\', name:\'Combat Conditioning\',    trainer:\'Derek Stone\',   spots:\'6 spots left\' },\n    { time:\'12:00\', name:\'Power Yoga\',             trainer:\'Anya Patel\',    spots:\'10 spots left\' },\n    { time:\'14:00\', name:\'HIIT Circuit\',           trainer:\'Sarah Chen\',    spots:\'4 spots left\' },\n  ],\n  sun: [\n    { time:\'09:00\', name:\'Sunday Reset Yoga\',      trainer:\'Anya Patel\',    spots:\'15 spots left\' },\n    { time:\'11:00\', name:\'Active Recovery\',        trainer:\'Jenny Liu\',     spots:\'8 spots left\' },\n    { time:\'14:00\', name:\'Light Strength\',         trainer:\'Marcus Reeves\', spots:\'10 spots left\' },\n  ],\n};\n\n/* ===== RENDER SCHEDULE ===== */\nfunction renderSchedule(day) {\n  const list = document.getElementById(\'schedList\');\n  if (!list) return;\n  const items = SCHEDULE[day] || [];\n  list.innerHTML = items.map(item => `\n    <div class="sched-item">\n      <div class="sched-time">${item.time}</div>\n      <div class="sched-div"></div>\n      <div class="sched-info">\n        <div class="sched-name">${item.name}</div>\n        <div class="sched-trainer">with ${item.trainer}</div>\n      </div>\n      <div class="sched-spots">${item.spots}</div>\n      <button class="sched-btn" onclick="bookClass(\'${item.name}\')">Book →</button>\n    </div>\n  `).join(\'\');\n}\n\n/* ===== SCHEDULE TABS ===== */\nconst schedTabs = document.getElementById(\'schedTabs\');\nif (schedTabs) {\n  schedTabs.addEventListener(\'click\', e => {\n    const tab = e.target.closest(\'.sched-tab\');\n    if (!tab) return;\n    schedTabs.querySelectorAll(\'.sched-tab\').forEach(t => t.classList.remove(\'active\'));\n    tab.classList.add(\'active\');\n    renderSchedule(tab.dataset.day);\n  });\n}\n\n/* Set today\'s tab as active */\nconst DAYS = [\'sun\',\'mon\',\'tue\',\'wed\',\'thu\',\'fri\',\'sat\'];\nconst todayKey = DAYS[new Date().getDay()];\nconst todayTab = document.querySelector(`[data-day="${todayKey}"]`);\nif (todayTab) {\n  document.querySelectorAll(\'.sched-tab\').forEach(t => t.classList.remove(\'active\'));\n  todayTab.classList.add(\'active\');\n  renderSchedule(todayKey);\n} else {\n  renderSchedule(\'mon\');\n}\n\nfunction bookClass(name) {\n  showToast(`🎉 Booking sent for "${name}"! Check your email.`);\n}\n\n/* ===== NAVBAR SCROLL ===== */\nconst navbar = document.getElementById(\'navbar\');\nconst scrollTopBtn = document.getElementById(\'scrollTop\');\n\nwindow.addEventListener(\'scroll\', () => {\n  const y = window.scrollY;\n  navbar?.classList.toggle(\'scrolled\', y > 50);\n  scrollTopBtn?.classList.toggle(\'vis\', y > 400);\n  updateBottomNav(y);\n}, { passive: true });\n\n/* ===== HAMBURGER / MOBILE MENU ===== */\nconst hamburger = document.getElementById(\'hamburger\');\nconst mobileMenu = document.getElementById(\'mobileMenu\');\nconst mmOverlay  = document.getElementById(\'mmOverlay\');\n\nhamburger?.addEventListener(\'click\', () => {\n  const isOpen = mobileMenu.classList.toggle(\'open\');\n  hamburger.classList.toggle(\'open\', isOpen);\n  mmOverlay?.classList.toggle(\'show\', isOpen);\n  document.body.style.overflow = isOpen ? \'hidden\' : \'\';\n});\n\nfunction closeMobileMenu() {\n  mobileMenu?.classList.remove(\'open\');\n  hamburger?.classList.remove(\'open\');\n  mmOverlay?.classList.remove(\'show\');\n  document.body.style.overflow = \'\';\n}\n\n/* ===== COUNTER ANIMATION ===== */\nconst counted = new WeakSet();\n\nfunction animateCount(el) {\n  if (counted.has(el)) return;\n  counted.add(el);\n\n  const raw    = parseInt(el.dataset.count, 10);\n  const suffix = el.dataset.suffix || \'\';\n  const dur    = 1800;\n  const start  = performance.now();\n\n  function tick(now) {\n    const p = Math.min((now - start) / dur, 1);\n    const e = 1 - Math.pow(1 - p, 3); // ease-out-cubic\n    const v = Math.round(e * raw);\n\n    if (raw >= 1000) {\n      /* suffix like "K+" already includes K, so just strip the K from suffix if present */\n      const cleanSuffix = suffix.startsWith(\'K\') ? suffix.slice(1) : suffix;\n      el.textContent = (v >= 1000 ? (v / 1000).toFixed(0) : v) + \'K\' + cleanSuffix;\n    } else {\n      el.textContent = v + suffix;\n    }\n    if (p < 1) requestAnimationFrame(tick);\n  }\n  requestAnimationFrame(tick);\n}\n\n/* ===== INTERSECTION OBSERVER ===== */\nconst io = new IntersectionObserver(entries => {\n  entries.forEach(entry => {\n    if (!entry.isIntersecting) return;\n    const el = entry.target;\n    el.classList.add(\'vis\');\n    /* trigger counters inside this element */\n    el.querySelectorAll(\'[data-count]\').forEach(animateCount);\n    /* if the element itself is a counter */\n    if (el.hasAttribute(\'data-count\')) animateCount(el);\n  });\n}, { threshold: 0.14 });\n\ndocument.querySelectorAll(\n  \'.anim-up, .anim-left, .anim-right, .si, [data-count]\'\n).forEach(el => io.observe(el));\n\n/* Run hero stat counters after a short delay */\nsetTimeout(() => {\n  document.querySelectorAll(\'.hs-num[data-count]\').forEach(animateCount);\n}, 900);\n\n/* ===== TESTIMONIALS SLIDER ===== */\nlet currentSlide = 0;\nconst testiTrack = document.getElementById(\'testiTrack\');\nconst testiDots  = document.querySelectorAll(\'.td\');\nlet autoSlide;\n\nfunction perView() { return window.innerWidth <= 768 ? 1 : 3; }\nfunction maxSlide() {\n  return Math.max(0, (testiTrack?.children.length || 0) - perView());\n}\n\nfunction goSlide(idx) {\n  if (!testiTrack) return;\n  currentSlide = Math.max(0, Math.min(idx, maxSlide()));\n  const w = testiTrack.children[0]?.offsetWidth + 20 || 0;\n  testiTrack.style.transform = `translateX(-${currentSlide * w}px)`;\n  testiDots.forEach((d, i) => d.classList.toggle(\'active\', i === currentSlide));\n}\n\ntestiDots.forEach(dot => {\n  dot.addEventListener(\'click\', () => goSlide(+dot.dataset.i));\n});\n\nfunction startAutoSlide() {\n  stopAutoSlide();\n  autoSlide = setInterval(() => goSlide((currentSlide + 1) > maxSlide() ? 0 : currentSlide + 1), 4500);\n}\nfunction stopAutoSlide() { clearInterval(autoSlide); }\n\nstartAutoSlide();\n\n/* Touch swipe */\nlet tx = 0;\ntestiTrack?.addEventListener(\'touchstart\', e => { tx = e.touches[0].clientX; stopAutoSlide(); }, { passive: true });\ntestiTrack?.addEventListener(\'touchend\', e => {\n  const diff = tx - e.changedTouches[0].clientX;\n  if (Math.abs(diff) > 44) goSlide(currentSlide + (diff > 0 ? 1 : -1));\n  startAutoSlide();\n});\n\nwindow.addEventListener(\'resize\', () => goSlide(0));\n\n/* ===== PRICING COUNTERS ===== */\nconst pcObserver = new IntersectionObserver(entries => {\n  entries.forEach(entry => {\n    if (entry.isIntersecting) {\n      entry.target.querySelectorAll(\'.pc-amt[data-count]\').forEach(animateCount);\n    }\n  });\n}, { threshold: 0.3 });\ndocument.querySelectorAll(\'.pc\').forEach(c => pcObserver.observe(c));\n\n/* ===== BOTTOM NAV ===== */\nconst BN_MAP = [\n  { id: \'bn-home\',     section: \'home\'     },\n  { id: \'bn-classes\',  section: \'classes\'  },\n  { id: \'bn-schedule\', section: \'schedule\' },\n  { id: \'bn-pricing\',  section: \'pricing\'  },\n  { id: \'bn-contact\',  section: \'contact\'  },\n];\n\nfunction bnNav(btn, href) {\n  document.querySelectorAll(\'.bn\').forEach(b => b.classList.remove(\'active\'));\n  btn.classList.add(\'active\');\n  document.querySelector(href)?.scrollIntoView({ behavior: \'smooth\' });\n}\n\nfunction updateBottomNav(y) {\n  let current = \'\';\n  BN_MAP.forEach(({ section }) => {\n    const el = document.getElementById(section);\n    if (el && y >= el.offsetTop - 220) current = section;\n  });\n  BN_MAP.forEach(({ id, section }) => {\n    document.getElementById(id)?.classList.toggle(\'active\', section === current);\n  });\n}\n\n/* ===== CTA FORM ===== */\nfunction handleCTA(e) {\n  e.preventDefault();\n  const email = document.getElementById(\'ctaEmail\')?.value || \'\';\n  if (!email || !email.includes(\'@\')) {\n    showToast(\'⚠️ Please enter a valid email address.\');\n    return;\n  }\n  showToast(`🎉 Welcome! Free session details sent to ${email.split(\'@\')[0]}@...`);\n  document.getElementById(\'ctaEmail\').value = \'\';\n}\n\n/* ===== SELECT PLAN ===== */\nfunction selectPlan(plan) {\n  showToast(`✅ You selected the ${plan} plan! Redirecting to checkout...`);\n}\n\n/* ===== TOAST NOTIFICATION ===== */\nlet toastTimer;\nfunction showToast(msg) {\n  let toast = document.getElementById(\'apex-toast\');\n  if (!toast) {\n    toast = document.createElement(\'div\');\n    toast.id = \'apex-toast\';\n    toast.className = \'toast\';\n    document.body.appendChild(toast);\n  }\n  toast.textContent = msg;\n  toast.classList.add(\'show\');\n  clearTimeout(toastTimer);\n  toastTimer = setTimeout(() => toast.classList.remove(\'show\'), 3600);\n}\n\n/* ===== SMOOTH CLOSE: click nav links ===== */\ndocument.querySelectorAll(\'a[href^="#"]\').forEach(a => {\n  a.addEventListener(\'click\', e => {\n    const target = document.querySelector(a.getAttribute(\'href\'));\n    if (target) {\n      e.preventDefault();\n      target.scrollIntoView({ behavior: \'smooth\' });\n    }\n  });\n});\n\n/* ===== PERFORMANCE: lazy-start marquee pause on hover ===== */\nconst marqueeTrack = document.querySelector(\'.marquee-track\');\nmarqueeTrack?.parentElement?.addEventListener(\'mouseenter\', () => {\n  marqueeTrack.style.animationPlayState = \'paused\';\n});\nmarqueeTrack?.parentElement?.addEventListener(\'mouseleave\', () => {\n  marqueeTrack.style.animationPlayState = \'running\';\n});\n\n/* ===== PROFILE DRAWER CONTROL ===== */\nfunction openProfileDrawer(event) {\n  event?.preventDefault();\n  event?.stopPropagation();\n  const drawer = document.getElementById(\'profileDrawer\');\n  const overlay = document.getElementById(\'pdOverlay\');\n  drawer?.classList.add(\'open\');\n  overlay?.classList.add(\'show\');\n  document.body.style.overflow = \'hidden\';\n}\n\nfunction closeProfileDrawer() {\n  const drawer = document.getElementById(\'profileDrawer\');\n  const overlay = document.getElementById(\'pdOverlay\');\n  drawer?.classList.remove(\'open\');\n  overlay?.classList.remove(\'show\');\n  document.body.style.overflow = \'\';\n}\n\n/* ===== MOBILE FOOTER ACCORDION ===== */\ndocument.querySelectorAll(\'.footer-grid .ft\').forEach(header => {\n  header.addEventListener(\'click\', () => {\n    if (window.innerWidth <= 768) {\n      header.classList.toggle(\'active\');\n    }\n  });\n});\n\n'
+
+    part_tail = """
+  </script>
 </body>
 </html>"""
 
+    return (
+        part_head +
+        part_css +
+        part_mid +
+        part_testimonials +
+        part_after_testi +
+        part_js +
+        part_tail
+    )
 
 
 def _services_html(services: list, accent: str) -> str:

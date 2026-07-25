@@ -86,8 +86,31 @@ def push_local_changes():
     except Exception as e:
         log.error(f"Failed to push changes to Cloudflare: {e}")
 
+def resolve_global_fk(conn, table, global_id):
+    """Helper to map a global_id back to a local integer id"""
+    if not global_id: return None
+    row = conn.execute(f"SELECT id FROM {table} WHERE global_id=?", (global_id,)).fetchone()
+    return row[0] if row else None
+
 def apply_sync_transaction(conn, action, payload):
     """Execute the change locally on the SQLite database using the provided connection."""
+    
+    # Map foreign keys if global_id is provided in the payload payload
+    b_gid = payload.get("business_global_id")
+    if b_gid:
+        local_b_id = resolve_global_fk(conn, "businesses", b_gid)
+        if local_b_id: payload["business_id"] = local_b_id
+        
+    c_gid = payload.get("contact_global_id")
+    if c_gid:
+        local_c_id = resolve_global_fk(conn, "contacts", c_gid)
+        if local_c_id: payload["contact_id"] = local_c_id
+
+    f_gid = payload.get("followup_global_id")
+    if f_gid:
+        local_f_id = resolve_global_fk(conn, "follow_ups", f_gid)
+        if local_f_id: payload["followup_id"] = local_f_id
+
     if action == "update_business_status":
         conn.execute(
             "UPDATE businesses SET status=? WHERE id=?",
@@ -241,85 +264,12 @@ def get_adb_binary() -> str:
 
 def lan_sync_to_peer(peer_ip: str, peer_adb_port: int = 5555, mac_ip: str = None, http_port: int = 9997):
     """
-    Hard failsafe: sync the full DB to a peer device over LAN.
-    Uses SQL dump served over HTTP + Python urllib on the peer (corruption-free).
-    Only syncs if local DB has more data than the peer.
+    DEPRECATED/DISABLED (Failover Fix 2026-07-22): 
+    The old destructive full-DB COUNT(*) override was removed.
+    LAN synchronisation relies purely on the Cloudflare KV sync journals now, which guarantees append-only structural integrity via UUIDs.
     """
-    import subprocess, threading, http.server, tempfile, os
-
-    adb_bin = get_adb_binary()
-
-    try:
-        # Check peer DB size via ADB
-        result = subprocess.run(
-            [adb_bin, "-s", f"{peer_ip}:{peer_adb_port}", "shell",
-             "run-as com.termux python3 -c \"import sqlite3; c=sqlite3.connect('/data/data/com.termux/files/home/leadflow/leadflow.db'); c.execute('PRAGMA busy_timeout=30000'); print(c.execute('SELECT COUNT(*) FROM businesses').fetchone()[0]); c.close()\""],
-            capture_output=True, text=True, timeout=15
-        )
-        peer_count = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
-        local_conn = sqlite3.connect(DB_PATH, timeout=30.0)
-        local_conn.execute("PRAGMA busy_timeout = 5000;")
-        local_count = local_conn.execute("SELECT COUNT(*) FROM businesses").fetchone()[0]
-        local_conn.close()
-
-        if local_count <= peer_count:
-            log.info(f"LAN sync: peer is up to date ({peer_count} businesses >= {local_count}), skipping.")
-            return
-
-        log.info(f"LAN sync: local has {local_count} businesses vs peer {peer_count}, syncing...")
-
-        # Dump local DB as SQL into a temp directory
-        dump_dir = tempfile.mkdtemp()
-        dump_path = os.path.join(dump_dir, "leadflow_dump.sql")
-        conn = sqlite3.connect(DB_PATH, timeout=30.0)
-        conn.execute("PRAGMA busy_timeout = 5000;")
-        with open(dump_path, "w") as f:
-            for line in conn.iterdump():
-                f.write(line + "\n")
-        conn.close()
-
-        # Auto-detect Mac IP if not provided
-        if not mac_ip:
-            import socket
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                s.connect(("8.8.8.8", 80))
-                mac_ip = s.getsockname()[0]
-                s.close()
-            except Exception:
-                mac_ip = "192.168.1.17"
-
-        # Serve the SQL dump via a temporary HTTP server
-        handler = http.server.SimpleHTTPRequestHandler
-        handler.log_message = lambda *a: None  # silence logs
-        import socketserver
-        httpd = socketserver.TCPServer(("", http_port), lambda *a, **kw: handler(*a, directory=dump_dir, **kw))
-        t = threading.Thread(target=httpd.handle_request)
-        t.start()
-
-        # Have the peer download and restore it
-        restore_cmd = (
-            f"import urllib.request, sqlite3, os; "
-            f"db=\\\"/data/data/com.termux/files/home/leadflow/leadflow.db\\\"; "
-            f"sql=\\\"/data/data/com.termux/files/home/leadflow/restore.sql\\\"; "
-            f"urllib.request.urlretrieve(\\\"http://{mac_ip}:{http_port}/leadflow_dump.sql\\\", sql); "
-            f"os.remove(db) if os.path.exists(db) else None; "
-            f"c=sqlite3.connect(db); c.executescript(open(sql).read()); c.close(); "
-            f"os.remove(sql); print('LAN sync restore done')"
-        )
-        subprocess.run(
-            [adb_bin, "-s", f"{peer_ip}:{peer_adb_port}", "shell",
-             f"run-as com.termux /data/data/com.termux/files/usr/bin/python3 -c \"{restore_cmd}\""],
-            capture_output=True, timeout=120
-        )
-        httpd.server_close()
-        os.remove(dump_path)
-        os.rmdir(dump_dir)
-        log.info(f"LAN sync to {peer_ip} complete.")
-
-    except Exception as e:
-        log.warning(f"LAN sync to {peer_ip} failed (non-critical): {e}")
-
+    import logging
+    logging.info(f"lan_sync_to_peer disabled for safe bidirectional failover. Relying on KV journal.")
 
 def run_sync_cycle(lan_peers: list = None):
     """Run full push/pull Cloudflare sync, then LAN failsafe sync to any local peers."""

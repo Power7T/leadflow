@@ -34,7 +34,7 @@ try:
 except Exception:
     DAILY_LOG_FILE = Path(__file__).parent / "ig_daily_sends.json"
 
-# Dynamically resolve device IP (checks user home, script directory, or defaults to 192.168.1.7:5555)
+# Dynamically resolve device IP (checks user home, script directory, or defaults to 192.168.0.162:5555)
 _ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
 _ip_file_local = Path(__file__).parent / ".vivo_ip"
 if _ip_file_home.exists():
@@ -42,14 +42,22 @@ if _ip_file_home.exists():
 elif _ip_file_local.exists():
     FIRESTICK_IP = _ip_file_local.read_text().strip()
 else:
-    FIRESTICK_IP = "192.168.1.7:5555"
+    FIRESTICK_IP = os.environ.get("VIVO_ADB_IP", "192.168.0.162:5555")
+
+_warmup_last_date: str = ""  # tracks last date account_warmup() ran (once-per-day guard)
 
 # ── Daily count tracking ─────────────────────────────────────────────────────
 
 def _load_daily_log() -> dict:
     try:
         if DAILY_LOG_FILE.exists():
-            return json.loads(DAILY_LOG_FILE.read_text())
+            data = json.loads(DAILY_LOG_FILE.read_text())
+            # Prune keys older than today to prevent stale counts blocking sends
+            today = str(date.today())
+            pruned = {k: v for k, v in data.items() if k >= today}
+            if len(pruned) != len(data):
+                _save_daily_log(pruned)
+            return pruned
     except Exception:
         pass
     return {}
@@ -60,15 +68,61 @@ def _save_daily_log(data: dict):
     except Exception as e:
         log.warning(f"[Instagram] Could not save daily log: {e}")
 
+def _sync_daily_count_to_db():
+    """Mirror ig_daily_sends.json count into ig_settings.sent_today for cross-device sync."""
+    try:
+        import sqlite3 as _sq
+        today = str(date.today())
+        count = get_instagram_daily_sent_count()
+        _db = "/Users/chandan/leadflow/leadflow.db"
+        _conn = _sq.connect(_db, timeout=10)
+        # Only update if our count is higher (we may be behind due to other device sending)
+        row = _conn.execute("SELECT sent_today, last_reset_date FROM ig_settings WHERE id=1").fetchone()
+        if row:
+            db_count, db_date = row
+            if db_date != today:
+                # New day in DB — reset
+                _conn.execute("UPDATE ig_settings SET sent_today=?, last_reset_date=? WHERE id=1", (count, today))
+            elif count > db_count:
+                _conn.execute("UPDATE ig_settings SET sent_today=? WHERE id=1", (count,))
+        _conn.commit()
+        _conn.close()
+    except Exception as _e:
+        log.debug(f"[sync_daily_count] DB mirror skipped: {_e}")
+
+def _load_daily_count_from_db() -> int:
+    """Pull sent_today from ig_settings for cross-device sync (DB is synced via Cloudflare)."""
+    try:
+        import sqlite3 as _sq
+        today = str(date.today())
+        _db = "/Users/chandan/leadflow/leadflow.db"
+        _conn = _sq.connect(_db, timeout=10)
+        row = _conn.execute("SELECT sent_today, last_reset_date FROM ig_settings WHERE id=1").fetchone()
+        _conn.close()
+        if row and row[1] == today:
+            return int(row[0])
+    except Exception:
+        pass
+    return 0
+
 def get_instagram_daily_sent_count() -> int:
     today = str(date.today())
-    return _load_daily_log().get(today, 0)
+    file_count = _load_daily_log().get(today, 0)
+    db_count = _load_daily_count_from_db()
+    combined = max(file_count, db_count)
+    # If DB has more (other device sent), sync flat file up
+    if db_count > file_count:
+        data = _load_daily_log()
+        data[today] = db_count
+        _save_daily_log(data)
+    return combined
 
 def _increment_daily_count():
     today = str(date.today())
     data = _load_daily_log()
     data[today] = data.get(today, 0) + 1
     _save_daily_log(data)
+    _sync_daily_count_to_db()  # mirror to DB for cross-device sync
 
 def can_send_instagram() -> bool:
     limit = 45
@@ -106,7 +160,7 @@ def adb(cmd: str) -> str:
     try:
         return subprocess.check_output(
             f"adb -s {FIRESTICK_IP} {cmd}", 
-            shell=True, stderr=subprocess.STDOUT, timeout=15
+            shell=True, stderr=subprocess.STDOUT, timeout=45
         ).decode('utf-8', errors='ignore')
     except subprocess.TimeoutExpired:
         log.warning(f"ADB command timed out: {cmd}")
@@ -167,41 +221,35 @@ def get_ui_coords(text_matches: list, retries: int = 1) -> tuple:
     return None
 
 def type_text(text: str):
-    """Types text via ADB as the shell user with human-like delays."""
-    import base64
+    """Types text via ADB with human-like delays. Spaces → %s for Android ADB."""
     import random
-    
-    # Replace unicode stars with text representation
+
+    # Normalize text — remove problematic characters for shell/Android
     text = text.replace('★', ' star')
-    
-    # Strip newlines and convert crashing unicode em-dashes
-    text = text.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
+    text = text.replace('\n', ' ').replace('\r', '')
     text = text.replace('—', ' - ').replace('–', '-')
-    
-    # Android shell often cuts strings at apostrophes (e.g. "I'm"), so we just delete all quotes completely
-    text = text.replace('"', '').replace("'", "")
-    
-    # Strip any remaining non-ASCII characters to prevent Android command crashes
+    text = text.replace('"', '').replace("'", '')
+
+    # Strip non-ASCII to prevent Android command crashes
     text = text.encode('ascii', errors='ignore').decode('ascii')
-    
-    # Split into random-sized chunks (10 to 25 chars) to mimic human typing bursts
+
+    # Android `input text` requires spaces as %s
+    text = text.replace('%', '\\%')  # escape existing % first
+    text = text.replace(' ', '%s')
+
+    # Split into human-speed chunks (15 to 30 chars)
     chunks = []
     i = 0
     while i < len(text):
-        chunk_len = random.randint(10, 25)
-        chunks.append(text[i:i+chunk_len])
+        chunk_len = random.randint(15, 30)
+        chunks.append(text[i:i + chunk_len])
         i += chunk_len
-    
+
     for chunk in chunks:
-        if not chunk:
+        if not chunk.strip():
             continue
-        b64_chunk = base64.b64encode(chunk.encode('utf-8')).decode('utf-8')
-        
-        # Must execute directly via adb shell so we have input injection permissions
-        adb(f"shell \"input text \\\"$(echo {b64_chunk} | base64 -d | sed 's/ /%s/g')\\\"\"")
-        
-        # Human-like delay between bursts (1.5 to 3.5 seconds)
-        time.sleep(random.uniform(1.5, 3.5))
+        adb(f'shell input text "{chunk}"')
+        time.sleep(random.uniform(1.2, 3.0))
 
 # ── Main send function ───────────────────────────────────────────────────────
 
@@ -209,9 +257,14 @@ def unlock_screen():
     """Wake up and unlock the Vivo phone reliably, resetting ADB first."""
     # Ensure ADB connection is re-established to bypass sleep timeouts
     global FIRESTICK_IP
-    log.info(f"Re-establishing ADB connection to {FIRESTICK_IP}...")
-    subprocess.run(f"adb disconnect {FIRESTICK_IP}", shell=True, capture_output=True)
-    subprocess.run(f"adb connect {FIRESTICK_IP}", shell=True, capture_output=True)
+    import resolve_devices
+    new_ip = resolve_devices.ensure_connected("firestick")
+    if new_ip:
+        FIRESTICK_IP = new_ip
+    else:
+        log.info(f"Re-establishing ADB connection to {FIRESTICK_IP}...")
+        subprocess.run(f"adb disconnect {FIRESTICK_IP}", shell=True, capture_output=True, timeout=30)
+        subprocess.run(f"adb connect {FIRESTICK_IP}", shell=True, capture_output=True, timeout=30)
     time.sleep(2)
 
     # Wake screen
@@ -387,6 +440,12 @@ def bored_human_simulator():
 
 def account_warmup():
     """Scrolls the Instagram home feed and randomly likes posts to build algorithmic trust."""
+    global _warmup_last_date
+    today = str(date.today())
+    if _warmup_last_date == today:
+        log.info("[Warmup] Already warmed up today — skipping.")
+        return
+    _warmup_last_date = today
     import random
     log.info("[Warmup] Starting human-like account warmup sequence...")
     # Launch IG main activity
@@ -410,27 +469,27 @@ def acquire_phone_lock(ip: str, timeout_seconds: int = 180) -> bool:
     import time
     start_time = time.time()
     lock_cmd = f"adb -s {ip} shell mkdir /sdcard/ig_automation_lock 2>/dev/null"
-    
+
     while time.time() - start_time < timeout_seconds:
-        if subprocess.run(lock_cmd, shell=True).returncode == 0:
+        if subprocess.run(lock_cmd, shell=True, timeout=60).returncode == 0:
             return True # Lock acquired successfully
-            
+
         # Lock exists. Check if it's a stale lock (older than 5 mins)
         try:
-            cur_time_str = subprocess.run(f"adb -s {ip} shell date +%s", shell=True, capture_output=True, text=True).stdout.strip()
-            lock_time_str = subprocess.run(f"adb -s {ip} shell stat -c %Y /sdcard/ig_automation_lock", shell=True, capture_output=True, text=True).stdout.strip()
+            cur_time_str = subprocess.run(f"adb -s {ip} shell date +%s", shell=True, capture_output=True, text=True, timeout=60).stdout.strip()
+            lock_time_str = subprocess.run(f"adb -s {ip} shell stat -c %Y /sdcard/ig_automation_lock", shell=True, capture_output=True, text=True, timeout=60).stdout.strip()
             if cur_time_str.isdigit() and lock_time_str.isdigit():
                 if (int(cur_time_str) - int(lock_time_str)) > 300:
                     log.warning("⚠️ STALE LOCK DETECTED: A previous script crashed. Force-clearing the lock.")
-                    subprocess.run(f"adb -s {ip} shell rmdir /sdcard/ig_automation_lock", shell=True)
+                    subprocess.run(f"adb -s {ip} shell rmdir /sdcard/ig_automation_lock", shell=True, timeout=60)
                     continue # Try acquiring again immediately
         except Exception as e:
             pass
-            
+
         elapsed = int(time.time() - start_time)
         log.info(f"Phone is currently busy. Waiting in queue for lock... ({elapsed}s elapsed)")
         time.sleep(5)
-        
+
     log.error(f"Timed out after {timeout_seconds}s waiting in queue for the phone lock.")
     return False
 
@@ -453,7 +512,7 @@ def send_instagram_dm(username: str, message: str) -> bool:
     log.info(f"[Instagram ADB] Starting DM sequence for @{username}...")
     
     # 1. Connect (ensure we are connected before starting)
-    subprocess.run(f"adb connect {FIRESTICK_IP}", shell=True, capture_output=True)
+    subprocess.run(f"adb connect {FIRESTICK_IP}", shell=True, capture_output=True, timeout=30)
 
     # ATOMIC LOCK WITH STALE RECOVERY
     if not acquire_phone_lock(FIRESTICK_IP):
@@ -586,7 +645,7 @@ def send_instagram_dm(username: str, message: str) -> bool:
     finally:
         # ATOMIC LOCK RELEASE: Remove the directory from the phone
         log.info("Releasing physical phone lock...")
-        subprocess.run(f"adb -s {FIRESTICK_IP} shell rmdir /sdcard/ig_automation_lock 2>/dev/null", shell=True)
+        subprocess.run(f"adb -s {FIRESTICK_IP} shell rmdir /sdcard/ig_automation_lock 2>/dev/null", shell=True, timeout=30)
 
     return True
 

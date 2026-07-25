@@ -20,7 +20,7 @@ DB_PATH = "/Users/chandan/leadflow/leadflow.db"
 
 # Resolve device IP dynamically
 from pathlib import Path
-DEVICE_IP = "192.168.1.4:5555" # Default fallback
+DEVICE_IP = "192.168.0.162:5555" # Default fallback
 try:
     _ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
     _ip_file_local = Path(__file__).parent / ".vivo_ip"
@@ -34,7 +34,7 @@ except Exception:
 def adb_run(args):
     import subprocess
     cmd = ["adb", "-s", DEVICE_IP] + args
-    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30)
     return res.stdout
 
 def get_db_connection():
@@ -158,6 +158,9 @@ def respond_with_link(business, last_msg_text):
         conn = get_db_connection()
         conn.execute("UPDATE businesses SET ig_link_delivered = 1, status = 'replied' WHERE id = ?", (business["id"],))
         conn.execute("UPDATE follow_ups SET status = 'cancelled' WHERE business_id = ? AND status = 'pending'", (business["id"],))
+        # Also stamp outreach.replied and follow_ups.replied for tracking consistency
+        conn.execute("UPDATE outreach SET replied=1 WHERE business_id=? AND channel='instagram'", (business["id"],))
+        conn.execute("UPDATE follow_ups SET replied=1 WHERE business_id=?", (business["id"],))
         conn.commit()
         conn.close()
         log.info(f"✅ Successfully delivered mockup link, marked as replied, and cancelled pending follow-ups for ID {business['id']}!")
@@ -348,17 +351,17 @@ def acquire_phone_lock(ip: str, timeout_seconds: int = 180) -> bool:
     lock_cmd = f"adb -s {ip} shell mkdir /sdcard/ig_automation_lock 2>/dev/null"
     
     while time.time() - start_time < timeout_seconds:
-        if subprocess.run(lock_cmd, shell=True).returncode == 0:
+        if subprocess.run(lock_cmd, shell=True, timeout=30).returncode == 0:
             return True # Lock acquired successfully
             
         # Lock exists. Check if it's a stale lock (older than 5 mins)
         try:
-            cur_time_str = subprocess.run(f"adb -s {ip} shell date +%s", shell=True, capture_output=True, text=True).stdout.strip()
-            lock_time_str = subprocess.run(f"adb -s {ip} shell stat -c %Y /sdcard/ig_automation_lock", shell=True, capture_output=True, text=True).stdout.strip()
+            cur_time_str = subprocess.run(f"adb -s {ip} shell date +%s", shell=True, capture_output=True, text=True, timeout=30).stdout.strip()
+            lock_time_str = subprocess.run(f"adb -s {ip} shell stat -c %Y /sdcard/ig_automation_lock", shell=True, capture_output=True, text=True, timeout=30).stdout.strip()
             if cur_time_str.isdigit() and lock_time_str.isdigit():
                 if (int(cur_time_str) - int(lock_time_str)) > 300:
                     log.warning("⚠️ STALE LOCK DETECTED: A previous script crashed. Force-clearing the lock.")
-                    subprocess.run(f"adb -s {ip} shell rmdir /sdcard/ig_automation_lock", shell=True)
+                    subprocess.run(f"adb -s {ip} shell rmdir /sdcard/ig_automation_lock", shell=True, timeout=30)
                     continue # Try acquiring again immediately
         except Exception as e:
             pass
@@ -394,4 +397,4 @@ if __name__ == "__main__":
     finally:
         # ATOMIC LOCK RELEASE
         log.info("Releasing physical phone lock...")
-        subprocess.run(f"adb -s {DEVICE_IP} shell rmdir /sdcard/ig_automation_lock 2>/dev/null", shell=True)
+        subprocess.run(f"adb -s {DEVICE_IP} shell rmdir /sdcard/ig_automation_lock 2>/dev/null", shell=True, timeout=30)

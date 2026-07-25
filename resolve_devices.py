@@ -15,25 +15,98 @@ def normalize_mac(mac):
 def ping_ip(ip):
     subprocess.run(f"ping -c 1 -t 1 {ip}", shell=True, capture_output=True)
 
-def scan_network():
-    # Detect local subnet from gateway
-    subnet = "192.168.1"
+def get_subnet():
+    # Try Android "ip -4 route default"
     try:
-        route_out = subprocess.check_output("route -n get default", shell=True).decode()
-        m = re.search(r"gateway:\s+(\d+\.\d+\.\d+)\.\d+", route_out)
+        out = subprocess.check_output("ip -4 route show default", shell=True, stderr=subprocess.DEVNULL).decode()
+        m = re.search(r"default via (\d+\.\d+\.\d+)\.\d+", out)
         if m:
-            subnet = m.group(1)
+            return m.group(1)
     except Exception:
         pass
-        
+
+    # Try Mac "route -n get default"
+    try:
+        out = subprocess.check_output("route -n get default", shell=True, stderr=subprocess.DEVNULL).decode()
+        m = re.search(r"gateway:\s+(\d+\.\d+\.\d+)\.\d+", out)
+        if m:
+            return m.group(1)
+    except Exception:
+        pass
+
+    # Try ip addr
+    try:
+        out = subprocess.check_output("ip -4 addr show", shell=True, stderr=subprocess.DEVNULL).decode()
+        m = re.search(r"inet (\d+\.\d+\.\d+)\.\d+/\d+", out)
+        if m:
+            return m.group(1)
+    except Exception:
+        pass
+
+    try:
+        out = subprocess.check_output("ifconfig", shell=True, stderr=subprocess.DEVNULL).decode()
+        for line in out.split('\n'):
+            line = line.strip()
+            if line.startswith("inet ") and "127.0.0.1" not in line:
+                import re
+                m = re.search(r"inet (\d+\.\d+\.\d+)\.\d+", line)
+                if m:
+                    return m.group(1)
+    except Exception:
+        pass
+
+    # Last resort: detect own IP via socket and extract subnet
+    try:
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(1)
+        s.connect(("8.8.8.8", 80))
+        own_ip = s.getsockname()[0]
+        s.close()
+        parts = own_ip.split(".")
+        if len(parts) == 4 and not own_ip.startswith("127."):
+            return ".".join(parts[:3])
+    except Exception:
+        pass
+
+    return "192.168.0"
+
+def scan_network():
+    subnet = get_subnet()
+    print(f"Scanning network subnet: {subnet}.*")
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=30) as executor:
         for i in range(1, 255):
             executor.submit(ping_ip, f"{subnet}.{i}")
 
+def get_arp_table():
+    # Try arp -an first
+    try:
+        arp_out = subprocess.check_output("arp -an", shell=True, stderr=subprocess.DEVNULL).decode()
+        if arp_out.strip():
+            return arp_out
+    except Exception:
+        pass
+
+    # Fallback for Android/Termux if arp is restricted
+    try:
+        ip_neigh = subprocess.check_output("ip neigh show", shell=True, stderr=subprocess.DEVNULL).decode()
+        if ip_neigh.strip():
+            # Format: 192.168.0.113 dev wlan0 lladdr ec:2b:eb:b0:01:a3 REACHABLE
+            out = []
+            for line in ip_neigh.split('\n'):
+                m = re.search(r"(\d+\.\d+\.\d+\.\d+).*lladdr\s+([0-9a-fA-F:]+)", line)
+                if m:
+                    out.append(f"? ({m.group(1)}) at {m.group(2)}")
+            return "\n".join(out)
+    except Exception:
+        pass
+
+    return ""
+
 def resolve():
     # 1. Parse current ARP cache first
-    arp_out = subprocess.check_output("arp -an", shell=True).decode()
+    arp_out = get_arp_table()
     
     fs_ip = None
     vivo_ip = None
@@ -51,7 +124,7 @@ def resolve():
     # 2. If not in cache, run a concurrent scan to populate ARP cache
     if not fs_ip or not vivo_ip:
         scan_network()
-        arp_out = subprocess.check_output("arp -an", shell=True).decode()
+        arp_out = get_arp_table()
         for line in arp_out.split('\n'):
             m = re.search(r"\((\d+\.\d+\.\d+\.\d+)\)\s+at\s+([0-9a-fA-F:]+)", line)
             if m:
@@ -70,8 +143,81 @@ def resolve():
     if vivo_ip:
         Path(f"{home}/.vivo_ip").write_text(f"{vivo_ip}:5555")
         # Copy to project folder for local file sync
-        Path("/Users/chandan/leadflow/.vivo_ip").write_text(f"{vivo_ip}:5555")
+        Path(os.path.dirname(os.path.abspath(__file__)) + "/.vivo_ip").write_text(f"{vivo_ip}:5555")
         print(f"Resolved Vivo Phone IP: {vivo_ip}:5555")
 
 if __name__ == "__main__":
     resolve()
+
+import os
+import subprocess
+import threading
+import re
+from pathlib import Path
+
+import os
+import os
+import subprocess
+import threading
+import re
+from pathlib import Path
+def ensure_connected(target="vivo"):
+    import os, subprocess, threading, re
+    from pathlib import Path
+    target_lower = target.lower()
+    home = os.path.expanduser("~")
+    local_path = Path(f"{os.path.dirname(os.path.abspath(__file__))}/.{target_lower}_ip")
+    home_path = Path(f"{home}/.{target_lower}_ip")
+    
+    device_ip = None
+    if home_path.exists():
+        device_ip = home_path.read_text().strip()
+    elif local_path.exists():
+        device_ip = local_path.read_text().strip()
+
+    original_ip = device_ip
+
+    if device_ip:
+        # Try pinging via adb
+        try:
+            res = subprocess.run(["adb", "-s", device_ip, "shell", "echo", "1"], capture_output=True, text=True, timeout=5)
+            if "1" in res.stdout:
+                return device_ip
+        except Exception:
+            pass
+            
+    print(f"Device '{target}' not reachable. Triggering network scan...")
+    subprocess.run(f"adb disconnect {device_ip}", shell=True, stderr=subprocess.DEVNULL)
+    resolve()
+    
+    if home_path.exists():
+        device_ip = home_path.read_text().strip()
+        print(f"Re-resolved {target} -> {device_ip}")
+        subprocess.run(f"adb connect {device_ip}", shell=True)
+
+        # Test if the connection actually succeeded after resolve
+        try:
+            res = subprocess.run(["adb", "-s", device_ip, "shell", "echo", "1"], capture_output=True, text=True, timeout=5)
+            if "1" not in res.stdout:
+                return None # Still offline even after resolve
+        except Exception:
+            return None # Still offline
+
+        # Notify user that self-healing was successful!
+        try:
+            import os
+            from dotenv import load_dotenv
+            load_dotenv(f"{os.path.dirname(os.path.abspath(__file__))}/.env")
+            import requests
+            _ntfy = os.getenv("NTFY_TOPIC")
+            if _ntfy and device_ip != original_ip:
+                requests.post(
+                    f"https://ntfy.sh/{_ntfy}",
+                    data=f"{target.upper()} network IP safely auto-updated to {device_ip}!".encode("utf-8"),
+                    headers={"Title": f"{target.capitalize()} IP Auto-Healed", "Tags": "robot,heavy_check_mark", "Priority": "default"},
+                    timeout=5
+                )
+        except Exception:
+            pass
+        return device_ip
+    return None

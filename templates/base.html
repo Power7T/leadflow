@@ -80,6 +80,37 @@
       <span style="color:var(--red)">Opted Out</span><b id="sidebar-stat-opted-out" style="color:var(--red)">{{ stats.opted_out }}</b>
     </div>
   </div>
+
+  <!-- Phone Status Widget -->
+  <div id="phoneStatusWidget" style="margin:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:11px;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+      <span id="phoneStatusDot" style="width:7px;height:7px;border-radius:50%;background:#64748b;display:inline-block;"></span>
+      <span style="color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:10px;">📱 Vivo Phone</span>
+    </div>
+    <div id="phoneStatusController" style="color:var(--text);font-weight:600;font-size:12px;margin-bottom:2px;">Idle</div>
+    <div id="phoneStatusIp" style="color:var(--text-dim);font-size:10px;font-family:'SF Mono',Monaco,monospace;margin-bottom:4px;"></div>
+    <div id="phoneStatusAction" style="color:var(--text-dim);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+    <div id="phoneStatusStats" style="display:flex;gap:8px;margin-top:6px;color:var(--text-dim);font-size:10px;">
+      <span>👤 <b id="ps-follows" style="color:var(--text)">0</b></span>
+      <span>💬 <b id="ps-dms" style="color:var(--text)">0</b></span>
+      <span>👋 <b id="ps-unfollows" style="color:var(--text)">0</b></span>
+      <span>🚫 <b id="ps-blocks" style="color:var(--text)">0</b></span>
+    </div>
+  </div>
+
+  <!-- Firestick Dashboard Link -->
+  <div id="firestickWidget" style="margin:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-size:11px;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+      <span id="firestickDot" style="width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+      <span style="color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:10px;">📺 Firestick</span>
+    </div>
+    <a id="firestickLink" href="http://192.168.0.113:8765" target="_blank"
+       style="display:block;color:#f59e0b;text-decoration:none;font-family:'SF Mono',Monaco,monospace;font-size:11px;word-break:break-all;margin-bottom:4px;transition:opacity 0.15s;"
+       onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
+      192.168.0.113:8765 ↗
+    </a>
+    <div style="color:var(--text-dim);font-size:10px;">LeadFlow on Fire TV</div>
+  </div>
 </aside>
 
 <main class="main">
@@ -184,6 +215,54 @@ async function pollStats() {
 window.pollStats = pollStats;
 setInterval(pollStats, 5000);
 document.addEventListener('DOMContentLoaded', pollStats);
+
+// Phone status polling
+async function pollPhoneStatus() {
+  try {
+    const res = await fetch('/api/phone-status');
+    const ps = await res.json();
+    const dot = document.getElementById('phoneStatusDot');
+    const ctrl = document.getElementById('phoneStatusController');
+    const action = document.getElementById('phoneStatusAction');
+    const ipEl = document.getElementById('phoneStatusIp');
+    if (!dot || !ctrl) return;
+
+    // Show IP always
+    if (ipEl && ps.vivo_ip) ipEl.textContent = ps.vivo_ip;
+
+    if (ps.is_active) {
+      dot.style.background = '#00c896';
+      dot.style.boxShadow = '0 0 6px rgba(0,200,150,0.5)';
+      ctrl.textContent = ps.controller_friendly || ps.controller;
+      ctrl.style.color = '#00c896';
+      // Show last activity
+      if (ps.activity_log && ps.activity_log.length > 0) {
+        const last = ps.activity_log[0];
+        const target = last.target_username ? '@' + last.target_username + ': ' : '';
+        action.textContent = target + (last.detail || last.action);
+      } else {
+        action.textContent = 'Session active...';
+      }
+    } else {
+      dot.style.background = '#64748b';
+      dot.style.boxShadow = 'none';
+      ctrl.textContent = 'Idle';
+      ctrl.style.color = 'var(--text)';
+      action.textContent = '';
+    }
+
+    // Today stats
+    if (ps.today) {
+      const el = id => document.getElementById(id);
+      if (el('ps-follows')) el('ps-follows').textContent = ps.today.follows;
+      if (el('ps-dms')) el('ps-dms').textContent = ps.today.dms;
+      if (el('ps-unfollows')) el('ps-unfollows').textContent = ps.today.unfollows;
+      if (el('ps-blocks')) el('ps-blocks').textContent = ps.today.blocks;
+    }
+  } catch (e) {}
+}
+setInterval(pollPhoneStatus, 5000);
+document.addEventListener('DOMContentLoaded', pollPhoneStatus);
 </script>
 </body>
 </html>

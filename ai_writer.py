@@ -201,17 +201,25 @@ def _get_agy_profiles() -> list[str]:
 _agy_profile_idx = 0
 
 def check_internet(timeout: float = 3.0) -> bool:
-    """Check reachability of the Google Gemini API endpoint to ensure we are online.
-    Returns False if offline or endpoint is unreachable, preventing agy popups.
+    """Check internet connectivity using multiple probe targets for reliability.
+    Returns True if any target is reachable, False only if all fail.
     """
     import socket
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:  # fix #3: socket is now properly closed
-            s.settimeout(timeout)
-            s.connect(("generativelanguage.googleapis.com", 443))
-        return True
-    except Exception:
-        return False
+    probes = [
+        ("generativelanguage.googleapis.com", 443),
+        ("8.8.8.8", 53),
+        ("1.1.1.1", 443),
+        ("api.cloudflare.com", 443),
+    ]
+    for host, port in probes:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(timeout)
+                s.connect((host, port))
+            return True
+        except Exception:
+            continue
+    return False
 
 # Backward compatibility alias
 _check_internet = check_internet
@@ -1180,19 +1188,10 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
     variant = None
     if is_tier_1:
         bid = int(business.get("id") or 0)
-        # 4 Cohorts split using a hash to avoid confounding when IDs are
-        # inserted in sequential chunks (modulo-by-ID would assign entire
-        # batches to the same cohort).
-        # A: Direct Link + Technical Pain
-        # B: Permission Hook + Gatekeeper Workflow
-        # C: Direct Link + Competitor Pride
-        # D: Permission Hook + Competitor Pride
-        import hashlib
-        identifier = str(business.get("name") or business.get("id") or "")
-        hash_val = int(hashlib.md5(identifier.encode()).hexdigest(), 16)
-        cohorts = {0: "A", 1: "B", 2: "C", 3: "D"}
-        variant = cohorts[hash_val % 4]
-        
+        # Variant A won A/B test conclusively (40.8% demo rate vs 9.3/18.8/7.7% for B/C/D).
+        # Rolling 100% to Variant A: Direct Link + Technical Pain copy.
+        variant = "A"
+
         # Save variant to DB
         if bid:
             try:
@@ -1202,9 +1201,9 @@ def write_instagram_dm(business: dict, demo_url: str = "", scraped: dict | None 
                 conn.execute("UPDATE businesses SET ig_dm_variant = ? WHERE id = ?", (variant, bid))
                 conn.commit()
                 conn.close()
-                print(f"[ai_writer] Saved A/B variant {variant} for business ID {bid}")
+                print(f"[ai_writer] Saved variant {variant} for business ID {bid}")
             except Exception as e:
-                print(f"[ai_writer] Error saving A/B variant to DB: {e}")
+                print(f"[ai_writer] Error saving variant to DB: {e}")
 
     # Set up Demo Link vs Permission parameters
     if is_tier_1 and variant in ["B", "D"]:

@@ -16,8 +16,8 @@ Re-run anytime; already-disabled packages are silently skipped.
 import subprocess
 import sys
 
-DEVICE = "192.168.1.3:5555"
-ADB = ["/opt/homebrew/bin/adb.orig", "-s", DEVICE]
+DEVICE = "192.168.0.113:5555"
+ADB = ["adb", "-s", DEVICE]
 
 # ---------- packages to disable ----------
 # Only disabling clear bloat: ads, analytics, shopping, ACR, telemetry,

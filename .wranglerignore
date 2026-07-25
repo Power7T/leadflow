@@ -1,0 +1,29 @@
+# Wrangler ignore file — prevents uploading non-essential files
+# This keeps CF Pages deployments fast and under limits.
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# Development/debug
+*.log
+*.bak
+*.tmp
+fix_*.py
+state.md
+
+# Database files (should never be in demos/)
+*.db
+*.db-journal
+*.db-wal
+
+# macOS metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node
+node_modules/
+.npm/

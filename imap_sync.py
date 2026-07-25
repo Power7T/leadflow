@@ -8,7 +8,7 @@ import time
 import socket
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)  # override=True ensures updated .env values are picked up after restart
 
 # Set socket timeout to 30 seconds to prevent hanging on network calls
 socket.setdefaulttimeout(30.0)
@@ -36,8 +36,8 @@ def notify_chandan(title, message, tags="bell", priority="default"):
             headers={"Title": safe_title, "Tags": safe_tags, "Priority": priority},
             timeout=5
         )
-    except Exception as e:
-        log.warning(f"Failed to send ntfy notification: {e}")
+    except Exception:
+        pass
 
     # 2. Send instant alert via Telegram Bot
     bot_token = os.getenv("TELEGRAM_CONTROL_BOT_TOKEN")

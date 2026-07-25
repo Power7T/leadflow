@@ -12,15 +12,24 @@ import os
 
 ADB_BIN = "/opt/homebrew/bin/adb.orig"
 
-FS_IP = "192.168.1.3:5555"
-VIVO_IP = "192.168.1.4:5555"
-
 
 def load_ip_from_file(path, default):
     try:
         return open(path).read().strip()
     except Exception:
         return default
+
+
+def _resolve_ip(home_file, local_file, fallback):
+    """Resolve device IP: ~/.xxx_ip → local .xxx_ip → hardcoded fallback."""
+    home_path = os.path.join(os.path.expanduser("~"), home_file)
+    local_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), local_file)
+    return load_ip_from_file(home_path, load_ip_from_file(local_path, fallback))
+
+
+# Dynamic IP resolution (updated by resolve_devices.py)
+FS_IP = _resolve_ip(".firestick_ip", ".firestick_ip", "192.168.0.113:5555")
+VIVO_IP = _resolve_ip(".vivo_ip", ".vivo_ip", "192.168.0.162:5555")
 
 
 def connect_device(ip):

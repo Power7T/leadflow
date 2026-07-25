@@ -12,9 +12,9 @@ try:
 except Exception as e:
     print(f"Could not auto-resolve device IPs: {e}")
 
-# Load Phone IP
+# Load Vivo Phone IP
 ip_file = Path(os.path.expanduser("~/.vivo_ip"))
-phone_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.1.7:5555"
+phone_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.0.162:5555"
 
 # Sync .vivo_ip to project directory so it gets pushed to Firestick
 if ip_file.exists():
@@ -25,7 +25,7 @@ if ip_file.exists():
 
 # Target device to push code to (the Firestick running Termux)
 fs_ip_file = Path(os.path.expanduser("~/.firestick_ip"))
-device_ip = fs_ip_file.read_text().strip() if fs_ip_file.exists() else "192.168.1.3:5555"
+device_ip = fs_ip_file.read_text().strip() if fs_ip_file.exists() else "192.168.0.113:5555"
 
 files_to_push = [
     "ai_writer.py",
@@ -37,11 +37,16 @@ files_to_push = [
     "sender.py",
     "ig_reply_responder.py",
     "server.py",
+    "templates/index.html",
+    "demo_templates/gym.html",
+
     "demo_generator.py",
+    "vivo_ig_ui_sender.py",
     "demo_templates/config.json",
     "sync_engine.py",
     "unfollow_ghosts.py",
     "start_leadflow_failover.sh",
+    "resolve_devices.py",
     ".vivo_ip"
 ]
 

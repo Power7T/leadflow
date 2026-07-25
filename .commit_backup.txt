@@ -1,0 +1,50 @@
+* Task: Integrate automated AI captcha and Gemini quota management alongside demographic previews
+- Added robust Gemini API quota monitoring tools (check_gemini_quota.py) to dynamically load-balance multiple API keys and detect 429 exhaustion/suspensions securely via env vars.
+
+- Added AI-based captcha solving scaffold for unblocking resilient scrapers.
+
+- Included comprehensive set of dashboard and client UI demo previews (PNGs) mapping directly unto gym, medspa, and lawyer templates for seamless visual regressions and offline presentation modes.
+
+- Deployed system sync utilities (sync_single.py, setup_persistent_ssh.sh) to reinforce edge node persistence.
+
+* Task 4/5: Finalise sync_engine UUID mapping and remove deprecated CF Tunnel setup
+
+* Task 3: Implement strict fail-closed state on primary node to fix split-brain execution during network drops
+
+* update state.md for failover parity
+
+* Task 2: Remove arbitrary firestick_only decorators from draft generation to allow exact Mac failover mirroring
+
+* Task: Make Stat Cards Clickable on Dashboard Modal Drill-down
+
+* Task 1: Save LeadFlow Remote Architecture RFC and update state.md
+
+* Task: Clickable Stat Cards on Dashboard implemented
+
+* Task: Implemented WhatsApp webhook and verified Clickable Stat Cards API endpoint
+
+* Task: All urgent/high/medium/low A/B fixes complete
+- URGENT: AB open attribution wired; follow_ups schema (opened/clicked/replied); 579 bad AB tests reset
+- HIGH: IG Variant A locked in ai_writer.py; 425 B/C/D leads migrated to A
+- MEDIUM: Category priority ORDER BY in scheduler.py pools; gym/fitness/accountant/cpa promoted Tier 1 in database.py; follow_ups tracking wired
+- LOW: ig_link_delivered flag set on DM send; ig_reply_responder.py marks outreach.replied=1 + follow_ups.replied=1
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* Feature B: Add CF Pages snapshot job for dashboard_index every 5min
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+* Feature A: Add Firestick dashboard link to sidebar
+
+* feat: clickable stat cards on dashboard with drill-down modal
+- Added GET /api/leads-by-filter?filter=<key> endpoint that returns up to 200 leads
+  matching each of the 7 stat card filters (total_scraped, total_sent, total_followups,
+  total_opened, total_clicked, total_demo_opened, total_replied)
+- Converted stat card divs to clickable .stat-card elements with hover highlight
+  (accent border + box-shadow) and a subtle ↗ view hint on hover
+- Added shared modal overlay in index.html with async fetch, compact table view,
+  per-row flag badges (Opened/Clicked/Replied/Demo), Escape key + backdrop click to close
+- Each modal row links to /leads#bid-<id> in a new tab
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+

@@ -19,11 +19,35 @@ log() {
     echo "$msg" >> "$LOG_FILE"
 }
 
-log "Starting ADB monitor daemon with ADB_BIN=$ADB_BIN"
+# ── Dynamic IP resolution ──────────────────────────────────────────────────
+# Read IPs from resolve_devices.py output files (home dir → project dir → fallback)
+resolve_ip() {
+    local home_file="$1"
+    local local_file="$2"
+    local fallback="$3"
 
-# Target devices
-# Each entry is "IP:DISPLAY_NAME"
-DEVICES=("192.168.1.3:Firestick" "192.168.1.4:VivoPhone")
+    if [ -f "$HOME/$home_file" ]; then
+        cat "$HOME/$home_file" | tr -d '[:space:]'
+    elif [ -f "/Users/chandan/leadflow/$local_file" ]; then
+        cat "/Users/chandan/leadflow/$local_file" | tr -d '[:space:]'
+    else
+        echo "$fallback"
+    fi
+}
+
+# Resolve IPs dynamically — these update when resolve_devices.py runs
+FS_RAW=$(resolve_ip ".firestick_ip" ".firestick_ip" "$(cat /Users/chandan/leadflow/.firestick_ip)")
+VIVO_RAW=$(resolve_ip ".vivo_ip" ".vivo_ip" "192.168.0.162:5555")
+
+# Strip :5555 suffix for the DEVICES array format (IP:DisplayName)
+FS_IP="${FS_RAW%%:5555}"
+VIVO_IP="${VIVO_RAW%%:5555}"
+
+log "Starting ADB monitor daemon with ADB_BIN=$ADB_BIN"
+log "  Firestick IP: $FS_IP | Vivo IP: $VIVO_IP"
+
+# Target devices — each entry is "IP:DISPLAY_NAME"
+DEVICES=("${FS_IP}:Firestick" "${VIVO_IP}:VivoPhone")
 
 # Track consecutive failures per device index
 consecutive_fails=(0 0)
@@ -96,7 +120,29 @@ check_device() {
     fi
 }
 
+# ── Re-resolve IPs every 10 cycles (20 minutes) to catch DHCP changes ─────
+cycle_count=0
+IP_REFRESH_CYCLES=10
+
 while true; do
+    # Periodically re-resolve IPs
+    cycle_count=$((cycle_count + 1))
+    if [ $cycle_count -ge $IP_REFRESH_CYCLES ]; then
+        cycle_count=0
+        NEW_FS_RAW=$(resolve_ip ".firestick_ip" ".firestick_ip" "$(cat /Users/chandan/leadflow/.firestick_ip)")
+        NEW_VIVO_RAW=$(resolve_ip ".vivo_ip" ".vivo_ip" "192.168.0.162:5555")
+        NEW_FS="${NEW_FS_RAW%%:5555}"
+        NEW_VIVO="${NEW_VIVO_RAW%%:5555}"
+        if [ "$NEW_FS" != "$FS_IP" ] || [ "$NEW_VIVO" != "$VIVO_IP" ]; then
+            FS_IP="$NEW_FS"
+            VIVO_IP="$NEW_VIVO"
+            DEVICES=("${FS_IP}:Firestick" "${VIVO_IP}:VivoPhone")
+            consecutive_fails=(0 0)
+            cooldown_ticks=(0 0)
+            log "IPs updated: Firestick=$FS_IP, Vivo=$VIVO_IP"
+        fi
+    fi
+
     for i in "${!DEVICES[@]}"; do
         check_device "$i"
     done

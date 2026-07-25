@@ -11,36 +11,169 @@
 </div>
 
 <!-- Live Stats Row -->
+<style>
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    position: relative;
+  }
+  .stat-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(var(--accent-rgb, 99,102,241), 0.12);
+  }
+  .stat-card:hover .stat-card-hint {
+    opacity: 1;
+  }
+  .stat-card-hint {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 9px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    color: var(--text-dim);
+  }
+</style>
 <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 16px; margin-bottom: 24px;">
-  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+  <div class="stat-card" onclick="openStatModal('total_scraped')">
+    <span class="stat-card-hint">↗ view</span>
     <div style="font-size: 24px; font-weight: bold; color: var(--text);">{{ stats.total_scraped }}</div>
     <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Leads Scraped</div>
   </div>
-  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+  <div class="stat-card" onclick="openStatModal('total_sent')">
+    <span class="stat-card-hint">↗ view</span>
     <div style="font-size: 24px; font-weight: bold; color: var(--accent);">{{ stats.total_sent }}</div>
     <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Outreach Sent</div>
   </div>
-  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+  <div class="stat-card" onclick="openStatModal('total_followups')">
+    <span class="stat-card-hint">↗ view</span>
     <div style="font-size: 24px; font-weight: bold; color: var(--purple, #a855f7);">{{ stats.total_followups }}</div>
     <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Follow-ups Sent</div>
   </div>
-  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+  <div class="stat-card" onclick="openStatModal('total_opened')">
+    <span class="stat-card-hint">↗ view</span>
     <div style="font-size: 24px; font-weight: bold; color: var(--blue);">{{ stats.total_opened }}</div>
     <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Emails Opened</div>
   </div>
-  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+  <div class="stat-card" onclick="openStatModal('total_clicked')">
+    <span class="stat-card-hint">↗ view</span>
     <div style="font-size: 24px; font-weight: bold; color: var(--yellow);">{{ stats.total_clicked }}</div>
     <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Links Clicked</div>
   </div>
-  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+  <div class="stat-card" onclick="openStatModal('total_demo_opened')">
+    <span class="stat-card-hint">↗ view</span>
     <div style="font-size: 24px; font-weight: bold; color: var(--green, #10b981);">{{ stats.total_demo_opened }}</div>
     <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Demo Opened</div>
   </div>
-  <div class="card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;">
+  <div class="stat-card" onclick="openStatModal('total_replied')">
+    <span class="stat-card-hint">↗ view</span>
     <div style="font-size: 24px; font-weight: bold; color: #00c896;">{{ stats.total_replied }}</div>
     <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.5px;">Replies Received</div>
   </div>
 </div>
+
+<!-- Stat Drill-down Modal -->
+<div id="statModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
+     z-index:1000; backdrop-filter:blur(4px);" onclick="if(event.target===this)closeStatModal()">
+  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+       width:min(92vw,860px); max-height:80vh; overflow-y:auto;
+       background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h3 id="statModalTitle" style="margin:0; font-size:16px;"></h3>
+      <button onclick="closeStatModal()" style="background:none; border:none; color:var(--text-dim);
+              font-size:22px; cursor:pointer; line-height:1; padding:0 4px;">×</button>
+    </div>
+    <div id="statModalBody" style="font-size:13px;"></div>
+  </div>
+</div>
+
+<script>
+const STAT_LABELS = {
+  total_scraped:     'Leads Scraped',
+  total_sent:        'Outreach Sent',
+  total_followups:   'Follow-ups Sent',
+  total_opened:      'Emails Opened',
+  total_clicked:     'Links Clicked',
+  total_demo_opened: 'Demo Opened',
+  total_replied:     'Replies Received',
+};
+
+async function openStatModal(filter) {
+  document.getElementById('statModalTitle').textContent = STAT_LABELS[filter] || filter;
+  document.getElementById('statModalBody').innerHTML = '<p style="color:var(--text-dim)">Loading…</p>';
+  document.getElementById('statModal').style.display = 'block';
+
+  try {
+    const res = await fetch('/api/leads-by-filter?filter=' + encodeURIComponent(filter));
+    const data = await res.json();
+    const leads = data.leads || [];
+
+    if (!leads.length) {
+      document.getElementById('statModalBody').innerHTML =
+        '<p style="color:var(--text-dim); padding:12px 0;">No records found.</p>';
+      return;
+    }
+
+    let html = `<table style="width:100%; border-collapse:collapse;">
+      <thead><tr style="border-bottom:1px solid var(--border); color:var(--text-dim);
+                        font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">
+        <th style="text-align:left; padding:6px 8px;">Name</th>
+        <th style="text-align:left; padding:6px 8px;">Category</th>
+        <th style="text-align:left; padding:6px 8px;">Email</th>
+        <th style="text-align:left; padding:6px 8px;">Status</th>
+        <th style="text-align:left; padding:6px 8px;">Flags</th>
+      </tr></thead><tbody>`;
+
+    for (const l of leads) {
+      const flags = [
+        l.opened      ? '👁 Opened'  : '',
+        l.clicked     ? '🔗 Clicked' : '',
+        l.replied     ? '💬 Replied' : '',
+        l.demo_viewed ? '🖥 Demo'    : '',
+      ].filter(Boolean).join(' · ') || '—';
+
+      const statusBadge = l.status
+        ? `<span class="badge badge-${l.status}" style="font-size:10px;">${l.status}</span>`
+        : '—';
+
+      html += `<tr style="border-bottom:1px solid var(--border); cursor:pointer;"
+                 onclick="window.open('/leads#bid-${l.id}','_blank')"
+                 onmouseover="this.style.background='var(--bg)'"
+                 onmouseout="this.style.background=''">
+        <td style="padding:8px 8px; font-weight:500; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+            title="${(l.name||'').replace(/"/g,'&quot;')}">${l.name||'—'}</td>
+        <td style="padding:8px 8px; color:var(--text-dim); font-size:11px;">${l.category||'—'}</td>
+        <td style="padding:8px 8px; color:var(--text-dim); font-size:11px;">${l.email||'—'}</td>
+        <td style="padding:8px 8px;">${statusBadge}</td>
+        <td style="padding:8px 8px; color:var(--text-dim); font-size:11px;">${flags}</td>
+      </tr>`;
+    }
+
+    html += '</tbody></table>';
+    html += `<p style="color:var(--text-dim); font-size:11px; margin-top:12px; text-align:right;">
+               Showing ${leads.length} record${leads.length !== 1 ? 's' : ''} — click a row to open in Review Leads
+             </p>`;
+
+    document.getElementById('statModalBody').innerHTML = html;
+  } catch (err) {
+    document.getElementById('statModalBody').innerHTML =
+      `<p style="color:var(--red, #ef4444);">Error loading leads: ${err.message}</p>`;
+  }
+}
+
+function closeStatModal() {
+  document.getElementById('statModal').style.display = 'none';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeStatModal();
+});
+</script>
 
 
 <!-- Main Grid -->

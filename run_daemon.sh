@@ -1,6 +1,15 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
+# PID LOCK: Prevent multiple daemon instances
+PIDFILE=/tmp/leadflow_daemon.pid
+if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+  echo "[run_daemon] Daemon already running (PID $(cat "$PIDFILE")). Exiting."
+  exit 1
+fi
+echo $$ > "$PIDFILE"
+trap 'rm -f "$PIDFILE"' EXIT
+
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 echo "" > /tmp/leadflow-tunnel-url.txt

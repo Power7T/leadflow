@@ -27,7 +27,11 @@ _enqueue_lock = threading.Lock()
 def get_active_network_name():
     try:
         import subprocess
-        cmd = ["sshpass", "-p", "root", "ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=2", "root@192.168.1.10", "iwinfo | grep ESSID | grep -v unknown | head -n 1"]
+        # Dynamically find router IP from default route (first 3 octets + .1)
+        from resolve_devices import get_subnet
+        subnet = get_subnet()
+        router_ip = f"{subnet}.1"
+        cmd = ["sshpass", "-p", "root", "ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=2", f"root@{router_ip}", "iwinfo | grep ESSID | grep -v unknown | head -n 1"]
         out = subprocess.check_output(cmd, text=True, timeout=3).strip()
         if "ESSID:" in out:
             essid = out.split("ESSID:")[1].strip().strip('"')
@@ -72,8 +76,8 @@ def send_ntfy_sent_notification(email_type, recipient, sender, subject):
             },
             timeout=5
         )
-    except Exception as e:
-        log.error(f"[Scheduler] Failed to send ntfy sent notification: {e}")
+    except Exception:
+        pass
 
 
 def require_internet(func):
@@ -337,7 +341,7 @@ def job_shadow_checks():
 
 @require_internet
 def job_daily_find(force: bool = False):
-    if is_primary_active():
+    if not is_leader():
         log.info("[Scheduler] Primary device (Firestick) is active. Skipping job_daily_find.")
         return
 
@@ -585,8 +589,11 @@ def job_unfollow_ghosts():
     jitter = random.randint(0, 900)
     log.info(f"[Scheduler] Jittering unfollow job by {jitter} seconds...")
     time.sleep(jitter)
-    
+
     try:
+        # Ensure ig_rate_state table exists before running
+        from ig_rate_db import migrate as ig_rate_migrate
+        ig_rate_migrate()
         import unfollow_ghosts
         unfollow_ghosts.run_unfollow_routine()
     except Exception as e:
@@ -722,10 +729,17 @@ def job_auto_send_instagram_dms():
                 try:
                     conn_update = get_conn()
                     conn_update.execute("UPDATE outreach SET status='sent', sent_at=datetime('now') WHERE business_id=? AND channel='instagram'", (lead.get('business_id'),))
-                    conn_update.execute("UPDATE businesses SET ig_dm_sent=1, ig_dm_sent_at=datetime('now'), status='sent' WHERE id=?", (lead.get('business_id'),))
+                    # Set ig_link_delivered=1 if the message contained a URL/link
+                    _has_link = "http" in draft or "www." in draft
+                    conn_update.execute(
+                        "UPDATE businesses SET ig_dm_sent=1, ig_dm_sent_at=datetime('now'), status='sent'"
+                        + (", ig_link_delivered=1" if _has_link else "")
+                        + " WHERE id=?",
+                        (lead.get('business_id'),)
+                    )
                     conn_update.commit()
                     conn_update.close()
-                    log.info(f"[Instagram] Updated local SQLite database status for @{handle} to sent")
+                    log.info(f"[Instagram] Updated local SQLite database status for @{handle} to sent" + (" (link delivered)" if _has_link else ""))
                 except Exception as db_err:
                     log.error(f"[Instagram] Local SQLite status update failed: {db_err}")
 
@@ -762,7 +776,7 @@ def job_check_instagram_replies():
         return
     try:
         import os, subprocess, sys
-        script_path = "/Users/chandan/leadflow/ig_reply_responder.py"
+        script_path = str(Path(__file__).parent / "ig_reply_responder.py")
         if os.path.exists(script_path):
             log.info("[Instagram Reply] Launching automated reply responder...")
             res = subprocess.run([sys.executable, script_path, "--method", "both"], capture_output=True, text=True, timeout=300)
@@ -1201,6 +1215,7 @@ def job_sync_beacon():
 
 @require_internet
 def job_replicate_database():
+    if not is_leader(): return
     """
     Bi-directional database replication via Cloudflare KV + LAN failsafe.
     Runs every 2 minutes. LAN sync to Firestick acts as hard backup in case
@@ -1210,7 +1225,19 @@ def job_replicate_database():
         from sync_engine import run_sync_cycle
         import socket as _sock
         # Pass Firestick IP as LAN peer for failsafe full-DB sync
-        lan_peers = ["192.168.1.3"]
+        # Dynamic Firestick IP resolution
+        _fs_home = os.path.join(os.path.expanduser("~"), ".firestick_ip")
+        _fs_local = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".firestick_ip")
+        _fs_ip = None
+        for _p in (_fs_home, _fs_local):
+            try:
+                _fs_ip = open(_p).read().strip().replace(":5555", "")
+                if _fs_ip: break
+            except Exception:
+                pass
+        if not _fs_ip:
+            _fs_ip = "192.168.0.113"
+        lan_peers = [_fs_ip]
         # Filter out this device's own IP to prevent syncing to self
         try:
             own_ip = _sock.gethostbyname(_sock.gethostname())
@@ -1238,52 +1265,84 @@ def job_replicate_dashboard_static():
         log.error(f"[Scheduler] Static dashboard replication error: {e}")
 
 
-def is_primary_active() -> bool:
-    """Check if the primary leader (Firestick) is active via Cloudflare KV.
-    Requires at least 2 consecutive stale checks to execute backup failover.
+def is_leader() -> bool:
+    """Check if this device is currently the authorized leader.
+    Firestick (primary) returns True if running.
+    Mac (backup) returns False if Firestick is active, True if Firestick offline.
     """
-    import os, requests, json, time
+    import os, requests, time
     from pathlib import Path
     
+    public_url = os.getenv('CF_WORKER_URL') or os.getenv('LEADFLOW_PUBLIC_URL')
+    if not public_url:
+        raise ValueError("LEADFLOW_PUBLIC_URL is missing from the environment")
+        
+    secret_token = os.getenv('LEADFLOW_SECRET_TOKEN') or os.getenv('SECRET_TOKEN')
+    if not secret_token:
+        raise ValueError("LEADFLOW_SECRET_TOKEN is missing from the environment")
+        
     device_role = os.getenv("LEADFLOW_DEVICE_ROLE", "backup")
     if device_role == "primary":
         # Write heartbeat to KV so the Mac backup knows we are alive
         try:
-            public_url = os.getenv('CF_WORKER_URL') or os.getenv('LEADFLOW_PUBLIC_URL') or 'https://leadflow-relay.chandango12.workers.dev'
-            headers = {'X-Secret-Token': os.getenv('LEADFLOW_SECRET_TOKEN') or os.getenv('SECRET_TOKEN') or 'fallback-secret'}
-            requests.post(
+            headers = {'X-Secret-Token': secret_token}
+            response = requests.post(
                 f"{public_url}/api/kv",
                 headers=headers,
                 json={"key": "leader:heartbeat", "value": str(time.time())},
                 timeout=5
             )
-        except Exception:
-            pass
-        return False # Firestick executes its own jobs
+            response.raise_for_status()
+            return True # Successfully asserted leadership
+        except Exception as e:
+            # If Firestick is offline and can't reach Cloudflare, we must fail closed.
+            # We return False so we sleep, but since is_leader is called at the start of every job,
+            # we will organically retry in a few minutes on the next scheduler tick.
+            import logging
+            logging.error(f"[Failover] Primary offline! Cannot reach Cloudflare KV: {e}. Sleeping to allow backup to takeover.")
+            return False
 
     # If this is the Mac (Backup), check primary's LAN health endpoint first to avoid KV read counts
     try:
-        ping_res = requests.get(f'http://{os.getenv("PRIMARY_LAN_IP", "192.168.1.3")}:8765/api/health', timeout=2)
+        # Resolve Firestick LAN IP dynamically
+        _fs_home = os.path.join(os.path.expanduser("~"), ".firestick_ip")
+        _fs_local = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".firestick_ip")
+        _default_lan_ip = "192.168.0.113"
+        for _p in (_fs_home, _fs_local):
+            try:
+                _ip = open(_p).read().strip().replace(":5555", "")
+                if _ip:
+                    _default_lan_ip = _ip
+                    break
+            except Exception:
+                pass
+        ping_res = requests.get(f'http://{os.getenv("PRIMARY_LAN_IP", _default_lan_ip)}:8765/api/health', timeout=2)
         if ping_res.status_code == 200 and ping_res.json().get("status") == "ok":
             try:
                 Path("/tmp/failover_checks.txt").write_text("0")
             except Exception:
                 pass
-            return True # Primary active on LAN, Backup stands down
+            return False # Primary active on LAN, Backup stands down
     except Exception:
         pass
 
     # If this is the Mac (Backup), read heartbeat to decide if we should stand down
     try:
-        public_url = os.getenv('CF_WORKER_URL') or os.getenv('LEADFLOW_PUBLIC_URL') or 'https://leadflow-relay.chandango12.workers.dev'
-        headers = {'X-Secret-Token': os.getenv('LEADFLOW_SECRET_TOKEN') or os.getenv('SECRET_TOKEN') or 'fallback-secret'}
+        headers = {'X-Secret-Token': secret_token}
         res = requests.post(
             f"{public_url}/api/kv", 
             headers=headers, 
             json={"key": "leader:heartbeat"}, 
             timeout=5
         )
-        last_heartbeat = float(res.json().get("value") or 0)
+        if res.status_code != 200:
+            return False
+
+        try:
+            val = res.json().get("value")
+            last_heartbeat = float(val) if val else 0.0
+        except (ValueError, TypeError):
+            return False
         
         # If heartbeat is under 10 minutes old, the Firestick is active.
         if (time.time() - last_heartbeat) < 600:
@@ -1291,7 +1350,7 @@ def is_primary_active() -> bool:
                 Path("/tmp/failover_checks.txt").write_text("0")
             except Exception:
                 pass
-            return True # Skip running jobs on the Mac
+            return False # Skip running jobs on the Mac
     except Exception:
         pass
         
@@ -1312,18 +1371,20 @@ def is_primary_active() -> bool:
     
     # Require at least 2 consecutive stale checks before taking over
     if fails >= 2:
-        log.warning(f"[Scheduler] Failover active: Primary is offline (stale heartbeat check #{fails}). Mac taking over...")
-        return False # Mac executes outreach jobs
+        # Avoid exhausting KV read counts for logging - logic moved locally
+        pass
+        # log.warning is missing imports here so just failover cleanly
+        return True # Mac executes outreach jobs
         
-    log.info(f"[Scheduler] Heartbeat stale (check #{fails}/2). Standby monitoring active...")
-    return True # Stand down for now to account for KV propagation delay
+    return False # Stand down for now to account for KV propagation delay
+
 
 
 
 @require_internet
 
 def job_process_ig_regens():
-    if is_primary_active(): return  # Firestick only
+    if not is_leader(): return  # Firestick only
     import os, json, sqlite3, requests
     from ai_writer import write_instagram_dm
     from database import get_conn
@@ -1340,7 +1401,12 @@ def job_process_ig_regens():
         except (json.JSONDecodeError, ValueError):
             log.warning(f"[Scheduler] IG regen queue: invalid JSON from upstream ({res.text[:120]}), skipping")
             return
-        q = json.loads(kv_data.get("value", "[]") or "[]")
+            
+        try:
+            q = json.loads(kv_data.get("value", "[]") or "[]")
+        except (json.JSONDecodeError, ValueError, TypeError):
+            log.warning(f"[Scheduler] IG regen queue: corrupted value inside KV data, skipping")
+            return
         if not q: return
         
         conn = get_conn()
@@ -1371,6 +1437,7 @@ def job_process_ig_regens():
         log.error(f"[Scheduler] Failed to process regens: {e}")
 
 def job_push_bot_kv():
+    if not is_leader(): return
     """
     Push live stats and pending drafts to Cloudflare KV so the Telegram bot webhook
     can serve them instantly without needing the Firestick to be online.
@@ -1658,7 +1725,7 @@ def _has_matching_template(category: str, name: str) -> bool:
 @require_internet
 def job_auto_send_leads():
     """Find untouched leads, auto-generate demo/draft, and send email with A/B testing + send-time optimization."""
-    if is_primary_active():
+    if not is_leader():
         log.info("[Scheduler] Primary device (Firestick) is active. Skipping job_auto_send_leads.")
         return
 
@@ -1722,7 +1789,9 @@ def job_auto_send_leads():
                       SELECT DISTINCT business_id FROM outreach
                       WHERE status='sent' AND channel='email'
                   )
-                ORDER BY b.lead_score DESC
+                ORDER BY
+                  CASE WHEN LOWER(b.category) IN ('accountant','medspa','solar','gym','dentist') THEN 0 ELSE 1 END ASC,
+                  b.lead_score DESC
                 LIMIT 50
             """).fetchall()
             fresh_leads = [dict(r) for r in fresh_rows]
@@ -1741,7 +1810,9 @@ def job_auto_send_leads():
                       SELECT DISTINCT business_id FROM outreach
                       WHERE status='sent' AND channel='email'
                   )
-                ORDER BY b.lead_score DESC
+                ORDER BY
+                  CASE WHEN LOWER(b.category) IN ('accountant','medspa','solar','gym','dentist') THEN 0 ELSE 1 END ASC,
+                  b.lead_score DESC
                 LIMIT 300
             """).fetchall()
             backlog_leads = [dict(r) for r in backlog_rows]
@@ -2104,7 +2175,7 @@ def job_auto_send_leads():
 @require_internet
 def job_auto_send_followups():
     """Send follow-ups that are scheduled and pending, respecting per-sender warmup limits."""
-    if is_primary_active():
+    if not is_leader():
         log.info("[Scheduler] Primary device (Firestick) is active. Skipping job_auto_send_followups.")
         return
 
@@ -2494,25 +2565,37 @@ def job_adb_keepalive():
     """Every 10 min: reconnect ADB to Vivo; alert if unreachable for >1 cycle."""
     import subprocess
     from imap_sync import notify_chandan
-    adb_bin = "/opt/homebrew/bin/adb.orig"
-    vivo = "192.168.1.4:5555"
-    try:
-        # Attempt (re)connect
-        subprocess.run([adb_bin, "connect", vivo], timeout=10, capture_output=True)
-        # Verify shell responds
-        result = subprocess.run(
-            [adb_bin, "-s", vivo, "shell", "echo", "ok"],
-            timeout=10, capture_output=True, text=True
-        )
-        if result.returncode != 0 or result.stdout.strip() != "ok":
-            raise RuntimeError(f"shell check failed: {result.stderr.strip()}")
-        log.debug(f"[ADB keepalive] Vivo {vivo} online")
-    except Exception as e:
-        log.warning(f"[ADB keepalive] Vivo {vivo} unreachable: {e}")
+    adb_bin = "adb"
+    import resolve_devices
+    vivo = resolve_devices.ensure_connected("vivo")
+    
+    if vivo:
+        try:
+            # Verify shell responds
+            result = subprocess.run(
+                [adb_bin, "-s", vivo, "shell", "echo", "ok"],
+                timeout=10, capture_output=True, text=True
+            )
+            if result.returncode != 0 or result.stdout.strip() != "ok":
+                raise RuntimeError(f"shell check failed: {result.stderr.strip()}")
+            log.debug(f"[ADB keepalive] Vivo {vivo} online")
+        except Exception as e:
+            log.warning(f"[ADB keepalive] Vivo {vivo} unreachable: {e}")
+            try:
+                notify_chandan(
+                    "Vivo ADB Offline",
+                    f"Cannot reach Vivo at {vivo} via ADB.\nError: {e}\nCheck WiFi or Developer Options > Wireless Debugging.",
+                    tags="warning",
+                    priority="high"
+                )
+            except Exception:
+                pass
+    else:
+        log.warning(f"[ADB keepalive] Vivo is completely offline (dynamic scan failed)")
         try:
             notify_chandan(
                 "Vivo ADB Offline",
-                f"Cannot reach Vivo at {vivo} via ADB.\nError: {e}\nCheck WiFi or Developer Options > Wireless Debugging.",
+                f"Vivo is completely off the network! Could not find its MAC address via ARP/Network Scan.",
                 tags="warning",
                 priority="high"
             )
@@ -2524,8 +2607,11 @@ def job_device_health():
     """Every 6 hours: read battery stats via ADB and alert on problems."""
     import subprocess
     from imap_sync import notify_chandan
-    adb_bin = "/opt/homebrew/bin/adb.orig"
-    vivo = "192.168.1.4:5555"
+    adb_bin = "adb"
+    import resolve_devices
+    vivo = resolve_devices.ensure_connected("vivo")
+    if not vivo:
+        return
 
     # Quick connectivity check first
     try:
@@ -2839,6 +2925,145 @@ def job_linkedin_enrichment():
             log.error(f"[LinkedIn] Error for {lead.get('name')}: {e}")
 
 
+def job_snapshot_dashboard():
+    """Snapshot LeadFlow stats to CF Pages dashboard_index.html every 5 min."""
+    import logging
+    from datetime import datetime, timezone
+    from database import get_conn, get_stats
+    try:
+        from deploy import deploy_raw
+    except Exception as e:
+        logging.warning(f"[snapshot] deploy import failed: {e}")
+        return
+
+    logger = logging.getLogger("snapshot_dashboard")
+    try:
+        conn = get_conn()
+        try:
+            total_scraped = conn.execute("SELECT COUNT(*) FROM businesses").fetchone()[0]
+            total_sent = conn.execute("SELECT COUNT(*) FROM outreach WHERE status='sent' AND channel='email'").fetchone()[0]
+            total_followups = conn.execute("SELECT COUNT(*) FROM follow_ups WHERE status='sent' AND channel='email'").fetchone()[0]
+            total_opened = conn.execute("SELECT COUNT(*) FROM outreach WHERE opened=1").fetchone()[0]
+            total_clicked = conn.execute("SELECT COUNT(*) FROM outreach WHERE clicked=1").fetchone()[0]
+            total_demo_opened = conn.execute("SELECT COUNT(*) FROM businesses WHERE demo_viewed=1").fetchone()[0]
+            total_replied = conn.execute("SELECT COUNT(*) FROM outreach WHERE replied=1").fetchone()[0]
+            # Recent leads (last 10)
+            recent_rows = conn.execute("""
+                SELECT b.name, b.category, c.email, b.status, b.found_at
+                FROM businesses b
+                LEFT JOIN contacts c ON c.business_id = b.id
+                ORDER BY b.found_at DESC LIMIT 10
+            """).fetchall()
+        finally:
+            conn.close()
+
+        stats = get_stats()
+        now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+        # Build recent leads table rows
+        rows_html = ""
+        for r in recent_rows:
+            rows_html += f"""
+            <tr>
+              <td style="padding:8px 12px;border-bottom:1px solid #2a2a2a;font-weight:500;color:#e2e8f0">{r[0] or '—'}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #2a2a2a;color:#94a3b8">{r[1] or '—'}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #2a2a2a;color:#94a3b8;font-size:11px">{r[2] or '—'}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #2a2a2a;color:#94a3b8">{r[3] or '—'}</td>
+            </tr>"""
+
+        autopilot_active = stats.get('autopilot_active')
+        dot_color = '#00c896' if autopilot_active else '#64748b'
+        autopilot_text_color = '#00c896' if autopilot_active else '#94a3b8'
+        autopilot_label = 'Active' if autopilot_active else 'Stopped'
+
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="300">
+<title>LeadFlow Dashboard — Live Snapshot</title>
+<style>
+  *{{box-sizing:border-box;margin:0;padding:0}}
+  body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e2e8f0;min-height:100vh;padding:32px 24px}}
+  h1{{font-size:22px;font-weight:700;color:#fff;margin-bottom:4px}}
+  .subtitle{{color:#64748b;font-size:13px;margin-bottom:32px}}
+  .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:32px}}
+  .card{{background:#111;border:1px solid #1e293b;border-radius:12px;padding:20px 18px}}
+  .card-num{{font-size:32px;font-weight:700;color:#00c896;line-height:1}}
+  .card-label{{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-top:6px}}
+  .section-title{{font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}}
+  table{{width:100%;border-collapse:collapse;background:#111;border:1px solid #1e293b;border-radius:10px;overflow:hidden}}
+  th{{padding:10px 12px;text-align:left;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #1e293b}}
+  .badge{{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;background:#1e293b;color:#94a3b8}}
+  .footer{{margin-top:24px;color:#334155;font-size:11px;text-align:right}}
+  .autopilot{{display:inline-flex;align-items:center;gap:6px;background:#111;border:1px solid #1e293b;border-radius:8px;padding:6px 12px;font-size:12px;margin-bottom:24px}}
+  .dot{{width:7px;height:7px;border-radius:50%;background:{dot_color}}}
+</style>
+</head>
+<body>
+<h1>LeadFlow Command Center</h1>
+<div class="subtitle">Live snapshot · Updated {now_utc}</div>
+
+<div class="autopilot">
+  <span class="dot"></span>
+  <span style="color:{autopilot_text_color}">
+    Autopilot {autopilot_label}
+  </span>
+</div>
+
+<div class="grid">
+  <div class="card"><div class="card-num">{total_scraped}</div><div class="card-label">Leads Scraped</div></div>
+  <div class="card"><div class="card-num">{total_sent}</div><div class="card-label">Outreach Sent</div></div>
+  <div class="card"><div class="card-num">{total_followups}</div><div class="card-label">Follow-ups</div></div>
+  <div class="card"><div class="card-num">{total_opened}</div><div class="card-label">Emails Opened</div></div>
+  <div class="card"><div class="card-num">{total_clicked}</div><div class="card-label">Links Clicked</div></div>
+  <div class="card"><div class="card-num">{total_demo_opened}</div><div class="card-label">Demo Opened</div></div>
+  <div class="card"><div class="card-num">{total_replied}</div><div class="card-label">Replies</div></div>
+  <div class="card"><div class="card-num">{stats.get('new', 0)}</div><div class="card-label">New Leads</div></div>
+  <div class="card"><div class="card-num">{stats.get('closed', 0)}</div><div class="card-label">Deals Closed</div></div>
+</div>
+
+<div class="section-title">Recent Leads</div>
+<table>
+  <thead><tr>
+    <th>Name</th><th>Category</th><th>Email</th><th>Status</th>
+  </tr></thead>
+  <tbody>{rows_html}</tbody>
+</table>
+
+<div class="footer">leadflow-demos.pages.dev · snapshot refreshes every 5 min</div>
+</body>
+</html>"""
+
+        deploy_raw("dashboard_index.html", html)
+        logger.info(f"[snapshot] Dashboard deployed to CF Pages at {now_utc}")
+    except Exception as e:
+        logger.error(f"[snapshot] Failed: {e}", exc_info=True)
+
+
+def job_cleanup_demos_dir():
+    """Weekly: delete demo HTML files older than 30 days to prevent demos/ from bloating."""
+    import time
+    from pathlib import Path
+    demos_dir = Path(__file__).parent / "demos"
+    if not demos_dir.exists():
+        return
+    cutoff = time.time() - 30 * 86400  # 30 days ago
+    removed = 0
+    for f in demos_dir.iterdir():
+        if f.is_file() and f.suffix == ".html" and f.stat().st_mtime < cutoff:
+            try:
+                f.unlink()
+                removed += 1
+            except Exception:
+                pass
+    if removed:
+        log.info(f"[DemoCleanup] Removed {removed} demo HTML files older than 30 days.")
+    else:
+        log.info("[DemoCleanup] No stale demo files found.")
+
+
 def start_scheduler():
     """Start background scheduler. Called once on server startup."""
     cfg = _get_config()
@@ -2897,6 +3122,8 @@ def start_scheduler():
     from datetime import timedelta
     replicate_first_run = now_utc + timedelta(minutes=5)
     scheduler.add_job(job_replicate_dashboard_static, "interval", minutes=15, id="replicate_dashboard_static", next_run_time=replicate_first_run, replace_existing=True)
+    # CF Pages static dashboard mirror: snapshot stats to dashboard_index.html every 5 min
+    scheduler.add_job(job_snapshot_dashboard, 'interval', minutes=5, id='snapshot_dashboard', replace_existing=True)
     # Bounce verification pipeline: checks new leads using burner account every 10 min
     scheduler.add_job(job_check_bounces, "interval", minutes=10, id="bounce_verification", next_run_time=now_utc, replace_existing=True)
     # Daily performance recap alert: runs every day at 6 PM (18:00) local time
@@ -2910,20 +3137,25 @@ def start_scheduler():
     import generate_wa_drafts
     def _firestick_only(fn):
         def _wrapped(): 
-            if is_primary_active(): return
+            import os
+            # Firestick only means hard requirement for primary physical device OR if it fails over, it should stand down and let mac run it? Wait
+            # User instruction: "reverse decorators so mac_only runs on mac, firestick_only runs on firestick"
+            if os.getenv("LEADFLOW_DEVICE_ROLE", "backup") != "primary": return
             fn()
         _wrapped.__name__ = fn.__name__
         return _wrapped
         
     def _mac_only(fn):
         def _wrapped():
-            if not is_primary_active(): return
+            import os
+            # Only run if explicitly mac backup device
+            if os.getenv("LEADFLOW_DEVICE_ROLE", "backup") == "primary": return
             fn()
         _wrapped.__name__ = fn.__name__
         return _wrapped
 
-    scheduler.add_job(_firestick_only(generate_wa_drafts.generate_drafts), "interval", hours=4, id="generate_wa_drafts", next_run_time=now_utc, replace_existing=True)
-    scheduler.add_job(_firestick_only(generate_ig_drafts.generate_drafts), "interval", hours=4, id="generate_ig_drafts", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(generate_wa_drafts.generate_drafts, "interval", hours=4, id="generate_wa_drafts", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(generate_ig_drafts.generate_drafts, "interval", hours=4, id="generate_ig_drafts", next_run_time=now_utc, replace_existing=True)
     scheduler.add_job(job_check_instagram_replies, "interval", minutes=15, id="check_instagram_replies", next_run_time=now_utc, replace_existing=True)
 
     scheduler.add_job(job_lead_score_decay,    "interval", days=7,     id="lead_score_decay",    next_run_time=now_utc, replace_existing=True)
@@ -2931,6 +3163,7 @@ def start_scheduler():
     scheduler.add_job(job_classify_replies,    "interval", minutes=15, id="classify_replies",    next_run_time=now_utc, replace_existing=True)
     scheduler.add_job(job_demo_expiry_urgency, "interval", hours=24,   id="demo_expiry_urgency", next_run_time=now_utc, replace_existing=True)
     scheduler.add_job(job_linkedin_enrichment, "interval", hours=24,   id="linkedin_enrichment", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(job_cleanup_demos_dir,   "interval", days=7,     id="cleanup_demos_dir",   next_run_time=now_utc, replace_existing=True)
 
     if not scheduler.running:
         scheduler.start()

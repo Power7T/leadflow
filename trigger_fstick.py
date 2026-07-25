@@ -2,9 +2,9 @@ import os
 import subprocess
 from pathlib import Path
 
-# Load IP dynamically
-ip_file = Path(os.path.expanduser("~/.vivo_ip"))
-device_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.1.7:5555"
+# Load Firestick IP dynamically
+ip_file = Path(os.path.expanduser("~/.firestick_ip"))
+device_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.0.113:5555"
 
 # Connect dynamically before running commands
 subprocess.run(f"adb connect {device_ip}", shell=True, capture_output=True)

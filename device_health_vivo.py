@@ -7,8 +7,18 @@ Connect the phone via USB or wireless ADB before running.
 
 import subprocess
 import sys
+import os
 
-DEVICE = "192.168.1.4:5555"
+# Dynamic IP resolution: ~/.vivo_ip → local .vivo_ip → fallback
+_home_ip = os.path.join(os.path.expanduser("~"), ".vivo_ip")
+_local_ip = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".vivo_ip")
+def _read_ip(path):
+    try:
+        return open(path).read().strip()
+    except Exception:
+        return None
+
+DEVICE = _read_ip(_home_ip) or _read_ip(_local_ip) or "192.168.0.162:5555"
 ADB = ["/opt/homebrew/bin/adb.orig", "-s", DEVICE]
 
 # ---------- Vivo bloatware to disable ----------

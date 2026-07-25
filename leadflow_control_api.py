@@ -4,7 +4,7 @@
     uvicorn leadflow_control_api:app --host 127.0.0.1 --port 8000
 
 Exports two main endpoints:
-* GET  /health                 – pings the existing LeadFlow UI (192.168.1.3:8765).
+* GET  /health                 – pings the existing LeadFlow UI (Firestick:8765).
 * POST /generate_ig            – creates an IG DM link and profile link for a chosen tier or username,
                                  sends the draft to the Telegram destination chats, and notifies via ntfy.
 """
@@ -13,6 +13,22 @@ import os
 import asyncio
 import json
 from typing import Optional
+
+def _resolve_firestick_ip():
+    """Resolve Firestick IP: ~/.firestick_ip → local .firestick_ip → fallback."""
+    for path in [
+        os.path.join(os.path.expanduser("~"), ".firestick_ip"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), ".firestick_ip"),
+    ]:
+        try:
+            ip = open(path).read().strip()
+            if ip:
+                return ip.replace(":5555", "")
+        except Exception:
+            pass
+    return "192.168.0.113"
+
+_FS_IP = _resolve_firestick_ip()
 
 import aiohttp
 from fastapi import FastAPI, HTTPException
@@ -42,7 +58,7 @@ app = FastAPI()
 @app.get("/health")
 async def health_check():
     """Ping the LeadFlow web UI and report status."""
-    health_url = "http://192.168.1.3:8765/api/health"
+    health_url = f"http://{_FS_IP}:8765/api/health"
     async with aiohttp.ClientSession() as sess:
         try:
             async with sess.get(health_url, timeout=5) as resp:

@@ -215,7 +215,7 @@ def run_replication():
         SELECT b.id, b.name, b.city, b.country, b.category, b.website, b.lead_score, b.demo_tunnel_url, b.template_id
         FROM businesses b
         WHERE b.status NOT IN ('skipped', 'opted_out')
-        ORDER BY b.lead_score DESC, b.found_at DESC
+        ORDER BY COALESCE(b.lead_score, 0) DESC, b.found_at DESC
     """).fetchall()
     conn.close()
     

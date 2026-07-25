@@ -143,8 +143,18 @@ class TestLeadflowOptimizations(unittest.TestCase):
         # Mocks
         mock_exists.return_value = False
 
+        # Set up default getenv return values for the test
+        def getenv_mock(key, default=None):
+            if key == "LEADFLOW_DEVICE_ROLE":
+                return "primary"
+            if key in ("LEADFLOW_PUBLIC_URL", "CF_WORKER_URL"):
+                return "https://test-relay.workers.dev"
+            if key in ("LEADFLOW_SECRET_TOKEN", "SECRET_TOKEN"):
+                return "test-secret"
+            return default
+
         # Test Case 1: Primary role
-        mock_getenv.side_effect = lambda key, default=None: "primary" if key == "LEADFLOW_DEVICE_ROLE" else default
+        mock_getenv.side_effect = getenv_mock
         res = is_primary_active()
         # Primary role should return False because primary does not stand down (runs its own jobs)
         self.assertFalse(res)
@@ -160,6 +170,10 @@ class TestLeadflowOptimizations(unittest.TestCase):
         def getenv_backup(key, default=None):
             if key == "LEADFLOW_DEVICE_ROLE":
                 return "backup"
+            if key in ("LEADFLOW_PUBLIC_URL", "CF_WORKER_URL"):
+                return "https://test-relay.workers.dev"
+            if key in ("LEADFLOW_SECRET_TOKEN", "SECRET_TOKEN"):
+                return "test-secret"
             return default
         mock_getenv.side_effect = getenv_backup
 
@@ -221,6 +235,28 @@ class TestLeadflowOptimizations(unittest.TestCase):
         self.assertFalse(res)
         # Verify it writes failure count as "2"
         mock_write.assert_called_with("2")
+
+    @patch("os.getenv")
+    def test_is_primary_active_missing_env(self, mock_getenv):
+        # Case A: missing LEADFLOW_PUBLIC_URL
+        def getenv_missing_url(key, default=None):
+            if key == "LEADFLOW_SECRET_TOKEN":
+                return "some-token"
+            return default
+        mock_getenv.side_effect = getenv_missing_url
+        with self.assertRaises(ValueError) as context:
+            is_primary_active()
+        self.assertIn("LEADFLOW_PUBLIC_URL is missing", str(context.exception))
+
+        # Case B: missing LEADFLOW_SECRET_TOKEN
+        def getenv_missing_token(key, default=None):
+            if key == "LEADFLOW_PUBLIC_URL":
+                return "https://test.workers.dev"
+            return default
+        mock_getenv.side_effect = getenv_missing_token
+        with self.assertRaises(ValueError) as context:
+            is_primary_active()
+        self.assertIn("LEADFLOW_SECRET_TOKEN is missing", str(context.exception))
 
 
 if __name__ == "__main__":
