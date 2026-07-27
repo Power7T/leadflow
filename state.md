@@ -8,7 +8,7 @@
 - Gmail IMAP via `SENDER_APP_PASSWORD` env var (comma-separated for multiple accounts)
 
 ## Key Env Vars
-- `SENDER_APP_PASSWORD='yisx ywet ajwj fihy, sqyt ngpg jymi uihi'` — chandango12 (new), bhartimitrabot (unchanged)
+- `SENDER_APP_PASSWORD='[GMAIL_PW_REDACTED]'` — chandango12 (new), bhartimitrabot (unchanged)
 - `CLOUDFLARE_API_TOKEN='cfat_[REDACTED]'` (Account token, NOT User token)
 - `LEADFLOW_DEVICE_ROLE='backup'` (on Mac)
 
@@ -55,8 +55,8 @@
 - **IG reply tracking**: `ig_reply_responder.py` `respond_with_link()` now also sets `outreach.replied=1` and `follow_ups.replied=1` on positive reply
 
 ### ⏳ PENDING (requires Firestick manual action)
-1. **Restart server.py** on Firestick: `pkill -f server.py` in Termux (watchdog auto-restarts)
-2. **Run Firestick DB fix**: `python3 /data/data/com.termux/files/home/leadflow/firestick_db_fix.py`
+1. ~~**Restart server.py** on Firestick (DONE)~~
+2. ~~**Run Firestick DB fix**~~ (DONE): `python3 /data/data/com.termux/files/home/leadflow/firestick_db_fix.py`
    - Adds follow_ups columns (opened/clicked/replied)
    - Resets bad AB tests (winner=NULL)
    - Migrates B/C/D leads to Variant A

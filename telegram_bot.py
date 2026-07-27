@@ -27,8 +27,8 @@ logger = logging.getLogger("LeadFlowTelegramBot")
 
 load_dotenv()
 
-API_ID = 24433480
-API_HASH = "f0b50e8ba81ea284b4abb3211251a8db"
+API_ID = [TG_ID_REDACTED]
+API_HASH = "[CF_TOKEN_REDACTED]"
 BOT_TOKEN = os.getenv("TELEGRAM_CONTROL_BOT_TOKEN")
 USER_ID_STR = os.getenv("TELEGRAM_CONTROL_USER_ID")
 
