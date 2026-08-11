@@ -87,7 +87,7 @@ def _git(*args, timeout=60) -> subprocess.CompletedProcess:
     )
 
 
-def _publish(filename: str, html: str) -> dict:
+def _publish(filename: str, html: str, pull_timeout: int = 60) -> dict:
     """Write one file into the demos repo and push it. Returns {ok, error}.
 
     Serialized by a lock and rebased before push so concurrent auto-send and
@@ -100,7 +100,7 @@ def _publish(filename: str, html: str) -> dict:
         try:
             _git("add", "-A")
             _git("commit", "-m", f"Deploy {filename}")  # no-op commit is fine
-            pull = _git("pull", "--rebase", "--autostash", "origin", "main")
+            pull = _git("pull", "--rebase", "--autostash", "origin", "main", timeout=pull_timeout)
             if pull.returncode != 0:
                 _git("rebase", "--abort")
                 _git("merge", "-X", "ours", "origin/main")
@@ -150,9 +150,9 @@ def deploy_demo(bid: int, name: str, html: str) -> dict:
 
     try:
         r_html = requests.post(
-            f"{public_url}/api/demo-html?slug={slug}",
+            f"{public_url}/api/kv",
             headers={"X-Secret-Token": secret_token, "Content-Type": "application/json"},
-            json={"html": html},
+            json={"key": f"demo:html:{slug}", "value": html},
             timeout=15
         )
         if r_html.status_code != 200:

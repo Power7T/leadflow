@@ -14,7 +14,7 @@ except Exception as e:
 
 # Load Vivo Phone IP
 ip_file = Path(os.path.expanduser("~/.vivo_ip"))
-phone_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.0.162:5555"
+phone_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.8.157:5555"
 
 # Sync .vivo_ip to project directory so it gets pushed to Firestick
 if ip_file.exists():
@@ -25,7 +25,7 @@ if ip_file.exists():
 
 # Target device to push code to (the Firestick running Termux)
 fs_ip_file = Path(os.path.expanduser("~/.firestick_ip"))
-device_ip = fs_ip_file.read_text().strip() if fs_ip_file.exists() else "192.168.0.113:5555"
+device_ip = fs_ip_file.read_text().strip() if fs_ip_file.exists() else "192.168.8.246:5555"
 
 files_to_push = [
     "ai_writer.py",

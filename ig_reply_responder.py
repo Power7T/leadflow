@@ -13,14 +13,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(me
 log = logging.getLogger("ig_reply_responder")
 
 # Add leadflow path
-sys.path.append("/Users/chandan/leadflow")
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _SCRIPT_DIR)
 from vivo_ig_ui_sender import adb, unlock_screen, get_ui_coords, type_text_safe, confirm_message_typed
 
-DB_PATH = "/Users/chandan/leadflow/leadflow.db"
+DB_PATH = os.path.join(_SCRIPT_DIR, "leadflow.db")
 
 # Resolve device IP dynamically
 from pathlib import Path
-DEVICE_IP = "192.168.0.162:5555" # Default fallback
+DEVICE_IP = "192.168.8.157:5555" # Default fallback
 try:
     _ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
     _ip_file_local = Path(__file__).parent / ".vivo_ip"

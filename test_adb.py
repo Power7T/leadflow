@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Load Vivo phone IP dynamically
 ip_file = Path(os.path.expanduser("~/.vivo_ip"))
-device_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.0.162:5555"
+device_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.8.157:5555"
 
 text = "test ' & < > () | * ? ! $ test"
 # Strip newlines

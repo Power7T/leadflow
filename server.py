@@ -102,6 +102,11 @@ def _start_demo_tunnel(bid: int, html: str) -> str:
     conn.execute("UPDATE businesses SET demo_tunnel_url=? WHERE id=?", (result["url"], bid))
     conn.commit()
     conn.close()
+    try:
+        from sync_engine import log_sync_action
+        log_sync_action("update_demo_url", {"business_id": bid, "demo_tunnel_url": result["url"]})
+    except Exception:
+        pass
     return result["url"]
 
 
@@ -167,7 +172,7 @@ def _restore_demo_tunnels():
     (the old silent-push bug stranded several), so no prospect hits a 404."""
     from deploy import _publish
     try:
-        result = _publish(".gitkeep", "")   # commits & pushes everything pending
+        result = _publish(".gitkeep", "", pull_timeout=15)   # commits & pushes everything pending
         if result["ok"]:
             print("[deploy] startup sync OK — stranded demos flushed to GitHub Pages")
         else:
@@ -519,15 +524,15 @@ def get_ig_settings():
     from datetime import datetime
     try:
         conn = get_conn()
-        row = conn.execute("SELECT status, daily_limit, sent_today, last_reset_date FROM ig_settings WHERE id=1").fetchone()
+        row = conn.execute("SELECT status, daily_limit, sent_today, last_reset_date, mac_ig_dm_enabled FROM ig_settings WHERE id=1").fetchone()
         conn.close()
-        
+
         if not row:
-            return JSONResponse({"daily_limit": 10, "sent_today": 0, "is_running": False})
-            
-        status, daily_limit, sent_today, last_reset_date = row
+            return JSONResponse({"daily_limit": 10, "sent_today": 0, "is_running": False, "mac_ig_dm_enabled": False})
+
+        status, daily_limit, sent_today, last_reset_date, mac_ig_dm_enabled = row
         is_running = (status == "running")
-        
+
         # Reset if new day
         today = datetime.now().strftime("%Y-%m-%d")
         if last_reset_date != today:
@@ -538,8 +543,8 @@ def get_ig_settings():
             conn.execute("UPDATE ig_settings SET sent_today=?, daily_limit=?, last_reset_date=? WHERE id=1", (sent_today, daily_limit, today))
             conn.commit()
             conn.close()
-            
-        return JSONResponse({"daily_limit": daily_limit, "sent_today": sent_today, "is_running": is_running})
+
+        return JSONResponse({"daily_limit": daily_limit, "sent_today": sent_today, "is_running": is_running, "mac_ig_dm_enabled": bool(mac_ig_dm_enabled)})
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
@@ -575,33 +580,32 @@ async def update_ig_settings(request: Request):
     try:
         data = await request.json()
         conn = get_conn()
-        row = conn.execute("SELECT status, daily_limit, sent_today, last_reset_date FROM ig_settings WHERE id=1").fetchone()
-        
+        row = conn.execute("SELECT status, daily_limit, sent_today, last_reset_date, mac_ig_dm_enabled FROM ig_settings WHERE id=1").fetchone()
+
         if not row:
-            status, daily_limit, sent_today, last_reset_date = "stopped", 10, 0, datetime.now().strftime("%Y-%m-%d")
-            conn.execute("INSERT INTO ig_settings (id, status, daily_limit, sent_today, last_reset_date) VALUES (1, ?, ?, ?, ?)", (status, daily_limit, sent_today, last_reset_date))
+            status, daily_limit, sent_today, last_reset_date, mac_ig_dm_enabled = "stopped", 10, 0, datetime.now().strftime("%Y-%m-%d"), 0
+            conn.execute("INSERT INTO ig_settings (id, status, daily_limit, sent_today, last_reset_date, mac_ig_dm_enabled) VALUES (1, ?, ?, ?, ?, 0)", (status, daily_limit, sent_today, last_reset_date))
         else:
-            status, daily_limit, sent_today, last_reset_date = row
+            status, daily_limit, sent_today, last_reset_date, mac_ig_dm_enabled = row
 
         if 'daily_limit' in data:
             daily_limit = int(data['daily_limit'])
         if 'is_running' in data:
             status = "running" if data['is_running'] else "stopped"
-            
-        # Optional: trigger a sync log here if sync_engine logs locally, but sync_engine looks at sync_journal
-        # We will update sync_engine.py to sync this.
-        
-        conn.execute("UPDATE ig_settings SET status=?, daily_limit=? WHERE id=1", (status, daily_limit))
-        
+        if 'mac_ig_dm_enabled' in data:
+            mac_ig_dm_enabled = 1 if data['mac_ig_dm_enabled'] else 0
+
+        conn.execute("UPDATE ig_settings SET status=?, daily_limit=?, mac_ig_dm_enabled=? WHERE id=1", (status, daily_limit, mac_ig_dm_enabled))
+
         # Log to sync_journal so it goes to Cloudflare
         from sync_engine import log_sync_action
-        payload = {"status": status, "daily_limit": daily_limit}
+        payload = {"status": status, "daily_limit": daily_limit, "mac_ig_dm_enabled": mac_ig_dm_enabled}
         log_sync_action("update_ig_settings", payload)
-        
+
         conn.commit()
         conn.close()
-        
-        return JSONResponse({"success": True, "settings": {"daily_limit": daily_limit, "is_running": (status == "running"), "sent_today": sent_today}})
+
+        return JSONResponse({"success": True, "settings": {"daily_limit": daily_limit, "is_running": (status == "running"), "sent_today": sent_today, "mac_ig_dm_enabled": bool(mac_ig_dm_enabled)}})
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
@@ -1508,6 +1512,11 @@ async def run_test_leads_triggers(request: Request):
                             )
                             _c.commit()
                             _c.close()
+                            try:
+                                from sync_engine import log_sync_action
+                                log_sync_action("update_demo_url", {"business_id": bid, "demo_tunnel_url": real_url})
+                            except Exception:
+                                pass
             except Exception as deploy_err:
                 print(f"[test-leads] deploy failed for {name}: {deploy_err}")
 
@@ -1679,6 +1688,11 @@ async def generate_messages(bid: int, request: Request):
         conn.execute("UPDATE businesses SET demo_tunnel_url=? WHERE id=?", (demo_url, bid))
         conn.commit()
         conn.close()
+        try:
+            from sync_engine import log_sync_action
+            log_sync_action("update_demo_url", {"business_id": bid, "demo_tunnel_url": demo_url})
+        except Exception:
+            pass
     except Exception:
         pass
 
@@ -3316,11 +3330,11 @@ def firestick_url():
     ip_file = Path(__file__).parent / ".firestick_ip"
     try:
         raw = ip_file.read_text().strip()
-        # File contains ADB address like 192.168.0.113:5555 — extract just the IP
+        # File contains ADB address like 192.168.8.246:5555 — extract just the IP
         ip = raw.split(":")[0]
         return JSONResponse({"url": f"http://{ip}:8765", "ip": ip})
     except Exception:
-        return JSONResponse({"url": "http://192.168.0.113:8765", "ip": "192.168.0.113"})
+        return JSONResponse({"url": "http://192.168.8.246:8765", "ip": "192.168.8.246"})
 
 
 @app.get("/api/stats")

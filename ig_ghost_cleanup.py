@@ -39,7 +39,7 @@ from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv("/Users/chandan/leadflow/.env")
+load_dotenv(str(Path(__file__).parent / ".env"))
 
 from ig_rate_db import (
     migrate, get_pending_ghosts, get_silent_followbacks,
@@ -378,7 +378,9 @@ def run_ghost_cleanup(dry_run: bool = False):
 
     # Acquire phone lock
     if not dry_run:
-        if not acquire_phone_lock(FIRESTICK_IP):
+        from instagram_sender import _resolve_adb_target
+        _adb_target = _resolve_adb_target()
+        if not acquire_phone_lock(_adb_target):
             log.error("Could not acquire phone lock. Aborting.")
             return
         try:
@@ -386,7 +388,7 @@ def run_ghost_cleanup(dry_run: bool = False):
         except Exception as e:
             log.error(f"Failed to unlock: {e}")
             subprocess.run(
-                f"adb -s {FIRESTICK_IP} shell rmdir /sdcard/ig_automation_lock 2>/dev/null",
+                f"adb -s {_adb_target} shell rmdir /sdcard/ig_automation_lock 2>/dev/null",
                 shell=True
             )
             return
@@ -461,8 +463,9 @@ def run_ghost_cleanup(dry_run: bool = False):
         log.error(f"Fatal error during ghost cleanup: {e}", exc_info=True)
     finally:
         if not dry_run:
+            from instagram_sender import _resolve_adb_target
             subprocess.run(
-                f"adb -s {FIRESTICK_IP} shell rmdir /sdcard/ig_automation_lock 2>/dev/null",
+                f"adb -s {_resolve_adb_target()} shell rmdir /sdcard/ig_automation_lock 2>/dev/null",
                 shell=True
             )
             adb("shell input keyevent 3")

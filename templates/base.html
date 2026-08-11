@@ -88,7 +88,7 @@
       <span style="color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:10px;">📱 Vivo Phone</span>
     </div>
     <div id="phoneStatusController" style="color:var(--text);font-weight:600;font-size:12px;margin-bottom:2px;">Idle</div>
-    <a id="phoneStatusIp" href="http://192.168.0.162:8765" target="_blank" style="display:block;color:#3b82f6;text-decoration:none;font-family:'SF Mono',Monaco,monospace;font-size:11px;word-break:break-all;margin-bottom:4px;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'"></a>
+    <a id="phoneStatusIp" href="http://192.168.8.157:8765" target="_blank" style="display:block;color:#3b82f6;text-decoration:none;font-family:'SF Mono',Monaco,monospace;font-size:11px;word-break:break-all;margin-bottom:4px;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'"></a>
     <div id="phoneStatusAction" style="color:var(--text-dim);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
     <div id="phoneStatusStats" style="display:flex;gap:8px;margin-top:6px;color:var(--text-dim);font-size:10px;">
       <span>👤 <b id="ps-follows" style="color:var(--text)">0</b></span>
@@ -104,10 +104,10 @@
       <span id="firestickDot" style="width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
       <span style="color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:10px;">📺 Firestick</span>
     </div>
-    <a id="firestickLink" href="http://192.168.0.113:8765" target="_blank"
+    <a id="firestickLink" href="http://192.168.8.246:8765" target="_blank"
        style="display:block;color:#f59e0b;text-decoration:none;font-family:'SF Mono',Monaco,monospace;font-size:11px;word-break:break-all;margin-bottom:4px;transition:opacity 0.15s;"
        onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'">
-      192.168.0.113:8765 ↗
+      192.168.8.246:8765 ↗
     </a>
     <div style="color:var(--text-dim);font-size:10px;">LeadFlow on Fire TV</div>
   </div>
@@ -231,7 +231,7 @@ async function pollPhoneStatus() {
     if (ipEl && ps.vivo_ip) {
       ipEl.textContent = ps.vivo_ip + ' ↗';
       let ipOnly = ps.vivo_ip.toString().split(':')[0];
-      if (ipOnly === 'localhost' || ipOnly === '127.0.0.1') ipOnly = '192.168.0.162';
+      if (ipOnly === 'localhost' || ipOnly === '127.0.0.1') ipOnly = '192.168.8.157';
       ipEl.href = 'http://' + ipOnly + ':8765';
     }
 

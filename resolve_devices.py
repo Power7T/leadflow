@@ -69,7 +69,7 @@ def get_subnet():
     except Exception:
         pass
 
-    return "192.168.0"
+    return "192.168.8"
 
 def scan_network():
     subnet = get_subnet()
@@ -149,26 +149,75 @@ def resolve():
 if __name__ == "__main__":
     resolve()
 
-import os
-import subprocess
-import threading
-import re
-from pathlib import Path
 
-import os
-import os
-import subprocess
-import threading
-import re
-from pathlib import Path
+def _adb_ok(device_ip, timeout=5):
+    try:
+        res = subprocess.run(["adb", "-s", device_ip, "shell", "echo", "1"],
+                             capture_output=True, text=True, timeout=timeout)
+        return "1" in res.stdout
+    except Exception:
+        return False
+
+
+def _enable_tcpip_via_usb(target_lower):
+    """Try to find a USB-connected Android device and enable tcpip 5555."""
+    # Known USB serial for Vivo (stored when first seen)
+    _usb_serial_file = Path(os.path.expanduser("~")) / f".{target_lower}_usb_serial"
+    try:
+        out = subprocess.check_output(["adb", "devices"], text=True, timeout=10)
+        usb_devices = []
+        for line in out.strip().splitlines()[1:]:
+            parts = line.split()
+            if len(parts) == 2 and parts[1] == "device":
+                serial = parts[0]
+                # USB serials don't contain colons (TCP ones do)
+                if ":" not in serial:
+                    usb_devices.append(serial)
+                    _usb_serial_file.write_text(serial)
+
+        if not usb_devices:
+            return None
+
+        # Use previously known serial first, then any USB device
+        preferred = None
+        if _usb_serial_file.exists():
+            known = _usb_serial_file.read_text().strip()
+            if known in usb_devices:
+                preferred = known
+        serial = preferred or usb_devices[0]
+
+        subprocess.run(["adb", "-s", serial, "tcpip", "5555"],
+                       capture_output=True, timeout=10)
+        import time
+        time.sleep(2)  # give adbd time to restart in TCP mode
+        return serial
+    except Exception:
+        return None
+
+
+def _send_ntfy(target, message, title, tags="robot,heavy_check_mark"):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(f"{os.path.dirname(os.path.abspath(__file__))}/.env")
+        import requests
+        _ntfy = os.getenv("NTFY_TOPIC")
+        if _ntfy:
+            requests.post(
+                f"https://ntfy.sh/{_ntfy}",
+                data=message.encode("utf-8"),
+                headers={"Title": title, "Tags": tags, "Priority": "default"},
+                timeout=5,
+            )
+    except Exception:
+        pass
+
+
 def ensure_connected(target="vivo"):
-    import os, subprocess, threading, re
-    from pathlib import Path
     target_lower = target.lower()
     home = os.path.expanduser("~")
     local_path = Path(f"{os.path.dirname(os.path.abspath(__file__))}/.{target_lower}_ip")
     home_path = Path(f"{home}/.{target_lower}_ip")
-    
+
     device_ip = None
     if home_path.exists():
         device_ip = home_path.read_text().strip()
@@ -177,47 +226,44 @@ def ensure_connected(target="vivo"):
 
     original_ip = device_ip
 
+    # --- Step 1: Try cached IP ---
+    if device_ip and _adb_ok(device_ip):
+        return device_ip
+
+    print(f"[resolve] '{target}' not reachable at {device_ip}. Scanning network...")
     if device_ip:
-        # Try pinging via adb
-        try:
-            res = subprocess.run(["adb", "-s", device_ip, "shell", "echo", "1"], capture_output=True, text=True, timeout=5)
-            if "1" in res.stdout:
-                return device_ip
-        except Exception:
-            pass
-            
-    print(f"Device '{target}' not reachable. Triggering network scan...")
-    subprocess.run(f"adb disconnect {device_ip}", shell=True, stderr=subprocess.DEVNULL)
+        subprocess.run(f"adb disconnect {device_ip}", shell=True, stderr=subprocess.DEVNULL)
+
+    # --- Step 2: Resolve new IP by MAC ---
     resolve()
-    
+
     if home_path.exists():
         device_ip = home_path.read_text().strip()
-        print(f"Re-resolved {target} -> {device_ip}")
-        subprocess.run(f"adb connect {device_ip}", shell=True)
+        print(f"[resolve] Re-resolved {target} -> {device_ip}")
 
-        # Test if the connection actually succeeded after resolve
-        try:
-            res = subprocess.run(["adb", "-s", device_ip, "shell", "echo", "1"], capture_output=True, text=True, timeout=5)
-            if "1" not in res.stdout:
-                return None # Still offline even after resolve
-        except Exception:
-            return None # Still offline
+    if device_ip:
+        subprocess.run(f"adb connect {device_ip}", shell=True, capture_output=True)
+        if _adb_ok(device_ip):
+            if device_ip != original_ip:
+                _send_ntfy(target, f"{target.upper()} IP auto-updated to {device_ip}",
+                           f"{target.capitalize()} IP Auto-Healed")
+            return device_ip
 
-        # Notify user that self-healing was successful!
-        try:
-            import os
-            from dotenv import load_dotenv
-            load_dotenv(f"{os.path.dirname(os.path.abspath(__file__))}/.env")
-            import requests
-            _ntfy = os.getenv("NTFY_TOPIC")
-            if _ntfy and device_ip != original_ip:
-                requests.post(
-                    f"https://ntfy.sh/{_ntfy}",
-                    data=f"{target.upper()} network IP safely auto-updated to {device_ip}!".encode("utf-8"),
-                    headers={"Title": f"{target.capitalize()} IP Auto-Healed", "Tags": "robot,heavy_check_mark", "Priority": "default"},
-                    timeout=5
-                )
-        except Exception:
-            pass
-        return device_ip
+    # --- Step 3: Vivo-specific — try USB to re-enable tcpip ---
+    if target_lower == "vivo":
+        print(f"[resolve] Wireless ADB failed. Trying USB fallback to re-enable tcpip...")
+        usb_serial = _enable_tcpip_via_usb(target_lower)
+        if usb_serial and device_ip:
+            subprocess.run(f"adb connect {device_ip}", shell=True, capture_output=True)
+            if _adb_ok(device_ip):
+                print(f"[resolve] Vivo recovered via USB tcpip -> {device_ip}")
+                _send_ntfy(target,
+                           f"VIVO ADB TCP re-enabled via USB. Now on {device_ip}",
+                           "Vivo USB Auto-Heal", tags="robot,usb,heavy_check_mark")
+                return device_ip
+
+    print(f"[resolve] WARNING: '{target}' could not be recovered automatically.")
+    _send_ntfy(target,
+               f"{target.upper()} offline and could not self-heal. Manual intervention needed.",
+               f"{target.capitalize()} Offline", tags="warning,robot")
     return None

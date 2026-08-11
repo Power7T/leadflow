@@ -1957,3 +1957,20 @@ def get_emails_sent_by_sender() -> dict:
     conn.close()
     return {r["assigned_sender_email"]: r["c"] for r in rows}
 
+
+# ── Suppression list ─────────────────────────────────────────────────────────
+
+_SUPPRESS_FILE = Path(__file__).parent / "suppressed.txt"
+
+
+def is_suppressed(email: str, business_id=None) -> bool:
+    """Return True if email is in the global suppression list."""
+    try:
+        needle = (email or "").strip().lower()
+        if not needle:
+            return False
+        with open(_SUPPRESS_FILE) as f:
+            return needle in {ln.strip().lower() for ln in f if ln.strip()}
+    except FileNotFoundError:
+        return False
+

@@ -603,7 +603,8 @@ def job_unfollow_ghosts():
 @require_internet
 def job_auto_send_instagram_dms():
     """
-    PAUSED BY USER REQUEST
+    Hourly Instagram DM autopilot — sends to leads in draft state within their local awake hours.
+    Respects ig_settings.status (running/stopped) and daily_limit.
     """
     
     if not _instagram_send_lock.acquire(blocking=False):
@@ -636,13 +637,33 @@ def job_auto_send_instagram_dms():
             log.info("[Instagram] Autopilot is paused/stopped in settings — skipping sending")
             return
 
+        # Mac guard: only send from Mac if mac_ig_dm_enabled=1 (OFF by default)
+        import os, sys
+        _is_termux = os.path.isdir("/data/data/com.termux")
+        _device_role = os.getenv("LEADFLOW_DEVICE_ROLE", "backup")
+        _is_vivo_or_primary = _is_termux or _device_role == "primary"
+        if not _is_vivo_or_primary:
+            # Running on Mac or another backup device — check the toggle
+            try:
+                from database import get_conn as _gc
+                _c = _gc()
+                _toggle_row = _c.execute("SELECT mac_ig_dm_enabled FROM ig_settings WHERE id=1").fetchone()
+                _c.close()
+                _mac_enabled = _toggle_row and _toggle_row[0] == 1
+            except Exception as _e:
+                log.warning(f"[Instagram] Failed to read mac_ig_dm_enabled: {_e}")
+                _mac_enabled = False
+            if not _mac_enabled:
+                log.info("[Instagram] Mac DM sending is disabled (emergency backup only). Skipping — Vivo/primary device should be sending.")
+                return
+
         from instagram_sender import can_send_instagram, send_instagram_dm, get_instagram_daily_sent_count
         if not can_send_instagram():
             return
 
         import os, json, requests
         public_url = os.getenv("CF_WORKER_URL", "https://leadflow-relay.chandango12.workers.dev")
-        headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN")}
+        headers = {"X-Secret-Token": os.getenv("LEADFLOW_SECRET_TOKEN", os.getenv("SECRET_TOKEN", ""))}
         
         # Fetch directly from the local Mac database
         import sqlite3
@@ -724,7 +745,34 @@ def job_auto_send_instagram_dms():
                 continue
 
             ok = send_instagram_dm(handle, draft)
-            if ok:
+            if ok == "contact_only":
+                # Business only has a "Contact" button — no direct DM capability on Instagram
+                log.warning(f"[Instagram] @{handle} is contact-only (no Message button) — marking in DB and skipping")
+                try:
+                    conn_update = get_conn()
+                    conn_update.execute(
+                        "UPDATE businesses SET ig_contact_only=1, status='ig_contact_only' WHERE id=?",
+                        (lead.get('business_id'),)
+                    )
+                    conn_update.execute(
+                        "UPDATE outreach SET status='ig_skip' WHERE business_id=? AND channel='instagram'",
+                        (lead.get('business_id'),)
+                    )
+                    conn_update.commit()
+                    conn_update.close()
+                except Exception as db_err:
+                    log.error(f"[Instagram] ig_contact_only update failed: {db_err}")
+            elif ok is None:
+                # Permanent skip: user not found, account deleted, or private (no DMs until follow-back)
+                log.warning(f"[Instagram] Permanent skip for @{handle} — marking outreach as 'ig_skip'")
+                try:
+                    conn_update = get_conn()
+                    conn_update.execute("UPDATE outreach SET status='ig_skip' WHERE business_id=? AND channel='instagram'", (lead.get('business_id'),))
+                    conn_update.commit()
+                    conn_update.close()
+                except Exception as db_err:
+                    log.error(f"[Instagram] ig_skip update failed: {db_err}")
+            elif ok:
                 # Update SQLite database status immediately
                 try:
                     conn_update = get_conn()
@@ -776,6 +824,7 @@ def job_check_instagram_replies():
         return
     try:
         import os, subprocess, sys
+        from pathlib import Path
         script_path = str(Path(__file__).parent / "ig_reply_responder.py")
         if os.path.exists(script_path):
             log.info("[Instagram Reply] Launching automated reply responder...")
@@ -1198,7 +1247,7 @@ def job_sync_beacon():
     
     try:
         import os, requests, time
-        token = os.getenv("SECRET_TOKEN")
+        token = os.getenv("LEADFLOW_SECRET_TOKEN", os.getenv("SECRET_TOKEN", ""))
         public_url = os.getenv("LEADFLOW_PUBLIC_URL", "")
         role = os.getenv("LEADFLOW_DEVICE_ROLE", "backup")
         if public_url:
@@ -1222,6 +1271,7 @@ def job_replicate_database():
     Cloudflare journal missed any inserts (new leads, contacts, outreach etc).
     """
     try:
+        import os
         from sync_engine import run_sync_cycle
         import socket as _sock
         # Pass Firestick IP as LAN peer for failsafe full-DB sync
@@ -1236,7 +1286,7 @@ def job_replicate_database():
             except Exception:
                 pass
         if not _fs_ip:
-            _fs_ip = "192.168.0.113"
+            _fs_ip = "192.168.8.246"
         lan_peers = [_fs_ip]
         # Filter out this device's own IP to prevent syncing to self
         try:
@@ -1265,41 +1315,62 @@ def job_replicate_dashboard_static():
         log.error(f"[Scheduler] Static dashboard replication error: {e}")
 
 
+_kv_last_heartbeat_write: float = 0.0  # epoch seconds of last successful KV put
+_KV_HEARTBEAT_INTERVAL = 1800  # write to KV at most once every 30 minutes
+
+
 def is_leader() -> bool:
     """Check if this device is currently the authorized leader.
     Firestick (primary) returns True if running.
     Mac (backup) returns False if Firestick is active, True if Firestick offline.
     """
+    global _kv_last_heartbeat_write
     import os, requests, time
     from pathlib import Path
-    
+
     public_url = os.getenv('CF_WORKER_URL') or os.getenv('LEADFLOW_PUBLIC_URL')
     if not public_url:
         raise ValueError("LEADFLOW_PUBLIC_URL is missing from the environment")
-        
+
     secret_token = os.getenv('LEADFLOW_SECRET_TOKEN') or os.getenv('SECRET_TOKEN')
     if not secret_token:
         raise ValueError("LEADFLOW_SECRET_TOKEN is missing from the environment")
-        
+
     device_role = os.getenv("LEADFLOW_DEVICE_ROLE", "backup")
     if device_role == "primary":
-        # Write heartbeat to KV so the Mac backup knows we are alive
+        now = time.time()
+        # Rate-limit KV writes to once every 5 min to stay under Cloudflare free tier (1000 puts/day)
+        if now - _kv_last_heartbeat_write < _KV_HEARTBEAT_INTERVAL:
+            return True  # Already wrote heartbeat recently; we are still leader
         try:
             headers = {'X-Secret-Token': secret_token}
             response = requests.post(
                 f"{public_url}/api/kv",
                 headers=headers,
-                json={"key": "leader:heartbeat", "value": str(time.time())},
+                json={"key": "leader:heartbeat", "value": str(now)},
                 timeout=5
             )
+            if response.status_code == 500:
+                # May be Cloudflare KV daily write-limit hit; primary is still running — assert leadership
+                import logging
+                err_body = ""
+                try:
+                    err_body = response.json().get("error", "")
+                except Exception:
+                    pass
+                logging.warning(f"[Failover] KV write returned 500 (likely rate-limit: {err_body}). Primary still asserting leadership.")
+                _kv_last_heartbeat_write = now  # back off retries even on 500
+                return True
             response.raise_for_status()
-            return True # Successfully asserted leadership
-        except Exception as e:
-            # If Firestick is offline and can't reach Cloudflare, we must fail closed.
-            # We return False so we sleep, but since is_leader is called at the start of every job,
-            # we will organically retry in a few minutes on the next scheduler tick.
+            _kv_last_heartbeat_write = now
+            return True  # Successfully asserted leadership
+        except requests.exceptions.ConnectionError as e:
             import logging
-            logging.error(f"[Failover] Primary offline! Cannot reach Cloudflare KV: {e}. Sleeping to allow backup to takeover.")
+            logging.error(f"[Failover] Primary cannot reach Cloudflare (network down): {e}. Sleeping to allow backup to takeover.")
+            return False
+        except Exception as e:
+            import logging
+            logging.error(f"[Failover] Primary KV heartbeat failed: {e}. Sleeping to allow backup to takeover.")
             return False
 
     # If this is the Mac (Backup), check primary's LAN health endpoint first to avoid KV read counts
@@ -1307,7 +1378,7 @@ def is_leader() -> bool:
         # Resolve Firestick LAN IP dynamically
         _fs_home = os.path.join(os.path.expanduser("~"), ".firestick_ip")
         _fs_local = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".firestick_ip")
-        _default_lan_ip = "192.168.0.113"
+        _default_lan_ip = "192.168.8.246"
         for _p in (_fs_home, _fs_local):
             try:
                 _ip = open(_p).read().strip().replace(":5555", "")
@@ -1390,7 +1461,7 @@ def job_process_ig_regens():
     from database import get_conn
     from demo_generator import _scrape_site
     public_url = os.getenv("CF_WORKER_URL", "https://leadflow-relay.chandango12.workers.dev")
-    headers = {"X-Secret-Token": os.getenv("SECRET_TOKEN", "fallback-secret")}
+    headers = {"X-Secret-Token": os.getenv("LEADFLOW_SECRET_TOKEN", os.getenv("SECRET_TOKEN", ""))}
     try:
         res = requests.post(f"{public_url}/api/kv", headers=headers, json={"key": "bot:ig_regen_queue"}, timeout=10)
         if not res.text or not res.text.strip():
@@ -1457,6 +1528,13 @@ def job_push_bot_kv():
         # Ensure tier column exists (prevents "no such column: b.tier" on older DBs)
         try:
             conn.execute("ALTER TABLE businesses ADD COLUMN tier INTEGER DEFAULT 0")
+            conn.commit()
+        except Exception:
+            pass  # column already exists
+
+        # Ensure ig_contact_only column exists
+        try:
+            conn.execute("ALTER TABLE businesses ADD COLUMN ig_contact_only INTEGER DEFAULT 0")
             conn.commit()
         except Exception:
             pass  # column already exists
@@ -1568,7 +1646,8 @@ def job_push_bot_kv():
             FROM businesses b
             WHERE b.tier IN (1,2)
               AND (b.ig_dm_sent IS NULL OR b.ig_dm_sent = 0)
-              AND b.status NOT IN ('opted_out','skipped','closed')
+              AND (b.ig_contact_only IS NULL OR b.ig_contact_only = 0)
+              AND b.status NOT IN ('opted_out','skipped','closed','ig_contact_only')
               AND EXISTS (SELECT 1 FROM outreach WHERE business_id = b.id AND channel = 'instagram' AND status = 'draft')
             ORDER BY b.tier ASC, b.lead_score DESC
             LIMIT 100
@@ -1949,13 +2028,13 @@ def job_auto_send_leads():
                 sender_key = (sender_email, sender_password)
                 if sender_key not in active_connections:
                     try:
-                        server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+                        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30)
                         server.login(sender_email, sender_password)
                         active_connections[sender_key] = server
                     except Exception as conn_err:
                         log.error(f"[Scheduler] Failed to connect/login SMTP for {sender_email}: {conn_err}")
                         continue
-                
+
                 smtp_server = active_connections[sender_key]
 
                 pitch_type = lead.get("pitch_type", "")
@@ -1986,11 +2065,19 @@ def job_auto_send_leads():
                             conn2.close()
 
                     # Never email a dead link: confirm the demo is actually live on Pages.
-                    from deploy import is_live
+                    from deploy import is_live, slug_for, demo_url_for
                     demo_url = lead.get("demo_tunnel_url", "")
                     if demo_url and not is_live(demo_url, wait=10):
-                        log.error(f"  -> Demo not live yet for {lead['name']} — skipping send this round")
-                        continue
+                        # Stored URL may be a stale numeric-ID URL; try the slug URL as fallback
+                        slug_url = demo_url_for(lead["id"], lead["name"])
+                        if slug_url != demo_url and is_live(slug_url, wait=10):
+                            demo_url = slug_url
+                            conn.execute("UPDATE businesses SET demo_tunnel_url=? WHERE id=?", (demo_url, lead["id"]))
+                            conn.commit()
+                            log.info(f"  -> Corrected demo URL for {lead['name']} to slug URL")
+                        else:
+                            log.error(f"  -> Demo not live yet for {lead['name']} — skipping send this round")
+                            continue
 
                     # Get the draft and subject options
                     conn2 = get_conn()
@@ -2260,7 +2347,15 @@ def job_auto_send_followups():
                 try:
                     log.info(f"[Scheduler] Sending Instagram follow-up seq#{row['sequence_num']} to @{handle}")
                     ok = send_instagram_dm(handle, row["draft"])
-                    if ok:
+                    if ok is None:
+                        log.warning(f"[Scheduler] Permanent skip IG follow-up @{handle} — account not found or private. Marking skipped.")
+                        conn_skip2 = get_conn()
+                        try:
+                            conn_skip2.execute("UPDATE follow_ups SET status='skipped' WHERE id=?", (row["id"],))
+                            conn_skip2.commit()
+                        finally:
+                            conn_skip2.close()
+                    elif ok:
                         conn_update = get_conn()
                         try:
                             conn_update.execute("UPDATE follow_ups SET status='sent', sent_at=datetime('now') WHERE id=?", (row["id"],))
@@ -2328,7 +2423,7 @@ def job_auto_send_followups():
                 sender_key = (sender_email, sender_password)
                 if sender_key not in active_connections:
                     try:
-                        server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+                        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30)
                         server.login(sender_email, sender_password)
                         active_connections[sender_key] = server
                     except Exception as conn_err:
@@ -3098,7 +3193,7 @@ def start_scheduler():
     scheduler.add_job(job_sync_worker_events,   "interval", minutes=5,  id="sync_worker_events",   next_run_time=now_utc, replace_existing=True)
     # Bot KV sync: push live stats + drafts to Cloudflare KV for Telegram bot webhook
     scheduler.add_job(job_process_ig_regens, "interval", minutes=1, id="process_ig_regens", next_run_time=now_utc, replace_existing=True)
-    scheduler.add_job(job_push_bot_kv,          "interval", minutes=5,  id="bot_kv_sync",          next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(job_push_bot_kv,          "interval", minutes=30, id="bot_kv_sync",          next_run_time=now_utc, replace_existing=True)
     # Database replication: sync SQLite changes bi-directionally via Cloudflare KV
     scheduler.add_job(job_replicate_database,   "interval", minutes=2,  id="replicate_database",   next_run_time=now_utc, replace_existing=True)
     # Opened-lead follow-ups: highest priority, fires every 5 min (was 30 min)
@@ -3129,9 +3224,9 @@ def start_scheduler():
     # Daily performance recap alert: runs every day at 6 PM (18:00) local time
     scheduler.add_job(job_daily_recap, "cron", hour=18, minute=0, id="daily_recap", replace_existing=True)
     # ADB keep-alive: reconnect to Vivo every 10 min, alert if offline
-    scheduler.add_job(job_adb_keepalive, "interval", minutes=10, id="adb_keepalive", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(job_adb_keepalive, "interval", minutes=10, id="adb_keepalive", next_run_time=now_utc, replace_existing=True, misfire_grace_time=60)
     # Device health: battery level/temp monitoring every 6 hours
-    scheduler.add_job(job_device_health, "interval", hours=6, id="device_health", next_run_time=now_utc, replace_existing=True)
+    scheduler.add_job(job_device_health, "interval", hours=6, id="device_health", next_run_time=now_utc, replace_existing=True, misfire_grace_time=300)
     # AI IG/WA Draft Generation: Firestick only — Mac skips silently
     import generate_ig_drafts
     import generate_wa_drafts
@@ -3168,6 +3263,15 @@ def start_scheduler():
     if not scheduler.running:
         scheduler.start()
         log.info(f"[Scheduler] Started — lead finder every 10 min | bounce verification every 10 min | daily recap at 6 PM")
+
+    # Battery guardian — runs as background daemon thread, checks every 5 min
+    try:
+        import battery_guardian
+        _bg_thread = threading.Thread(target=battery_guardian.run, daemon=True, name="battery-guardian")
+        _bg_thread.start()
+        log.info("[BatteryGuardian] Started — enforcing 20–60% real charge range.")
+    except Exception as _e:
+        log.warning(f"[BatteryGuardian] Failed to start: {_e}")
 
 
 def stop_scheduler():

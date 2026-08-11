@@ -315,7 +315,7 @@ def _get_vivo_ip() -> str:
         ip = local_file.read_text().strip()
         if ip:
             return ip
-    return "192.168.0.162:5555"
+    return "192.168.8.157:5555"
 
 
 def _friendly_name(controller: str) -> str:

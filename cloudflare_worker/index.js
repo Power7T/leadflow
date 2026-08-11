@@ -1056,15 +1056,48 @@ export default {
         return new Response("Unauthorized", { status: 401 });
       }
 
+      if (method === "DELETE") {
+        // List 3 keys at a time. KV.list() on 44K-key namespace is slow; small limit keeps us under CPU budget.
+        const list = await env.LEADFLOW_KV.list({ prefix: "sync:log:", limit: 3 });
+        const toDelete = list.keys.filter(k => k.name !== "sync:log:batch");
+        for (const k of toDelete) {
+          await env.LEADFLOW_KV.delete(k.name);
+        }
+        return new Response(JSON.stringify({ success: true, deleted: toDelete.length, cursor: list.cursor || null }), {
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
+      }
+
       if (method === "POST") {
         const body = await request.json().catch(() => ({}));
         const transactions = body.transactions || [];
 
-        for (const tx of transactions) {
-          // Generate a unique chronological ID: timestamp_random
-          const txId = `${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-          tx.seq = txId;
-          await env.LEADFLOW_KV.put(`sync:log:${txId}`, JSON.stringify(tx), { metadata: tx });
+        if (transactions.length === 0) {
+          return new Response(JSON.stringify({ success: true, count: 0 }), {
+            headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+          });
+        }
+
+        // Store all transactions as a single rolling key to avoid burning KV write quota.
+        // Read existing batch, append new transactions, write back as one key.
+        const BATCH_KEY = "sync:log:batch";
+        try {
+          const existing = await env.LEADFLOW_KV.get(BATCH_KEY);
+          let existingTxs = [];
+          if (existing) {
+            try { existingTxs = JSON.parse(existing); } catch (e) { existingTxs = []; }
+          }
+          const ts = Date.now();
+          const stamped = transactions.map((tx, i) => ({ ...tx, seq: `${ts}_${i}` }));
+          const merged = existingTxs.concat(stamped);
+          // Keep only last 500 transactions to bound key size (~500 rows max buffer)
+          const trimmed = merged.slice(-500);
+          await env.LEADFLOW_KV.put(BATCH_KEY, JSON.stringify(trimmed));
+        } catch (kvErr) {
+          return new Response(JSON.stringify({ success: false, error: kvErr.message }), {
+            status: 503,
+            headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+          });
         }
 
         return new Response(JSON.stringify({ success: true, count: transactions.length }), {
@@ -1073,32 +1106,16 @@ export default {
       } else {
         const since = url.searchParams.get("since") || "0";
 
-        // List sync log keys with metadata packed
-        const list = await env.LEADFLOW_KV.list({ prefix: "sync:log:", includeMetadata: true });
-        const results = [];
-
-        for (const key of list.keys) {
-          // Key name: sync:log:<timestamp>_<random>
-          const txId = key.name.substring(9); // remove "sync:log:"
-
-          if (txId > since) {
-            if (key.metadata) {
-              results.push(key.metadata);
-            } else {
-              // Fallback to read value directly if metadata is absent
-              const val = await env.LEADFLOW_KV.get(key.name);
-              if (val) {
-                try {
-                  results.push(JSON.parse(val));
-                } catch (e) {
-                  results.push({ raw: val, seq: txId });
-                }
-              }
-            }
-          }
+        // Read the single rolling batch key
+        const batchRaw = await env.LEADFLOW_KV.get("sync:log:batch");
+        let results = [];
+        if (batchRaw) {
+          try {
+            const all = JSON.parse(batchRaw);
+            results = all.filter(tx => (tx.seq || "0") > since);
+          } catch (e) { results = []; }
         }
 
-        // Sort chronologically by sequence ID
         results.sort((a, b) => (a.seq > b.seq ? 1 : -1));
 
         return new Response(JSON.stringify({ transactions: results }), {

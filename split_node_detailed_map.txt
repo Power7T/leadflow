@@ -1,0 +1,46 @@
+=========================================================================================================
+                                     [ CLOUDFLARE EDGE NETWORK ]
+         [ KV Storage: LEADER_ELECTION ] (Global state manager tracking active heartbeats)
+=========================================================================================================
+          │                                                               │
+          │ (Primary Ingress Tunnel)                                      │ (Failover Ingress Tunnel)
+          ▼                                                               │
++-----------------------------------------+                               │
+| TIER 1: GATEWAY (AMAZON FIRESTICK)      |                               │
+|-----------------------------------------|                               │
+| [ STATUS: PRIMARY ROUTER / BACKUP BRAIN]|                               │
+|                                         |                               │
+| - cloudflared tunnel                    |                               │
+| - Pass-through to Vivo (Normal Opt)     |                               │
+| - leadflow.db (Standby replica)         |                               │
+| - server.py / scheduler.py (Standby)    |                               │
+| - Telegram Bots (Active)                |                               │
++-----------------------------------------+                               │
+          │                                                               │
+          │ (Normal operation routing)                                    │
+          ▼                                                               ▼
++-----------------------------------------+      [DB SYNC]      +-----------------------------------------+
+| TIER 2: PRIMARY BRAIN (VIVO PHONE)      | <=================> | TIER 3: REMOTE BACKUP (MAC / WATCHDOG)  |
+|-----------------------------------------|                     |-----------------------------------------|
+| [ STATUS: CURRENT LEADER ]              |                     | [ STATUS: ULTIMATE FALLBACK ]           |
+|                                         |                     |                                         |
+| - leadflow.db (Master High I/O)         |                     | - leadflow.db (Replica Sync)            |
+| - server.py & scheduler.py (ACTIVE)     |                     | - server.py / scheduler.py (IDLE)       |
+| - Emits Heartbeats to Cloudflare KV ────|──(Reads State)─────►| - Polls CF KV for missed heartbeats   |
+| - Executes UI via Localhost ADB         |                     | - Telegram Bots (IDLE)                  |
++-----------------------------------------+                     +-----------------------------------------+
+          ▲                                                               │
+          │                                                               │
+          └───────────────────────────────────────────────────────────────┘
+
+FAILOVER SCENARIO 1 (VIVO PHONE DROPS / ADB CRASHES):
+- Firestick stops catching Vivo heartbeats.
+- Firestick promotes itself back to LEADER.
+- Firestick spins up `server.py` and CRM tasks using its standby DB.
+- *(Note: IG DMing skips since Firestick can't do local UI execution)*
+
+FAILOVER SCENARIO 2 (BOTH VIVO & FIRESTICK CRASH / POWER OUTAGE):
+- Mac detects missed heartbeats from BOTH Android devices in Cloudflare KV.
+- Mac promotes itself to LEADER.
+- Mac spins up `server.py` and `scheduler.py` handling DB / emails / sync.
+- Mac can optionally try to reach Vivo via remote Wi-Fi ADB to force a restart.

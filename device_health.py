@@ -28,8 +28,8 @@ def _resolve_ip(home_file, local_file, fallback):
 
 
 # Dynamic IP resolution (updated by resolve_devices.py)
-FS_IP = _resolve_ip(".firestick_ip", ".firestick_ip", "192.168.0.113:5555")
-VIVO_IP = _resolve_ip(".vivo_ip", ".vivo_ip", "192.168.0.162:5555")
+FS_IP = _resolve_ip(".firestick_ip", ".firestick_ip", "192.168.8.246:5555")
+VIVO_IP = _resolve_ip(".vivo_ip", ".vivo_ip", "192.168.8.157:5555")
 
 
 def connect_device(ip):

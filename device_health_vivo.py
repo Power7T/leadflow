@@ -18,7 +18,7 @@ def _read_ip(path):
     except Exception:
         return None
 
-DEVICE = _read_ip(_home_ip) or _read_ip(_local_ip) or "192.168.0.162:5555"
+DEVICE = _read_ip(_home_ip) or _read_ip(_local_ip) or "192.168.8.157:5555"
 ADB = ["/opt/homebrew/bin/adb.orig", "-s", DEVICE]
 
 # ---------- Vivo bloatware to disable ----------
@@ -42,13 +42,98 @@ DISABLE_PACKAGES = [
     "com.vivo.appstore",                    # Vivo App Store
     "com.vivo.cloudservice",                # Vivo cloud sync (uploads to Vivo)
     "com.vivo.cloudbackup",                 # Vivo cloud backup
+    "com.vivo.upslide",                     # side-swipe tray overlay
+    "com.vivo.favorite",                    # Vivo bookmarks/shortcuts
+    "com.vivo.globalsearch",                # global search overlay
+    "com.android.BBKClock",                 # BBK/Vivo clock widget
+    "com.vivo.doubleinstance",              # app clone service
+    "com.vivo.numbermark",                  # phone number marking
+    "com.vivo.smartmultiwindow",            # multi-window overlay service
+    "com.vivo.appfilter",                   # app filter background service
+    "com.vivo.permissionmanager",           # Vivo permission manager daemon
+    "com.vivo.pem",                         # Vivo PEM background service
+    "com.vivo.doubletimezoneclock",         # dual timezone clock widget
+    "com.vivo.hiboard",                     # Vivo info board/feed
+    "com.vivo.magazine",                    # Vivo magazine/news feed
+    "com.vivo.gamewatch",                   # game watcher service
+    "com.vivo.pushservice",                 # Vivo push service
+    "com.vivo.safecenter",                  # Vivo security center
+    "com.vivo.weather",                     # Vivo weather app
+    "com.vivo.weather.provider",            # Vivo weather data provider
+    "com.vivo.sim.contacts",               # SIM contacts sync
+    "com.vivo.collage",                     # Vivo collage maker
+    "com.vivo.compass",                     # compass app
+    "com.vivo.email",                       # Vivo email client
+    "com.vivo.ewarranty",                   # Vivo warranty service
+    "com.vivo.flash",                       # Vivo flash/torch
+    "com.vivo.floatingball",               # floating navigation ball
+    "com.vivo.FMRadio",                     # FM Radio
+    "com.vivo.mediatune",                   # media tuner
+    "com.vivo.minscreen",                   # mini screen mode
+    "com.vivo.motionrecognition",           # motion gesture recognition
+    "com.vivo.motormode",                   # motor mode control
+    "com.vivo.networkstate",               # network state monitor
+    "com.vivo.scanner",                     # QR/barcode scanner
+    "com.vivo.setupwizard",                # setup wizard
+    "com.vivo.unionpay",                    # UnionPay payment
+    "com.vivo.upnpserver",                  # UPnP server
+    "com.vivo.video.floating",             # floating video player
+    "com.vivo.videoeditor",                # Vivo video editor
+    "com.vivo.website",                     # Vivo web portal
+    "com.vivo.widget.calendar",            # calendar widget
+    "com.vivo.dream.clock",               # dream clock
+    "com.vivo.dream.music",               # dream music
+    "com.vivo.dream.weather",             # dream weather
+    "com.vivo.contentcatcher",            # content catcher
+    "com.vivo.audiofx",                    # audio FX
+    "com.vivo.childrenmode",              # kids mode
+    "com.vivo.aikeydispatcher",           # AI key dispatcher
+    "com.vivo.SmartKey",                   # Smart Key service
+    "com.vivo.livewallpaper.coffeetime",  # live wallpaper
+    "com.vivo.livewallpaper.coralsea",    # live wallpaper
+    "com.vivo.livewallpaper.floatingcloud", # live wallpaper
+    "com.vivo.livewallpaper.silk",        # live wallpaper
+    "com.vlife.vivo.wallpaper",           # Vlife wallpaper service
+    "com.bbk.iqoo.logsystem",             # iQOO log collection daemon
     # BBK (parent company) services
     "com.bbk.launcher2",                    # default Vivo launcher (if not using it)
     "com.bbk.livewallpaper",                # live wallpaper service
+    "com.android.bbkmusic",                 # BBK music player
+    "com.bbk.calendar",                     # BBK calendar
+    "com.bbk.cloud",                        # BBK cloud sync
+    "com.bbk.facewake",                     # face wake unlock
+    "com.bbk.photoframewidget",             # photo frame widget
+    "com.bbk.scene.indoor",                 # indoor scene mode
+    "com.bbk.updater",                      # BBK OTA updater
+    "com.bbk.SuperPowerSave",               # super power save mode
+    "com.bbk.account",                      # BBK/Vivo account service
+    # 3rd party preloads
+    "com.gaana",                            # Gaana music (preinstalled)
+    "com.ibimuyu.lockscreen",               # lockscreen replacement
+    "com.til.timesnews",                    # Times of India news
+    "com.ringclip",                         # ringclip app
+    "app.buzz.share",                       # share app
+    "cn.wps.moffice_eng",                   # WPS Office
+    # Bluetooth — disabled (not used on this device)
+    "com.android.bluetooth",               # Bluetooth stack
+    "org.codeaurora.bluetooth",            # Qualcomm BT extension
+    "org.codeaurora.btmultisim",           # BT dual-SIM bridge
+    # Google bloat (background-only; keep if user opens them)
+    "com.google.android.apps.photos",       # Google Photos
+    "com.google.android.googlequicksearchbox",  # Google Search/feed
+    "com.android.chrome",                   # Chrome (if not primary browser)
+    "com.google.android.apps.news",         # Google News
+    # UC Browser
+    "com.UCMobile.intl",                    # UC Browser
+    # Play Store — disable to prevent auto-updates consuming RAM
+    "com.android.vending",                  # Play Store
+    # Camera (not needed as background service)
+    "com.android.camera",                   # Camera app
     # Common Android bloat on Vivo
     "com.facebook.appmanager",              # Facebook background installer
     "com.facebook.services",               # Facebook background services
     "com.facebook.system",                  # Facebook system helper
+    "com.facebook.katana",                  # Facebook main app
 ]
 
 # ---------- permissions to keep revoked ----------
@@ -79,8 +164,8 @@ GLOBAL_SETTINGS = {
     # Adaptive battery — let Android manage standby aggressively
     "app_standby_enabled": "1",
     "adaptive_battery_management_enabled": "1",
-    # Background process limit (reasonable cap)
-    "max_cached_processes": "12",
+    # Background process limit — keep tight to prevent RAM bloat
+    "max_cached_processes": "8",
 }
 
 SECURE_SETTINGS = {
@@ -95,10 +180,10 @@ SYSTEM_SETTINGS = {
     "screen_off_timeout": "30000",
     # Enable auto-brightness
     "screen_brightness_mode": "1",
-    # Reduce animation scales for snappier feel
-    "window_animation_scale": "0.5",
-    "transition_animation_scale": "0.5",
-    "animator_duration_scale": "0.5",
+    # Zero animations — eliminates GPU overhead entirely
+    "window_animation_scale": "0",
+    "transition_animation_scale": "0",
+    "animator_duration_scale": "0",
 }
 
 

@@ -41,7 +41,7 @@ def set_last_sync_seq(seq):
     conn.close()
 
 def push_local_changes():
-    """Push unsynced journal entries to Cloudflare."""
+    """Push unsynced journal entries to Cloudflare in batches of 100."""
     conn = get_conn()
     rows = conn.execute("SELECT id, action, payload FROM sync_journal WHERE synced=0 ORDER BY id ASC").fetchall()
     conn.close()
@@ -62,29 +62,67 @@ def push_local_changes():
     if not transactions:
         return
 
+    # Deduplicate idempotent actions — keep only the latest entry per (action, business_id).
+    # Collapses repeated demo URL updates for the same lead into one KV write.
+    DEDUP_ACTIONS = {"update_demo_url", "update_business_status", "update_ig_settings"}
+    seen = {}
+    deduped = []
+    for tx in reversed(transactions):
+        if tx["action"] in DEDUP_ACTIONS:
+            key = (tx["action"], tx["payload"].get("business_id"))
+            if key not in seen:
+                seen[key] = True
+                deduped.append(tx)
+        else:
+            deduped.append(tx)
+    transactions = list(reversed(deduped))
+
     public_url = os.getenv("LEADFLOW_PUBLIC_URL", "")
     token = os.getenv("LEADFLOW_SECRET_TOKEN", os.getenv("SECRET_TOKEN", ""))
 
     if not public_url or not token:
         return
 
-    try:
-        r = requests.post(
-            f"{public_url}/api/sync",
-            json={"transactions": transactions},
-            headers={"X-Secret-Token": token},
-            timeout=35
-        )
-        if r.status_code == 200:
-            synced_ids = [t["local_id"] for t in transactions]
-            conn = get_conn()
-            placeholders = ",".join("?" for _ in synced_ids)
-            conn.execute(f"UPDATE sync_journal SET synced=1 WHERE id IN ({placeholders})", synced_ids)
-            conn.commit()
-            conn.close()
-            log.info(f"Successfully pushed {len(transactions)} local changes to Cloudflare.")
-    except Exception as e:
-        log.error(f"Failed to push changes to Cloudflare: {e}")
+    # Mark deduplicated (dropped) rows synced now — they'll never be sent but are superseded.
+    sent_ids = {t["local_id"] for t in transactions}
+    all_ids = [r_id for r_id, _, _ in rows]
+    dropped_ids = [r_id for r_id in all_ids if r_id not in sent_ids]
+    if dropped_ids:
+        conn = get_conn()
+        placeholders = ",".join("?" for _ in dropped_ids)
+        conn.execute(f"UPDATE sync_journal SET synced=1 WHERE id IN ({placeholders})", dropped_ids)
+        conn.commit()
+        conn.close()
+        log.info(f"Deduped {len(dropped_ids)} redundant journal entries (skipped push).")
+
+    BATCH_SIZE = 100
+    total_pushed = 0
+    for i in range(0, len(transactions), BATCH_SIZE):
+        batch = transactions[i:i + BATCH_SIZE]
+        try:
+            r = requests.post(
+                f"{public_url}/api/sync",
+                json={"transactions": batch},
+                headers={"X-Secret-Token": token},
+                timeout=35
+            )
+            if r.status_code == 200:
+                synced_ids = [t["local_id"] for t in batch]
+                conn = get_conn()
+                placeholders = ",".join("?" for _ in synced_ids)
+                conn.execute(f"UPDATE sync_journal SET synced=1 WHERE id IN ({placeholders})", synced_ids)
+                conn.commit()
+                conn.close()
+                total_pushed += len(batch)
+            else:
+                log.error(f"Push batch {i//BATCH_SIZE + 1} failed: HTTP {r.status_code} — {r.text[:200]}")
+                break
+        except Exception as e:
+            log.error(f"Failed to push batch {i//BATCH_SIZE + 1}: {e}")
+            break
+
+    if total_pushed:
+        log.info(f"Successfully pushed {total_pushed} local changes to Cloudflare.")
 
 def resolve_global_fk(conn, table, global_id):
     """Helper to map a global_id back to a local integer id"""
@@ -209,6 +247,14 @@ def apply_sync_transaction(conn, action, payload):
                 conn.execute(f"INSERT OR REPLACE INTO deals ({cols}) VALUES ({placeholders})", vals)
             else:
                 log.error("SQL Injection attempt or invalid column name detected in insert_deal keys.")
+    elif action == "update_demo_url":
+        bid = payload.get("business_id")
+        url = payload.get("demo_tunnel_url")
+        if bid and url:
+            conn.execute(
+                "UPDATE businesses SET demo_tunnel_url=? WHERE id=? AND (demo_tunnel_url IS NULL OR demo_tunnel_url='' OR demo_tunnel_url LIKE '%/demo/%' OR ? NOT LIKE '%/demo/%')",
+                (url, bid, url)
+            )
 
 def pull_remote_changes():
     """Pull new changes from Cloudflare and apply them locally in a single transaction."""

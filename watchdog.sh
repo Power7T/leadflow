@@ -3,7 +3,7 @@
 LOGFILE="/data/data/com.termux/files/home/leadflow/watchdog.log"
 SERVERLOG="/data/data/com.termux/files/home/leadflow/server_run.log"
 LEADFLOW="/data/data/com.termux/files/home/leadflow"
-PYTHON="/data/data/com.termux/files/usr/bin/python3"
+PYTHON="/data/data/com.termux/files/home/leadflow/venv/bin/python3"
 export PATH="/data/data/com.termux/files/usr/bin:/system/bin"
 export HOME="/data/data/com.termux/files/home"
 

@@ -18,7 +18,7 @@ from pathlib import Path
 
 log = logging.getLogger("ig_rate_db")
 
-DB_PATH = "/Users/chandan/leadflow/leadflow.db"
+DB_PATH = str(Path(__file__).parent / "leadflow.db")
 
 # ── Schema migration ────────────────────────────────────────────────────────
 

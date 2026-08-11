@@ -4,7 +4,7 @@ from pathlib import Path
 
 # Load Firestick IP dynamically
 ip_file = Path(os.path.expanduser("~/.firestick_ip"))
-device_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.0.113:5555"
+device_ip = ip_file.read_text().strip() if ip_file.exists() else "192.168.8.246:5555"
 
 # Connect dynamically before running commands
 subprocess.run(f"adb connect {device_ip}", shell=True, capture_output=True)

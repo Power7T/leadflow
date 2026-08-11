@@ -12,6 +12,7 @@ from rich.prompt import Prompt, Confirm
 from rich.text import Text
 from rich import box
 from database import init_db, get_leads, update_business_status, insert_outreach, mark_sent, get_stats, get_ab_stats
+from autopilot import run_autopilot
 from finder import run_finder
 from ai_writer import generate_all
 from sender import send_email, parse_subject_body
@@ -66,7 +67,7 @@ def find_businesses():
     console.print("\n[bold cyan]— Find Businesses —[/]\n")
     niche = Prompt.ask("[cyan]Business niche[/]", default="restaurants")
     location = Prompt.ask("[cyan]Location[/]", default="Austin, Texas, USA")
-    max_r = int(Prompt.ask("[cyan]Max results[/]", default="20"))
+    max_r = int(Prompt.ask("[cyan]Max results[/]", default="100"))
     console.print()
     run_finder(niche, location, max_r)
     Prompt.ask("\n[dim]Press Enter to return to menu[/]")
@@ -235,9 +236,10 @@ def main_menu():
         console.print("  [cyan][1][/] Find businesses")
         console.print("  [cyan][2][/] Review new leads")
         console.print("  [cyan][3][/] View sent / mark replied")
+        console.print("  [bold magenta][4][/] [bold magenta]Autopilot[/] (runs forever automatically)")
         console.print("  [cyan][q][/] Quit\n")
 
-        choice = Prompt.ask("Choice", choices=["1", "2", "3", "q"], default="1")
+        choice = Prompt.ask("Choice", choices=["1", "2", "3", "4", "q"], default="1")
 
         if choice == "1":
             find_businesses()
@@ -245,6 +247,8 @@ def main_menu():
             review_leads()
         elif choice == "3":
             view_sent()
+        elif choice == "4":
+            run_autopilot()
         elif choice == "q":
             console.print("\n[dim]Bye.[/]\n")
             sys.exit(0)

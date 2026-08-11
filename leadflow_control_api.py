@@ -26,7 +26,7 @@ def _resolve_firestick_ip():
                 return ip.replace(":5555", "")
         except Exception:
             pass
-    return "192.168.0.113"
+    return "192.168.8.246"
 
 _FS_IP = _resolve_firestick_ip()
 

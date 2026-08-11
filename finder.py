@@ -87,7 +87,7 @@ def is_chain_or_too_big(name: str, reviews: int | None) -> bool:
     return any(kw in name_lower for kw in chain_keywords)
 
 
-def search_places(query: str, location: str, max_results: int = 20) -> list:
+def search_places(query: str, location: str, max_results: int = 100) -> list:
     url = "https://places.googleapis.com/v1/places:searchText"
     headers = {
         "Content-Type": "application/json",
@@ -138,7 +138,7 @@ def search_places(query: str, location: str, max_results: int = 20) -> list:
     return results[:max_results]
 
 
-async def search_places_async(query: str, location: str, max_results: int = 20) -> list:
+async def search_places_async(query: str, location: str, max_results: int = 100) -> list:
     url = "https://places.googleapis.com/v1/places:searchText"
     headers = {
         "Content-Type": "application/json",
@@ -473,8 +473,7 @@ def search_google_serp(query: str, location: str = "", gl: str = "us", only_ads:
 def run_finder(
     niche: str,
     location: str,
-    max_results: int = 20,
-    source: str = "google_maps",
+    max_results: int = 100,
     max_score: int = 100,
     require_email: bool = True,
     quality_gate: dict = None,

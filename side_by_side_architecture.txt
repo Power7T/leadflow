@@ -1,0 +1,30 @@
+OLD ARCHITECTURE (FIRESTICK OVERLOADED)
+=======================================
+[ Cloudflare ]
+      |
+[ Firestick ]
+- ngrok/cloudflared
+- leadflow.db (CRASHES here) 
+- server.py (FastAPI)
+- scheduler.py
+- ALL Agent Logic
+- Telegram Bots
+      | (WiFi ADB - drops often)
+[ Vivo Phone ]
+- Just a dumb UI execution unit
+
+
+NEW ARCHITECTURE (SPLIT-NODE / STABLE)
+=======================================
+[ Cloudflare ]
+      |
+[ Firestick ]
+- cloudflared (Passes traffic thru)
+- HAProxy / TCP Switch
+- Telegram Bots (Low I/O, stays here)
+      | (Traffic flows through)
+[ Vivo Phone ]
+- leadflow.db (Moved here, big storage)
+- server.py (FastAPI runs here)
+- scheduler.py
+- Localhost ADB (No WiFi dropouts)
