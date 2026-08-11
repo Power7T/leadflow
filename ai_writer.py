@@ -879,9 +879,19 @@ def clean_ai_output(text: str) -> str:
                 break
             continue
             
-        if any(line_strip.lower().startswith(p) for p in ["drafting:", "message:", "body:"]):
+        matched_prefix = None
+        for p in ["drafting:", "message:", "body:"]:
+            if line_strip.lower().startswith(p):
+                matched_prefix = p
+                break
+        if matched_prefix:
             started = True
             cleaned_lines = []
+            content = line_strip[len(matched_prefix):].strip()
+            if content:
+                if (content.startswith(chr(34)) and content.endswith(chr(34))) or (content.startswith(chr(39)) and content.endswith(chr(39))):
+                    content = content[1:-1].strip()
+                cleaned_lines.append(content)
             continue
             
         if started:

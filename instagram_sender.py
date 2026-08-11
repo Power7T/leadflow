@@ -1,10 +1,15 @@
 """
 instagram_sender.py — Physical ADB Controller for Instagram DM Automation
 
+Architecture (3-layer failover):
+  - Vivo phone (primary): controls its OWN Instagram via localhost ADB
+  - Firestick (backup):   controls Vivo remotely via WiFi ADB
+  - Mac (backup):         controls Vivo remotely via WiFi ADB
+
 Safety rules (to NEVER get the account banned or deleted):
   - Max 20 DMs per calendar day
   - 45-120 second random delay between each DM
-  - Uses ADB (Android Debug Bridge) to physically tap the screen on the Firestick
+  - Uses ADB (Android Debug Bridge) to physically tap the screen
   - Bypasses all bot detection because it uses the official Instagram app
 """
 
@@ -19,30 +24,47 @@ from datetime import date
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv("/Users/chandan/leadflow/.env")
+# Load .env from same directory regardless of where script is run (Mac/Firestick/Vivo Termux)
+_HERE = Path(__file__).parent
+load_dotenv(str(_HERE / ".env"))
 
 log = logging.getLogger("leadflow.instagram")
 log.setLevel(logging.INFO)
 
+# ── DB path — works on Mac (/Users/chandan/leadflow/) and Termux (/data/.../leadflow/) ──
+DB_PATH = str(_HERE / "leadflow.db")
+
 # ── Config ──────────────────────────────────────────────────────────────────
 DAILY_LIMIT       = 20
-MIN_DELAY_SECONDS = 45   # 45 seconds minimum wait before next DM (safeguard against spam blocks)
-MAX_DELAY_SECONDS = 120  # 120 seconds maximum wait (mimics human-like typing and reading breaks)
+MIN_DELAY_SECONDS = 45
+MAX_DELAY_SECONDS = 120
 import tempfile
 try:
     DAILY_LOG_FILE = Path(tempfile.gettempdir()) / "ig_daily_sends.json"
 except Exception:
-    DAILY_LOG_FILE = Path(__file__).parent / "ig_daily_sends.json"
+    DAILY_LOG_FILE = _HERE / "ig_daily_sends.json"
 
-# Dynamically resolve device IP (checks user home, script directory, or defaults to 192.168.0.162:5555)
-_ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
-_ip_file_local = Path(__file__).parent / ".vivo_ip"
-if _ip_file_home.exists():
-    FIRESTICK_IP = _ip_file_home.read_text().strip()
-elif _ip_file_local.exists():
-    FIRESTICK_IP = _ip_file_local.read_text().strip()
-else:
-    FIRESTICK_IP = os.environ.get("VIVO_ADB_IP", "192.168.0.162:5555")
+# ── ADB target resolution ─────────────────────────────────────────────────
+# When running ON Vivo itself (Termux), use localhost so ADB never leaves the device.
+# When running on Mac or Firestick, resolve Vivo's current WiFi IP via ~/.vivo_ip.
+def _resolve_adb_target() -> str:
+    """Return the ADB target: 'localhost:5555' when self-hosting on Vivo, else WiFi IP."""
+    # LEADFLOW_DEVICE_ROLE=primary means this IS the Vivo phone running itself
+    if os.environ.get("LEADFLOW_DEVICE_ROLE") == "primary":
+        return "localhost:5555"
+    # Also detect Android/Termux by checking for /data/data/com.termux
+    if Path("/data/data/com.termux").exists():
+        return "localhost:5555"
+    # Remote control: read Vivo's WiFi IP from file
+    _ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
+    _ip_file_local = _HERE / ".vivo_ip"
+    if _ip_file_home.exists():
+        return _ip_file_home.read_text().strip()
+    if _ip_file_local.exists():
+        return _ip_file_local.read_text().strip()
+    return os.environ.get("VIVO_ADB_IP", "192.168.8.157:5555")
+
+FIRESTICK_IP = _resolve_adb_target()
 
 _warmup_last_date: str = ""  # tracks last date account_warmup() ran (once-per-day guard)
 
@@ -74,8 +96,7 @@ def _sync_daily_count_to_db():
         import sqlite3 as _sq
         today = str(date.today())
         count = get_instagram_daily_sent_count()
-        _db = "/Users/chandan/leadflow/leadflow.db"
-        _conn = _sq.connect(_db, timeout=10)
+        _conn = _sq.connect(DB_PATH, timeout=10)
         # Only update if our count is higher (we may be behind due to other device sending)
         row = _conn.execute("SELECT sent_today, last_reset_date FROM ig_settings WHERE id=1").fetchone()
         if row:
@@ -95,8 +116,7 @@ def _load_daily_count_from_db() -> int:
     try:
         import sqlite3 as _sq
         today = str(date.today())
-        _db = "/Users/chandan/leadflow/leadflow.db"
-        _conn = _sq.connect(_db, timeout=10)
+        _conn = _sq.connect(DB_PATH, timeout=10)
         row = _conn.execute("SELECT sent_today, last_reset_date FROM ig_settings WHERE id=1").fetchone()
         _conn.close()
         if row and row[1] == today:
@@ -128,7 +148,7 @@ def can_send_instagram() -> bool:
     limit = 45
     try:
         import sqlite3
-        conn = sqlite3.connect("/Users/chandan/leadflow/leadflow.db", timeout=10)
+        conn = sqlite3.connect(DB_PATH, timeout=10)
         row = conn.execute("SELECT daily_limit FROM ig_settings WHERE id=1").fetchone()
         if row:
             limit = row[0]
@@ -144,22 +164,27 @@ def can_send_instagram() -> bool:
 
 # ── ADB Controller ───────────────────────────────────────────────────────────
 
+def is_adb_reachable(target: str, timeout: int = 5) -> bool:
+    """Quick TCP-level check: returns True only if ADB port is reachable within timeout."""
+    import socket
+    host, _, port_str = target.partition(":")
+    port = int(port_str) if port_str.isdigit() else 5555
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except (OSError, ValueError):
+        return False
+
+
 def adb(cmd: str) -> str:
     """Run an ADB command on the device and return its stdout"""
     global FIRESTICK_IP
-    try:
-        _ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
-        _ip_file_local = Path(__file__).parent / ".vivo_ip"
-        if _ip_file_home.exists():
-            FIRESTICK_IP = _ip_file_home.read_text().strip()
-        elif _ip_file_local.exists():
-            FIRESTICK_IP = _ip_file_local.read_text().strip()
-    except Exception:
-        pass
-        
+    # Re-resolve each call so IP changes and self-control mode are always picked up
+    FIRESTICK_IP = _resolve_adb_target()
+
     try:
         return subprocess.check_output(
-            f"adb -s {FIRESTICK_IP} {cmd}", 
+            f"adb -s {FIRESTICK_IP} {cmd}",
             shell=True, stderr=subprocess.STDOUT, timeout=45
         ).decode('utf-8', errors='ignore')
     except subprocess.TimeoutExpired:
@@ -169,123 +194,281 @@ def adb(cmd: str) -> str:
         log.debug(f"ADB Error on '{cmd}': {e.output.decode('utf-8', errors='ignore')}")
         return ""
 
-def restart_android_uiautomator():
-    log.info("[Self-Healing] uiautomator dump failed. Restarting Android UI framework...")
-    adb("shell stop")
-    time.sleep(3)
-    adb("shell start")
-    time.sleep(12)
-
-def get_ui_coords(text_matches: list, retries: int = 1) -> tuple:
+def adb_read_xml() -> str:
     """
-    Dumps the screen UI to XML, parses it, and finds the exact X/Y center 
-    coordinates of an element containing any of the text_matches.
+    Dump uiautomator XML and return its full content reliably.
+    On self-hosted Vivo (localhost:5555), reads via base64 to avoid 8k pipe truncation.
+    """
+    FIRESTICK_IP = _resolve_adb_target()
+
+    # Strategy 1: dump to file, read back via base64 — avoids ADB shell pipe 8k truncation
+    try:
+        subprocess.check_output(
+            f"adb -s {FIRESTICK_IP} shell uiautomator dump /sdcard/window_dump.xml",
+            shell=True, stderr=subprocess.STDOUT, timeout=30
+        )
+        b64_data = subprocess.check_output(
+            f"adb -s {FIRESTICK_IP} shell base64 /sdcard/window_dump.xml",
+            shell=True, stderr=subprocess.DEVNULL, timeout=30
+        ).decode('ascii', errors='ignore')
+        if b64_data.strip():
+            import base64 as _b64
+            xml_data = _b64.b64decode(b64_data.replace('\n', '').replace('\r', '')).decode('utf-8', errors='ignore')
+            xml_stripped = xml_data.strip()
+            if xml_stripped.startswith("<?xml") or xml_stripped.startswith("<hierarchy"):
+                log.debug(f"[adb_read_xml] base64 read succeeded ({len(xml_data)} bytes)")
+                return xml_data
+            log.warning(f"[adb_read_xml] base64 returned bad XML: {repr(xml_stripped[:80])}")
+    except Exception as e:
+        log.warning(f"[adb_read_xml] base64 strategy failed: {e}")
+
+    # Strategy 2: exec-out direct pipe (may truncate on some devices)
+    try:
+        xml_data = subprocess.check_output(
+            f"adb -s {FIRESTICK_IP} exec-out uiautomator dump /dev/tty",
+            shell=True, stderr=subprocess.DEVNULL, timeout=30
+        ).decode('utf-8', errors='ignore')
+        xml_stripped = xml_data.strip()
+        if xml_stripped.startswith("<?xml") or xml_stripped.startswith("<hierarchy"):
+            log.debug(f"[adb_read_xml] exec-out succeeded ({len(xml_data)} bytes)")
+            return xml_data
+        log.warning(f"[adb_read_xml] exec-out bad XML: {repr(xml_stripped[:80])}")
+    except Exception as e:
+        log.warning(f"[adb_read_xml] exec-out failed: {e}")
+
+    return ""
+
+
+def restart_android_uiautomator():
+    pass
+
+
+def _parse_bounds(bounds: str):
+    """Parse '[x1,y1][x2,y2]' into center (x, y). Returns None on failure."""
+    try:
+        parts = bounds.replace('][', ',').replace('[', '').replace(']', '').split(',')
+        if len(parts) == 4:
+            x = (int(parts[0]) + int(parts[2])) // 2
+            y = (int(parts[1]) + int(parts[3])) // 2
+            return (x, y)
+    except Exception:
+        pass
+    return None
+
+
+def get_ui_coords(text_matches: list, retries: int = 1, resource_ids: list = None, exact_only: bool = False) -> tuple:
+    """
+    Dumps the screen UI to XML, parses it, and finds the exact X/Y center
+    coordinates of an element containing any of the text_matches or resource_ids.
+    resource_ids: additional resource-id values to match (exact substring match).
+    exact_only: if True, skip Pass 3 (substring match) — prevents false-positives like 'Follow' in '192followers'.
     """
     for attempt in range(retries + 1):
         try:
-            # Dump the screen UI to an XML file on the device
-            adb("shell uiautomator dump /sdcard/window_dump.xml")
-            
-            # Read the XML directly from the device
-            xml_data = adb("shell cat /sdcard/window_dump.xml")
-            if not xml_data or "ERROR" in xml_data or "error" in xml_data.lower():
+            xml_data = adb_read_xml()
+            xml_stripped = xml_data.strip() if xml_data else ""
+
+            if not xml_stripped or not (xml_stripped.startswith("<?xml") or xml_stripped.startswith("<hierarchy")):
+                log.warning(f"[get_ui_coords] Dump failed on attempt {attempt+1}: {repr(xml_stripped[:100])}")
                 if attempt < retries:
-                    restart_android_uiautomator()
+                    log.warning(f"[get_ui_coords] Retrying in 2s...")
+                    time.sleep(2)
                     continue
                 return None
-                
+
             root = ET.fromstring(xml_data)
-            
-            # Iterate over all UI nodes
-            for node in root.iter('node'):
+            nodes = list(root.iter('node'))
+
+            # Pass 1: resource-id substring match (most specific — avoids false positives)
+            if resource_ids:
+                for node in nodes:
+                    rid = node.attrib.get('resource-id', '')
+                    for rid_match in resource_ids:
+                        if rid_match in rid:
+                            coords = _parse_bounds(node.attrib.get('bounds', ''))
+                            if coords:
+                                log.info(f"[get_ui_coords] Found via resource-id: '{rid_match}' in '{rid}'")
+                                return coords
+
+            # Pass 2: exact text/content-desc match across all nodes
+            for node in nodes:
                 text = node.attrib.get('text', '').strip().lower()
                 desc = node.attrib.get('content-desc', '').strip().lower()
-                
                 for match in text_matches:
-                    match = match.lower()
-                    # Strict exact matching to avoid clicking posts containing the word "message"
-                    if match == text or match == desc:
-                        bounds = node.attrib.get('bounds')
-                        if bounds:
-                            # Parse bounds like "[x1,y1][x2,y2]" to find center point
-                            parts = bounds.replace('][', ',').replace('[', '').replace(']', '').split(',')
-                            if len(parts) == 4:
-                                x = (int(parts[0]) + int(parts[2])) // 2
-                                y = (int(parts[1]) + int(parts[3])) // 2
-                                return (x, y)
+                    m = match.lower()
+                    if m == text or m == desc:
+                        coords = _parse_bounds(node.attrib.get('bounds', ''))
+                        if coords:
+                            log.info(f"[get_ui_coords] Found via exact match: '{match}'")
+                            return coords
+
+            # Pass 3: substring text/content-desc match — only short fields to avoid false positives
+            if not exact_only:
+                for node in nodes:
+                    text = node.attrib.get('text', '').strip().lower()
+                    desc = node.attrib.get('content-desc', '').strip().lower()
+                    # Only match against short text/desc (≤30 chars) to avoid matching long sentences
+                    for match in text_matches:
+                        m = match.lower()
+                        if (m in text and len(text) <= 30) or (m in desc and len(desc) <= 30):
+                            coords = _parse_bounds(node.attrib.get('bounds', ''))
+                            if coords:
+                                log.info(f"[get_ui_coords] Found via substring match: '{match}' in '{text or desc}'")
+                                return coords
+
         except Exception as e:
             log.error(f"[Instagram] XML parsing error: {e}")
             if attempt < retries:
-                restart_android_uiautomator()
+                log.warning(f"[get_ui_coords] Retrying after parse error...")
+                time.sleep(2)
                 continue
+
+    # Debug: log all non-empty node text/resource-ids so we can identify the right element
+    try:
+        xml_data = adb_read_xml()
+        if xml_data and (xml_data.strip().startswith("<?xml") or xml_data.strip().startswith("<hierarchy")):
+            root = ET.fromstring(xml_data)
+            interesting = []
+            for node in root.iter('node'):
+                t = node.attrib.get('text', '').strip()
+                d = node.attrib.get('content-desc', '').strip()
+                r = node.attrib.get('resource-id', '').strip()
+                if t or d or r:
+                    interesting.append(f"text={repr(t[:40])} desc={repr(d[:40])} rid={r}")
+            log.warning(f"[get_ui_coords] NOT FOUND. Searched for {text_matches} / {resource_ids}. All nodes ({len(interesting)}):")
+            for item in interesting[:30]:
+                log.warning(f"  {item}")
+    except Exception:
+        pass
     return None
 
-def type_text(text: str):
-    """Types text via ADB with human-like delays. Spaces → %s for Android ADB."""
-    import random
+def get_screen_text_set() -> set:
+    """Read uiautomator dump XML and return a set of all text/content-desc values (lowercase)."""
+    try:
+        xml_data = adb_read_xml()
+        if not xml_data:
+            return set()
+        root = ET.fromstring(xml_data)
+        texts = set()
+        for node in root.iter('node'):
+            t = node.attrib.get('text', '').strip().lower()
+            d = node.attrib.get('content-desc', '').strip().lower()
+            if t: texts.add(t)
+            if d: texts.add(d)
+        return texts
+    except Exception:
+        return set()
 
-    # Normalize text — remove problematic characters for shell/Android
-    text = text.replace('★', ' star')
+def type_text(text: str) -> bool:
+    """Types text via ADB. Returns True if ADBKeyboard (AdbIME) was used, False otherwise."""
+    import random
+    import base64
+
+    # 1. Normalize linebreaks
     text = text.replace('\n', ' ').replace('\r', '')
     text = text.replace('—', ' - ').replace('–', '-')
-    text = text.replace('"', '').replace("'", '')
 
-    # Strip non-ASCII to prevent Android command crashes
-    text = text.encode('ascii', errors='ignore').decode('ascii')
+    # 2. Check if AdbIME is active
+    ime = adb("shell settings get secure default_input_method")
+    use_adbkeyboard = "AdbIME" in ime or "ADBKeyboard" in ime
 
-    # Android `input text` requires spaces as %s
-    text = text.replace('%', '\\%')  # escape existing % first
-    text = text.replace(' ', '%s')
+    if use_adbkeyboard:
+        log.info("Typing via ADBKeyboard broadcast (instant)...")
+        b64_text = base64.b64encode(text.encode('utf-8')).decode('utf-8')
+        adb(f"shell am broadcast -a ADB_INPUT_B64 --es msg {b64_text}")
+        time.sleep(1.0)
+        return True
 
-    # Split into human-speed chunks (15 to 30 chars)
-    chunks = []
-    i = 0
-    while i < len(text):
-        chunk_len = random.randint(15, 30)
-        chunks.append(text[i:i + chunk_len])
-        i += chunk_len
+    log.warning("ADBKeyboard IME not active. Falling back to word-by-word simulation.")
+    # Normalize text for fallback
+    text_clean = text.replace('★', ' star').replace('"', '').replace('\'', '')
+    text_clean = text_clean.encode('ascii', errors='ignore').decode('ascii')
 
-    for chunk in chunks:
-        if not chunk.strip():
+    words = text_clean.split(' ')
+    for i, word in enumerate(words):
+        word = word.strip()
+        if not word:
             continue
-        adb(f'shell input text "{chunk}"')
-        time.sleep(random.uniform(1.2, 3.0))
+        adb(f'shell input text "{word}"')
+        time.sleep(random.uniform(0.3, 0.6))
+        if i < len(words) - 1:
+            adb('shell input keyevent KEYCODE_SPACE')
+            time.sleep(random.uniform(0.2, 0.4))
+    return False
 
 # ── Main send function ───────────────────────────────────────────────────────
 
 def unlock_screen():
     """Wake up and unlock the Vivo phone reliably, resetting ADB first."""
-    # Ensure ADB connection is re-established to bypass sleep timeouts
     global FIRESTICK_IP
-    import resolve_devices
-    new_ip = resolve_devices.ensure_connected("firestick")
-    if new_ip:
-        FIRESTICK_IP = new_ip
+    # Re-resolve ADB target each time in case IP changed or we're in self-control mode
+    new_target = _resolve_adb_target()
+    if new_target == "localhost:5555":
+        # Self-hosting on Vivo — ensure local ADB daemon is listening
+        FIRESTICK_IP = "localhost:5555"
+        subprocess.run("adb start-server", shell=True, capture_output=True, timeout=15)
+        subprocess.run("adb connect localhost:5555", shell=True, capture_output=True, timeout=15)
     else:
-        log.info(f"Re-establishing ADB connection to {FIRESTICK_IP}...")
-        subprocess.run(f"adb disconnect {FIRESTICK_IP}", shell=True, capture_output=True, timeout=30)
-        subprocess.run(f"adb connect {FIRESTICK_IP}", shell=True, capture_output=True, timeout=30)
+        import resolve_devices
+        new_ip = resolve_devices.ensure_connected("vivo")
+        if new_ip:
+            FIRESTICK_IP = new_ip
+        else:
+            log.info(f"Re-establishing ADB connection to {FIRESTICK_IP}...")
+            subprocess.run(f"adb disconnect {FIRESTICK_IP}", shell=True, capture_output=True, timeout=30)
+            subprocess.run(f"adb connect {FIRESTICK_IP}", shell=True, capture_output=True, timeout=30)
     time.sleep(2)
 
-    # Wake screen
+    def _is_locked() -> bool:
+        """True if the phone's keyguard is showing (real lock screen, not just status bar overlay)."""
+        window_info = adb("shell dumpsys window | grep -E 'isStatusBarKeyguard|mCurrentFocus'")
+        if "isStatusBarKeyguard=true" in window_info:
+            return True
+        # Fallback: if mCurrentFocus is StatusBar AND no real app is open
+        focus_line = ""
+        for line in window_info.splitlines():
+            if "mCurrentFocus" in line:
+                focus_line = line
+                break
+        if "StatusBar" in focus_line and "Keyguard" not in focus_line:
+            # Check if screen is actually sleeping (power state)
+            power = adb("shell dumpsys power | grep mWakefulness")
+            if "Asleep" in power or "Dozing" in power:
+                return True
+        if "Keyguard" in focus_line or "keyguard" in focus_line:
+            return True
+        return False
+
+    # Wake screen with both keyevent 224 (wake) + 82 (menu/keyguard dismiss)
     adb("shell input keyevent 224")
-    time.sleep(1)
-    
-    # Check if still on lock screen
-    focus = adb("shell dumpsys window | grep mCurrentFocus")
-    if "StatusBar" in focus or "Keyguard" in focus or "keyguard" in focus:
-        log.info("Phone is locked, swiping to unlock...")
-        # Swipe up from center-bottom to center to unlock
-        adb("shell input swipe 360 1200 360 400 300")
-        time.sleep(2)
-        # Check again
-        focus = adb("shell dumpsys window | grep mCurrentFocus")
-        if "StatusBar" in focus or "Keyguard" in focus:
-            log.warning("Still locked after swipe, trying again...")
-            adb("shell input swipe 360 1200 360 400 300")
-            time.sleep(2)
-    else:
+    time.sleep(2)  # Give screen extra time to fully wake before checking
+
+    if not _is_locked():
         log.info("Phone already unlocked.")
+    else:
+        log.info("Phone is locked, swiping to unlock...")
+        # Swipe up from center-bottom (swipe lock screen)
+        adb("shell input swipe 360 1200 360 400 500")
+        time.sleep(2)
+        if not _is_locked():
+            log.info("Phone unlocked after first swipe.")
+        else:
+            log.warning("Still locked after swipe, trying again...")
+            adb("shell input swipe 360 1200 360 400 500")
+            time.sleep(2)
+            if not _is_locked():
+                log.info("Phone unlocked after second swipe.")
+            else:
+                log.warning("Lock screen persists — trying keyevent 82 + aggressive swipe...")
+                adb("shell input keyevent 82")
+                time.sleep(1)
+                adb("shell input swipe 360 1350 360 300 800")
+                time.sleep(2)
+                if not _is_locked():
+                    log.info("Phone unlocked after keyevent 82 + swipe.")
+                else:
+                    log.error("Phone could not be unlocked after 4 attempts — aborting DM sequence.")
+                    raise RuntimeError("unlock_failed")
 
 def is_message_already_sent(message: str) -> bool:
     """Check if the message (or its signature parts) is already in the visible chat history."""
@@ -331,21 +514,70 @@ def _text_similarity(a: str, b: str) -> float:
     return matched / len(a_clean)
 
 
-def verify_sent_message(username: str, expected_message: str) -> bool:
+def verify_sent_message(username: str, expected_message: str, sent_confirmed: bool = False) -> bool:
     """
     POST-SEND VERIFICATION:
-    Re-dumps the chat XML and reads back the last sent message.
-    Checks that it matches expected_message with >= 70% similarity.
-    Returns True if verified OK, False if mismatch detected.
+    Re-opens the DM thread (via deep link), dumps screen XML, and checks for the sent message.
+    sent_confirmed: if True, the send was already confirmed by compose-exit detection — skip heavy verify.
+    Returns True if verified OK, False if message not visible.
     """
     log.info(f"[Verify] Checking sent message to @{username}...")
     try:
-        time.sleep(3)  # Let the sent message render in chat
-        adb("shell uiautomator dump /sdcard/window_dump.xml")
-        xml_data = adb("shell cat /sdcard/window_dump.xml")
-        if not xml_data or "ERROR" in xml_data:
-            log.warning("[Verify] Could not dump screen for verification.")
-            return True  # Assume OK if we can't check
+        time.sleep(3)  # Let Instagram process the send
+
+        # Check current screen first — might already be in DM thread
+        xml_data = adb_read_xml()
+        thread_open = False
+        if xml_data and "direct_text_message_text_view" in xml_data:
+            thread_open = True
+
+        if not thread_open:
+            # Use deep-link to open the specific user's thread directly.
+            # This works for message requests too (private accounts).
+            log.info(f"[Verify] Not in DM thread — deep-linking to @{username}'s thread...")
+            adb(f"shell am start -a android.intent.action.VIEW -d 'instagram://user?username={username}' com.instagram.android")
+            time.sleep(5)
+            # After profile opens, attempt to navigate directly to thread via direct inbox deep link
+            # Use username-based intent which opens the DM thread if conversation exists
+            xml_data = adb_read_xml()
+            if xml_data and "direct_text_message_text_view" in xml_data:
+                thread_open = True
+                log.info(f"[Verify] Thread found via profile deep-link for @{username}")
+            else:
+                # Try direct inbox and find by username in node text
+                adb("shell am start -a android.intent.action.VIEW -d 'instagram://direct_inbox' com.instagram.android")
+                time.sleep(4)
+                xml_data2 = adb_read_xml()
+                found_in_inbox = False
+                if xml_data2:
+                    try:
+                        root2 = ET.fromstring(xml_data2)
+                        for node in root2.iter('node'):
+                            t = node.attrib.get('text', '').strip()
+                            d = node.attrib.get('content-desc', '').strip()
+                            if username.lower() in t.lower() or username.lower() in d.lower():
+                                coords = _parse_bounds(node.attrib.get('bounds', ''))
+                                if coords:
+                                    log.info(f"[Verify] Found @{username} in inbox — tapping...")
+                                    adb(f"shell input tap {coords[0]} {coords[1]}")
+                                    time.sleep(3)
+                                    found_in_inbox = True
+                                    break
+                    except Exception:
+                        pass
+                if not found_in_inbox:
+                    # @username not in visible inbox (e.g. private account → message request)
+                    # If send was already confirmed by KEYCODE_ENTER compose-exit, trust it.
+                    if sent_confirmed:
+                        log.info(f"[Verify] @{username} not in inbox (likely message request) but compose-exit confirmed send — treating as SENT.")
+                        return True
+                    log.warning(f"[Verify] @{username} not found in inbox and send not confirmed — treating as FAILED.")
+                    return False
+            xml_data = adb_read_xml()
+
+        if not xml_data:
+            log.warning("[Verify] Could not dump screen for verification — treating as FAILED.")
+            return False
 
         root = ET.fromstring(xml_data)
         # Collect all message text nodes — our sent messages are right-aligned (x_start > 180)
@@ -363,8 +595,11 @@ def verify_sent_message(username: str, expected_message: str) -> bool:
                             sent_texts.append(text)
 
         if not sent_texts:
-            log.warning("[Verify] No sent messages visible in chat after send — cannot verify.")
-            return True  # Can't confirm, assume OK
+            if sent_confirmed:
+                log.info("[Verify] No text bubbles visible in chat but send was confirmed by input-clear — treating as SENT.")
+                return True
+            log.warning("[Verify] No sent messages visible in chat after send — treating as FAILED.")
+            return False
 
         last_sent = sent_texts[-1]
         similarity = _text_similarity(expected_message, last_sent)
@@ -382,7 +617,7 @@ def verify_sent_message(username: str, expected_message: str) -> bool:
             # Flag in DB
             try:
                 import sqlite3
-                conn = sqlite3.connect("/Users/chandan/leadflow/leadflow.db", timeout=30)
+                conn = sqlite3.connect(DB_PATH, timeout=30)
                 conn.execute("PRAGMA busy_timeout=30000")
                 conn.execute(
                     "UPDATE ig_dm_queue SET status='send_mismatch', error_msg=? "
@@ -467,23 +702,29 @@ def account_warmup():
 def acquire_phone_lock(ip: str, timeout_seconds: int = 180) -> bool:
     """Atomic lock with wait-queue and 5-minute stale lock detection to prevent deadlocks."""
     import time
+
+    # Fast-fail if the device is not reachable — no point blocking for 180s
+    if not is_adb_reachable(ip):
+        log.warning(f"[ADB] Device {ip} not reachable (TCP check failed) — skipping lock acquire.")
+        return False
+
     start_time = time.time()
     lock_cmd = f"adb -s {ip} shell mkdir /sdcard/ig_automation_lock 2>/dev/null"
 
     while time.time() - start_time < timeout_seconds:
-        if subprocess.run(lock_cmd, shell=True, timeout=60).returncode == 0:
-            return True # Lock acquired successfully
+        if subprocess.run(lock_cmd, shell=True, timeout=15).returncode == 0:
+            return True  # Lock acquired successfully
 
         # Lock exists. Check if it's a stale lock (older than 5 mins)
         try:
-            cur_time_str = subprocess.run(f"adb -s {ip} shell date +%s", shell=True, capture_output=True, text=True, timeout=60).stdout.strip()
-            lock_time_str = subprocess.run(f"adb -s {ip} shell stat -c %Y /sdcard/ig_automation_lock", shell=True, capture_output=True, text=True, timeout=60).stdout.strip()
+            cur_time_str = subprocess.run(f"adb -s {ip} shell date +%s", shell=True, capture_output=True, text=True, timeout=15).stdout.strip()
+            lock_time_str = subprocess.run(f"adb -s {ip} shell stat -c %Y /sdcard/ig_automation_lock", shell=True, capture_output=True, text=True, timeout=15).stdout.strip()
             if cur_time_str.isdigit() and lock_time_str.isdigit():
                 if (int(cur_time_str) - int(lock_time_str)) > 300:
                     log.warning("⚠️ STALE LOCK DETECTED: A previous script crashed. Force-clearing the lock.")
-                    subprocess.run(f"adb -s {ip} shell rmdir /sdcard/ig_automation_lock", shell=True, timeout=60)
-                    continue # Try acquiring again immediately
-        except Exception as e:
+                    subprocess.run(f"adb -s {ip} shell rmdir /sdcard/ig_automation_lock", shell=True, timeout=15)
+                    continue  # Try acquiring again immediately
+        except Exception:
             pass
 
         elapsed = int(time.time() - start_time)
@@ -509,13 +750,20 @@ def send_instagram_dm(username: str, message: str) -> bool:
     if not can_send_instagram():
         return False
 
+    # 1. Connect — re-resolve target so self-control mode (localhost) is always current
+    _target = _resolve_adb_target()
+
+    # Fast reachability check — bail immediately if phone is offline/unreachable
+    if not is_adb_reachable(_target):
+        log.warning(f"[Instagram ADB] Device {_target} unreachable (TCP timeout) — skipping DM to @{username}")
+        return False
+
     log.info(f"[Instagram ADB] Starting DM sequence for @{username}...")
-    
-    # 1. Connect (ensure we are connected before starting)
-    subprocess.run(f"adb connect {FIRESTICK_IP}", shell=True, capture_output=True, timeout=30)
+
+    subprocess.run(f"adb connect {_target}", shell=True, capture_output=True, timeout=15)
 
     # ATOMIC LOCK WITH STALE RECOVERY
-    if not acquire_phone_lock(FIRESTICK_IP):
+    if not acquire_phone_lock(_target):
         log.warning(f"⚠️ SPLIT-BRAIN PREVENTION: Phone is currently locked. Aborting send to @{username} to prevent collision.")
         return False
 
@@ -534,9 +782,32 @@ def send_instagram_dm(username: str, message: str) -> bool:
         adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
         time.sleep(6) # Wait for profile to load
 
+        # 3a. Wait until the profile actually renders (content nodes appear), up to 15s extra
+        for _wait_attempt in range(5):
+            xml_data = adb_read_xml()
+            if xml_data:
+                try:
+                    root = ET.fromstring(xml_data)
+                    nodes_with_content = [
+                        n for n in root.iter('node')
+                        if n.attrib.get('text', '').strip() or n.attrib.get('content-desc', '').strip()
+                    ]
+                    if len(nodes_with_content) >= 3:
+                        log.debug(f"[send_dm] Profile rendered ({len(nodes_with_content)} content nodes)")
+                        break
+                except Exception:
+                    pass
+            log.info(f"[send_dm] Profile not fully rendered yet, waiting 3s... (attempt {_wait_attempt+1}/5)")
+            time.sleep(3)
+
         # 3b. Tap the "Follow" button if present
+        # Use exact_only=True — avoids "192followers" false-positive from Pass 3 substring match
         log.info("Searching for Follow button...")
-        follow_coords = get_ui_coords(["Follow", "Follow back", "follow", "follow back", "Follow Back"])
+        follow_coords = get_ui_coords(
+            ["Follow", "Follow back", "Follow Back"],
+            resource_ids=["com.instagram.android:id/follow_button", "com.instagram.android:id/profile_header_follow_button"],
+            exact_only=True
+        )
         if follow_coords:
             log.info(f"Tapping Follow button at {follow_coords}")
             adb(f"shell input tap {follow_coords[0]} {follow_coords[1]}")
@@ -544,94 +815,202 @@ def send_instagram_dm(username: str, message: str) -> bool:
         else:
             log.info("Follow button not found or already following.")
         
+        # 4. Dismiss any keyboard overlay before scanning for Message button
+        adb("shell input keyevent 4")   # BACK — closes keyboard without leaving profile page
+        time.sleep(1)
+
         # 4. Tap the "Message" button dynamically
         log.info(f"Searching for Message button...")
-        coords = get_ui_coords(["Message", "message"])
+        coords = get_ui_coords(["Message", "message"], retries=2, exact_only=True)
         if coords:
             log.info(f"Tapping Message button at {coords}")
             adb(f"shell input tap {coords[0]} {coords[1]}")
+            time.sleep(4)  # Wait for DM compose window to load fully
         else:
-            log.error("Could not find Message button in the UI hierarchy. Aborting.")
-            return False
-        
-        time.sleep(6) # Wait for slow chat screen to open
+            # Diagnose WHY Message button is missing — determine if permanent or transient
+            screen = get_screen_text_set()
+
+            # Empty screen = uiautomator dump race/timeout — retry once after a brief wait
+            if not screen:
+                log.warning(f"[Instagram ADB] @{username}: Empty screen dump — waiting and retrying uiautomator...")
+                time.sleep(3)
+                screen = get_screen_text_set()
+
+            _user_not_found_signals = {
+                "user not found", "sorry, this page isn't available",
+                "this account doesn't exist", "page isn't available",
+                "isn't available", "account doesn't exist"
+            }
+            if any(sig in screen for sig in _user_not_found_signals):
+                log.warning(f"[Instagram ADB] @{username}: Account not found or deleted — marking as permanent skip.")
+                return None  # Permanent skip sentinel
+            elif "contact" in screen and "message" not in screen:
+                # Business only shows "Contact" button (email/web form) — no direct DM capability
+                log.warning(f"[Instagram ADB] @{username}: Only 'Contact' button visible (no Message button) — marking as contact_only.")
+                return "contact_only"  # Special sentinel: caller marks in DB and skips
+            elif "following" in screen and "message" not in screen:
+                log.warning(f"[Instagram ADB] @{username}: Account is private (only 'Following' visible, no Message button) — marking as permanent skip.")
+                return None  # Permanent skip sentinel
+            elif "statusbar" in " ".join(screen) or "keyguard" in " ".join(screen):
+                log.error(f"[Instagram ADB] @{username}: Lock screen still active during profile scan — transient failure.")
+                return False
+            else:
+                log.error(f"[Instagram ADB] @{username}: Could not find Message button (screen={list(screen)[:8]}) — transient failure.")
+                return False
+
+        # 4a. Verify we actually landed in DM compose (not followers list or some other screen)
+        # Check for the compose edittext resource-id in XML — if missing, we're on wrong screen
+        in_compose = False
+        for _compose_check in range(3):
+            xml_check = adb_read_xml()
+            if xml_check and "row_thread_composer_edittext" in xml_check:
+                in_compose = True
+                log.info("[send_dm] Confirmed in DM compose screen.")
+                break
+            log.warning(f"[send_dm] Not in DM compose yet (attempt {_compose_check+1}/3) — waiting 3s...")
+            time.sleep(3)
+
+        if not in_compose:
+            # Message tap went to wrong screen — navigate back to profile and try again
+            log.warning(f"[send_dm] DM compose never opened for @{username}. Re-navigating to profile...")
+            adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
+            time.sleep(6)
+            # Try Message button one more time
+            coords2 = get_ui_coords(["Message", "message"], retries=2, exact_only=True)
+            if coords2:
+                log.info(f"[send_dm] Retry: Tapping Message button at {coords2}")
+                adb(f"shell input tap {coords2[0]} {coords2[1]}")
+                time.sleep(5)
+                xml_retry = adb_read_xml()
+                if not (xml_retry and "row_thread_composer_edittext" in xml_retry):
+                    log.error(f"[send_dm] DM compose still not opened after retry — aborting.")
+                    return False
+                log.info("[send_dm] Confirmed in DM compose (retry).")
+            else:
+                log.error(f"[send_dm] Message button not found on retry — aborting.")
+                return False
+
+        time.sleep(2) # Brief extra wait for compose to fully settle
 
         # 4b. Guard against duplicate send by checking chat history
         if is_message_already_sent(message):
             log.warning("Message is already visible in chat history. Aborting duplicate send.")
             _increment_daily_count()
             return True
-        
+
         # 5. Tap the Text Box to focus it dynamically
         log.info("Searching for message input box...")
-        coords_input = get_ui_coords(["Message...", "message...", "Message", "Add a message", "Message…", "message…"])
+        coords_input = get_ui_coords(
+            ["Message...", "message...", "Message…", "message…", "Add a message"],
+            resource_ids=["com.instagram.android:id/row_thread_composer_edittext"]
+        )
         if coords_input:
             log.info(f"Tapping message input at {coords_input}")
             adb(f"shell input tap {coords_input[0]} {coords_input[1]}")
             time.sleep(1)
         else:
-            log.warning("Could not find text input box — hoping it is auto-focused")
+            log.error("Message input box not found via uiautomator — cannot focus compose. Aborting.")
+            return False
         time.sleep(2)
 
         # 6. Type the message
         log.info(f"Typing message to @{username}...")
-        type_text(message)
-        
-        # Verify typed text and wait for keyboard typing to complete
-        sleep_duration = max(3, len(message) * 0.04)
-        log.info(f"Sleeping for {sleep_duration:.1f} seconds to allow typing to complete...")
-        time.sleep(sleep_duration)
-        
-        # Verification loop to ensure full message was typed
-        type_ok = False
-        for attempt in range(2):
-            try:
-                adb("shell uiautomator dump /sdcard/window_dump.xml")
-                xml_data = adb("shell cat /sdcard/window_dump.xml")
-                if xml_data and "row_thread_composer_edittext" in xml_data:
-                    root = ET.fromstring(xml_data)
-                    for node in root.iter('node'):
-                        if "row_thread_composer_edittext" in node.attrib.get('resource-id', ''):
-                            current_text = node.attrib.get('text', '')
-                            if len(current_text) >= len(message) * 0.8:
-                                log.info(f"✅ Verified: Message typed successfully ({len(current_text)}/{len(message)} chars).")
-                                type_ok = True
-                                break
-                            else:
-                                log.warning(f"Message typing incomplete. Expected: {len(message)} chars, Found: {len(current_text)} chars.")
-                if type_ok:
-                    break
-            except Exception as parse_err:
-                log.warning(f"Error parsing screen XML for verification: {parse_err}")
-                
-            log.warning("Verification failed, waiting 3 seconds before next check...")
-            time.sleep(3)
-            
-        # 7. Press the hardware BACK button to dismiss the hovering keyboard
-        adb("shell input keyevent 4")
-        time.sleep(2)
-        
-        # 8. Tap the "Send" button dynamically
-        log.info("Searching for Send button...")
-        coords_send = get_ui_coords(["Send", "send"])
-        if coords_send:
-            log.info(f"Tapping Send at {coords_send}")
-            adb(f"shell input tap {coords_send[0]} {coords_send[1]}")
+        used_adb_kb = type_text(message)
+
+        if used_adb_kb:
+            log.info("Sleeping 1.5s for ADBKeyboard input rendering...")
+            time.sleep(1.5)
         else:
-            log.warning("Send button not found — trying Enter key as fallback")
+            # Wait generously for all chunks to finish on slow Vivo (chunks: 15-30 chars, sleep 1.2-3s each)
+            num_chunks = max(1, (len(message) + 14) // 15)
+            sleep_duration = max(8, num_chunks * 3.5)
+            log.info(f"Sleeping for {sleep_duration:.1f}s to let typing complete ({num_chunks} chunks)...")
+            time.sleep(sleep_duration)
+
+        # 7. Send the message
+        # Primary: tap the send button directly via resource-id (always visible when text is typed).
+        # The compose edittext (row_thread_composer_edittext) appears both in "new compose" and
+        # in the existing thread view, so we cannot use its presence to detect compose exit.
+        # Instead, we check whether its text is empty after send — empty = message was sent.
+        sent_confirmed = False
+        log.info("Locating Send button via uiautomator...")
+        send_coords = get_ui_coords(
+            ["Send", "send"],
+            retries=2,
+            resource_ids=[
+                "com.instagram.android:id/row_thread_composer_send_button_container",
+                "com.instagram.android:id/row_thread_composer_button_send",
+                "com.instagram.android:id/send_button",
+            ]
+        )
+        if send_coords:
+            log.info(f"Tapping Send button at {send_coords}")
+            adb(f"shell input tap {send_coords[0]} {send_coords[1]}")
+            time.sleep(1.5)
+        else:
+            # Fallback: KEYCODE_ENTER (works when keyboard is still active)
+            log.warning("Send button not found via uiautomator — falling back to KEYCODE_ENTER...")
             adb("shell input keyevent 66")
-        time.sleep(2)
-        
-        log.info(f"[Instagram ADB] ✅ Successfully TYPED and SENT DM to @{username}")
-        _increment_daily_count()
+            time.sleep(1.5)
+
+        # Confirm send by checking if compose input text was cleared (message consumed)
+        xml_data_post = adb_read_xml()
+        if xml_data_post:
+            import xml.etree.ElementTree as _ET
+            try:
+                _root_post = _ET.fromstring(xml_data_post)
+                _PLACEHOLDERS = {"message…", "message...", "add a message", ""}
+                for _n in _root_post.iter("node"):
+                    if "row_thread_composer_edittext" in _n.attrib.get("resource-id", ""):
+                        _remaining_text = _n.attrib.get("text", "").strip().lower()
+                        if _remaining_text in _PLACEHOLDERS:
+                            log.info("Compose input cleared (placeholder) — message sent successfully.")
+                            sent_confirmed = True
+                        else:
+                            log.warning(f"Compose input still has text: {_remaining_text!r:.60} — send may have failed.")
+                        break
+                else:
+                    # Input not found in XML — likely keyboard dismissed and we're in thread view
+                    log.info("Compose edittext not found in post-send XML — likely sent and keyboard dismissed.")
+                    sent_confirmed = True
+            except Exception:
+                pass
+
+        if not sent_confirmed:
+            # Last resort: try KEYCODE_ENTER if send button tap seemed to fail
+            log.warning("Send not confirmed — trying KEYCODE_ENTER as last resort...")
+            adb("shell input keyevent 66")
+            time.sleep(1.5)
+            # Check once more
+            xml_last = adb_read_xml()
+            if xml_last:
+                try:
+                    _root_last = _ET.fromstring(xml_last)
+                    for _n in _root_last.iter("node"):
+                        if "row_thread_composer_edittext" in _n.attrib.get("resource-id", ""):
+                            _remaining_last = _n.attrib.get("text", "").strip().lower()
+                            if _remaining_last in {"message…", "message...", "add a message", ""}:
+                                log.info("Compose input cleared after KEYCODE_ENTER — message sent.")
+                                sent_confirmed = True
+                            break
+                    else:
+                        sent_confirmed = True
+                except Exception:
+                    pass
+
+        time.sleep(1.5)
 
         # ── POST-SEND VERIFICATION ────────────────────────────────────────────
-        verified = verify_sent_message(username, message)
-        if not verified:
+        verified = verify_sent_message(username, message, sent_confirmed=sent_confirmed)
+        if verified:
+            log.info(f"[Instagram ADB] ✅ Successfully SENT DM to @{username} (verified in chat)")
+            _increment_daily_count()
+        else:
             log.error(
                 f"[Verify] ⚠️  Message to @{username} failed verification — "
-                "flagged as 'send_mismatch' in DB. Manual review needed."
+                "DM may not have been sent. NOT counting toward daily limit."
             )
+            return False
         # ─────────────────────────────────────────────────────────────────────
 
         # Randomized delay before the next action, holding the lock
@@ -645,7 +1024,8 @@ def send_instagram_dm(username: str, message: str) -> bool:
     finally:
         # ATOMIC LOCK RELEASE: Remove the directory from the phone
         log.info("Releasing physical phone lock...")
-        subprocess.run(f"adb -s {FIRESTICK_IP} shell rmdir /sdcard/ig_automation_lock 2>/dev/null", shell=True, timeout=30)
+        _target = _resolve_adb_target()
+        subprocess.run(f"adb -s {_target} shell rmdir /sdcard/ig_automation_lock 2>/dev/null", shell=True, timeout=30)
 
     return True
 

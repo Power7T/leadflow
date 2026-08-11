@@ -1,26 +1,30 @@
 import time
+import random
 import logging
 import xml.etree.ElementTree as ET
-from instagram_sender import adb
+from instagram_sender import adb, _resolve_adb_target
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("vivo_ig")
 
 
 def unlock_screen():
-    import resolve_devices
-    device_ip = resolve_devices.ensure_connected("vivo")
-    if not device_ip:
-        raise RuntimeError("Failed to resolve Vivo IP and connect via ADB")
-
-    """Wake up and unlock the Vivo phone reliably, resetting ADB first."""
-    # Resolve device IP dynamically
-    pass # Handled by resolve_devices
-
-    log.info(f"Re-establishing ADB connection to {device_ip}...")
+    """Wake up and unlock the Vivo phone reliably."""
     import subprocess
-    subprocess.run(f"adb disconnect {device_ip}", shell=True, capture_output=True)
-    subprocess.run(f"adb connect {device_ip}", shell=True, capture_output=True)
+    device_ip = _resolve_adb_target()
+
+    if device_ip == "localhost:5555":
+        # Self-hosting on Vivo — start local ADB daemon
+        subprocess.run("adb start-server", shell=True, capture_output=True, timeout=15)
+        subprocess.run("adb connect localhost:5555", shell=True, capture_output=True, timeout=15)
+    else:
+        import resolve_devices
+        resolved = resolve_devices.ensure_connected("vivo")
+        if resolved:
+            device_ip = resolved
+        else:
+            subprocess.run(f"adb disconnect {device_ip}", shell=True, capture_output=True)
+            subprocess.run(f"adb connect {device_ip}", shell=True, capture_output=True)
     time.sleep(2)
 
     # Wake screen
@@ -107,67 +111,85 @@ def get_ui_coords(search_texts, retries=3):
 
 
 def type_text_safe(message: str):
-    """Types the message on the device safely in chunks using subprocess without host shell escaping issues."""
+    """Types the message on the device safely using ADBKeyboard (AdbIME).
+    Falls back to normal typing if ADBKeyboard IME is not active."""
     import base64
     import subprocess
-    import os
-    from pathlib import Path
-    
-    # 1. Resolve device IP dynamically
-    device_ip = "192.168.0.162:5555" # Default fallback
-    try:
-        _ip_file_home = Path(os.path.expanduser("~/.vivo_ip"))
-        _ip_file_local = Path(__file__).parent / ".vivo_ip"
-        if _ip_file_home.exists():
-            device_ip = _ip_file_home.read_text().strip()
-        elif _ip_file_local.exists():
-            device_ip = _ip_file_local.read_text().strip()
-    except Exception:
-        pass
-        
-    # 2. Format the message for keyevents
-    text = message.replace('★', ' star')
-    text = text.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
+    import random
+
+    device_ip = _resolve_adb_target()
+
+    # 1. Normalize linebreaks for safety in messaging apps
+    text = message.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
     text = text.replace('—', ' - ').replace('–', '-')
-    text = text.replace('"', '').replace("'", "")
-    text = text.encode('ascii', errors='ignore').decode('ascii')
-    
-    # 3. Split into random-sized chunks (10 to 25 chars) to mimic human typing bursts
+
+    # 2. Check if AdbIME is active
+    try:
+        res = subprocess.run(
+            ["adb", "-s", device_ip, "shell", "settings get secure default_input_method"],
+            capture_output=True, text=True, timeout=5
+        )
+        ime = res.stdout.strip()
+        use_adbkeyboard = "AdbIME" in ime or "ADBKeyboard" in ime
+    except Exception:
+        use_adbkeyboard = False
+
+    if use_adbkeyboard:
+        log.info("Typing via ADBKeyboard broadcast (instant & safe)...")
+        # ADBKeyboard expects base64 payload to ensure unicode safety
+        b64_text = base64.b64encode(text.encode('utf-8')).decode('utf-8')
+        cmd = [
+            "adb", "-s", device_ip, "shell",
+            f"am broadcast -a ADB_INPUT_B64 --es msg {b64_text}"
+        ]
+        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(1.0)
+        return
+
+    log.warning("ADBKeyboard IME not active. Falling back to chunked keyboard simulation.")
+    # Fallback to character stripping to prevent adb shell command crashes
+    text_clean = text.replace('★', ' star').replace('"', '').replace('\'', '')
+    text_clean = text_clean.encode('ascii', errors='ignore').decode('ascii')
+
+    # Split into random-sized chunks (10 to 25 chars) to mimic human typing
     chunks = []
     i = 0
-    while i < len(text):
+    while i < len(text_clean):
         chunk_len = random.randint(10, 25)
-        chunks.append(text[i:i+chunk_len])
+        chunks.append(text_clean[i:i+chunk_len])
         i += chunk_len
-    
+
     for chunk in chunks:
         if not chunk:
             continue
         b64_chunk = base64.b64encode(chunk.encode('utf-8')).decode('utf-8')
-        
-        # Execute directly via subprocess without host shell
         cmd = [
             "adb", "-s", device_ip, "shell",
-            f"input text \"$(echo {b64_chunk} | base64 -d | sed 's/ /%s/g')\""
+            f"input text \"$(echo {b64_chunk} | base64 -d | sed 's/ /%%s/g')\""
         ]
         subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
-        # Human-like delay between bursts (1.5 to 3.5 seconds)
         time.sleep(random.uniform(1.5, 3.5))
+
+
+def normalize_for_comparison(text: str) -> str:
+    if not text:
+        return ""
+    text = text.lower()
+    text = text.replace('★', ' star')
+    text = text.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
+    text = text.replace('—', ' - ').replace('–', '-')
+    text = text.replace('"', '').replace('\'', '').replace('’', '').replace('`', '')
+    text = text.replace(" ", "")  # Remove all spaces.
+    text = text.encode('ascii', errors='ignore').decode('ascii')
+    return text.strip()
 
 
 def confirm_message_typed(expected_message: str, timeout: float = 15.0) -> bool:
     """Wait and verify that the expected message has been fully typed into the input field."""
-    # Format same as typed message for matching
-    clean_expected = expected_message.replace('★', ' star')
-    clean_expected = clean_expected.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
-    clean_expected = clean_expected.replace('—', ' - ').replace('–', '-')
-    clean_expected = clean_expected.replace('"', '').replace("'", "")
-    clean_expected = clean_expected.encode('ascii', errors='ignore').decode('ascii')
-    
-    # Check if the end marker of our expected text is present in the text box
-    end_marker = clean_expected[-30:] if len(clean_expected) > 30 else clean_expected
-    
+    norm_expected = normalize_for_comparison(expected_message)
+    # Take the end marker (normalized last 25 chars)
+    end_marker = norm_expected[-25:] if len(norm_expected) > 25 else norm_expected
+
     start_time = time.time()
     while time.time() - start_time < timeout:
         adb("shell uiautomator dump /sdcard/window_dump.xml")
@@ -179,16 +201,17 @@ def confirm_message_typed(expected_message: str, timeout: float = 15.0) -> bool:
                     clazz = node.attrib.get('class', '')
                     text_val = node.attrib.get('text', '')
                     is_focused = node.attrib.get('focused') == 'true'
-                    
+
                     if 'EditText' in clazz or is_focused:
                         log.info(f"Current input box text: {repr(text_val)}")
-                        if end_marker in text_val:
+                        norm_text_val = normalize_for_comparison(text_val)
+                        if end_marker in norm_text_val:
                             log.info("Verified: Entire message has been typed successfully!")
                             return True
             except Exception as e:
                 log.warning(f"Error parsing UI XML: {e}")
         time.sleep(1.5)
-    
+
     return False
 
 
@@ -199,24 +222,23 @@ def is_message_already_sent(message: str) -> bool:
         xml_data = adb("shell cat /sdcard/window_dump.xml")
         if not xml_data or "ERROR" in xml_data:
             return False
-            
-        clean_msg = message.replace('★', ' star')
-        clean_msg = clean_msg.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
-        clean_msg = clean_msg.replace('—', ' - ').replace('–', '-')
-        clean_msg = clean_msg.replace('"', '').replace("'", "")
-        clean_msg = clean_msg.encode('ascii', errors='ignore').decode('ascii').strip()
-        
-        marker = clean_msg[:40] if len(clean_msg) > 40 else clean_msg
-        
+
+        norm_expected = normalize_for_comparison(message)
+        # Take the start marker (normalized first 35 chars)
+        marker = norm_expected[:35] if len(norm_expected) > 35 else norm_expected
+
         root = ET.fromstring(xml_data)
         for node in root.iter('node'):
             clazz = node.attrib.get('class', '')
             text_val = node.attrib.get('text', '')
-            if 'EditText' not in clazz and marker in text_val:
-                return True
+            if 'EditText' not in clazz:
+                norm_text_val = normalize_for_comparison(text_val)
+                if marker in norm_text_val:
+                    return True
     except Exception:
         pass
     return False
+
 
 def send_dm_via_vivo(username: str, message: str, dry_run: bool = False):
     log.info(f"=== Starting DM to @{username} ===")
