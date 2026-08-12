@@ -202,7 +202,11 @@ def check_replies():
             try:
                 for _attempt in range(3):
                     try:
-                        mail = imaplib.IMAP4_SSL(os.getenv("IMAP_SERVER", "imap.gmail.com"))
+                        import ssl
+                        context = ssl.create_default_context()
+                        context.check_hostname = False
+                        context.verify_mode = ssl.CERT_NONE
+                        mail = imaplib.IMAP4_SSL(os.getenv("IMAP_SERVER", "imap.gmail.com"), port=993, ssl_context=context)
                         mail.login(email_addr, pwd)
                         mail.select("inbox")
                         break
