@@ -206,6 +206,7 @@ def run_queue_method():
         FROM businesses b
         JOIN contacts c ON c.business_id = b.id
         WHERE b.ig_dm_sent = 1 AND b.ig_link_delivered = 0 AND c.instagram IS NOT NULL AND c.instagram != ''
+          AND b.ig_dm_sent_at > datetime('now', '-7 days')
     """).fetchall()
     conn.close()
     
