@@ -1,0 +1,1 @@
+Live test verification: The system has been modernized with async/await routines, the keyboard issue is addressed by forcing AdbIME check before each typing session, and all code is synched and committed to Github.

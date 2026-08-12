@@ -736,6 +736,10 @@ def acquire_phone_lock(ip: str, timeout_seconds: int = 180) -> bool:
 
 
 def send_instagram_dm(username: str, message: str) -> bool:
+    import random
+    def _resolve(txt):
+        return re.sub(r"{([^{}]+)}", lambda m: random.choice(m.group(1).split("|")), txt)
+    message = _resolve(message)
     """
     Uses ADB to physically open Instagram, tap Message, type, and Send.
     Enforces daily limit + human-like delay between sends.
@@ -1029,3 +1033,17 @@ def send_instagram_dm(username: str, message: str) -> bool:
 
     return True
 
+
+def ensure_adbkeyboard():
+    """Ensures ADBKeyboard is the default IME, resetting it if needed."""
+    current_ime = adb("shell settings get secure default_input_method")
+    if "AdbIME" not in current_ime:
+        log.warning(f"ADBKeyboard not active (current: {current_ime}), setting...")
+        adb("shell ime set com.android.adbkeyboard/.AdbIME")
+        time.sleep(1)
+
+
+def ensure_adbkeyboard():
+    """Ensures ADBKeyboard is the default IME, resetting it if needed."""
+    adb("shell ime set com.android.adbkeyboard/.AdbIME")
+    time.sleep(1)
