@@ -17,7 +17,11 @@ if not log.handlers:
     handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
     log.addHandler(handler)
 
-scheduler = BackgroundScheduler(timezone="UTC")
+from apscheduler.executors.pool import ThreadPoolExecutor
+executors = {
+    'default': ThreadPoolExecutor(10)
+}
+scheduler = BackgroundScheduler(timezone="UTC", executors=executors)
 
 _leads_send_lock = threading.Lock()
 _followups_send_lock = threading.Lock()
