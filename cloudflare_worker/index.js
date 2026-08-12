@@ -878,7 +878,8 @@ export default {
           lead: payload.business,
           scraped: payload.website_data,
           hero_img: payload.hero_img,
-          about_img: payload.about_img
+          about_img: payload.about_img,
+          agency_whatsapp: env.AGENCY_WHATSAPP || "918669024169"
         });
 
         // Append conversion layer

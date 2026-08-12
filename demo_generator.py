@@ -1262,11 +1262,13 @@ def generate_demo_html(business: dict, website_data: dict = None, use_stock: boo
                 hero_img, about_img = _STOCK_HERO, _STOCK_ABOUT
 
             t = Template(template_str)
+            import os
             custom_html = t.render(
-                lead=business, 
-                scraped=website_data, 
-                hero_img=hero_img, 
-                about_img=about_img
+                lead=business,
+                scraped=website_data,
+                hero_img=hero_img,
+                about_img=about_img,
+                agency_whatsapp=os.getenv("AGENCY_WHATSAPP", "918669024169")
             )
                 
     if custom_html:
