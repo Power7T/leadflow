@@ -542,6 +542,7 @@ def get_all_active_leads() -> list:
         LEFT JOIN contacts c ON c.business_id = b.id
         WHERE b.status NOT IN ('skipped') AND (b.source IS NULL OR b.source != 'test_leads')
         ORDER BY engagement_score DESC, b.lead_score DESC, b.found_at DESC
+        LIMIT 350
     """).fetchall()
     conn.close()
     return [dict(r) for r in rows]
