@@ -1,3 +1,4 @@
+import asyncio
 import time
 import random
 import logging
@@ -110,14 +111,40 @@ def get_ui_coords(search_texts, retries=3):
     return None
 
 
-def type_text_safe(message: str):
-    """Types the message on the device safely using ADBKeyboard (AdbIME).
-    Falls back to normal typing if ADBKeyboard IME is not active."""
+async def type_text_safe_async(message: str):
+    """Types the message on the device safely using ADBKeyboard (AdbIME)."""
     import base64
-    import subprocess
+    import asyncio
     import random
 
     device_ip = _resolve_adb_target()
+    
+    # 1. Normalize linebreaks
+    text = message.replace('
+', ' ').replace('', '').replace('
+', ' ').replace('', '')
+    
+    # Check IME
+    proc = await asyncio.create_subprocess_shell(
+        f"adb -s {device_ip} shell settings get secure default_input_method",
+        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    )
+    stdout, _ = await proc.communicate()
+    ime = stdout.decode().strip()
+    use_adbkeyboard = "AdbIME" in ime or "ADBKeyboard" in ime
+
+    if use_adbkeyboard:
+        b64_text = base64.b64encode(text.encode('utf-8')).decode('utf-8')
+        await asyncio.create_subprocess_shell(
+            f"adb -s {device_ip} shell am broadcast -a ADB_INPUT_B64 --es msg {b64_text}"
+        )
+        await asyncio.sleep(1.0)
+        return
+
+    # Fallback to character typing if needed (keeping it simple for now)
+    for char in text:
+        await asyncio.create_subprocess_shell(f"adb -s {device_ip} shell input text '{char}'")
+
 
     # 1. Normalize linebreaks for safety in messaging apps
     text = message.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
