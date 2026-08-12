@@ -1678,12 +1678,6 @@ Ready to send."""
 
 def generate_all(business: dict, demo_url: str = "", channels: list | None = None, scraped: dict | None = None) -> dict:
     """Generate outreach for selected channels. channels=None means all."""
-    category = (business.get("category", "") or "").lower()
-    name_lower = (business.get("name", "") or "").lower()
-    is_contractor = any(kw in category or kw in name_lower for kw in ["roof", "roofer", "hvac", "air conditioning", "heating", "cooling", "solar", "remodeler", "remodeling", "renovation", "detail", "detailing", "ceramic", "tree", "arborist"])
-    if is_contractor:
-        demo_url = ""
-
     want = set(channels) if channels else {"email", "instagram", "whatsapp", "linkedin"}
     drafts: dict = {}
 
@@ -1697,6 +1691,11 @@ def generate_all(business: dict, demo_url: str = "", channels: list | None = Non
     if "linkedin" in want and business.get("linkedin_url"):
         drafts["linkedin"] = write_linkedin_dm(business, demo_url, scraped)
 
+    # Link Guarantee Guard: Ensure demo link is present if generated
+    if demo_url and "http" in demo_url:
+        for ch in ["email", "instagram", "whatsapp", "linkedin"]:
+            if drafts.get(ch) and demo_url not in drafts[ch] and "FIVERR" not in drafts[ch]:
+                drafts[ch] = drafts[ch].rstrip() + f"\n\nDemo: {demo_url}"
     return drafts
 
 
@@ -1704,9 +1703,8 @@ def rewrite_message(business: dict, channel: str, current_text: str, instruction
     """Rewrite an existing draft following a specific instruction."""
     category = (business.get("category", "") or "").lower()
     name_lower = (business.get("name", "") or "").lower()
-    is_contractor = any(kw in category or kw in name_lower for kw in ["roof", "roofer", "hvac", "air conditioning", "heating", "cooling", "solar", "remodeler", "remodeling", "renovation", "detail", "detailing", "ceramic", "tree", "arborist"])
-    if is_contractor:
-        demo_url = ""
+    
+    
 
     channel_label = {"email": "cold email", "instagram": "Instagram DM",
                      "whatsapp": "WhatsApp message", "linkedin": "LinkedIn DM"}.get(channel, channel)
