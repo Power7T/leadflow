@@ -515,9 +515,21 @@ def get_leads(status: str = "new") -> list:
 
 
 def get_all_active_leads() -> list:
-    """All leads except skipped — used for review page (show everything always)."""
+    """All leads except skipped — optimized using CTE deferred join for instant performance."""
     conn = get_conn()
     rows = conn.execute("""
+        WITH top_leads AS (
+            SELECT b.id,
+                   (
+                       CASE WHEN b.demo_viewed = 1 THEN 2 ELSE 0 END
+                       + CASE WHEN EXISTS(SELECT 1 FROM tracking_events WHERE business_id=b.id AND event_type='engage:scroll_90') THEN 3 ELSE 0 END
+                       + CASE WHEN EXISTS(SELECT 1 FROM tracking_events WHERE business_id=b.id AND event_type='engage:cta_whatsapp') THEN 5 ELSE 0 END
+                   ) as engagement_score
+            FROM businesses b
+            WHERE b.status NOT IN ('skipped') AND (b.source IS NULL OR b.source != 'test_leads')
+            ORDER BY engagement_score DESC, b.lead_score DESC, b.found_at DESC
+            LIMIT 350
+        )
         SELECT b.*, c.email, c.instagram, c.linkedin_name, c.linkedin_url, c.whatsapp, c.owner_name, c.replied_at, c.reply_text,
                (SELECT json_group_array(json_object('is_inbound', is_inbound, 'content', content, 'timestamp', timestamp))
                 FROM (
@@ -533,16 +545,11 @@ def get_all_active_leads() -> list:
                (SELECT sent_at FROM outreach WHERE business_id = b.id AND sent_at IS NOT NULL ORDER BY id DESC LIMIT 1) as email_sent_at,
                (SELECT MAX(opened) FROM outreach WHERE business_id = b.id) as email_opened,
                (SELECT MAX(clicked) FROM outreach WHERE business_id = b.id) as email_clicked,
-               (
-                   CASE WHEN b.demo_viewed = 1 THEN 2 ELSE 0 END
-                   + CASE WHEN EXISTS(SELECT 1 FROM tracking_events WHERE business_id=b.id AND event_type='engage:scroll_90') THEN 3 ELSE 0 END
-                   + CASE WHEN EXISTS(SELECT 1 FROM tracking_events WHERE business_id=b.id AND event_type='engage:cta_whatsapp') THEN 5 ELSE 0 END
-               ) as engagement_score
-        FROM businesses b
+               tl.engagement_score
+        FROM top_leads tl
+        JOIN businesses b ON b.id = tl.id
         LEFT JOIN contacts c ON c.business_id = b.id
-        WHERE b.status NOT IN ('skipped') AND (b.source IS NULL OR b.source != 'test_leads')
-        ORDER BY engagement_score DESC, b.lead_score DESC, b.found_at DESC
-        LIMIT 350
+        ORDER BY tl.engagement_score DESC, b.lead_score DESC, b.found_at DESC;
     """).fetchall()
     conn.close()
     return [dict(r) for r in rows]

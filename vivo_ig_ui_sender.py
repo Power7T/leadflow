@@ -2,7 +2,7 @@ import time
 import random
 import logging
 import xml.etree.ElementTree as ET
-from instagram_sender import adb, _resolve_adb_target
+from instagram_sender import adb, _resolve_adb_target, ensure_adbkeyboard
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("vivo_ig")
@@ -122,6 +122,12 @@ def type_text_safe(message: str):
     import random
 
     device_ip = _resolve_adb_target()
+
+    # Ensure ADBKeyboard is active
+    try:
+        ensure_adbkeyboard()
+    except Exception as e:
+        log.warning(f'Could not ensure ADBKeyboard: {e}')
 
     # 1. Normalize linebreaks for safety in messaging apps
     text = message.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')

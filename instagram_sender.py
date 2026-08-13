@@ -364,6 +364,12 @@ def type_text(text: str) -> bool:
     import random
     import base64
 
+    # Ensure ADBKeyboard is active
+    try:
+        ensure_adbkeyboard()
+    except Exception as e:
+        log.warning(f'Could not ensure ADBKeyboard: {e}')
+
     # 1. Normalize linebreaks
     text = text.replace('\n', ' ').replace('\r', '')
     text = text.replace('—', ' - ').replace('–', '-')
@@ -1043,7 +1049,4 @@ def ensure_adbkeyboard():
         time.sleep(1)
 
 
-def ensure_adbkeyboard():
-    """Ensures ADBKeyboard is the default IME, resetting it if needed."""
-    adb("shell ime set com.android.adbkeyboard/.AdbIME")
-    time.sleep(1)
+
