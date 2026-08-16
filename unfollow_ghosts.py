@@ -41,9 +41,19 @@ def run_unfollow_routine():
     ghosts = list(ghosts)
     random.shuffle(ghosts)
     
-    # Cap to just 1 or 2 unfollows per run to spread them randomly throughout the entire day
-    ghosts_to_process = ghosts[:random.randint(1, 2)]
-    log.info(f"Found {len(ghosts)} total ghosts. Selecting {len(ghosts_to_process)} random ghosts to unfollow this session.")
+    # Adapt batch size based on backlog to clear it safely but organically
+    total_ghosts = len(ghosts)
+    if total_ghosts > 100:
+        batch_size = random.randint(6, 12)
+    elif total_ghosts > 50:
+        batch_size = random.randint(4, 7)
+    elif total_ghosts > 20:
+        batch_size = random.randint(2, 4)
+    else:
+        batch_size = random.randint(1, 2)
+
+    ghosts_to_process = ghosts[:batch_size]
+    log.info(f"Found {total_ghosts} total ghosts (backlog). Selecting {len(ghosts_to_process)} random ghosts to unfollow this session.")
     
     # Acquire lock
     if not acquire_phone_lock(FIRESTICK_IP):

@@ -1,3 +1,4 @@
+import re
 """
 instagram_sender.py — Physical ADB Controller for Instagram DM Automation
 

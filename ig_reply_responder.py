@@ -297,10 +297,17 @@ def run_inbox_method():
                 elif res_id == "com.instagram.android:id/thread_indicator_status_dot":
                     has_unread_dot = True
             
-            # Heuristic for unread thread:
+            # Heuristic for unread/replied thread:
             # 1. Has explicit status dot OR
-            # 2. Last message text does NOT start with "Sent" or "You sent"
-            is_unread = has_unread_dot or (digest_text and not digest_text.strip().startswith("‎Sent"))
+            # 2. Last message text does NOT start with 'Sent', 'You', 'Liked', or 'Draft' (case-insensitive, ignoring hidden chars)
+            cleaned_digest = ''.join(ch for ch in (digest_text or '') if ch.isprintable()).strip().lower()
+            is_from_us = (
+                cleaned_digest.startswith('sent') or
+                cleaned_digest.startswith('you ') or
+                cleaned_digest.startswith('liked ') or
+                cleaned_digest.startswith('draft')
+            )
+            is_unread = has_unread_dot or (bool(cleaned_digest) and not is_from_us)
             
             if is_unread and username:
                 center_y = int((cy1 + cy2) / 2)
