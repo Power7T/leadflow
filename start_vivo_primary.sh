@@ -10,7 +10,7 @@ VIVO_PASS="Qwert123"
 VIVO_DIR="~/leadflow"
 
 echo "[start_vivo_primary] Syncing code to Vivo..."
-rsync -avz --exclude '.git' --exclude '__pycache__' --exclude 'archived_device_backups' \
+rsync -avz --exclude '.git' --exclude '__pycache__' --exclude 'archived_device_backups' --exclude 'leadflow.db*' --exclude '*.log*' --exclude 'node_modules*' --exclude 'venv*' --exclude '.venv*' --exclude '.git*' --exclude 'demos*' --exclude 'leadflow-demos*' \
   -e "sshpass -p $VIVO_PASS ssh -p $VIVO_PORT -o StrictHostKeyChecking=no" \
   /Users/chandan/leadflow/ ${VIVO_USER}@${VIVO_HOST}:${VIVO_DIR}/
 

@@ -180,7 +180,41 @@ def is_adb_reachable(target: str, timeout: int = 5) -> bool:
 def adb(cmd: str) -> str:
     """Run an ADB command on the device and return its stdout"""
     global FIRESTICK_IP
-    # Re-resolve each call so IP changes and self-control mode are always picked up
+    
+    # Solution B: Local Accessibility / MacroDroid Intent-based Automation
+    if os.environ.get('LEADFLOW_LOCAL_AUTO') == '1' or os.environ.get('USE_LOCAL_AUTOMATION') == '1':
+        cmd_clean = cmd.strip()
+        if cmd_clean.startswith('shell '):
+            shell_cmd = cmd_clean[6:]
+            if shell_cmd.startswith('input tap '):
+                parts = shell_cmd.split()
+                x, y = parts[2], parts[3]
+                subprocess.run(f'am broadcast -a com.leadflow.CLICK --ei x {x} --ei y {y}', shell=True, capture_output=True)
+                return '1'
+            elif shell_cmd.startswith('input keyevent '):
+                parts = shell_cmd.split()
+                key = parts[2]
+                subprocess.run(f'am broadcast -a com.leadflow.KEYEVENT --ei key {key}', shell=True, capture_output=True)
+                return '1'
+            elif shell_cmd.startswith('am broadcast -a ADB_INPUT_B64 '):
+                import re, base64
+                m = re.search(r'--es msg (\S+)', shell_cmd)
+                if m:
+                    b64_msg = m.group(1)
+                    decoded = base64.b64decode(b64_msg).decode('utf-8')
+                    decoded_esc = decoded.replace("'", "\'")
+                    subprocess.run(f"am broadcast -a com.leadflow.TYPE --es text '{decoded_esc}'", shell=True, capture_output=True)
+                return '1'
+            elif shell_cmd.startswith('am start '):
+                subprocess.run(shell_cmd, shell=True, capture_output=True)
+                return '1'
+            elif 'uiautomator dump' in shell_cmd:
+                subprocess.run('am broadcast -a com.leadflow.DUMP', shell=True, capture_output=True)
+                time.sleep(1.5)
+                return '1'
+        return ''
+
+    # Standard ADB process
     FIRESTICK_IP = _resolve_adb_target()
 
     try:
@@ -1037,15 +1071,30 @@ def send_instagram_dm(username: str, message: str) -> bool:
         log.info("Releasing physical phone lock...")
         _target = _resolve_adb_target()
         subprocess.run(f"adb -s {_target} shell rmdir /sdcard/ig_automation_lock 2>/dev/null", shell=True, timeout=30)
+        restore_default_keyboard()
 
     return True
 
 
+def restore_default_keyboard():
+    """Re-enables the stock Kika keyboard so the developer can type normally."""
+    try:
+        adb("shell pm enable com.kikaoem.vivo.qisiemoji.inputmethod")
+        adb("shell ime set com.kikaoem.vivo.qisiemoji.inputmethod/com.android.inputmethod.latin.LatinIME")
+        log.info("Restored default Kika IME.")
+    except Exception as e:
+        log.warning(f"Could not restore default input method: {e}")
+
 def ensure_adbkeyboard():
     """Ensures ADBKeyboard is the default IME, resetting it if needed."""
+    try:
+        adb("shell pm disable-user --user 0 com.kikaoem.vivo.qisiemoji.inputmethod")
+    except Exception as e:
+        log.warning(f"Could not disable Kika keyboard: {e}")
     current_ime = adb("shell settings get secure default_input_method")
     if "AdbIME" not in current_ime:
         log.warning(f"ADBKeyboard not active (current: {current_ime}), setting...")
+        adb("shell ime enable com.android.adbkeyboard/.AdbIME")
         adb("shell ime set com.android.adbkeyboard/.AdbIME")
         time.sleep(1)
 

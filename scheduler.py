@@ -598,8 +598,8 @@ def job_unfollow_ghosts():
         # Ensure ig_rate_state table exists before running
         from ig_rate_db import migrate as ig_rate_migrate
         ig_rate_migrate()
-        import unfollow_ghosts
-        unfollow_ghosts.run_unfollow_routine()
+        import ig_ghost_cleanup
+        ig_ghost_cleanup.run_ghost_cleanup(dry_run=False)
     except Exception as e:
         log.error(f"[Scheduler] Failed to run unfollow ghosts routine: {e}")
 
