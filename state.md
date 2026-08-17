@@ -82,3 +82,11 @@ ntfy push sent on IP change and on USB recovery event.
 - Reduced post-typing sleep duration from up to 40 seconds down to 1.5 seconds when using ADB Keyboard, massively speeding up outreach sessions.
 - Upgraded coordinate validation checks in `confirm_message_typed` and duplicate check sequences to normalize special characters, spaces, and contractions.
 - Fixed the AI writer's `clean_ai_output` parser in `ai_writer.py` to extract responses on the same line as keywords, preventing fallbacks to raw prompt texts.
+
+
+## Updates & Modernizations — 2026-08-17
+- **System Dialog & Overlay Safeguards:** Implemented `dismiss_system_popups()` inside `instagram_sender.py` and `vivo_ig_ui_sender.py` to auto-detect and tap "Cancel"/"Dismiss" on system modals (like the 20% low battery alert) that block UI focus.
+- **Vivo Typing Fixes:** Upgraded keyboard logic to force-disable Kika IME (`com.kikaoem.vivo.qisiemoji.inputmethod`) when initializing ADBKeyboard, preventing predictive text corruption, and restoring it via `restore_default_keyboard()` on completion/failure.
+- **Unfollow Routine Modernization:** Replaced the broken "Follows you" badge check in the scheduler with the robust `ig_ghost_cleanup.py` which searches the followers list explicitly for our username.
+- **Git & Code Deployment:** Synced, committed, and pushed all updated code files to origin and firestick repositories on Github, and optimized deployment script filters.
+- **Summary:** Resolved Vivo phone screen freezes and stuck UI states by identifying and dismissing persistent system modals. Modernized the Instagram DM sequence by building an automated layout safeguard that detects and cancels system overlays before automation tasks run. Addressed Vivo keyboard typos by upgrading keyboard controls to force-disable the stock IME during campaigns and restore it afterward. Corrected the ghost-unfollow check inside the scheduler by integrating a robust followers list search. Validated and synchronized all codebase changes by committing and pushing clean atomic git updates.

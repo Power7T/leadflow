@@ -2,7 +2,7 @@ import time
 import random
 import logging
 import xml.etree.ElementTree as ET
-from instagram_sender import adb, _resolve_adb_target, ensure_adbkeyboard
+from instagram_sender import adb, _resolve_adb_target, ensure_adbkeyboard, adb_read_xml
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("vivo_ig")
@@ -46,7 +46,63 @@ def unlock_screen():
             time.sleep(2)
     else:
         log.info("Phone already unlocked.")
+        
+    try:
+        dismiss_system_popups()
+    except Exception as e:
+        log.warning(f"Error calling dismiss_system_popups: {e}")
 
+
+def _parse_bounds_local(bounds: str):
+    try:
+        parts = bounds.replace('][', ',').replace('[', '').replace(']', '').split(',')
+        if len(parts) == 4:
+            x = (int(parts[0]) + int(parts[2])) // 2
+            y = (int(parts[1]) + int(parts[3])) // 2
+            return (x, y)
+    except Exception:
+        pass
+    return None
+
+def dismiss_system_popups():
+    """Check the screen for system alerts/dialogs (from package 'android' or 'com.android.systemui')
+    and auto-dismiss them by clicking Cancel, OK, Dismiss, or equivalent buttons."""
+    xml_data = adb_read_xml()
+    if not xml_data:
+        return
+    try:
+        root = ET.fromstring(xml_data)
+        dismiss_buttons = []
+        has_system_dialog = False
+        
+        for node in root.iter('node'):
+            pkg = node.attrib.get('package', '')
+            if pkg in ("android", "com.android.systemui"):
+                has_system_dialog = True
+                
+        if not has_system_dialog:
+            return
+            
+        target_texts = {"cancel", "ok", "dismiss", "ignore", "close", "agree", "later", "not now"}
+        for node in root.iter('node'):
+            pkg = node.attrib.get('package', '')
+            if pkg in ("android", "com.android.systemui"):
+                text = node.attrib.get('text', '').strip().lower()
+                resource_id = node.attrib.get('resource-id', '').lower()
+                bounds = node.attrib.get('bounds', '')
+                
+                if text in target_texts or any(kw in resource_id for kw in ("button2", "button_cancel", "dismiss")):
+                    coords = _parse_bounds_local(bounds)
+                    if coords:
+                        dismiss_buttons.append((node.attrib.get('text', ''), coords))
+                        
+        for button_name, coords in dismiss_buttons:
+            log.info(f"[Popups] Autodetected system dialog button {button_name!r} at {coords}. Tapping to dismiss...")
+            adb(f"shell input tap {coords[0]} {coords[1]}")
+            time.sleep(1.5)
+            
+    except Exception as e:
+        log.warning(f"[Popups] Error while checking/dismissing system alerts: {e}")
 
 def restart_android_uiautomator():
     log.info("[Self-Healing] uiautomator dump failed. Restarting Android UI framework...")

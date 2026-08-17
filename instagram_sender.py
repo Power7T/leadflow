@@ -291,6 +291,49 @@ def _parse_bounds(bounds: str):
     return None
 
 
+def dismiss_system_popups():
+    """Check the screen for system alerts/dialogs (from package 'android' or 'com.android.systemui')
+    and auto-dismiss them by clicking Cancel, OK, Dismiss, or equivalent buttons."""
+    xml_data = adb_read_xml()
+    if not xml_data:
+        return
+    try:
+        root = ET.fromstring(xml_data)
+        dismiss_buttons = []
+        has_system_dialog = False
+        
+        # Check if there is an active dialog from system packages
+        for node in root.iter('node'):
+            pkg = node.attrib.get('package', '')
+            if pkg in ("android", "com.android.systemui"):
+                has_system_dialog = True
+                
+        if not has_system_dialog:
+            return
+            
+        # Look for typical dismiss buttons in the system dialog
+        target_texts = {"cancel", "ok", "dismiss", "ignore", "close", "agree", "later", "not now"}
+        for node in root.iter('node'):
+            pkg = node.attrib.get('package', '')
+            if pkg in ("android", "com.android.systemui"):
+                text = node.attrib.get('text', '').strip().lower()
+                resource_id = node.attrib.get('resource-id', '').lower()
+                bounds = node.attrib.get('bounds', '')
+                
+                # Check text or resource id containing dismiss keywords or button2/cancel
+                if text in target_texts or any(kw in resource_id for kw in ("button2", "button_cancel", "dismiss")):
+                    coords = _parse_bounds(bounds)
+                    if coords:
+                        dismiss_buttons.append((node.attrib.get('text', ''), coords))
+                        
+        for button_name, coords in dismiss_buttons:
+            log.info(f"[Popups] Autodetected system dialog button {button_name!r} at {coords}. Tapping to dismiss...")
+            adb(f"shell input tap {coords[0]} {coords[1]}")
+            time.sleep(1.5)
+            
+    except Exception as e:
+        log.warning(f"[Popups] Error while checking/dismissing system alerts: {e}")
+
 def get_ui_coords(text_matches: list, retries: int = 1, resource_ids: list = None, exact_only: bool = False) -> tuple:
     """
     Dumps the screen UI to XML, parses it, and finds the exact X/Y center
@@ -510,6 +553,12 @@ def unlock_screen():
                 else:
                     log.error("Phone could not be unlocked after 4 attempts — aborting DM sequence.")
                     raise RuntimeError("unlock_failed")
+                    
+    # Dismiss any active system popups/warnings (e.g. low battery, cloud alerts)
+    try:
+        dismiss_system_popups()
+    except Exception as e:
+        log.warning(f"Error calling dismiss_system_popups: {e}")
 
 def is_message_already_sent(message: str) -> bool:
     """Check if the message (or its signature parts) is already in the visible chat history."""
