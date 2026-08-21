@@ -9,6 +9,9 @@ termux-wake-lock
 # Wait for network and tmux to initialize
 sleep 20
 
+# Start Vivo USB Auto-Recovery Daemon
+/data/data/com.termux/files/home/leadflow/restore_vivo_adb.sh >> /data/data/com.termux/files/home/leadflow/restore_vivo_adb.log 2>&1 &
+
 # Kill existing leadflow sessions if any
 tmux kill-session -t leadflow_primary 2>/dev/null
 tmux kill-session -t leadflow_failover 2>/dev/null
