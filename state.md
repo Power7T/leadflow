@@ -99,3 +99,8 @@ ntfy push sent on IP change and on USB recovery event.
 - **Deep-Link Targeting Upgraded:** Appended target package name com.instagram.android to all profile deep-links, forcing them to open natively in the Instagram app rather than falling back to Chrome.
 - **Resilient Boot Recovery Implemented:** Updated the startup boot script start_leadflow.sh on the Vivo phone to run a 5-minute ADB connection loop on boot, maximizing recovery success when background networking initializes slowly.
 - **Code Synchronization Verified:** Excluded device-specific files from setup_vivo.sh rsync and deployed the updated codebase across the Mac, Vivo phone, and Firestick. All git changes are committed and pushed to both GitHub repositories.
+- **Vivo Background System Input & Overlays:** Enabled `vivo_adb_simulate_input` setting, whitelisted Termux in deviceidle, and optimized max cached processes to 64 to prevent background freezes by Vivo's aggressive OS battery manager.
+- **Zero-USB Reboot Recovery (\"Solution B\"):** Added `find_adb_port.py` on the phone to scan local ports and retrieve the active random wireless debugging port, and modernized the Termux:Boot `start_leadflow.sh` script to auto-connect ADB loops wirelessly on reboot without any USB cable.
+- **Unfollow Profile Heuristics:** Upgraded `ig_ghost_cleanup.py` to check followback state instantly via profile page text searches (\"follows you\" / \"follow back\"), speeding up checks 5x and bypassing slow UI/search actions.
+- **Engagement Alert Integration:** Added drawer click tracking event `cta_book_drawer` to `_ENGAGE_ALERTS` in `server.py` to trigger instant live push notifications.
+
