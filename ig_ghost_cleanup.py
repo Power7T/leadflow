@@ -88,9 +88,26 @@ def check_follows_us(username: str) -> bool | None:
 
     # Check for action block
     xml_data = _dump_screen()
+    if not xml_data or "ERROR" in xml_data:
+        log.warning("Could not dump profile screen. Retrying...")
+        return None
+
     if _has_block(xml_data):
         dismiss_block_popup(adb)
         return None
+
+    # --- Fast Pass Profile Heuristics (Modernized) ---
+    xml_lower = xml_data.lower()
+    if "follows you" in xml_lower or "follow back" in xml_lower:
+        log.info(f"✅ [Heuristic] @{username} follows us back!")
+        adb("shell input keyevent 4")  # Back to close profile
+        return True
+
+    # If page loaded but no followback text, confirm via 'following', 'requested', or 'message' presence
+    if "following" in xml_lower or "requested" in xml_lower or "message" in xml_lower:
+        log.info(f"❌ [Heuristic] @{username} is a GHOST (owns standard buttons but no followback text).")
+        adb("shell input keyevent 4")  # Back to close profile
+        return False
 
     # ── Find and tap their followers count ──────────────────────────
     # Instagram shows: "[N] followers" as a tappable element
