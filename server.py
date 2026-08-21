@@ -3858,6 +3858,7 @@ def track_demo_view(bid: int = 0):
 _ENGAGE_ALERTS = {
     "cta_book_bar":   "💰 {name} clicked “Book a free call” on their demo!",
     "cta_book_modal": "💰 {name} clicked “Claim this website” — hot lead!",
+    "cta_book_drawer": "💰 {name} clicked “Claim Website” in drawer — hot lead!",
     "cta_whatsapp":   "💬 {name} tapped WhatsApp from their demo!",
     "scroll_90":      "👀 {name} read their whole demo (90% scroll).",
 }
