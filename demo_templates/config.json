@@ -15,7 +15,7 @@
     {"file": "hvac.html", "name": "HVAC Heating & Cooling", "enabled": true, "niches": ["hvac", "air conditioning", "heating", "cooling", "furnace", "ac repair"]},
     {"file": "plumber.html", "name": "Plumbing & Leak Repair", "enabled": true, "niches": ["plumber", "plumbing", "pipe repair", "water heater", "leak detection", "drain cleaning"]},
     {"file": "solar.html", "name": "Solar & Clean Energy", "enabled": true, "niches": ["solar", "energy", "photovoltaic", "solar panels", "clean energy"]},
-    {"file": "landscaping.html", "name": "Landscaping & Hardscaping", "enabled": true, "niches": ["landscaping", "hardscaping", "lawn care", "patio", "outdoor living", "landscape design", "pergola", "firepit"]},
+    {"file": "landscaping.html", "name": "Landscaping & Hardscaping", "enabled": true, "niches": ["landscaping", "hardscaping", "lawn care", "patio", "outdoor living", "landscape design", "pergola", "firepit", "greenhouse", "nursery", "garden center", "plants"]},
     {"file": "treeservice.html", "name": "Tree Care & Arborist Services", "enabled": true, "niches": ["tree service", "tree removal", "tree care", "arborist", "tree trimming", "stump grinding"]},
     {"file": "cleaning.html", "name": "Commercial Cleaning & Janitorial", "enabled": true, "niches": ["cleaning", "commercial cleaning", "janitorial", "office cleaning", "facility cleaning", "carpet cleaning", "window cleaning", "sanitization"]},
     {"file": "detailing.html", "name": "Auto Detailing & Ceramic Coating", "enabled": true, "niches": ["detailing", "auto detailing", "car detailing", "ceramic coating", "paint correction", "auto spa", "car wash", "window tinting"]},

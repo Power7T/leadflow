@@ -179,26 +179,31 @@ def type_text_safe(message: str):
 
     device_ip = _resolve_adb_target()
 
-    # Ensure ADBKeyboard is active
-    try:
-        ensure_adbkeyboard()
-    except Exception as e:
-        log.warning(f'Could not ensure ADBKeyboard: {e}')
+    # 2. Check and ensure AdbIME is active (retry up to 3 times)
+    use_adbkeyboard = False
+    for attempt in range(3):
+        try:
+            ensure_adbkeyboard()
+            res = subprocess.run(
+                ["adb", "-s", device_ip, "shell", "settings get secure default_input_method"],
+                capture_output=True, text=True, timeout=5
+            )
+            ime = res.stdout.strip()
+            if "AdbIME" in ime or "ADBKeyboard" in ime:
+                use_adbkeyboard = True
+                break
+            else:
+                log.warning(f"Attempt {attempt+1}: AdbIME not active (current: {ime}). Retrying set...")
+                time.sleep(1)
+        except Exception as e:
+            log.warning(f"Attempt {attempt+1}: Error ensuring ADBKeyboard: {e}")
+            time.sleep(1)
 
     # 1. Normalize linebreaks for safety in messaging apps
     text = message.replace('\\n', ' ').replace('\\r', '').replace('\n', ' ').replace('\r', '')
     text = text.replace('—', ' - ').replace('–', '-')
 
-    # 2. Check if AdbIME is active
-    try:
-        res = subprocess.run(
-            ["adb", "-s", device_ip, "shell", "settings get secure default_input_method"],
-            capture_output=True, text=True, timeout=5
-        )
-        ime = res.stdout.strip()
-        use_adbkeyboard = "AdbIME" in ime or "ADBKeyboard" in ime
-    except Exception:
-        use_adbkeyboard = False
+
 
     if use_adbkeyboard:
         log.info("Typing via ADBKeyboard broadcast (instant & safe)...")
