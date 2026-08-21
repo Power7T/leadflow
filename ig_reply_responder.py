@@ -223,7 +223,7 @@ def run_queue_method():
         log.info(f"Checking chat for @{username}...")
         
         # Launch Instagram Profile deep link
-        adb_run(["shell", f'am start -a android.intent.action.VIEW -d "instagram://user?username={username}"'])
+        adb_run(["shell", f'am start -a android.intent.action.VIEW -d "instagram://user?username={username}" com.instagram.android'])
         time.sleep(5)
         
         # Tap Message Button

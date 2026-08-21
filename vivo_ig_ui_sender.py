@@ -319,7 +319,7 @@ def send_dm_via_vivo(username: str, message: str, dry_run: bool = False):
 
     # 2. Launch Instagram via deep link
     log.info(f"Opening @{username} profile on Instagram...")
-    adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
+    adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}" com.instagram.android')
     time.sleep(5)  # Give Instagram enough time to fully load the profile
 
     # 2b. Tap the "Follow" button if present

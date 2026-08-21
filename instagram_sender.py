@@ -469,11 +469,20 @@ def type_text(text: str) -> bool:
         time.sleep(1.0)
         return True
 
-    log.warning("ADBKeyboard IME not active. Falling back to word-by-word simulation.")
+    log.warning("ADBKeyboard IME not active. Falling back to Option B (escaped spaces simulation).")
     # Normalize text for fallback
     text_clean = text.replace('★', ' star').replace('"', '').replace('\'', '')
     text_clean = text_clean.encode('ascii', errors='ignore').decode('ascii')
 
+    # Try Option B (single input text with %s) if text is short (<80 chars)
+    if len(text_clean) < 80:
+        escaped = text_clean.replace(' ', '%s')
+        adb(f'shell input text "{escaped}"')
+        time.sleep(1.5)
+        return False
+
+    # Option C: word-by-word typing using %s instead of KEYCODE_SPACE to bypass autocorrect
+    log.info("Text too long for Option B. Falling back to Option C (word-by-word with %s spaces)...")
     words = text_clean.split(' ')
     for i, word in enumerate(words):
         word = word.strip()
@@ -482,7 +491,7 @@ def type_text(text: str) -> bool:
         adb(f'shell input text "{word}"')
         time.sleep(random.uniform(0.3, 0.6))
         if i < len(words) - 1:
-            adb('shell input keyevent KEYCODE_SPACE')
+            adb('shell input text "%s"')
             time.sleep(random.uniform(0.2, 0.4))
     return False
 
@@ -879,7 +888,7 @@ def send_instagram_dm(username: str, message: str) -> bool:
 
         # 3. Deep link instantly to the user's profile
         log.info(f"Opening @{username} profile on Instagram...")
-        adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
+        adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}" com.instagram.android')
         time.sleep(6) # Wait for profile to load
 
         # 3a. Wait until the profile actually renders (content nodes appear), up to 15s extra
@@ -973,7 +982,7 @@ def send_instagram_dm(username: str, message: str) -> bool:
         if not in_compose:
             # Message tap went to wrong screen — navigate back to profile and try again
             log.warning(f"[send_dm] DM compose never opened for @{username}. Re-navigating to profile...")
-            adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
+            adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}" com.instagram.android')
             time.sleep(6)
             # Try Message button one more time
             coords2 = get_ui_coords(["Message", "message"], retries=2, exact_only=True)

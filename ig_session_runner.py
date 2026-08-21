@@ -111,7 +111,7 @@ def follow_and_dm(username: str, message: str, business_id: int,
 
     # ── Step 1: Open profile via deep link ──────────────────────────────
     ps_activity("open_profile", f"Opening profile", target_username=username)
-    adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
+    adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}" com.instagram.android')
     time.sleep(random.uniform(4.5, 6.5))  # Human-like wait for profile load
 
     # ── Step 2: Check for action block popup ────────────────────────────

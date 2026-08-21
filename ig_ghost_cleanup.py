@@ -48,7 +48,7 @@ from ig_rate_db import (
 from ig_rate_limiter import (
     RateLimiter, check_and_handle_block, dismiss_block_popup,
 )
-from instagram_sender import adb, acquire_phone_lock, FIRESTICK_IP
+from instagram_sender import adb, acquire_phone_lock, FIRESTICK_IP, restore_default_keyboard
 from vivo_ig_ui_sender import (
     unlock_screen, get_ui_coords, restart_android_uiautomator,
 )
@@ -82,7 +82,7 @@ def check_follows_us(username: str) -> bool | None:
     ps_activity("check_follower", "Checking followback", target_username=username)
 
     # ── Open their profile ──────────────────────────────────────────
-    adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
+    adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}" com.instagram.android')
     time.sleep(random.uniform(4.5, 6.5))
 
     # Check for action block
@@ -133,7 +133,25 @@ def check_follows_us(username: str) -> bool | None:
     time.sleep(0.3)
 
     # Type our username
-    adb(f'shell input text "{OUR_USERNAME}"')
+        # Enforce ADBKeyboard check to prevent typos
+    use_adbkeyboard = False
+    try:
+        from instagram_sender import ensure_adbkeyboard
+        ensure_adbkeyboard()
+        ime = adb("shell settings get secure default_input_method")
+        if "AdbIME" in ime or "ADBKeyboard" in ime:
+            use_adbkeyboard = True
+    except Exception:
+        pass
+    
+    if use_adbkeyboard:
+        import base64
+        b64_user = base64.b64encode(OUR_USERNAME.encode('utf-8')).decode('utf-8')
+        adb(f"shell am broadcast -a ADB_INPUT_B64 --es msg {b64_user}")
+    else:
+        # Option B: Type with %s
+        escaped_user = OUR_USERNAME.replace(' ', '%s')
+        adb(f'shell input text "{escaped_user}"')
     time.sleep(random.uniform(2.0, 3.5))  # Wait for search results to load
 
     # ── Check if our username appears in search results ─────────────
@@ -291,7 +309,7 @@ def unfollow_user(username: str, business_id: int, reason: str,
     log.info(f"{'[DRY RUN] ' if dry_run else ''}Unfollowing @{username} (reason: {reason})")
 
     # Open their profile
-    adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}"')
+    adb(f'shell am start -a android.intent.action.VIEW -d "instagram://user?username={username}" com.instagram.android')
     time.sleep(random.uniform(4.5, 6.5))
 
     # Check for block

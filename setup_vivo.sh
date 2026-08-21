@@ -14,6 +14,6 @@ echo "Connecting & Syncing code to Vivo Phone at $VIVO_IP..."
 # Verify SSH port 8022 is open on that IP
 sshpass -p "Qwert123" ssh -p 8022 -o StrictHostKeyChecking=no -o ConnectTimeout=10 u0_a156@$VIVO_IP "mkdir -p ~/leadflow && mkdir -p ~/.ssh"
 
-rsync -avz --exclude '.git' --exclude '__pycache__' --exclude 'archived_device_backups' --exclude '*.db' --exclude '*.db-shm' --exclude '*.db-wal' -e "sshpass -p Qwert123 ssh -p 8022 -o StrictHostKeyChecking=no" /Users/chandan/leadflow/ u0_a156@$VIVO_IP:~/leadflow/
+rsync -avz --exclude '.git' --exclude '__pycache__' --exclude 'archived_device_backups' --exclude '*.db' --exclude '*.db-shm' --exclude '*.db-wal' --exclude '.env' --exclude '.firestick_ip' --exclude '.vivo_ip' --exclude '*.log' -e "sshpass -p Qwert123 ssh -p 8022 -o StrictHostKeyChecking=no" /Users/chandan/leadflow/ u0_a156@$VIVO_IP:~/leadflow/
 
 echo "Sync complete!"
