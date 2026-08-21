@@ -1753,6 +1753,8 @@ def job_sync_worker_events():
                                 msg = f"🔥 Hot Lead! {biz_name} read 90% of demo"
                             elif actual_type == "modal_shown":
                                 msg = f"💬 Contact Modal Opened: {biz_name}"
+                            elif actual_type == "fiverr_click":
+                                msg = f"💰 Fiverr gig clicked: {biz_name}! Connect with them!"
                             else:
                                 msg = f"📢 Engagement ({actual_type}): {biz_name}"
                                 
