@@ -30,7 +30,13 @@ def _read_ip(path):
         return None
 
 DEVICE = _read_ip(_home_ip) or _read_ip(_local_ip) or "192.168.8.157:5555"
-ADB = ["/opt/homebrew/bin/adb.orig", "-s", DEVICE]
+def get_adb_binary() -> str:
+    for path in ("/opt/homebrew/bin/adb.orig", "/usr/local/bin/adb.orig"):
+        if os.path.exists(path):
+            return path
+    return "adb"
+
+ADB = [get_adb_binary(), "-s", DEVICE]
 
 REAL_HIGH = 60   # real % → spoof as 100 (stop charging)
 REAL_LOW  = 20   # real % → spoof as 0   (resume charging)

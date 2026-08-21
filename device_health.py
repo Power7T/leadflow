@@ -10,7 +10,13 @@ import subprocess
 import sys
 import os
 
-ADB_BIN = "/opt/homebrew/bin/adb.orig"
+def get_adb_binary() -> str:
+    for path in ("/opt/homebrew/bin/adb.orig", "/usr/local/bin/adb.orig"):
+        if os.path.exists(path):
+            return path
+    return "adb"
+
+ADB_BIN = get_adb_binary()
 
 
 def load_ip_from_file(path, default):

@@ -28,7 +28,13 @@ def _read_ip(path):
         return None
 
 DEVICE = _read_ip(_home_ip) or _read_ip(_local_ip) or "192.168.8.246:5555"
-ADB = ["/opt/homebrew/bin/adb.orig", "-s", DEVICE]
+def get_adb_binary() -> str:
+    for path in ("/opt/homebrew/bin/adb.orig", "/usr/local/bin/adb.orig"):
+        if os.path.exists(path):
+            return path
+    return "adb"
+
+ADB = [get_adb_binary(), "-s", DEVICE]
 
 # ---------- packages to disable ----------
 # Targets: ads, analytics, Alexa stack, Amazon remote device management,
