@@ -546,7 +546,7 @@ function waLink(business, env) {
 
 function ctaBlock(business, env) {
   const name = business.name || "your business";
-  const bookingUrl = env.BOOKING_URL || "https://www.fiverr.com/s/e6zGy4g";
+  const bookingUrl = env.BOOKING_URL || "https://www.fiverr.com/s/GPxydxa";
   const agencyName = env.AGENCY_NAME || "Chandan Gosavi";
 
   const wa = waLink(business, env);
@@ -821,7 +821,15 @@ export default {
                await notifyNtfy(`${icon} ${utm.toUpperCase()} Prospect Clicked: ${bizName} just opened their custom demo!`, env, `Leadflow ${utm.toUpperCase()} Click`);
             }
          }
-         return new Response(preRendered, {
+         let bid = "0";
+         try {
+            let rawData = await env.LEADFLOW_KV.get(`demo:data:${slug}`);
+            if (rawData) {
+               bid = JSON.parse(rawData).business?.id || "0";
+            }
+         } catch(e) {}
+         let finalHtml = preRendered.replace(/https:\/\/www\.fiverr\.com\/s\/[a-zA-Z0-9_-]+/g, `/r/fiverr?bid=${bid}`);
+         return new Response(finalHtml, {
             headers: { "Content-Type": "text/html; charset=utf-8", "Access-Control-Allow-Origin": "*" }
          });
       }
@@ -899,6 +907,8 @@ export default {
           finalHtml = rendered + extra;
         }
 
+        // Redirect all Fiverr links via tracking URL
+        finalHtml = finalHtml.replace(/https:\/\/www\.fiverr\.com\/s\/[a-zA-Z0-9_-]+/g, `/r/fiverr?bid=${payload.business?.id || 0}`);
         return new Response(finalHtml, {
           headers: { "Content-Type": "text/html; charset=utf-8", "Access-Control-Allow-Origin": "*" }
         });
@@ -1204,6 +1214,42 @@ export default {
 
       // Send real-time notification
       await notifyAll(`🖱️ Demo link clicked! Redirecting prospect...`, env, "Leadflow Click");
+
+      return Response.redirect(targetUrl, 302);
+    }
+
+    // ── 3.1 Fiverr Link Click Tracking Redirect ───────────────────────────────
+    if (url.pathname === "/r/fiverr") {
+      const bid = url.searchParams.get("bid") || "0";
+      const targetUrl = env.BOOKING_URL || "https://www.fiverr.com/s/GPxydxa";
+
+      let bizName = `Business #${bid}`;
+      try {
+        if (bid !== "0") {
+          const rawData = await env.LEADFLOW_KV.get(`demo:data:${bid}`);
+          if (rawData) {
+            const dataObj = JSON.parse(rawData);
+            if (dataObj && dataObj.business && dataObj.business.name) {
+              bizName = dataObj.business.name;
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching business name in fiverr redirect:", e);
+      }
+
+      // Record engagement event in KV
+      const eventId = `event:${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+      const payload = {
+        type: "engage",
+        business_id: parseInt(bid, 10),
+        event_type: "fiverr_click",
+        timestamp: new Date().toISOString()
+      };
+      await env.LEADFLOW_KV.put(eventId, JSON.stringify(payload));
+
+      // Send real-time notification
+      await notifyAll(`💰 Hot Lead! Prospect from ${bizName} clicked your Fiverr link!`, env, "Leadflow Fiverr Redirect");
 
       return Response.redirect(targetUrl, 302);
     }
