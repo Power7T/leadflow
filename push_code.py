@@ -46,6 +46,7 @@ files_to_push = [
     "sync_engine.py",
     "unfollow_ghosts.py",
     "start_leadflow_failover.sh",
+    "restore_vivo_adb.sh",
     "resolve_devices.py",
     ".vivo_ip"
 ]
