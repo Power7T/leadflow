@@ -90,3 +90,12 @@ ntfy push sent on IP change and on USB recovery event.
 - **Unfollow Routine Modernization:** Replaced the broken "Follows you" badge check in the scheduler with the robust `ig_ghost_cleanup.py` which searches the followers list explicitly for our username.
 - **Git & Code Deployment:** Synced, committed, and pushed all updated code files to origin and firestick repositories on Github, and optimized deployment script filters.
 - **Summary:** Resolved Vivo phone screen freezes and stuck UI states by identifying and dismissing persistent system modals. Modernized the Instagram DM sequence by building an automated layout safeguard that detects and cancels system overlays before automation tasks run. Addressed Vivo keyboard typos by upgrading keyboard controls to force-disable the stock IME during campaigns and restore it afterward. Corrected the ghost-unfollow check inside the scheduler by integrating a robust followers list search. Validated and synchronized all codebase changes by committing and pushing clean atomic git updates.
+
+
+
+## Updates & Modernizations — 2026-08-21
+- **Roles Alignment Completed:** Corrected the failover structure by configuring the Vivo phone as the primary brain and the Mac as the backup. The Mac now queries the phone's LAN health endpoint and stands down, preventing duplicate DM runs.
+- **Keyboard Typo Fix Deployed:** Implemented Option B and Option C fallbacks in the typing functions of both instagram_sender.py and ig_ghost_cleanup.py. Autocorrect typos on the Vivo phone are fully prevented by using %s space insertion instead of standard space keyevents when typing.
+- **Deep-Link Targeting Upgraded:** Appended target package name com.instagram.android to all profile deep-links, forcing them to open natively in the Instagram app rather than falling back to Chrome.
+- **Resilient Boot Recovery Implemented:** Updated the startup boot script start_leadflow.sh on the Vivo phone to run a 5-minute ADB connection loop on boot, maximizing recovery success when background networking initializes slowly.
+- **Code Synchronization Verified:** Excluded device-specific files from setup_vivo.sh rsync and deployed the updated codebase across the Mac, Vivo phone, and Firestick. All git changes are committed and pushed to both GitHub repositories.
