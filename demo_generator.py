@@ -1263,12 +1263,16 @@ def generate_demo_html(business: dict, website_data: dict = None, use_stock: boo
 
             t = Template(template_str)
             import os
+            # Safely fetch primary sender email from SENDER_EMAIL environment variable
+            sender_emails = os.getenv("SENDER_EMAIL", "chandango12@gmail.com").split(",")
+            agency_email = sender_emails[0].strip() if sender_emails else "chandango12@gmail.com"
             custom_html = t.render(
                 lead=business,
                 scraped=website_data,
                 hero_img=hero_img,
                 about_img=about_img,
-                agency_whatsapp=os.getenv("AGENCY_WHATSAPP", "918669024169")
+                agency_whatsapp=os.getenv("AGENCY_WHATSAPP", "918669024169"),
+                agency_email=os.getenv("AGENCY_EMAIL", agency_email)
             )
                 
     if custom_html:

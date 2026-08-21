@@ -914,7 +914,7 @@ Please get in touch.
 Thanks'
     );
     var emailBtn = document.createElement('a');
-    emailBtn.href = 'mailto:chandangosavi0@gmail.com?subject=' + subject + '&body=' + body;
+    emailBtn.href = 'mailto:{{ agency_email }}?subject=' + subject + '&body=' + body;
     emailBtn.className = 'btn-email-cta';
     emailBtn.innerHTML = '✉️ Email Me';
     heroBtns.appendChild(emailBtn);

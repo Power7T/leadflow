@@ -53,6 +53,7 @@ from vivo_ig_ui_sender import (
     unlock_screen, get_ui_coords, restart_android_uiautomator,
 )
 from ig_phone_status import (
+    _notify_main,
     start_session as ps_start, end_session as ps_end,
     update_activity as ps_activity,
 )
@@ -435,6 +436,8 @@ def run_ghost_cleanup(dry_run: bool = False):
             elif follows_us:
                 mark_followback(g["id"], True)
                 log.info(f"@{username} follows us back! Keeping.")
+                try: _notify_main("🎉 Followback Confirmed", f"@{username} follows us back! Keeping them followed.")
+                except Exception: pass
             else:
                 mark_followback(g["id"], False)
                 log.info(f"@{username} is a GHOST. Unfollowing...")
@@ -444,6 +447,8 @@ def run_ghost_cleanup(dry_run: bool = False):
                     success = unfollow_user(username, g["id"], "ghost_7d", dry_run)
                     if success:
                         unfollowed += 1
+                        try: _notify_main("🗑️ Ghost Unfollowed", f"Unfollowed ghost @{username} (no followback).")
+                        except Exception: pass
 
             # Delay between checks (30-60s to look human)
             delay = random.randint(30, 60)
@@ -470,6 +475,8 @@ def run_ghost_cleanup(dry_run: bool = False):
                 success = unfollow_user(username, s["id"], "silent_14d", dry_run)
                 if success:
                     unfollowed += 1
+                    try: _notify_main("🗑️ Silent Unfollow", f"Unfollowed @{username} (followed back but no reply in 14+ days).")
+                    except Exception: pass
 
                 delay = random.randint(30, 60)
                 log.info(f"Waiting {delay}s...")

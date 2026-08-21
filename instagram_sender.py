@@ -1114,11 +1114,19 @@ def send_instagram_dm(username: str, message: str) -> bool:
         if verified:
             log.info(f"[Instagram ADB] ✅ Successfully SENT DM to @{username} (verified in chat)")
             _increment_daily_count()
+            try:
+                from ig_phone_status import _notify_main
+                _notify_main("📸 Instagram DM Sent", f"✅ Successfully sent DM to @{username} (verified in chat).")
+            except Exception: pass
         else:
             log.error(
                 f"[Verify] ⚠️  Message to @{username} failed verification — "
                 "DM may not have been sent. NOT counting toward daily limit."
             )
+            try:
+                from ig_phone_status import _notify_main
+                _notify_main("⚠️ DM Failed Verification", f"DM to @{username} failed verification — may not have sent.")
+            except Exception: pass
             return False
         # ─────────────────────────────────────────────────────────────────────
 
@@ -1129,6 +1137,10 @@ def send_instagram_dm(username: str, message: str) -> bool:
 
     except Exception as e:
         log.error(f"[Instagram ADB] Fatal error during send sequence: {e}")
+        try:
+            from ig_phone_status import _notify_main
+            _notify_main("🚨 DM Fatal Error", f"Fatal error sending to @{username}: {e}")
+        except Exception: pass
         return False
     finally:
         # ATOMIC LOCK RELEASE: Remove the directory from the phone

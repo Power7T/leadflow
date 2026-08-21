@@ -847,7 +847,7 @@ section{padding:8rem 0;position:relative;overflow:hidden;}
 
 <!-- WHATSAPP FLOAT CTA -->
 <a class="wa-float"
-   onclick="try{fetch('/api/engage?bid={{ lead.id }}&ev=cta_whatsapp',{mode:'no-cors'});}catch(e){}"    href="https://wa.me/918669024169?text=Hi%2C%20I%27m%20interested%20in%20the%20website%20for%20{{ lead.name | urlencode }}"
+   onclick="try{fetch('/api/engage?bid={{ lead.id }}&ev=cta_whatsapp',{mode:'no-cors'});}catch(e){}"    href="https://wa.me/{{ agency_whatsapp }}?text=Hi%2C%20I%27m%20interested%20in%20the%20website%20for%20{{ lead.name | urlencode }}"
    target="_blank" rel="noopener" title="Chat on WhatsApp">
   <div class="wa-float-btn">
     <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -940,7 +940,7 @@ Please get in touch.
 Thanks'
     );
     var emailBtn = document.createElement('a');
-    emailBtn.href = 'mailto:chandangosavi0@gmail.com?subject=' + subject + '&body=' + body;
+    emailBtn.href = 'mailto:{{ agency_email }}?subject=' + subject + '&body=' + body;
     emailBtn.className = 'btn-email-cta';
     emailBtn.innerHTML = '✉️ Email Me';
     heroBtns.appendChild(emailBtn);
