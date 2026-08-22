@@ -139,6 +139,7 @@ def resolve():
     home = os.path.expanduser("~")
     if fs_ip:
         Path(f"{home}/.firestick_ip").write_text(f"{fs_ip}:5555")
+        Path(os.path.dirname(os.path.abspath(__file__)) + "/.firestick_ip").write_text(f"{fs_ip}:5555")
         print(f"Resolved Firestick IP: {fs_ip}:5555")
     if vivo_ip:
         Path(f"{home}/.vivo_ip").write_text(f"{vivo_ip}:5555")
