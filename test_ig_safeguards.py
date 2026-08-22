@@ -12,7 +12,7 @@ if os.path.exists('/Users/chandan/leadflow/.vivo_ip'):
         vivo_ip = f.read().strip()
 
 if not vivo_ip:
-    vivo_ip = "192.168.0.162:5555"
+    vivo_ip = "192.168.8.157:5555"
 print(f"Connecting to Vivo at {vivo_ip}...")
 
 client = AdbClient(host="127.0.0.1", port=5037)

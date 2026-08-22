@@ -37,7 +37,7 @@ resolve_ip() {
 
 # Resolve IPs dynamically — these update when resolve_devices.py runs
 FS_RAW=$(resolve_ip ".firestick_ip" ".firestick_ip" "$(cat /Users/chandan/leadflow/.firestick_ip)")
-VIVO_RAW=$(resolve_ip ".vivo_ip" ".vivo_ip" "192.168.0.162:5555")
+VIVO_RAW=$(resolve_ip ".vivo_ip" ".vivo_ip" "192.168.8.157:5555")
 
 # Strip :5555 suffix for the DEVICES array format (IP:DisplayName)
 FS_IP="${FS_RAW%%:5555}"
@@ -130,7 +130,7 @@ while true; do
     if [ $cycle_count -ge $IP_REFRESH_CYCLES ]; then
         cycle_count=0
         NEW_FS_RAW=$(resolve_ip ".firestick_ip" ".firestick_ip" "$(cat /Users/chandan/leadflow/.firestick_ip)")
-        NEW_VIVO_RAW=$(resolve_ip ".vivo_ip" ".vivo_ip" "192.168.0.162:5555")
+        NEW_VIVO_RAW=$(resolve_ip ".vivo_ip" ".vivo_ip" "192.168.8.157:5555")
         NEW_FS="${NEW_FS_RAW%%:5555}"
         NEW_VIVO="${NEW_VIVO_RAW%%:5555}"
         if [ "$NEW_FS" != "$FS_IP" ] || [ "$NEW_VIVO" != "$VIVO_IP" ]; then
