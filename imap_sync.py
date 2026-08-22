@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)  # override=True ensures updated .env values are picked up after restart
 
 # Set socket timeout to 30 seconds to prevent hanging on network calls
-socket.setdefaulttimeout(30.0)
+socket.setdefaulttimeout(10.0)
 
 # Configure logging if not already configured
 if not logging.getLogger().handlers:
@@ -214,7 +214,7 @@ def check_replies():
                         log.warning(f"IMAP connect attempt {_attempt+1}/3 failed for {email_addr}: {_conn_err}")
                         mail = None
                         if _attempt < 2:
-                            time.sleep(5)
+                            time.sleep(2)
                         else:
                             log.error(f"All IMAP connect attempts failed for {email_addr}, skipping account")
                 if mail is None:
