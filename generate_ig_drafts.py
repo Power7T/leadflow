@@ -49,7 +49,11 @@ def generate_drafts():
             scraped["top_competitor"] = comp
 
         print(f"Generating IG draft for {biz_dict['name']} (demo={bool(demo_url)}, scraped={bool(scraped)})...")
-        draft = ai_writer.write_instagram_dm(biz_dict, demo_url=demo_url, scraped=scraped or None)
+        try:
+            draft = ai_writer.write_instagram_dm(biz_dict, demo_url=demo_url, scraped=scraped or None)
+        except Exception as e:
+            print(f"  [AI draft error] Failed to generate for {biz_dict['name']}: {e}")
+            draft = None
 
         if draft:
             # Open a fast, short-lived connection just for the insert to prevent SQLite locking
