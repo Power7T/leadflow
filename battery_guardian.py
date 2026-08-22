@@ -29,7 +29,17 @@ def _read_ip(path):
     except Exception:
         return None
 
-DEVICE = _read_ip(_home_ip) or _read_ip(_local_ip) or "192.168.8.157:5555"
+def _get_active_device():
+    try:
+        import resolve_devices
+        res = resolve_devices.ensure_connected("vivo")
+        if res:
+            return res
+    except Exception:
+        pass
+    return _read_ip(_home_ip) or _read_ip(_local_ip) or "192.168.8.157:5555"
+
+DEVICE = _get_active_device()
 def get_adb_binary() -> str:
     for path in ("/opt/homebrew/bin/adb.orig", "/usr/local/bin/adb.orig"):
         if os.path.exists(path):
