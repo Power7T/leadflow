@@ -254,21 +254,20 @@ def _find_followers_button(xml_data: str) -> tuple | None:
 
 
 def _find_search_box(xml_data: str) -> tuple | None:
-    """Find the search box in the followers list."""
+    """Find the search box or search icon in the followers list."""
     if not xml_data or "ERROR" in xml_data:
         return None
 
     try:
         root = ET.fromstring(xml_data)
 
-        # Look for search input: usually EditText or has "Search" text/hint
+        # 1. Look for search input: usually EditText or has "Search" text/hint
         for node in root.iter('node'):
             text = node.attrib.get('text', '').lower()
             desc = node.attrib.get('content-desc', '').lower()
             clazz = node.attrib.get('class', '')
 
-            if 'search' in text or 'search' in desc or \
-               ('EditText' in clazz and node.attrib.get('focusable') == 'true'):
+            if 'search' in text or 'search' in desc or ('EditText' in clazz and node.attrib.get('focusable') == 'true'):
                 bounds = node.attrib.get('bounds', '')
                 if bounds:
                     b = bounds.replace('[', '').replace(']', ',').split(',')
@@ -277,11 +276,23 @@ def _find_search_box(xml_data: str) -> tuple | None:
                     log.info(f"Found search box at ({x},{y}) class={clazz}")
                     return (x, y)
 
+        # 2. Fallback: Search icon button (resource-id or desc containing search)
+        for node in root.iter('node'):
+            res_id = node.attrib.get('resource-id', '').lower()
+            desc = node.attrib.get('content-desc', '').lower()
+            if 'search' in res_id or 'search' in desc:
+                bounds = node.attrib.get('bounds', '')
+                if bounds:
+                    b = bounds.replace('[', '').replace(']', ',').split(',')
+                    x = (int(b[0]) + int(b[2])) // 2
+                    y = (int(b[1]) + int(b[3])) // 2
+                    log.info(f"Found search icon at ({x},{y}) id={res_id}")
+                    return (x, y)
+
     except ET.ParseError as e:
         log.warning(f"XML parse error finding search box: {e}")
 
     return None
-
 
 def _check_username_in_results(xml_data: str, username: str) -> bool:
     """Check if our username appears in the followers search results."""
