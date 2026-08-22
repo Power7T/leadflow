@@ -232,11 +232,16 @@ def follow_and_dm(username: str, message: str, business_id: int,
 
         time.sleep(2)
 
-        # Check for post-send block
+        # Check for post-send block — verify if message typed/sent before marking as sent
         if check_and_handle_block(adb, limiter):
-            log_action(username, "skip_blocked", business_id, "Action block after send")
-            # Message may still have gone through, so we mark it
-            _mark_dm_sent(business_id)
+            ps_activity("block_detected", "Action block after send attempt", target_username=username)
+            if confirm_message_typed(message, timeout=5.0):
+                log.info(f"Message confirmed sent before action block popup for @{username}")
+                _mark_dm_sent(business_id)
+                log_action(username, "dm_blocked_after", business_id, "Action block after confirmed send")
+            else:
+                log.warning(f"Action block triggered before send completed for @{username} — NOT marking as sent")
+                log_action(username, "skip_blocked", business_id, "Action block before send confirmed")
             return "blocked"
 
     # ── Step 9: Mark success in DB ──────────────────────────────────────
