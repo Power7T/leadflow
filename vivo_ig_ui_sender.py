@@ -1,3 +1,20 @@
+def _is_locked() -> bool:
+    """True if the phone's keyguard is showing (real lock screen, not just status bar overlay)."""
+    window_info = adb("shell dumpsys window | grep -E 'isStatusBarKeyguard|mCurrentFocus'")
+    if "isStatusBarKeyguard=true" in window_info:
+        return True
+    focus_line = ""
+    for line in window_info.splitlines():
+        if "mCurrentFocus" in line:
+            focus_line = line
+            break
+    if "StatusBar" in focus_line and "Keyguard" not in focus_line:
+        power = adb("shell dumpsys power | grep mWakefulness")
+        if "Asleep" in power or "Dozing" in power:
+            return True
+        return False
+    return "Keyguard" in focus_line or "keyguard" in focus_line
+
 import time
 import random
 import logging
@@ -32,15 +49,11 @@ def unlock_screen():
     time.sleep(1)
     
     # Check if still on lock screen
-    focus = adb("shell dumpsys window | grep mCurrentFocus")
-    if "StatusBar" in focus or "Keyguard" in focus or "keyguard" in focus:
+    if _is_locked():
         log.info("Phone is locked, swiping to unlock...")
-        # Swipe up from center-bottom to center to unlock
         adb("shell input swipe 360 1200 360 400 300")
         time.sleep(2)
-        # Check again
-        focus = adb("shell dumpsys window | grep mCurrentFocus")
-        if "StatusBar" in focus or "Keyguard" in focus:
+        if _is_locked():
             log.warning("Still locked after swipe, trying again...")
             adb("shell input swipe 360 1200 360 400 300")
             time.sleep(2)
