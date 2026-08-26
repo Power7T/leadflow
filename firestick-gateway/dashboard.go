@@ -1,62 +1,41 @@
 package main
 
 import (
-	"database/sql"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
+	"net/http/httputil"
+	"net/url"
+	"os/exec"
 	"strings"
+	"time"
 )
 
+func IsPythonServerRunning() bool {
+	out, err := exec.Command("pgrep", "-f", "uvicorn server:app").CombinedOutput()
+	if err != nil {
+		return false
+	}
+	return len(strings.TrimSpace(string(out))) > 0
+}
+
 func ServeDashboard(port string) {
-	// Replicating the exact Python FastApi UI Response
-	http.HandleFunc("/leads", func(w http.ResponseWriter, r *http.Request) {
-		db, err := sql.Open("sqlite", dbPath)
-		if err != nil {
-			http.Error(w, "Database unavailable", 500)
-			return
-		}
-		defer db.Close()
+	// If the Python server isn't running on the Firestick, boot it up!
+	if !IsPythonServerRunning() {
+		fmt.Println("[Dashboard] Booting up native Python FastAPI Server for 100% functionality...")
+		cmd := exec.Command("nohup", "python3", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8766")
+		cmd.Dir = "/data/data/com.termux/files/home/leadflow"
+		cmd.Start()
+		time.Sleep(3 * time.Second) // Give it time to boot
+	}
 
-		// Read the exact Base and Leads templates from the Firestick's existing leadflow folder
-		baseHTMLBytes, err := os.ReadFile("/data/data/com.termux/files/home/leadflow/templates/base.html")
-		if err != nil {
-			// If missing styles locally, fallback
-			w.Write([]byte("Error: Template folder not found on Firestick."))
-			return
-		}
-		leadsHTMLBytes, _ := os.ReadFile("/data/data/com.termux/files/home/leadflow/templates/leads.html")
+	// Create a reverse proxy to route traffic from the Go port (8765) directly to the Python logic
+	target, _ := url.Parse("http://127.0.0.1:8766")
+	proxy := httputil.NewSingleHostReverseProxy(target)
 
-		// Query exactly like the Python backend
-		rows, err := db.Query(`SELECT id, name, status FROM businesses ORDER BY id DESC`)
-		defer rows.Close()
-
-		var htmlList []string
-		for rows.Next() {
-			var id int
-			var name, status string
-			rows.Scan(&id, &name, &status)
-			htmlList = append(htmlList, fmt.Sprintf(`<div class="lead-item %s">%d - %s</div>`, status, id, name))
-		}
-
-		baseHTML := string(baseHTMLBytes)
-		leadsHTML := string(leadsHTMLBytes)
-		
-		// In Go, since we can't run Jinja easily without heavy dependencies, we'll strip the Jinja blocks
-		// and inject the raw data manually so it keeps exactly the same visual CSS components
-		content := strings.Replace(leadsHTML, "{% block content %}", "<div>"+strings.Join(htmlList, "<br>")+"</div>", 1)
-		finalOutput := strings.Replace(baseHTML, "{% block content %}", content, 1)
-
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(finalOutput))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		proxy.ServeHTTP(w, r)
 	})
 
-	http.HandleFunc("/api/leads", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"message": "Gateway API Running"})
-	})
-
-	fmt.Printf("[Dashboard] Local Firestick Web Server mimicking Python UI on http://127.0.0.1:%s/leads\n", port)
+	fmt.Printf("[Dashboard] Go Gateway routing interface seamlessly to native Python UI at http://127.0.0.1:%s\n", port)
 	http.ListenAndServe(":"+port, nil)
 }
