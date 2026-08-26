@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	go ServeDashboard("8765")
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: leadflow-gateway <niche> | watchdog | autopilot")
 		return
