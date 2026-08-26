@@ -47,7 +47,7 @@ def _scrape_cycle():
     location = random.choice(LOCATIONS)
     console.print(f"\n[bold cyan][Autopilot][/] Scraping {SCRAPE_BATCH} leads: [white]{niche}[/] in [white]{location}[/]")
     try:
-        run_finder(niche, location, SCRAPE_BATCH)
+        run_finder("google_search", niche, location, SCRAPE_BATCH)
     except Exception as e:
         console.print(f"[red][Autopilot] Scrape error: {e}[/]")
 
@@ -141,7 +141,7 @@ def run_autopilot():
         for lead in approved:
             if sends >= headroom:
                 break
-            if not can_sender_send():
+            if not can_sender_send(lead.get("email")):
                 console.print("[yellow][Autopilot] Sender limit hit mid-batch.[/]")
                 break
             sent = _write_and_send(lead)

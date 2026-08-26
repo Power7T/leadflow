@@ -470,7 +470,7 @@ def search_google_serp(query: str, location: str = "", gl: str = "us", only_ads:
     return []
 
 
-def run_finder(
+def run_finder(source, 
     niche: str,
     location: str,
     max_results: int = 100,
