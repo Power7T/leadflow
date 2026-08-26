@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 	"os"
+	"github.com/Power7T/leadflow-gateway/ai"
 )
 
 func main() {
-	go ServeDashboard("8765")
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: leadflow-gateway <niche> | watchdog | autopilot")
+		fmt.Println("Usage: leadflow-gateway <niche> | watchdog | autopilot | write 'Business Name'")
 		return
 	}
+	
+	go ServeDashboard("8765")
 	
 	command := os.Args[1]
 
@@ -20,9 +22,24 @@ func main() {
 		return
 	}
 	
+	if command == "write" {
+		if len(os.Args) < 3 {
+			fmt.Println("Provide business name")
+			return
+		}
+		biz := os.Args[2]
+		draft, err := ai.GenerateEmailDraft(biz, "Local Business", "")
+		if err != nil {
+			fmt.Println("AI Error:", err)
+		} else {
+			fmt.Println("--- GENUINE AI DRAFT ---")
+			fmt.Println(draft)
+		}
+		return
+	}
+
 	if command == "autopilot" {
 		fmt.Println("Gateway running in Autopilot fallback mode.")
-		// Placeholder for Go loop logic executing scrapes
 		return
 	}
 
@@ -34,6 +51,6 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	} else {
-		fmt.Printf("Success! Found Google Maps results via Serper.dev.\nPreview: %+v\n", result)
+		fmt.Printf("Success! Scraped leads via Serper.dev.\nPreview: %+v\n", result)
 	}
 }
